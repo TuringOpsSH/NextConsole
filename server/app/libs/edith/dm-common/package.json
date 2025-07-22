@@ -1,0 +1,29 @@
+{
+    "name": "达梦数据库健康检查",
+    "author": "数据库交付团队",
+    "category": "checkup",
+    "version": "1.0.12",
+    "product": "dm",
+    "comment": "",
+    "language": "",
+    "search": [],
+    "private": true,
+    "homepage": "https://www.edithops.com/",
+    "hooksource": [
+        "@datadir"
+    ],
+    "operates": [
+        {
+            "key": "checkup:single",
+            "name": "通用报告"
+        },
+        {
+            "key": "checkup:full",
+            "name": "汇总报告"
+        },
+        {
+            "key": "checkup:sf",
+            "name": "通用+汇总"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+pypandoc-1.12.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+pypandoc-1.12.dist-info/LICENSE,sha256=u_DUBbV3GuH-38c7taU8Biihk6NNU3mCK3y4oOAjec8,2908
+pypandoc-1.12.dist-info/METADATA,sha256=3HrKmO8kSFj5caTm0TU_m0mYXCcEAwsDmTnrABHJEOs,16256
+pypandoc-1.12.dist-info/RECORD,,
+pypandoc-1.12.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+pypandoc-1.12.dist-info/WHEEL,sha256=yQN5g4mg4AybRjkgi-9yy4iQEFibGQmlz78Pik5Or-A,92
+pypandoc-1.12.dist-info/top_level.txt,sha256=fgAWTRPloxYRmyv_c2XYiwL4owKOd7txt1yr6YbcINU,9
+pypandoc/__init__.py,sha256=I0Jw7NVBrGpkECIPTGqFChad3Vj2wIvrtRxibX7ih2g,31473
+pypandoc/__pycache__/__init__.cpython-39.pyc,,
+pypandoc/__pycache__/handler.cpython-39.pyc,,
+pypandoc/__pycache__/pandoc_download.cpython-39.pyc,,
+pypandoc/__pycache__/py3compat.cpython-39.pyc,,
+pypandoc/handler.py,sha256=34rxJUALPE2wPLfbbZ75v4G_qFMeWh2FTxrz9SNr1OY,504
+pypandoc/pandoc_download.py,sha256=zZOduLOXu2-8GwwCb5_Qt9HRqLzrssq8kaNkJ4QfByI,9520
+pypandoc/py3compat.py,sha256=5pCctRJoO7TsRM5-1lRgDLnq281ToTKm6dUBHhfZ31I,1916

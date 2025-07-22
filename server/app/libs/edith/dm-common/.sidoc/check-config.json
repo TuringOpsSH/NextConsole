@@ -1,0 +1,405 @@
+{
+    "checks": [
+        {
+            "expr": "",
+            "rule": "func.date",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.appname",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.simpleTable",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.transpose",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.summary",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.pgSummary",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.byte2mb",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.orderby",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.version",
+            "params": []
+        },
+        {
+            "expr": "//SysStatus/*/cpupct",
+            "rule": "linux.cpuUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cpuUsedPercent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/disk",
+            "rule": "linux.diskUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "diskUsage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/mem",
+            "rule": "linux.memUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "memUsedPercent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/tableInfo",
+            "rule": "dm.tableInfo",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tableInfo"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/dataDocInfo",
+            "rule": "dm.dataDocInfo",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dataDocInfo"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/tableFileRelation",
+            "rule": "dm.tableFileRelation",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tableFileRelation"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/deadlockHistory",
+            "rule": "dm.deadlockHistory",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "deadlockHistory"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/block",
+            "rule": "dm.block",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "block"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/dictionaryCache",
+            "rule": "dm.dictionaryCache",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dictionaryCache"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/bufferPool",
+            "rule": "dm.bufferPool",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "bufferPool"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/memoryPool",
+            "rule": "dm.memoryPool",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "memoryPool"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/systemStatistics",
+            "rule": "dm.systemStatistics",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "systemStatistics"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/sessionStatistics",
+            "rule": "dm.sessionStatistics",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "sessionStatistics"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/objectStatistics",
+            "rule": "dm.objectStatistics",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "objectStatistics"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/tableRowStatistics",
+            "rule": "dm.tableRowStatistics",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tableRowStatistics"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/dbLinkStatistics",
+            "rule": "dm.dbLinkStatistics",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dbLinkStatistics"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/highMemory20SQL",
+            "rule": "dm.highMemory20SQL",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "highMemory20SQL"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/slowest20SQL",
+            "rule": "dm.slowest20SQL",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "slowest20SQL"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/longtime20Events",
+            "rule": "dm.longtime20Events",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "longtime20Events"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/userinfo",
+            "rule": "dm.userinfo",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "longtime20Events"
+                },
+                {
+                    "key": "_name",
+
+                  "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/passwordStrategy",
+            "rule": "dm.passwordStrategy",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "passwordStrategy"
+                },
+                {
+                    "key": "_name",
+
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/instanceLogs",
+            "rule": "dm.instanceLogs",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "instanceLogs"
+                },
+                {
+                    "key": "_name",
+
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/dampLogs",
+            "rule": "dm.dampLogs",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dampLogs"
+                },
+                {
+                    "key": "_name",
+
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//DMDB/*/backupLogs",
+            "rule": "dm.backupLogs",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "backupLogs"
+                },
+                {
+                    "key": "_name",
+
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysLogs/*/edith",
+            "rule": "linux.test",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "test"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        }
+    ],
+    "rulesDir": "./rules"
+}

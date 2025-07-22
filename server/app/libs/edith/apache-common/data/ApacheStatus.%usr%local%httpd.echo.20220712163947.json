@@ -1,0 +1,116 @@
+{
+    "edith": {
+        "version": "v1.0.10-13-gcdfe873",
+        "command": "./edith apache get-status -p /usr/local/httpd -u http://81.68.164.134:7788/server-status -o /tmp -f json",
+        "flags": {
+            "format": "json",
+            "output": "/tmp",
+            "path": "/usr/local/httpd",
+            "url": "http://81.68.164.134:7788/server-status"
+        }
+    },
+    "errreq": [
+        {
+            "metric": [
+                {
+                    "code": "404",
+                    "count": 160256
+                },
+                {
+                    "code": "408",
+                    "count": 3
+                }
+            ],
+            "datetime": "2022-07-12 16:39:47"
+        }
+    ],
+    "gt500ip": [
+        {
+            "metric": [
+                {
+                    "ip": "192.168.100.10",
+                    "count": 372857
+                }
+            ],
+            "datetime": "2022-07-12 16:39:46"
+        }
+    ],
+    "host": {
+        "hostname": "echo",
+        "uptime": 3561810,
+        "bootTime": 1654053377,
+        "procs": 162,
+        "os": "linux",
+        "platform": "centos",
+        "platformFamily": "rhel",
+        "platformVersion": "7.6.1810",
+        "kernelVersion": "3.10.0-1160.11.1.el7.x86_64",
+        "kernelArch": "x86_64",
+        "virtualizationSystem": "",
+        "virtualizationRole": "guest",
+        "hostId": "306b7a86-9f71-484d-a29a-88224ba42788"
+    },
+    "pstatus": [
+        {
+            "metric": {
+                "process_num": 0,
+                "network_info": [
+                    {
+                        "ipport": "169.254.0.55:8080",
+                        "status": "TIME_WAIT",
+                        "process": "-"
+                    },
+                    {
+                        "ipport": "169.254.0.138:8086",
+                        "status": "ESTABLISHED",
+                        "process": "7645/tat_agent"
+                    }
+                ]
+            },
+            "datetime": "2022-07-12 16:39:47"
+        }
+    ],
+    "sss": [
+        {
+            "metric": {
+                "b_per_second": "1",
+                "cpu_load": ".00435",
+                "cpu_usage": "u54.49 s100.5 cu0 cs0",
+                "current_time": "Tuesday, 12-Jul-2022 16:39:47 CST",
+                "idle_workers": 99,
+                "kb_per_request": "8.0",
+                "ms_per_request": "1.63115",
+                "parent_server_config_generation": "1",
+                "parent_server_mpm_generation": "0",
+                "requests_currently_being_processed": 1,
+                "requests_per_sec": ".00024",
+                "restart_time": "Wednesday, 01-Jun-2022 11:25:17 CST",
+                "server_built": "May 30 2022 12:06:22",
+                "server_load": "0.27 0.20 0.16",
+                "server_mpm": "event",
+                "server_uptime": " 41 days 5 hours 14 minutes 29 seconds",
+                "server_version": "Apache/2.4.53 (Unix)",
+                "title": "Apache Server Status for 81.68.164.134 (via 172.17.0.17)",
+                "total_accesses": "854",
+                "total_duration": "1393",
+                "total_traffic": "6.7 MB"
+            },
+            "datetime": "2022-07-12 16:39:47"
+        }
+    ],
+    "top10ip": [
+        {
+            "metric": [
+                {
+                    "ip": "192.168.100.10",
+                    "count": 372857
+                },
+                {
+                    "ip": "192.168.100.100",
+                    "count": 6
+                }
+            ],
+            "datetime": "2022-07-12 16:39:45"
+        }
+    ]
+}

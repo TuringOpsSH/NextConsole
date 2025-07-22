@@ -1,0 +1,148 @@
+<template>
+  <el-scrollbar view-style="width: 100%" wrap-class="width: 100%">
+    <div class="main">
+
+      <div class="body">
+        <div class="title">404 error</div>
+        <div >
+          <el-text class="content">
+            你好像来到了一片荒漠
+          </el-text>
+        </div>
+        <div class="tip">抱歉，找不到当前页面</div>
+        <div v-if="is_small_screen" style="display: flex;flex-direction: column;gap: 12px">
+          <div class="std-button" @click="goBack">
+            <el-text style="font-weight: 600;font-size: 16px;color: #FFFFFF">主页</el-text>
+          </div>
+          <div class="std-button" style="background-color: #FFFFFF;border: 1px solid #D0D5DD"
+               @click="goBefore">
+            <div>
+              <el-image src="images/arrow_left_black.svg" style="width: 12px; height: 12px"></el-image>
+            </div>
+            <div>
+              <el-text style="font-weight: 600;font-size: 16px;color: #344054">返回</el-text>
+            </div>
+          </div>
+        </div>
+        <el-button plain icon="el-icon-back" class="back-btn" @click="goBack" v-else>返回首页</el-button>
+      </div>
+
+    </div>
+  </el-scrollbar>
+</template>
+
+<script setup>
+
+import router from "@/router";
+
+
+async function goBack() {
+  await router.push({ path: '/' });
+}
+function goBefore() {
+  // 回到上一页
+  router.go(-1);
+}
+
+
+</script>
+
+<style scoped>
+.main {
+  width: 100vw;
+  height: 100vh;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .body{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    .title {
+      font-size: 16px;
+      color: #175CD3;
+    }
+    .content {
+      font-weight: 600;
+      font-size: 60px;
+      color: #101828;
+    }
+    .tip {
+      font-size: 20px;
+      color: #475467;
+      margin: 24px 0 48px;
+    }
+    .back-btn {
+      min-width: 164px;
+      min-height: 60px;
+      font-size: 18px;
+    }
+    .std-button{
+      display: flex;
+      width: 80vw;
+      padding: 12px 20px 12px 20px;
+      gap: 8px;
+      border-radius: 8px;
+      border: 1px solid #1570EF;
+      align-items: center;
+      justify-content: center;
+      background: #1570EF;
+      box-shadow: 0 1px 2px 0 #1018280D;
+      cursor: pointer;
+
+    }
+
+  }
+
+}
+
+@media (max-width: 600px) {
+  .main {
+    width: 100vw;
+    height: 100vh;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .body{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      .title {
+        font-size: 16px;
+        color: #175CD3;
+      }
+      .content {
+        font-size: 36px;
+        font-weight: 600;
+        line-height: 44px;
+        letter-spacing: -0.02em;
+        text-align: left;
+        color: #101828;
+
+      }
+      .tip {
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 28px;
+        text-align: left;
+        color: #475467;
+        margin: 16px 0 48px;
+      }
+      .back-btn {
+        min-width: 164px;
+        min-height: 60px;
+        font-size: 18px;
+      }
+    }
+
+  }
+}
+</style>

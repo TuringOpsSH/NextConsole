@@ -1,0 +1,130 @@
+[
+    {
+        "type": "input",
+        "field": "customer",
+        "title": "客户",
+        "info": "",
+        "props": {
+            "placeholder": "XX银行"
+        },
+        "_fc_drag_tag": "input",
+        "hidden": false,
+        "display": true,
+        "$required": "",
+        "value": "中亦科技"
+    },
+    {
+        "type": "input",
+        "field": "name",
+        "title": "姓名",
+        "info": "",
+        "_fc_drag_tag": "input",
+        "hidden": false,
+        "display": true,
+        "$required": "",
+        "value": "我的姓名"
+    },
+    {
+        "type": "input",
+        "field": "email",
+        "title": "邮箱",
+        "info": "",
+        "props": {
+            "placeholder": "XX@163.com"
+        },
+        "_fc_drag_tag": "input",
+        "hidden": false,
+        "$required": "",
+        "display": true,
+        "value": "xingming.yang@ce-service.com.cn",
+        "validate": [
+            {
+                "trigger": "change",
+                "mode": "pattern",
+                "message": "邮箱可能不符合要求",
+                "pattern": "^[a-z0-9]+([._\\\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$",
+                "type": "string"
+            }
+        ]
+    },
+    {
+        "type": "switch",
+        "field": "opendir",
+        "title": "完成后打开",
+        "info": "",
+        "_fc_drag_tag": "switch",
+        "hidden": false,
+        "display": true,
+        "value": true
+    },
+    {
+        "type": "switch",
+        "field": "archive",
+        "title": "归档报告",
+        "info": "",
+        "_fc_drag_tag": "switch",
+        "hidden": false,
+        "display": true,
+        "value": false
+    },
+    {
+        "type": "switch",
+        "field": "archivedata",
+        "title": "归档含数据",
+        "info": "",
+        "_fc_drag_tag": "switch",
+        "hidden": false,
+        "display": true,
+        "value": false
+    },
+    {
+        "type": "switch",
+        "field": "longstamp",
+        "title": "时间戳",
+        "info": "开启后将使用完整的时间戳代替日期时间戳",
+        "_fc_drag_tag": "switch",
+        "hidden": false,
+        "display": true,
+        "value": false
+    },
+    {
+        "type": "switch",
+        "field": "outback",
+        "title": "同目录",
+        "info": "开启后将生成巡检报告到数据同目录",
+        "_fc_drag_tag": "switch",
+        "hidden": false,
+        "display": true,
+        "value": true
+    },
+    {
+        "type": "switch",
+        "field": "nomd",
+        "title": "保留 md",
+        "info": "",
+        "_fc_drag_tag": "switch",
+        "hidden": false,
+        "display": true,
+        "value": false
+    },
+    {
+        "type": "switch",
+        "field": "record",
+        "title": "统计",
+        "info": "",
+        "_fc_drag_tag": "switch",
+        "hidden": false,
+        "display": true,
+        "value": false
+    },
+    {
+        "type": "switch",
+        "field": "logencoding",
+        "title": "GBK",
+        "info": "",
+        "_fc_drag_tag": "switch",
+        "hidden": false,
+        "display": true,
+        "value": false
+    }
+]

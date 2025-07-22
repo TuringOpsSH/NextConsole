@@ -1,0 +1,14 @@
+{{define "nginx.httpConf"}}
+| 检查                                        | 实际值                                                                                                                                                | 预期值                      | 检查结果                              |
+|:---------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------|:----------------------------------|
+| 默认媒体类型                                   | {{range .problems}}{{if eq .id "nginx.pconf.default_type"}}{{.raw.default_type}}                                                                          | application/octet-stream  | {{Icon .level}}{{end}}{{end}}    |
+| 版本隐藏                                   | {{range .problems}}{{if eq .id "nginx.pconf.server_tokens"}}{{.raw.server_tokens}}                                                                            | off                    | {{Icon .level}}{{end}}{{end}} |
+| 高效传输模式                                 |{{range .problems}}{{if eq .id "nginx.pconf.sendfile"}}{{.raw.sendfile}}                                                                                    |on                       |{{Icon .level}}{{end}}{{end}}  |
+| tcp_nopush                                 | {{range .problems}}{{if eq .id "nginx.pconf.tcp_nopush"}}{{.raw.tcp_nopush}}                                                                                    |off                       |{{Icon .level}}{{end}}{{end}}  |
+| 禁用Nagle算法                                |{{range .problems}}{{if eq .id "nginx.pconf.tcp_nodelay"}}{{.raw.tcp_nodelay}}                                                                                    |off                       |{{Icon .level}}{{end}}{{end}}  |
+| keepalive_timeout                             | {{range .problems}}{{if eq .id "nginx.pconf.keepalive_timeout"}}{{.raw.keepalive_timeout}}                                                               | 75s                   | {{Icon .level}}{{end}}{{end}}  |
+| resolver_timeout                              | {{range .problems}}{{if eq .id "nginx.pconf.resolver_timeout"}}{{.raw.resolver_timeout}}                                                                 | 30s                  | {{Icon .level}}{{end}}{{end}}     |
+| 目标列表策略                                   | {{range .problems}}{{if eq .id "nginx.pconf.autoindex"}}{{.raw.autoindex}}                                                                                | off                    | {{Icon .level}}{{end}}{{end}}     |
+| 打开文件缓存                                | {{range .problems}}{{if eq .id "nginx.pconf.proxy_cache_path"}}{{.raw.proxy_cache_path}}                                                                    |off                  | {{Icon .level}}{{end}}{{end}}     |
+{{end}} 
+

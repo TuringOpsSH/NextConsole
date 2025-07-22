@@ -1,0 +1,372 @@
+{
+    "TomcatLog": [
+        {
+            "logs": [
+                {
+                    "code": "org.apache.tomcat.util.digester.SetPropertiesRule.begin [SetPropertiesRule]{Context/Valve} Setting property 'allow' to '*' did not find a matching property.",
+                    "count": "2",
+                    "detail": "[SetPropertiesRule]{Context/Valve} Setting property 'allow' to '*' did not find a matching property. ",
+                    "level": "WARNING",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.tomcat.util.digester.SetPropertiesRule.begin",
+                    "time": "2022-07-20 10:18:08"
+                },
+                {
+                    "code": "org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesJdbc JDBC driver de-registration failed for web application [manager]",
+                    "count": "1",
+                    "detail": "JDBC driver de-registration failed for web application [manager] \tjava.lang.NullPointerException\t\tat org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesJdbc(WebappClassLoaderBase.java:1729)\t\tat org.apache.catalina.loader.WebappClassLoaderBase.clearReferences(WebappClassLoaderBase.java:1668)\t\tat org.apache.catalina.loader.WebappClassLoaderBase.stop(WebappClassLoaderBase.java:1605)\t\tat org.apache.catalina.loader.WebappLoader.stopInternal(WebappLoader.java:455)\t\tat org.apache.catalina.util.LifecycleBase.stop(LifecycleBase.java:257)\t\tat org.apache.catalina.core.StandardContext.stopInternal(StandardContext.java:5505)\t\tat org.apache.catalina.util.LifecycleBase.stop(LifecycleBase.java:257)\t\tat org.apache.catalina.core.ContainerBase.removeChild(ContainerBase.java:844)\t\tat org.apache.catalina.startup.HostConfig.undeploy(HostConfig.java:1458)\t\tat org.apache.catalina.startup.HostConfig.checkResources(HostConfig.java:1383)\t\tat org.apache.catalina.startup.HostConfig.check(HostConfig.java:1646)\t\tat org.apache.catalina.startup.HostConfig.lifecycleEvent(HostConfig.java:314)\t\tat org.apache.catalina.util.LifecycleBase.fireLifecycleEvent(LifecycleBase.java:123)\t\tat org.apache.catalina.core.ContainerBase.backgroundProcess(ContainerBase.java:1170)\t\tat org.apache.catalina.core.ContainerBase$ContainerBackgroundProcessor.processChildren(ContainerBase.java:1396)\t\tat org.apache.catalina.core.ContainerBase$ContainerBackgroundProcessor.processChildren(ContainerBase.java:1400)\t\tat org.apache.catalina.core.ContainerBase$ContainerBackgroundProcessor.run(ContainerBase.java:1368)\t\tat java.lang.Thread.run(Thread.java:748)",
+                    "level": "WARNING",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesJdbc",
+                    "time": "2022-07-20 11:00:17"
+                },
+                {
+                    "code": "org.apache.tomcat.util.net.NioSelectorPool.getSharedSelector Using a shared selector for servlet write/read",
+                    "count": "2",
+                    "detail": "Using a shared selector for servlet write/read ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.tomcat.util.net.NioSelectorPool.getSharedSelector",
+                    "time": "2021-10-28 21:26:59"
+                },
+                {
+                    "code": "org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.endorsed.dirs=/home/tomcat/apache-tomcat-8.0.45/endorsed",
+                    "count": "1",
+                    "detail": "Command line argument: -Djava.endorsed.dirs=/home/tomcat/apache-tomcat-8.0.45/endorsed ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.VersionLoggerListener.log",
+                    "time": "2021-10-28 21:26:58"
+                },
+                {
+                    "code": "org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/home/tomcat/apache-tomcat-8.0.45",
+                    "count": "1",
+                    "detail": "Command line argument: -Dcatalina.base=/home/tomcat/apache-tomcat-8.0.45 ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.VersionLoggerListener.log",
+                    "time": "2021-10-28 21:26:58"
+                },
+                {
+                    "code": "org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/home/tomcat/apache-tomcat-8.0.45/temp",
+                    "count": "1",
+                    "detail": "Command line argument: -Djava.io.tmpdir=/home/tomcat/apache-tomcat-8.0.45/temp ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.VersionLoggerListener.log",
+                    "time": "2021-10-28 21:26:58"
+                },
+                {
+                    "code": "org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler [\"ajp-nio-8009\"]",
+                    "count": "1",
+                    "detail": "Initializing ProtocolHandler [\"ajp-nio-8009\"] ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.coyote.AbstractProtocol.init",
+                    "time": "2021-10-28 21:26:59"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/host-manager has finished in 46 ms",
+                    "count": "1",
+                    "detail": "Deployment of web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/host-manager has finished in 46 ms ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployDirectory",
+                    "time": "2021-10-28 21:27:34"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/manager",
+                    "count": "1",
+                    "detail": "Deploying web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/manager ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployDirectory",
+                    "time": "2021-10-28 21:27:34"
+                },
+                {
+                    "code": "org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler [\"http-nio-8080\"]",
+                    "count": "1",
+                    "detail": "Initializing ProtocolHandler [\"http-nio-8080\"] ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.coyote.AbstractProtocol.init",
+                    "time": "2021-10-28 21:26:59"
+                },
+                {
+                    "code": "org.apache.catalina.startup.Catalina.load Initialization processed in 2600 ms",
+                    "count": "1",
+                    "detail": "Initialization processed in 2600 ms ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.Catalina.load",
+                    "time": "2021-10-28 21:26:59"
+                },
+                {
+                    "code": "org.apache.coyote.http11.AbstractHttp11Processor.process Error parsing HTTP request header",
+                    "count": "1",
+                    "detail": "Error parsing HTTP request header  Note: further occurrences of HTTP header parsing errors will be logged at DEBUG level. java.lang.IllegalArgumentException: Request header is too large\tat org.apache.coyote.http11.AbstractNioInputBuffer.parseHeaders(AbstractNioInputBuffer.java:395)\tat org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1061)\tat org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:684)\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1533)\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1489)\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\tat java.lang.Thread.run(Thread.java:748)",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.coyote.http11.AbstractHttp11Processor.process",
+                    "time": "2021-10-28 19:30:15"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/examples",
+                    "count": "1",
+                    "detail": "Deploying web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/examples ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployDirectory",
+                    "time": "2021-10-28 21:27:34"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/manager has finished in 44 ms",
+                    "count": "1",
+                    "detail": "Deployment of web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/manager has finished in 44 ms ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployDirectory",
+                    "time": "2021-10-28 21:27:35"
+                },
+                {
+                    "code": "org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/home/tomcat/apache-tomcat-8.0.45",
+                    "count": "1",
+                    "detail": "Command line argument: -Dcatalina.home=/home/tomcat/apache-tomcat-8.0.45 ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.VersionLoggerListener.log",
+                    "time": "2021-10-28 21:26:58"
+                },
+                {
+                    "code": "org.apache.catalina.core.StandardEngine.startInternal Starting Servlet Engine: Apache Tomcat/8.0.45",
+                    "count": "1",
+                    "detail": "Starting Servlet Engine: Apache Tomcat/8.0.45 ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.core.StandardEngine.startInternal",
+                    "time": "2021-10-28 21:26:59"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive /home/tomcat/apache-tomcat-8.0.45/webapps/ROOT.war has finished in 34,727 ms",
+                    "count": "1",
+                    "detail": "Deployment of web application archive /home/tomcat/apache-tomcat-8.0.45/webapps/ROOT.war has finished in 34,727 ms ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployWAR",
+                    "time": "2021-10-28 21:27:34"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/docs has finished in 44 ms",
+                    "count": "1",
+                    "detail": "Deployment of web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/docs has finished in 44 ms ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployDirectory",
+                    "time": "2021-10-28 21:27:34"
+                },
+                {
+                    "code": "org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048",
+                    "count": "1",
+                    "detail": "Command line argument: -Djdk.tls.ephemeralDHKeySize=2048 ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.VersionLoggerListener.log",
+                    "time": "2021-10-28 21:26:58"
+                },
+                {
+                    "code": "org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib",
+                    "count": "1",
+                    "detail": "The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.core.AprLifecycleListener.lifecycleEvent",
+                    "time": "2021-10-28 21:26:58"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/examples has finished in 615 ms",
+                    "count": "1",
+                    "detail": "Deployment of web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/examples has finished in 615 ms ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployDirectory",
+                    "time": "2021-10-28 21:27:34"
+                },
+                {
+                    "code": "org.apache.catalina.startup.VersionLoggerListener.log Server version:        Apache Tomcat/8.0.45",
+                    "count": "1",
+                    "detail": "Server version:        Apache Tomcat/8.0.45 ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.VersionLoggerListener.log",
+                    "time": "2021-10-28 21:26:58"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive /home/tomcat/apache-tomcat-8.0.45/webapps/ROOT.war",
+                    "count": "1",
+                    "detail": "Deploying web application archive /home/tomcat/apache-tomcat-8.0.45/webapps/ROOT.war ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployWAR",
+                    "time": "2021-10-28 21:26:59"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/docs",
+                    "count": "1",
+                    "detail": "Deploying web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/docs ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployDirectory",
+                    "time": "2021-10-28 21:27:34"
+                },
+                {
+                    "code": "org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler [\"http-nio-8080\"]",
+                    "count": "1",
+                    "detail": "Starting ProtocolHandler [\"http-nio-8080\"] 2",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.coyote.AbstractProtocol.start",
+                    "time": "2021-10-28 21:27:35"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/host-manager",
+                    "count": "1",
+                    "detail": "Deploying web application directory /home/tomcat/apache-tomcat-8.0.45/webapps/host-manager ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployDirectory",
+                    "time": "2021-10-28 21:27:34"
+                },
+                {
+                    "code": "org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources",
+                    "count": "1",
+                    "detail": "Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.VersionLoggerListener.log",
+                    "time": "2021-10-28 21:26:58"
+                },
+                {
+                    "code": "org.apache.catalina.core.StandardService.startInternal Starting service Catalina",
+                    "count": "1",
+                    "detail": "Starting service Catalina ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.core.StandardService.startInternal",
+                    "time": "2021-10-28 21:26:59"
+                },
+                {
+                    "code": "org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.",
+                    "count": "1",
+                    "detail": "At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time. ",
+                    "level": "INFO",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.jasper.servlet.TldScanner.scanJars",
+                    "time": "2021-10-28 21:27:12"
+                },
+                {
+                    "code": "org.apache.tomcat.util.net.NioEndpoint$Poller.run",
+                    "count": "8",
+                    "detail": "  java.lang.OutOfMemoryError: Java heap space5",
+                    "level": "SEVERE",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.tomcat.util.net.NioEndpoint$Poller.run",
+                    "time": "2021-10-29 00:22:49"
+                },
+                {
+                    "code": "org.apache.tomcat.util.net.NioEndpoint$Acceptor.run",
+                    "count": "2",
+                    "detail": "  java.lang.OutOfMemoryError: Java heap space\tat java.nio.HeapByteBuffer.\u003cinit\u003e(HeapByteBuffer.java:57)",
+                    "level": "SEVERE",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.tomcat.util.net.NioEndpoint$Acceptor.run",
+                    "time": "2021-10-29 00:22:49"
+                },
+                {
+                    "code": "org.apache.tomcat.util.modeler.Registry.unregisterComponent Error unregistering mbean",
+                    "count": "2",
+                    "detail": "Error unregistering mbean   java.lang.OutOfMemoryError: Java heap space",
+                    "level": "SEVERE",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.tomcat.util.modeler.Registry.unregisterComponent",
+                    "time": "2021-10-29 00:22:49"
+                },
+                {
+                    "code": "org.apache.catalina.startup.HostConfig.deployDirectory Error deploying web application directory [/app/apache-tomcat-8.5.73/webapps/manager]",
+                    "count": "1",
+                    "detail": "Error deploying web application directory [/app/apache-tomcat-8.5.73/webapps/manager] \tjava.lang.IllegalStateException: Error starting child\t\tat org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:757)\t\tat org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:727)\t\tat org.apache.catalina.core.StandardHost.addChild(StandardHost.java:695)\t\tat org.apache.catalina.startup.HostConfig.deployDirectory(HostConfig.java:1177)\t\tat org.apache.catalina.startup.HostConfig$DeployDirectory.run(HostConfig.java:1925)\t\tat java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)\t\tat java.util.concurrent.FutureTask.run(FutureTask.java:266)\t\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\t\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\t\tat java.lang.Thread.run(Thread.java:748)\tCaused by: org.apache.catalina.LifecycleException: One or more invalid configuration settings were provided for the Remote[Addr|Host]Valve which prevented the Valve and its parent containers from starting\t\tat org.apache.catalina.valves.RequestFilterValve.initInternal(RequestFilterValve.java:347)\t\tat org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:136)\t\tat org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:173)\t\tat org.apache.catalina.core.StandardPipeline.startInternal(StandardPipeline.java:175)\t\tat org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183)\t\tat org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:5142)\t\tat org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183)\t\tat org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:753)\t\t... 9 more",
+                    "level": "SEVERE",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.startup.HostConfig.deployDirectory",
+                    "time": "2022-07-20 10:18:08"
+                },
+                {
+                    "code": "org.apache.catalina.core.ContainerBase.addChildInternal ContainerBase.addChild: start:",
+                    "count": "1",
+                    "detail": "ContainerBase.addChild: start: \torg.apache.catalina.LifecycleException: One or more invalid configuration settings were provided for the Remote[Addr|Host]Valve which prevented the Valve and its parent containers from starting\t\tat org.apache.catalina.valves.RequestFilterValve.initInternal(RequestFilterValve.java:347)\t\tat org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:136)\t\tat org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:173)\t\tat org.apache.catalina.core.StandardPipeline.startInternal(StandardPipeline.java:175)\t\tat org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183)\t\tat org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:5142)\t\tat org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183)\t\tat org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:753)\t\tat org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:727)\t\tat org.apache.catalina.core.StandardHost.addChild(StandardHost.java:695)\t\tat org.apache.catalina.startup.HostConfig.deployDirectory(HostConfig.java:1177)\t\tat org.apache.catalina.startup.HostConfig$DeployDirectory.run(HostConfig.java:1925)\t\tat java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)\t\tat java.util.concurrent.FutureTask.run(FutureTask.java:266)\t\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\t\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\t\tat java.lang.Thread.run(Thread.java:748)",
+                    "level": "SEVERE",
+                    "module": "",
+                    "msg": "",
+                    "origin": "org.apache.catalina.core.ContainerBase.addChildInternal",
+                    "time": "2022-07-20 10:18:08"
+                }
+            ]
+        }
+    ],
+    "edith": {
+        "version": "v1.0.6-211-gbffe3c8",
+        "command": "edith tomcat get-log --path /home/vagrant/apache-tomcat-8.5.75 -o /edith_data -f json",
+        "flags": {
+            "format": "json",
+            "output": "/edith_data",
+            "path": "/home/vagrant/apache-tomcat-8.5.75"
+        }
+    },
+    "host": {
+        "hostname": "redhat6",
+        "uptime": 678059,
+        "bootTime": 1646891530,
+        "procs": 116,
+        "os": "linux",
+        "platform": "redhat",
+        "platformFamily": "rhel",
+        "platformVersion": "6.10",
+        "kernelVersion": "2.6.32-754.el6.x86_64",
+        "kernelArch": "x86_64",
+        "virtualizationSystem": "vbox",
+        "virtualizationRole": "guest",
+        "hostId": "b9fc1f7d-9245-4da7-8f21-dd060166e931"
+    }
+}

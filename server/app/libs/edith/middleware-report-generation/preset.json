@@ -1,0 +1,60 @@
+[
+    {
+        "type": "input",
+        "field": "customer",
+        "title": "客户",
+        "info": "",
+        "props": {
+            "placeholder": "XX银行"
+        },
+        "_fc_drag_tag": "input",
+        "hidden": false,
+        "display": true,
+        "$required": "",
+        "value": "中亦科技",
+        "on": {},
+        "options": [],
+        "children": []
+    },
+    {
+        "type": "input",
+        "field": "name",
+        "title": "姓名",
+        "info": "",
+        "_fc_drag_tag": "input",
+        "hidden": false,
+        "display": true,
+        "$required": "",
+        "value": "我的姓名",
+        "props": {},
+        "on": {},
+        "options": [],
+        "children": []
+    },
+    {
+        "type": "input",
+        "field": "email",
+        "title": "邮箱",
+        "info": "",
+        "props": {
+            "placeholder": "XX@163.com"
+        },
+        "_fc_drag_tag": "input",
+        "hidden": false,
+        "$required": "",
+        "display": true,
+        "value": "xingming.yang@ce-service.com.cn",
+        "validate": [
+            {
+                "trigger": "change",
+                "mode": "pattern",
+                "message": "邮箱可能不符合要求",
+                "pattern": "^[a-z0-9]+([._\\\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$",
+                "type": "string"
+            }
+        ],
+        "on": {},
+        "options": [],
+        "children": []
+    }
+]

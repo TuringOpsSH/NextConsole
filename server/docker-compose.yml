@@ -1,0 +1,196 @@
+version: '3.8'
+
+services:
+  redis:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/redis:latest
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ncRedisPassword
+    sysctls: # 容器内参数覆盖
+      - net.core.somaxconn=1024
+    networks: # 加入自定义网络
+      - app_network
+
+  db:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: ncMysqlRootPassword
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+    volumes:
+      - ./data/db:/var/lib/mysql
+      - ./config/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: >
+      --default-time-zone='+08:00' 
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    networks:
+      - app_network
+
+  server:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc-server:2.2.0
+    volumes:
+      #- ./config/server/config_private.py:/app/app/config/config_private.py
+      - ./data/server:/app/data
+    environment:
+      FLASK_MODEL: "private"
+      TZ: "Asia/Shanghai"  # 添加这一行设置时区
+    ports:
+      - "5124:5123"
+    depends_on:
+      - redis
+      - db
+    networks: # 加入自定义网络
+      - app_network
+
+  admin:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc-admin:2.2.0
+    volumes:
+      #- ./config/admin/config_private.py:/app/app/config/config_private.py
+      - ./data/server:/app/data
+    environment:
+      FLASK_MODEL: "private"
+      TZ: "Asia/Shanghai"
+    ports:
+      - "5012:5011"
+    depends_on:
+      - server
+    networks:
+      - app_network
+
+  web:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc-web:2.2.0
+    ports:
+      - "8080:6668"
+      - "8082:6669"
+    volumes:
+      #- ./config/web/nginx.conf:/etc/nginx/nginx.conf
+      - ./data/server/download:/data/downloads  # 用户只需改这里
+      - ./data/server:/data
+    restart: unless-stopped
+    depends_on:
+      - server
+      - admin
+    networks: # 加入自定义网络
+      - app_network
+
+  minio: # 对象存储 250MB
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/next_console_minio:v2.1.0
+    ports:
+      - "9007:9000"
+      - "9008:9001"
+    environment:
+      TZ: "Asia/Shanghai"
+      MINIO_FORCE_NEW_KEYS: "yes"
+      MINIO_ROOT_USER: "nextconsole"
+      MINIO_ROOT_PASSWORD: "ZFAHcBg9Wo"
+    user: "${UID}:${GID}"
+    volumes:
+      - ./data/rag/minio:/bitnami/minio/data
+    command: bash /opt/bitnami/scripts/minio/run.sh
+    networks: # 加入自定义网络
+      - app_network
+
+  minio_init:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/next_console_minio_mc:v2.1.0
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c '
+      sleep 10;
+      mc alias set nc http://minio:9000 nextconsole ZFAHcBg9Wo;
+      mc mb nc/nextconsole nc/nextconsole-system;
+      mc admin user add nc lIxMULWbIaPIHtKxyfGa oKNPe8NrQUYJzYvoa7dIW4AVCzqehA1qBM0ckkP3;
+      mc admin policy attach nc consoleAdmin diagnostics readonly readwrite --user lIxMULWbIaPIHtKxyfGa;
+      exit 0;
+      '
+    networks: # 加入自定义网络
+      - app_network
+
+  mongodb: # NOSQL数据库 723MB
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/next_console_mongodb:v2.1.0
+    environment:
+      TZ: "Asia/Shanghai"
+    ports:
+      - "27017:27017"
+    user: "${UID}:${GID}"
+    volumes:
+      - ./data/rag/mongodb:/bitnami/mongodb
+    networks: # 加入自定义网络
+      - app_network
+
+  celery_flower: # 任务队列 
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/next_console_rag:v2.1.0
+    environment:
+      TZ: "Asia/Shanghai"
+    ports:
+      - "5555:5555"
+    command: celery --broker=mongodb://mongodb:27017/celery_broker flower --persistent=True --db=/data/state.db
+    volumes:
+      - ./data/rag/flower:/data
+    networks: # 加入自定义网络
+      - app_network
+
+  tika: # 文档解析服务
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/next_console_ingestor:v2.1.1
+    environment:
+      TZ: "Asia/Shanghai"
+    ports:
+      - "5001:5001"
+    networks: # 加入自定义网络
+      - app_network
+
+  api: # RAG 服务地址 1.58GB
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/next_console_rag:v2.1.0
+    ports:
+      - "9092:9000"
+    depends_on:
+      - server
+      - indexer
+    environment:
+      RAG_EMBEDDING_HOST: "http://server:5123/next_console/knowledge_center"
+      RAG_SQLITE_ENDPOINT: "http://faqrag:9099"
+      MINIO_ENDPOINT: 'http://minio:9000'
+      MINIO_ENDPOINT_SHARED: 'http://minio:9000'
+      MONGODB_ENDPOINT: "mongodb://mongodb:27017/"
+      DEBUG: "false"
+    command: python3 /workspace/rag_api.py
+    networks:
+      - app_network
+
+  faqrag: # FAQ RAG
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/next_console_rag:v2.1.0
+    ports:
+      - "9099:9099"
+    depends_on:
+      - server
+    environment:
+        EMBEDDING_RETRY_HOSTS: 'http://server:5123/next_console/knowledge_center'
+        MINIO_ENDPOINT: 'http://minio:9000'
+    command: python3 /workspace/rag_sqlite.py
+    networks:
+      - app_network
+
+  indexer: # RAG 索引服务 ——apa
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/next_console_rag:v2.1.0
+    environment:
+      TZ: "Asia/Shanghai"
+      RAG_EMBEDDING_ENDPOINT: "http://server:5123/next_console/knowledge_center/embedding"
+      MONGODB_ENDPOINT: "mongodb://mongodb:27017/"
+      TIKA_ENDPOINT: "http://tika:5001"
+      MINIO_ENDPOINT: 'http://minio:9000'
+      SPLIT_USE_AMS: 'false'
+    working_dir: /workspace
+    depends_on: 
+      - server
+    command: celery -A indexer worker --pool threads --loglevel=info -c 8
+    networks:
+      - app_network
+
+networks: # 定义共享网络
+  app_network:
+    driver: bridge

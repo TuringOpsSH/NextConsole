@@ -1,0 +1,2517 @@
+{
+    "checks": [
+        {
+            "expr": "",
+            "rule": "pre.stat",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "post.stat",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.date",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.appname",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.summary",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.byte2mb",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.orderby",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.version",
+            "params": []
+        },
+        {
+            "expr": "//SysConfs/*/etchosts",
+            "rule": "linux.etchosts",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "etchosts"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/sysctla",
+            "rule": "oracle.sysctla",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "sysctla"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/mem",
+            "rule": "oracle.mem",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "mem"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/mount",
+            "rule": "oracle.mount",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "mount"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysStatus/*/dfihP",
+            "rule": "linux.inodeUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "inodeUsedPercent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/disk",
+            "rule": "linux.diskUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "diskUsage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/zone",
+            "rule": "linux.zone",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "zone"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/archive_dest_status",
+            "rule": "oracle.archive_dest_status",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "archive_dest_status"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/archive_gap",
+            "rule": "oracle.archive_gap",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "archive_gap"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/archsize",
+            "rule": "oracle.archsize",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "archsize"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/asm_disk_detail",
+            "rule": "oracle.asm_disk_detail",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "asm_disk_detail"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/audit",
+            "rule": "oracle.audit",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "audit"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/audit12c",
+            "rule": "oracle.audit12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "audit12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/audittrail",
+            "rule": "oracle.audittrail",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "audittrail"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/audittrail12c",
+            "rule": "oracle.audittrail12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "audittrail12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/baseinfo",
+            "rule": "oracle.baseinfo",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "baseinfo"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/baseinfo12c",
+            "rule": "oracle.baseinfo12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "baseinfo12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/bitcoin",
+            "rule": "oracle.bitcoin",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "bitcoin"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/comp",
+            "rule": "oracle.comp",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "comp"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/comp12c",
+            "rule": "oracle.comp12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "comp12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/controlfile",
+            "rule": "oracle.controlfile",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "controlfile"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/cursor_monitor",
+            "rule": "oracle.cursor_monitor",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cursor_monitor"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/datafile",
+            "rule": "oracle.datafile",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "datafile"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/datafile12c",
+            "rule": "oracle.datafile12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "datafile12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/dataguard_stats",
+            "rule": "oracle.dataguard_stats",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dataguard_stats"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/dataguard_status",
+            "rule": "oracle.dataguard_status",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dataguard_status"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/db_time_per_second",
+            "rule": "oracle.db_time_per_second",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_time_per_second"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/dgapply",
+            "rule": "oracle.dgapply",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dgapply"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/dgdelay",
+            "rule": "oracle.dgdelay",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dgdelay"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/diskgroup",
+            "rule": "oracle.diskgroup",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "diskgroup"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+		{
+            "expr": "//OracleStatus/*/compatible_rdbms",
+            "rule": "oracle.compatible_rdbms",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "compatible_rdbms"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/disk_same_size",
+            "rule": "oracle.disk_same_size",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "disk_same_size"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/dlm_traffic",
+            "rule": "oracle.dlm_traffic",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dlm_traffic"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/dstcheck",
+            "rule": "oracle.dstcheck",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dstcheck"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/efficent",
+            "rule": "oracle.efficent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "efficent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/failgroup",
+            "rule": "oracle.failgroup",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "failgroup"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/failgroup_summary",
+            "rule": "oracle.failgroup_summary",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "failgroup_summary"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/flashback",
+            "rule": "oracle.flashback",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "flashback"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/flashback12c",
+            "rule": "oracle.flashback12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "flashback12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/foreignkey",
+            "rule": "oracle.foreignkey",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "foreignkey"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/foreignkey12c",
+            "rule": "oracle.foreignkey12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "foreignkey12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/fullscan",
+            "rule": "oracle.fullscan",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "fullscan"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/fullscan12c",
+            "rule": "oracle.fullscan12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "fullscan12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/crsctlstat",
+            "rule": "oracle.crsctlstat",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "crsctlstat"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleLogs/*/crsctlstat",
+            "rule": "oracle.crsctlstat",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "crsctlstat"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/ges_traffic",
+            "rule": "oracle.ges_traffic",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "ges_traffic"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/hiddenparms",
+            "rule": "oracle.hiddenparms",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "hiddenparms"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/hist_undo_stat",
+            "rule": "oracle.hist_undo_stat",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "hist_undo_stat"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/indicator",
+            "rule": "oracle.indicator",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "indicator"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/invalidcons",
+            "rule": "oracle.invalidcons",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "invalidcons"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/invalidcons12c",
+            "rule": "oracle.invalidcons12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "invalidcons12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/invalididx",
+            "rule": "oracle.invalididx",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "invalididx"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/invalididx12c",
+            "rule": "oracle.invalididx12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "invalididx12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/invalidobj",
+            "rule": "oracle.invalidobj",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "invalidobj"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/invalidobj12c",
+            "rule": "oracle.invalidobj12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "invalidobj12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/invalidtrigger",
+            "rule": "oracle.invalidtrigger",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "invalidtrigger"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/invalidtrigger12c",
+            "rule": "oracle.invalidtrigger12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "invalidtrigger12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/jobs",
+            "rule": "oracle.jobs",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "jobs"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/jobs12c",
+            "rule": "oracle.jobs12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "jobs12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/lmscount",
+            "rule": "oracle.lmscount",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "lmscount"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/logic_read_per_second",
+            "rule": "oracle.logic_read_per_second",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "logic_read_per_second"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/logswitch",
+            "rule": "oracle.logswitch",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "logswitch"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/onlinelog",
+            "rule": "oracle.onlinelog",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "onlinelog"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/optimizer_stats_advisor",
+            "rule": "oracle.optimizer_stats_advisor",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "optimizer_stats_advisor"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/optimizer_stats_advisor12c",
+            "rule": "oracle.optimizer_stats_advisor12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "optimizer_stats_advisor12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/parameter",
+            "rule": "oracle.parameter",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "parameter"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/parameter12c",
+            "rule": "oracle.parameter12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "parameter12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/patchapply",
+            "rule": "oracle.patchapply",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "patchapply"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/patchapply12c",
+            "rule": "oracle.patchapply12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "patchapply12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/pdbsavedstate",
+            "rule": "oracle.pdbsavedstate",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pdbsavedstate"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/pdbstat",
+            "rule": "oracle.pdbstat",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pdbstat"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/physic_read_per_second",
+            "rule": "oracle.physic_read_per_second",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "physic_read_per_second"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/profile",
+            "rule": "oracle.profile",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "profile"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/profile12c",
+            "rule": "oracle.profile12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "profile12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/resourcelimit",
+            "rule": "oracle.resourcelimit",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "resourcelimit"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/resourcelimit12c",
+            "rule": "oracle.resourcelimit12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "resourcelimit12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/rman",
+            "rule": "oracle.rman",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "rman"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/scheduler_windows",
+            "rule": "oracle.scheduler_windows",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "scheduler_windows"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/scnhealthcheck",
+            "rule": "oracle.scnhealthcheck",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "scnhealthcheck"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/sequence",
+            "rule": "oracle.sequence",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "sequence"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/sequence12c",
+            "rule": "oracle.sequence12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "sequence12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/snapsetting",
+            "rule": "oracle.snapsetting",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "snapsetting"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/snapsetting12c",
+            "rule": "oracle.snapsetting12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "snapsetting12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/spfile_warning",
+            "rule": "oracle.spfile_warning",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "spfile_warning"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/stats_job_running",
+            "rule": "oracle.stats_job_running",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "stats_job_running"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/sysdba",
+            "rule": "oracle.sysdba",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "sysdba"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/tbscheck",
+            "rule": "oracle.tbscheck",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tbscheck"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/tbscheck12c",
+            "rule": "oracle.tbscheck12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tbscheck12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/tbs_fragement_pct",
+            "rule": "oracle.tbs_fragement_pct",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tbs_fragement_pct"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/timezone",
+            "rule": "oracle.timezone",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "timezone"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/unified_audit",
+            "rule": "oracle.unified_audit",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "unified_audit"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/unified_audit_12c",
+            "rule": "oracle.unified_audit_12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "unified_audit_12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/unified_audit_option",
+            "rule": "oracle.unified_audit_option",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "unified_audit_option"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/unified_audit_purge",
+            "rule": "oracle.unified_audit_purge",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "unified_audit_purge"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/userinfo",
+            "rule": "oracle.userinfo",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "userinfo"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/userinfo12c",
+            "rule": "oracle.userinfo12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "userinfo12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/userpriv",
+            "rule": "oracle.userpriv",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "userpriv"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/userpriv12c",
+            "rule": "oracle.userpriv12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "userpriv12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/sequence_cache",
+            "rule": "oracle.sequence_cache",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "sequence_cache"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/autotask",
+            "rule": "oracle.autotask",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "autotask"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/version",
+            "rule": "oracle.version",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "version"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/lsinventory",
+            "rule": "oracle.lsinventory",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "lsinventory"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/lspatches",
+            "rule": "oracle.lspatches",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "lspatches"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/topevent10g",
+            "rule": "oracle.topevent10g",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "topevent10g"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/topevent",
+            "rule": "oracle.topevent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "topevent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleLogs/*/awkalert",
+            "rule": "oracle.awkalert",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "awkalert"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleLogs/*/crsalert",
+            "rule": "oracle.crsalert",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "crsalert"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleLogs/*/lo",
+            "rule": "oracle.lo",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "lo"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/recyclebin",
+            "rule": "oracle.recyclebin",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "recyclebin"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/recyclebin_12c",
+            "rule": "oracle.recyclebin_12c",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "recyclebin_12c"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/limits",
+            "rule": "oracle.limits",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "limits"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/etchosts",
+            "rule": "oracle.etchosts",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "etchosts"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/fspct",
+            "rule": "oracle.fspct",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "fspct"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleStatus/*/inodepct",
+            "rule": "oracle.inodepct",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "inodepct"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/osparm",
+            "rule": "oracle.osparm",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "osparm"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//OracleConfs/*/dg_parameters",
+            "rule": "oracle.dg_parameters",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dg_parameters"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../instance/sid"
+                },
+                {
+                    "key": "_dbversion",
+                    "expr": "../instance/dbversion"
+                }
+            ]
+        }
+    ],
+    "rulesDir": "./rules"
+}

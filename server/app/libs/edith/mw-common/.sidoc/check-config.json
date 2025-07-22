@@ -1,0 +1,719 @@
+{
+    "checks": [
+        {
+            "expr": "",
+            "rule": "pre.stat",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "post.stat",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.date",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.appname",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.summary",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.byte2mb",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.orderby",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.version",
+            "params": []
+        },
+        {
+            "expr": "//ApacheStatus/*/top10ip",
+            "rule": "apache.top10ip",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "top10ip"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "httpd"
+                }
+            ]
+        },
+        {
+            "expr": "//ApacheStatus/*/pstatus",
+            "rule": "apache.pstatus",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pstatus"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "httpd"
+                }
+            ]
+        },
+        {
+            "expr": "//ApacheStatus/*/gt500ip",
+            "rule": "apache.gt500ip",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "gt500ip"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "httpd"
+                }
+            ]
+        },
+        {
+            "expr": "//ApacheLogs/*/errlog",
+            "rule": "apache.errlog",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "errlog"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "httpd"
+                }
+            ]
+        },
+        {
+            "expr": "//ApacheStatus/*/errreq",
+            "rule": "apache.errreq",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "errreq"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "httpd"
+                }
+            ]
+        },
+        {
+            "expr": "//ApacheStatus/*/sss",
+            "rule": "apache.status",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "status"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "httpd"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/etchosts",
+            "rule": "linux.etchosts",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "etchosts"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/sysctla",
+            "rule": "oracle.sysctla",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "sysctla"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/mem",
+            "rule": "oracle.mem",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "mem"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/mount",
+            "rule": "oracle.mount",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "mount"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysStatus/*/dfihP",
+            "rule": "linux.inodeUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "inodeUsedPercent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/disk",
+            "rule": "linux.diskUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "diskUsage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/zone",
+            "rule": "linux.zone",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "zone"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/top10ip",
+            "rule": "nginx.top10ip",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "top10ip"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/gt500ip",
+            "rule": "nginx.gt500ip",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "gt500ip"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxConfs/*/anp",
+            "rule": "nginx.anp",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "anp"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/gstat",
+            "rule": "nginx.gstat",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.gstat"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxLogs/*/errlog",
+            "rule": "nginx.errlog",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.errlog"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxConfs/*/gversion",
+            "rule": "nginx.gversion",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.gversion"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxConfs/*/pconf",
+            "rule": "nginx.pconf",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.pconf"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/tcpstate",
+            "rule": "nginx.tcpstate",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.tcpstate"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxConfs/*/confargs",
+            "rule": "nginx.confargs",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.confargs"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/cpuusage",
+            "rule": "nginx.cpuusage",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.cpuusage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "nginx"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/host",
+            "rule": "tomcat.host",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcatConfs.host"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "tomcat"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/serverConf",
+            "rule": "tomcat.serverConf",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcatConfs.serverConf"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "tomcat"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/webConf",
+            "rule": "tomcat.webConf",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcatConfs.webConf"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "tomcat"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/confRest",
+            "rule": "tomcat.confRest",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcatConfs.confRest"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "tomcat"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatLogs/*/TomcatLog",
+            "rule": "tomcat.logs",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcat.logs"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "tomcat"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/edith",
+            "rule": "tomcat.flags",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcat.flags"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "tomcat"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatStatus/*/TomcatStatus",
+            "rule": "tomcat.status",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcat.status"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "tomcat"
+                }
+            ]
+        },
+        {
+            "expr": "//ServerRuntime",
+            "rule": "wls.serverRuntime",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "serverRuntime"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../Name"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "wls"
+                }
+            ]
+        },
+        {
+            "expr": "//servers/*/logging",
+            "rule": "wls.logging",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "server"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../name"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "wls"
+                }
+            ]
+        },
+        {
+            "expr": "//dataSources/*",
+            "rule": "wls.dataSource",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "domain"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../../name"
+                },
+                {
+                    "key": "_dsname",
+                    "expr": "./name"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                },
+                {
+                    "key": "_software",
+                    "value": "wls"
+                }
+            ]
+        }
+    ],
+    "rulesDir": "./rules"
+}

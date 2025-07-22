@@ -1,0 +1,495 @@
+{
+  "checks": [
+    {
+      "expr": "",
+      "rule": "pre.stat",
+      "params": []
+    },
+    {
+      "expr": "",
+      "rule": "post.stat",
+      "params": []
+    },
+    {
+      "expr": "",
+      "rule": "func.date",
+      "params": []
+    },
+    {
+      "expr": "",
+      "rule": "func.appname",
+      "params": []
+    },
+    {
+      "expr": "",
+      "rule": "func.summary",
+      "params": []
+    },
+    {
+      "expr": "",
+      "rule": "func.byte2mb",
+      "params": []
+    },
+    {
+      "expr": "",
+      "rule": "func.orderby",
+      "params": []
+    },
+    {
+      "expr": "",
+      "rule": "func.simpleTable",
+      "params": []
+    },
+    {
+      "expr": "//SysConfs/*/host",
+      "rule": "win.host",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "KernelArch"
+        },
+        {
+          "key": "_name",
+          "expr": "hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/mem",
+      "rule": "win.memUsedPercent",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "memUsedPercent"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysStatus/*/cpupct",
+      "rule": "win.cpuUsedPercent",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "cpuUsedPercent"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/disk",
+      "rule": "win.diskUsedPercent",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "diskUsedPercent"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysStatus/*/load",
+      "rule": "win.cpuLoad",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "cpuLoad"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysStatus/*/conns",
+      "rule": "win.conns",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "conns"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/base",
+      "rule": "win.base",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "base"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/ifAdminNameChange",
+      "rule": "win.ifAdminNameChange",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "ifAdminNameChange"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/ifDisabledIPV6",
+      "rule": "win.ifDisabledIPV6",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "ifDisabledIPV6"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/ifDisabledGuest",
+      "rule": "win.ifDisabledGuest",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "ifDisabledGuest"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/ifNonDomainServerClosedShare",
+      "rule": "win.ifNonDomainServerClosedShare",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "ifNonDomainServerClosedShare"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/ifOperatingSystemActive",
+      "rule": "win.ifOperatingSystemActive",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "ifOperatingSystemActive"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/ifServiceDisabled",
+      "rule": "win.ifServiceDisabled",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "ifServiceDisabled"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/ifTaskPlanStartedAsDomainAdmin",
+      "rule": "win.ifTaskPlanStartedAsDomainAdmin",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "ifTaskPlanStartedAsDomainAdmin"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/memoryBeforeShutdown",
+      "rule": "win.memoryBeforeShutdown",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "memoryBeforeShutdown"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/defaultSharedFolder",
+      "rule": "win.defaultSharedFolder",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "defaultSharedFolder"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/whoExecutesTaskPlan",
+      "rule": "win.whoExecutesTaskPlan",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "whoExecutesTaskPlan"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/localUserInformation",
+      "rule": "win.localUserInformation",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "localUserInformation"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysLogs/*/recent10ErrorMsg",
+      "rule": "win.recent10ErrorMsg",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "recent10ErrorMsg"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/hardDiskSMARTInfo",
+      "rule": "win.hardDiskSMARTInfo",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "hardDiskSMARTInfo"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysConfs/*/processList",
+      "rule": "win.processList",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "processList"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_ip",
+          "expr": "../edith/ips"
+        }
+      ]
+    },
+    {
+      "expr": "//SysLogs/*/basicLogConfInfo",
+      "rule": "win.basicLogConfInfo",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "basicLogConfInfo"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_sid",
+          "expr": "../host/hostname"
+        }
+      ]
+    },
+    {
+      "expr": "//SysLogs/*/safeLogConfInfo",
+      "rule": "win.safeLogConfInfo",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "safeLogConfInfo"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_sid",
+          "expr": "../host/hostname"
+        }
+      ]
+    },
+    {
+      "expr": "//SysLogs/*/logStatusInfo",
+      "rule": "win.logStatusInfo",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "logStatusInfo"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_sid",
+          "expr": "../host/hostname"
+        }
+      ]
+    },
+    {
+      "expr": "//SysLogs/*/errorLogForMonth",
+      "rule": "win.errorLogForMonth",
+      "params": [
+        {
+          "key": "_scope",
+          "value": "errorLogForMonth"
+        },
+        {
+          "key": "_name",
+          "expr": "../host/hostname"
+        },
+        {
+          "key": "_sid",
+          "expr": "../host/hostname"
+        }
+      ]
+    }
+  ],
+  "rulesDir": "./rules"
+}

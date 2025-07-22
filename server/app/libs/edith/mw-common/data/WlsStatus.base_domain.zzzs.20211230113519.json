@@ -1,0 +1,379 @@
+{
+    "servers": [
+        {
+            "JVMRuntime": [
+                {
+                    "datetime": "2021-12-30 11:35:14",
+                    "metric": {
+                        "HeapFreeCurrent": "290",
+                        "HeapSizeCurrent": "502",
+                        "HeapUsedCurrent": "212"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:15",
+                    "metric": {
+                        "HeapFreeCurrent": "287",
+                        "HeapSizeCurrent": "502",
+                        "HeapUsedCurrent": "215"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:16",
+                    "metric": {
+                        "HeapFreeCurrent": "286",
+                        "HeapSizeCurrent": "502",
+                        "HeapUsedCurrent": "216"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:17",
+                    "metric": {
+                        "HeapFreeCurrent": "284",
+                        "HeapSizeCurrent": "502",
+                        "HeapUsedCurrent": "218"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:18",
+                    "metric": {
+                        "HeapFreeCurrent": "283",
+                        "HeapSizeCurrent": "502",
+                        "HeapUsedCurrent": "219"
+                    }
+                }
+            ],
+            "Name": "AdminServer",
+            "ServerRuntime": [
+                {
+                    "datetime": "2021-12-30 11:35:14",
+                    "metric": "RUNNING"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:15",
+                    "metric": "RUNNING"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:16",
+                    "metric": "RUNNING"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:17",
+                    "metric": "RUNNING"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:18",
+                    "metric": "RUNNING"
+                }
+            ],
+            "ThreadPoolRuntime": [
+                {
+                    "datetime": "2021-12-30 11:35:14",
+                    "metric": {
+                        "CompletedRequestCount": "30582",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:15",
+                    "metric": {
+                        "CompletedRequestCount": "30633",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:16",
+                    "metric": {
+                        "CompletedRequestCount": "30678",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:17",
+                    "metric": {
+                        "CompletedRequestCount": "30721",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:18",
+                    "metric": {
+                        "CompletedRequestCount": "30765",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                }
+            ]
+        },
+        {
+            "JDBCDataSourceRuntime": [
+                {
+                    "datetime": "2021-12-30 11:35:14",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-0",
+                        "state": "Running"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:15",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-0",
+                        "state": "Running"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:16",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-0",
+                        "state": "Running"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:17",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-0",
+                        "state": "Running"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:18",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-0",
+                        "state": "Running"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:14",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-1",
+                        "state": "Running"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:15",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-1",
+                        "state": "Running"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:16",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-1",
+                        "state": "Running"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:17",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-1",
+                        "state": "Running"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:18",
+                    "metric": {
+                        "ActiveConnectionsCurrentCount": "0",
+                        "ConnectionsTotalCount": "1",
+                        "HighestNumAvailable": "1",
+                        "NumAvailable": "1",
+                        "WaitingForConnectionTotal": "0",
+                        "jdbcName": "JDBC Data Source-1",
+                        "state": "Running"
+                    }
+                }
+            ],
+            "JVMRuntime": [
+                {
+                    "datetime": "2021-12-30 11:35:14",
+                    "metric": {
+                        "HeapFreeCurrent": "327",
+                        "HeapSizeCurrent": "468",
+                        "HeapUsedCurrent": "141"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:15",
+                    "metric": {
+                        "HeapFreeCurrent": "325",
+                        "HeapSizeCurrent": "468",
+                        "HeapUsedCurrent": "143"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:16",
+                    "metric": {
+                        "HeapFreeCurrent": "325",
+                        "HeapSizeCurrent": "468",
+                        "HeapUsedCurrent": "143"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:17",
+                    "metric": {
+                        "HeapFreeCurrent": "323",
+                        "HeapSizeCurrent": "468",
+                        "HeapUsedCurrent": "145"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:18",
+                    "metric": {
+                        "HeapFreeCurrent": "322",
+                        "HeapSizeCurrent": "468",
+                        "HeapUsedCurrent": "146"
+                    }
+                }
+            ],
+            "Name": "server1",
+            "ServerRuntime": [
+                {
+                    "datetime": "2021-12-30 11:35:14",
+                    "metric": "RUNNING"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:15",
+                    "metric": "RUNNING"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:16",
+                    "metric": "RUNNING"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:17",
+                    "metric": "RUNNING"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:18",
+                    "metric": "RUNNING"
+                }
+            ],
+            "ThreadPoolRuntime": [
+                {
+                    "datetime": "2021-12-30 11:35:14",
+                    "metric": {
+                        "CompletedRequestCount": "7009",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:15",
+                    "metric": {
+                        "CompletedRequestCount": "7036",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:16",
+                    "metric": {
+                        "CompletedRequestCount": "7062",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:17",
+                    "metric": {
+                        "CompletedRequestCount": "7093",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                },
+                {
+                    "datetime": "2021-12-30 11:35:18",
+                    "metric": {
+                        "CompletedRequestCount": "7118",
+                        "ExecuteThreadIdleCount": "1",
+                        "ExecuteThreadTotalCount": "6",
+                        "PendingUserRequestCount": "0"
+                    }
+                }
+            ]
+        },
+        {
+            "Name": "server2",
+            "ServerRuntime": [
+                {
+                    "datetime": "2021-12-30 11:35:14",
+                    "metric": "UNKNOWN"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:15",
+                    "metric": "UNKNOWN"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:16",
+                    "metric": "UNKNOWN"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:17",
+                    "metric": "UNKNOWN"
+                },
+                {
+                    "datetime": "2021-12-30 11:35:18",
+                    "metric": "UNKNOWN"
+                }
+            ]
+        }
+    ]
+}

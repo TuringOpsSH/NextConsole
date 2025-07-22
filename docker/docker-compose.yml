@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  redis:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc-redis:2.2.2
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ncRedisPassword
+    sysctls:
+      - net.core.somaxconn=1024
+    networks:
+      - app_network
+
+  db:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc-pg-17:2.2.2
+    environment:
+      POSTGRES_USER: next_console
+      POSTGRES_PASSWORD: ncDBPassword
+      POSTGRES_DB: next_console
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8"
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+      - ./config/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+
+  server:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc:2.2.2
+    command:  ["sh", "-c", "cd /app/server && /app/server/entrypoint.sh"]
+    volumes:
+      - ./config/server/config_private.py:/app/server/app/config/config_private.py
+      - ./data/server:/app/data
+    environment:
+      FLASK_MODEL: "private"
+      TZ: "Asia/Shanghai"
+      LANG: "C.UTF-8"
+      LC_ALL: "C.UTF-8"
+      PYTHONUTF8: 1
+    ports:
+      - "5124:5123"
+    depends_on:
+      - redis
+      - db
+    networks:
+      - app_network
+
+  server-worker:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc:2.2.2
+    command: ["sh", "-c", "cd /app/server && celery -A app.celery worker -l INFO -P gevent --concurrency=80 -Q nc_server_queue"]
+    volumes:
+      - ./config/server/config_private.py:/app/server/app/config/config_private.py
+      - ./data/server:/app/data
+    environment:
+      FLASK_MODEL: "private"
+      TZ: "Asia/Shanghai"
+    depends_on:
+      - server
+    networks:
+      - app_network
+
+
+  admin:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc:2.2.2
+    command: ["sh", "-c", "cd /app/admin && /app/admin/entrypoint.sh"]
+    volumes:
+      - ./config/admin/config_private.py:/app/admin/app/config/config_private.py
+      - ./data/server:/app/data
+    environment:
+      FLASK_MODEL: "private"
+      TZ: "Asia/Shanghai"
+    ports:
+      - "5012:5011"
+    depends_on:
+      - server
+    networks:
+      - app_network
+
+  admin-worker:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc:2.2.2
+    command: ["python", "/app/admin/run_admin_celery_worker.py"]
+    volumes:
+      - ./config/server/config_private.py:/app/server/app/config/config_private.py
+      - ./data/server:/app/data
+    environment:
+      FLASK_MODEL: "private"
+      TZ: "Asia/Shanghai"
+    depends_on:
+      - server
+    networks:
+      - app_network
+
+  web:
+    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc-web:2.2.2
+    ports:
+      - "8080:6668"
+      - "8082:6669"
+    volumes:
+      #- ./config/web/nginx.conf:/etc/nginx/nginx.conf
+      - ./data/server/download:/data/downloads
+      - ./data/server:/data
+    restart: unless-stopped
+    depends_on:
+      - server
+      - admin
+    networks: # 加入自定义网络
+      - app_network
+
+
+networks: # 定义共享网络
+  app_network:
+    driver: bridge

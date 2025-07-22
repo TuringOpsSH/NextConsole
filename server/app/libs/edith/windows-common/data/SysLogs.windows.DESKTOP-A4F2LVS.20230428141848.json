@@ -1,0 +1,508 @@
+{
+  "basicLogConfInfo": {
+    "channelAccess": "O:BAG:SYD:(A;;0xf0007;;;SY)(A;;0x7;;;BA)(A;;0x3;;;BO)(A;;0x5;;;SO)(A;;0x1;;;IU)(A;;0x3;;;SU)(A;;0x1;;;S-1-5-3)(A;;0x2;;;S-1-5-33)(A;;0x1;;;S-1-5-32-573)",
+    "enabled": "true",
+    "isolation": "System",
+    "logging": {
+      "autoBackup": "false",
+      "logFileName": "%SystemRoot%\\System32\\Winevt\\Logs\\System.evtx",
+      "maxSize": "20971520",
+      "retention": "false"
+    },
+    "name": "System",
+    "owningPublisher": "",
+    "publishing": {
+      "fileMax": "1"
+    },
+    "type": "Admin"
+  },
+  "edith": {
+    "version": "v1.1.0-7-ga52f60f",
+    "command": "D:\\gopath\\src\\edith-cli\\bin\\edith.exe os get-log -f json -o ./",
+    "flags": {
+      "format": "json",
+      "output": "./"
+    },
+    "ips": [
+      {
+        "OpenVPN Wintun": "169.254.237.20"
+      },
+      {
+        "OpenVPN TAP-Windows6": "169.254.222.244"
+      },
+      {
+        "本地连接* 1": "169.254.217.24"
+      },
+      {
+        "本地连接* 10": "169.254.237.119"
+      },
+      {
+        "VMware Network Adapter VMnet1": "192.168.31.1"
+      },
+      {
+        "VMware Network Adapter VMnet8": "192.168.239.1"
+      },
+      {
+        "VMware Network Adapter VMnet2": "192.168.90.6"
+      },
+      {
+        "WLAN": "172.16.201.236"
+      },
+      {
+        "蓝牙网络连接": "169.254.135.223"
+      }
+    ]
+  },
+  "errorLogForMonth": [
+    {
+      "Computer": "DESKTOP-A4F2LVS",
+      "Date": "2023-04-22T16:47:02.4210000Z",
+      "Description": "服务器 {283EDD52-69B2-473D-BEB6-2C0B4C01FD73} 没有在要求的超时时间内向 DCOM 注册。",
+      "EventID": "10010",
+      "Keyword": "经典",
+      "Level": "错误",
+      "LogName": "System",
+      "Opcode": "信息",
+      "Source": "Microsoft-Windows-DistributedCOM",
+      "Task": "N/A",
+      "User": "S-1-5-21-3934132821-4093055122-3071298221-1001",
+      "UserName": "DESKTOP-A4F2LVS\\zijiang",
+      "eventKey": "Event[0]"
+    },
+    {
+      "Computer": "DESKTOP-A4F2LVS",
+      "Date": "2023-04-22T17:25:42.5010000Z",
+      "Description": "服务器 {776DBC8D-7347-478C-8D71-791E12EF49D8} 没有在要求的超时时间内向 DCOM 注册。",
+      "EventID": "10010",
+      "Keyword": "经典",
+      "Level": "错误",
+      "LogName": "System",
+      "Opcode": "信息",
+      "Source": "Microsoft-Windows-DistributedCOM",
+      "Task": "N/A",
+      "User": "S-1-5-21-3934132821-4093055122-3071298221-1001",
+      "UserName": "DESKTOP-A4F2LVS\\zijiang",
+      "eventKey": "Event[1]"
+    }
+  ],
+  "host": {
+    "hostname": "DESKTOP-A4F2LVS",
+    "uptime": 31256,
+    "bootTime": 1684458136,
+    "procs": 324,
+    "os": "windows",
+    "platform": "Microsoft Windows 10 Pro",
+    "platformFamily": "Standalone Workstation",
+    "platformVersion": "10.0.19044.2965 Build 19044.2965",
+    "kernelVersion": "10.0.19044.2965 Build 19044.2965",
+    "kernelArch": "x86_64",
+    "virtualizationSystem": "",
+    "virtualizationRole": "",
+    "hostId": "77309361-e2ae-469c-becf-38095af673cb"
+  },
+  "logStatusInfo": {
+    "attributes": "32",
+    "creationTime": "2022-06-08T11:32:24.007Z",
+    "fileSize": "20975616",
+    "lastAccessTime": "2023-05-22T06:34:49.751Z",
+    "lastWriteTime": "2023-05-22T06:34:49.751Z",
+    "numberOfLogRecords": "12547",
+    "oldestRecordNumber": "270185"
+  },
+  "recent10ErrorMsg": {
+    "Events": [
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-WindowsUpdateClient",
+            "Guid": "{945a8954-c147-4acd-923f-40c45405a658}",
+            "EventSourceName": ""
+          },
+          "EventID": {
+            "EventID": "20",
+            "Qualifiers": ""
+          },
+          "Version": 1,
+          "Level": 2,
+          "Task": 1,
+          "Opcode": 13,
+          "Keywords": "0x8000000000000028",
+          "TimeCreated": {
+            "SystemTime": "2023-05-18T18:22:55.7461481Z"
+          },
+          "EventRecordID": 239593,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "26396",
+            "ThreadID": "16044"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{855e8a7c-ecb4-4ca3-b045-1dfa50104289}",
+            "Name": "serviceGuid"
+          }
+        }
+      },
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-DistributedCOM",
+            "Guid": "{1B562E86-B7AA-4131-BADC-B6F3A001407E}",
+            "EventSourceName": "DCOM"
+          },
+          "EventID": {
+            "EventID": "10010",
+            "Qualifiers": "0"
+          },
+          "Version": 0,
+          "Level": 2,
+          "Task": 0,
+          "Opcode": 0,
+          "Keywords": "0x8080000000000000",
+          "TimeCreated": {
+            "SystemTime": "2023-05-17T21:34:12.5706338Z"
+          },
+          "EventRecordID": 239309,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "1136",
+            "ThreadID": "7756"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{283EDD52-69B2-473D-BEB6-2C0B4C01FD73}",
+            "Name": "param1"
+          }
+        }
+      },
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-DistributedCOM",
+            "Guid": "{1B562E86-B7AA-4131-BADC-B6F3A001407E}",
+            "EventSourceName": "DCOM"
+          },
+          "EventID": {
+            "EventID": "10010",
+            "Qualifiers": "0"
+          },
+          "Version": 0,
+          "Level": 2,
+          "Task": 0,
+          "Opcode": 0,
+          "Keywords": "0x8080000000000000",
+          "TimeCreated": {
+            "SystemTime": "2023-05-17T19:14:49.2450932Z"
+          },
+          "EventRecordID": 239208,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "1136",
+            "ThreadID": "9140"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{283EDD52-69B2-473D-BEB6-2C0B4C01FD73}",
+            "Name": "param1"
+          }
+        }
+      },
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-DistributedCOM",
+            "Guid": "{1B562E86-B7AA-4131-BADC-B6F3A001407E}",
+            "EventSourceName": "DCOM"
+          },
+          "EventID": {
+            "EventID": "10010",
+            "Qualifiers": "0"
+          },
+          "Version": 0,
+          "Level": 2,
+          "Task": 0,
+          "Opcode": 0,
+          "Keywords": "0x8080000000000000",
+          "TimeCreated": {
+            "SystemTime": "2023-05-17T15:57:05.1364428Z"
+          },
+          "EventRecordID": 238870,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "1136",
+            "ThreadID": "1028"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{A463FCB9-6B1C-4E0D-A80B-A2CA7999E25D}",
+            "Name": "param1"
+          }
+        }
+      },
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-DistributedCOM",
+            "Guid": "{1B562E86-B7AA-4131-BADC-B6F3A001407E}",
+            "EventSourceName": "DCOM"
+          },
+          "EventID": {
+            "EventID": "10010",
+            "Qualifiers": "0"
+          },
+          "Version": 0,
+          "Level": 2,
+          "Task": 0,
+          "Opcode": 0,
+          "Keywords": "0x8080000000000000",
+          "TimeCreated": {
+            "SystemTime": "2023-05-17T15:54:23.8543866Z"
+          },
+          "EventRecordID": 238859,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "1136",
+            "ThreadID": "20212"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{A463FCB9-6B1C-4E0D-A80B-A2CA7999E25D}",
+            "Name": "param1"
+          }
+        }
+      },
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-DistributedCOM",
+            "Guid": "{1B562E86-B7AA-4131-BADC-B6F3A001407E}",
+            "EventSourceName": "DCOM"
+          },
+          "EventID": {
+            "EventID": "10010",
+            "Qualifiers": "0"
+          },
+          "Version": 0,
+          "Level": 2,
+          "Task": 0,
+          "Opcode": 0,
+          "Keywords": "0x8080000000000000",
+          "TimeCreated": {
+            "SystemTime": "2023-05-17T15:44:18.0423460Z"
+          },
+          "EventRecordID": 238816,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "1136",
+            "ThreadID": "11428"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{A463FCB9-6B1C-4E0D-A80B-A2CA7999E25D}",
+            "Name": "param1"
+          }
+        }
+      },
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-DistributedCOM",
+            "Guid": "{1B562E86-B7AA-4131-BADC-B6F3A001407E}",
+            "EventSourceName": "DCOM"
+          },
+          "EventID": {
+            "EventID": "10010",
+            "Qualifiers": "0"
+          },
+          "Version": 0,
+          "Level": 2,
+          "Task": 0,
+          "Opcode": 0,
+          "Keywords": "0x8080000000000000",
+          "TimeCreated": {
+            "SystemTime": "2023-05-17T15:41:36.4485967Z"
+          },
+          "EventRecordID": 238805,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "1136",
+            "ThreadID": "11428"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{A463FCB9-6B1C-4E0D-A80B-A2CA7999E25D}",
+            "Name": "param1"
+          }
+        }
+      },
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-DistributedCOM",
+            "Guid": "{1B562E86-B7AA-4131-BADC-B6F3A001407E}",
+            "EventSourceName": "DCOM"
+          },
+          "EventID": {
+            "EventID": "10010",
+            "Qualifiers": "0"
+          },
+          "Version": 0,
+          "Level": 2,
+          "Task": 0,
+          "Opcode": 0,
+          "Keywords": "0x8080000000000000",
+          "TimeCreated": {
+            "SystemTime": "2023-05-17T15:37:34.7247127Z"
+          },
+          "EventRecordID": 238792,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "1136",
+            "ThreadID": "19968"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{283EDD52-69B2-473D-BEB6-2C0B4C01FD73}",
+            "Name": "param1"
+          }
+        }
+      },
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-DistributedCOM",
+            "Guid": "{1B562E86-B7AA-4131-BADC-B6F3A001407E}",
+            "EventSourceName": "DCOM"
+          },
+          "EventID": {
+            "EventID": "10010",
+            "Qualifiers": "0"
+          },
+          "Version": 0,
+          "Level": 2,
+          "Task": 0,
+          "Opcode": 0,
+          "Keywords": "0x8080000000000000",
+          "TimeCreated": {
+            "SystemTime": "2023-05-17T15:37:33.9601468Z"
+          },
+          "EventRecordID": 238789,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "1136",
+            "ThreadID": "11428"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{A463FCB9-6B1C-4E0D-A80B-A2CA7999E25D}",
+            "Name": "param1"
+          }
+        }
+      },
+      {
+        "System": {
+          "Provider": {
+            "Name": "Microsoft-Windows-DistributedCOM",
+            "Guid": "{1B562E86-B7AA-4131-BADC-B6F3A001407E}",
+            "EventSourceName": "DCOM"
+          },
+          "EventID": {
+            "EventID": "10010",
+            "Qualifiers": "0"
+          },
+          "Version": 0,
+          "Level": 2,
+          "Task": 0,
+          "Opcode": 0,
+          "Keywords": "0x8080000000000000",
+          "TimeCreated": {
+            "SystemTime": "2023-05-17T15:35:32.8158736Z"
+          },
+          "EventRecordID": 238780,
+          "Correlation": "",
+          "Execution": {
+            "ProcessID": "1136",
+            "ThreadID": "12512"
+          },
+          "Channel": "System",
+          "Computer": "DESKTOP-A4F2LVS",
+          "Security": ""
+        },
+        "Xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
+        "EventData": {
+          "Data": {
+            "Data": "{A463FCB9-6B1C-4E0D-A80B-A2CA7999E25D}",
+            "Name": "param1"
+          }
+        }
+      }
+    ]
+  },
+  "safeLogConfInfo": {
+    "channelAccess": "O:BAG:SYD:(A;;0xf0005;;;SY)(A;;0x5;;;BA)(A;;0x1;;;S-1-5-32-573)",
+    "enabled": "true",
+    "isolation": "Custom",
+    "logging": {
+      "autoBackup": "false",
+      "logFileName": "%SystemRoot%\\System32\\Winevt\\Logs\\security.evtx",
+      "maxSize": "20971520",
+      "retention": "false"
+    },
+    "name": "security",
+    "owningPublisher": "",
+    "publishing": {
+      "fileMax": "1"
+    },
+    "type": "Admin"
+  },
+  "sessions": {
+    "path": "C:/Windows/servicing/Sessions/Sessions.xml",
+    "content": [],
+    "err": ""
+  }
+}

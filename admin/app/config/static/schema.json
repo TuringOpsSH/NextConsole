@@ -1,0 +1,128 @@
+{
+  "cells": [
+    {
+      "position": {
+        "x": 1037,
+        "y": 575.5
+      },
+      "size": {
+        "width": 100,
+        "height": 100
+      },
+      "attrs": {
+        "text": {
+          "text": "开始"
+        }
+      },
+      "visible": true,
+      "shape": "custom-vue-node",
+      "ports": {
+        "groups": {
+          "top": {
+            "position": "left",
+            "attrs": {
+              "circle": {
+                "r": 4,
+                "magnet": true,
+                "stroke": "#31d0c6",
+                "strokeWidth": 2,
+                "fill": "#fff"
+              }
+            }
+          },
+          "bottom": {
+            "position": "right",
+            "attrs": {
+              "circle": {
+                "r": 4,
+                "magnet": true,
+                "stroke": "#31d0c6",
+                "strokeWidth": 2,
+                "fill": "#fff"
+              }
+            }
+          }
+        },
+        "items": [
+          {
+            "group": "top",
+            "id": "93ea23f9-e6b0-48f4-b85f-41ad70d02409"
+          },
+          {
+            "group": "bottom",
+            "id": "7546eb7c-cee5-412e-87c4-e293ed4b2f06"
+          }
+        ]
+      },
+      "id": "7a66e739-3547-47b0-b7cb-9190e4732268",
+      "data": {
+        "nodeType": "start",
+        "nodeDesc": "开始节点",
+        "nodeName": "开始"
+      },
+      "zIndex": 1
+    },
+    {
+      "position": {
+        "x": 1187,
+        "y": 575.5
+      },
+      "size": {
+        "width": 100,
+        "height": 100
+      },
+      "attrs": {
+        "text": {
+          "text": "结束"
+        }
+      },
+      "visible": true,
+      "shape": "custom-vue-node",
+      "ports": {
+        "groups": {
+          "top": {
+            "position": "left",
+            "attrs": {
+              "circle": {
+                "r": 4,
+                "magnet": true,
+                "stroke": "#31d0c6",
+                "strokeWidth": 2,
+                "fill": "#fff"
+              }
+            }
+          },
+          "bottom": {
+            "position": "right",
+            "attrs": {
+              "circle": {
+                "r": 4,
+                "magnet": true,
+                "stroke": "#31d0c6",
+                "strokeWidth": 2,
+                "fill": "#fff"
+              }
+            }
+          }
+        },
+        "items": [
+          {
+            "group": "top",
+            "id": "a7cc7005-bc9f-4ed8-a914-a36ffb3329f5"
+          },
+          {
+            "group": "bottom",
+            "id": "d4e3e576-103b-4f78-9e13-0ef3f450c555"
+          }
+        ]
+      },
+      "id": "0ed3cf8b-a74a-41f0-8464-624112047392",
+      "data": {
+        "nodeType": "end",
+        "nodeDesc": "结束节点",
+        "nodeName": "结束"
+      },
+      "zIndex": 2
+    }
+  ]
+}

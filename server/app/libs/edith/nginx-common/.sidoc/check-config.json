@@ -1,0 +1,323 @@
+{
+    "checks": [
+        {
+            "expr": "",
+            "rule": "pre.stat",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "post.stat",
+            "params": []
+        },
+        {
+            "expr":  "",
+            "rule": "func.date",
+            "params": []
+        },
+        {
+            "expr":  "",
+            "rule": "func.appname",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.summary",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.byte2mb",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.orderby",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.version",
+            "params": []
+        },
+        {
+            "expr": "//SysConfs/*/etchosts",
+            "rule": "linux.etchosts",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "etchosts"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysStatus/*/cpupct/*",
+            "rule": "linux.cpuUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cpuUsedPercent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysStatus/*/ntpdstatus/*",
+            "rule": "linux.ntpServiceCheck",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "ntpCheck"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/disk/*",
+            "rule": "linux.diskUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "diskUsage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/ntpsync",
+            "rule": "linux.ntpsync",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "ntpsync"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/zone",
+            "rule": "linux.zone",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "zone"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/base",
+            "rule": "linux.base",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "base"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/top10ip",
+            "rule": "nginx.top10ip",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "top10ip"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/gt500ip",
+            "rule": "nginx.gt500ip",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "gt500ip"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxConfs/*/anp",
+            "rule": "nginx.anp",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "anp"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/gstat",
+            "rule": "nginx.gstat",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.gstat"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxLogs/*/errlog",
+            "rule": "nginx.errlog",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.errlog"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxConfs/*/gversion",
+            "rule": "nginx.gversion",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.gversion"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxConfs/*/pconf",
+            "rule": "nginx.pconf",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.pconf"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/tcpstate",
+            "rule": "nginx.tcpstate",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.tcpstate"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxConfs/*/confargs",
+            "rule": "nginx.confargs",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.confargs"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//NginxStatus/*/cpuusage",
+            "rule": "nginx.cpuusage",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "nginx.cpuusage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        }
+    ],
+    "rulesDir": "./rules"
+}

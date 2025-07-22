@@ -1,0 +1,126 @@
+{
+  "cpuusage": [
+    {
+      "metric": 0,
+      "datetime": "2022-07-12 17:59:21"
+    }
+  ],
+  "edith": {
+    "version": "",
+    "command": "/root/src/executables-7maUw9BflC/___nginx_log__linux nginx get-status -f json -p /usr/local/webserver/nginx --output /tmp/edithData",
+    "flags": {
+      "format": "json",
+      "output": "/tmp/edithData",
+      "path": "/usr/local/webserver/nginx"
+    }
+  },
+  "gstat": [
+    {
+      "metric": {
+        "active_connections": "1",
+        "reading": "0",
+        "server_accepts": "2",
+        "server_handled": "2",
+        "server_requests": "2",
+        "waiting": "0",
+        "writing": "1"
+      },
+      "datetime": "2022-07-12 17:59:21"
+    }
+  ],
+  "gt500ip":[
+    {
+      "metric":[
+        {
+          "ip":"2.56.57.132",
+          "count":550
+        },
+        {
+          "ip":"45.120.216.8",
+          "count":510
+        }
+      ],
+      "datetime":"2022-06-30 15:33:27"
+    }
+  ],
+  "host": {
+    "hostname": "localhost.localdomain",
+    "uptime": 5149,
+    "bootTime": 1657614812,
+    "procs": 238,
+    "os": "linux",
+    "platform": "centos",
+    "platformFamily": "rhel",
+    "platformVersion": "7.9.2009",
+    "kernelVersion": "3.10.0-1160.el7.x86_64",
+    "kernelArch": "x86_64",
+    "virtualizationSystem": "",
+    "virtualizationRole": "",
+    "hostId": "f3944d56-a5ba-6c9c-4e0b-d4e5d1df2035"
+  },
+  "tcpstate": [
+    {
+      "metric": {
+        "listen": 10,
+        "syn_sent": 0,
+        "syn_received": 0,
+        "established": 6,
+        "fin_wait_1": 0,
+        "fin_wait_2": 0,
+        "close_wait": 0,
+        "closeing": 0,
+        "last_ack": 0,
+        "time_wait": 0,
+        "closed": 0
+      },
+      "datetime": "2022-07-12 17:59:21"
+    }
+  ],
+  "top10ip":[
+    {
+      "metric":[
+        {
+          "ip":"2.56.57.132",
+          "count":550
+        },
+        {
+          "ip":"45.120.216.8",
+          "count":510
+        },
+        {
+          "ip":"193.106.191.48",
+          "count":8
+        },
+        {
+          "ip":"146.190.22.188",
+          "count":6
+        },
+        {
+          "ip":"27.124.32.180",
+          "count":5
+        },
+        {
+          "ip":"120.85.97.161",
+          "count":2
+        },
+        {
+          "ip":"127.0.0.1",
+          "count":2
+        },
+        {
+          "ip":"157.245.70.127",
+          "count":2
+        },
+        {
+          "ip":"17.121.114.11",
+          "count":2
+        },
+        {
+          "ip":"180.163.220.67",
+          "count":2
+        }
+      ],
+      "datetime":"2022-06-30 15:33:27"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+sup {
+    border-radius: 6px;
+    background: #f9f9f9 ;
+    padding: 0 2px;
+    margin-right: 2px;
+    border: 1px solid #eaeaea;
+    cursor: pointer;
+    /* 添加其他样式属性 */
+}
+sup:hover {
+    background: #D1E9FF ;
+    /* 添加其他样式属性 */
+}
+sup a {
+    text-decoration: none; /* 去掉下划线 */
+    color: #667085; /* 设置字体颜色为红色，可以根据需要更改颜色 */
+}
+sup a:hover{
+    color: #344054;
+}
+.highlight-resource-keyword{
+    background: yellow;
+}
+pre code {
+    line-height: 1.5 ; /* 调整行距，1.5 是一个常见的行距值 */
+}
+.next-console-font-bold{
+
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    text-align: left;
+    color: #667085;
+
+}
+.next-console-div{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: 8px;
+}
+.dy-variable {
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 16px;
+    background-color: #f0f0f0;
+    padding: 4px 8px;
+    margin: 4px;
+    font-size: 14px;
+    cursor: pointer; /* 鼠标样式设为默认，避免看起来可点击 */
+}

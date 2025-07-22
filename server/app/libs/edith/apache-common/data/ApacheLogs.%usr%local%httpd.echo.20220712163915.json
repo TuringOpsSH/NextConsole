@@ -1,0 +1,29 @@
+{
+    "edith": {
+        "version": "v1.0.10-13-gcdfe873",
+        "command": "./edith apache get-log -o /tmp -f json -p /usr/local/httpd",
+        "flags": {
+            "format": "json",
+            "output": "/tmp",
+            "path": "/usr/local/httpd"
+        }
+    },
+    "errlog": [
+        ""
+    ],
+    "host": {
+        "hostname": "echo",
+        "uptime": 3561778,
+        "bootTime": 1654053377,
+        "procs": 160,
+        "os": "linux",
+        "platform": "centos",
+        "platformFamily": "rhel",
+        "platformVersion": "7.6.1810",
+        "kernelVersion": "3.10.0-1160.11.1.el7.x86_64",
+        "kernelArch": "x86_64",
+        "virtualizationSystem": "",
+        "virtualizationRole": "guest",
+        "hostId": "306b7a86-9f71-484d-a29a-88224ba42788"
+    }
+}

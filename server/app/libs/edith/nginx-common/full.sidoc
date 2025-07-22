@@ -1,0 +1,22 @@
+{
+  "datadir": "./data",
+  "groupby": "all",
+  "id": "nginx.full",
+  "latest": true,
+  "meta": {
+    "author": {
+      "email": "我的邮箱@ce-service.com.cn",
+      "name": "我的姓名"
+    },
+    "customer": "我的客户",
+    "date": "",
+    "imagesdir": "./images",
+    "org": "北京中亦安图科技股份有限公司",
+    "title": "Nginx健康检查汇总报告",
+    "config": {
+      "appnames":{}
+    }
+  },
+  "output": "reports/{{customer}} - Nginx健康检查汇总报告 - {{yymmdd}}",
+  "template": "full-template"
+}

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts" ,"env.d.ts",
+    "src/**/*.tsx", "src/**/*.d.tsx" ,"src/**/*.js" , "src/**/*.jsx", "src/**/*.json", "src/**/*.vue"],
+  "exclude": ["node_modules"]
+}

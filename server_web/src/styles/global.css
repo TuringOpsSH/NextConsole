@@ -1,0 +1,38 @@
+sup {
+    border-radius: 6px;
+    background: #f9f9f9 ;
+    padding: 0 2px;
+    margin-right: 2px;
+    border: 1px solid #eaeaea;
+    cursor: pointer;
+    /* 添加其他样式属性 */
+}
+sup:hover {
+    background: #D1E9FF ;
+    /* 添加其他样式属性 */
+}
+sup a {
+    text-decoration: none; /* 去掉下划线 */
+    color: #667085; /* 设置字体颜色为红色，可以根据需要更改颜色 */
+}
+sup a:hover{
+    color: #344054;
+}
+.highlight-resource-keyword{
+    background: yellow;
+}
+pre code {
+    line-height: 1.5 ; /* 调整行距，1.5 是一个常见的行距值 */
+}
+
+.my-custom-quote{
+    border-left: 4px solid #007BFF; /* 在引用块左侧添加蓝色边框 */
+    background-color: #f0f7ff; /* 设置引用块的背景颜色 */
+    padding: 1px; /* 设置内边距 */
+    font-style: italic; /* 设置引用内容为斜体 */
+    margin: 0;
+}
+.my-custom-quote p {
+    margin: 0; /* 去掉段落的默认外边距 */
+    padding: 8px 12px; /* 去掉段落的默认内边距 */
+}

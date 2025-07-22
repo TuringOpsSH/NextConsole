@@ -1,0 +1,62 @@
+export interface KGTag{
+    tag_id : number,
+    tag_name : string,
+    tag_content : string,
+    tag_status : string,
+    source_id : string,
+    source_type : string,
+    create_time : string,
+    update_time : string,
+}
+
+export interface KGMeta{
+    kg_company: string| null,
+    kg_code : string | null,
+    kg_name : string | null,
+    kg_type : string | null,
+    kg_desc : string | null,
+    kg_tags : KGTag[] | string[]| null,
+    kg_public : number | null,
+    kg_author_id : number | null,
+    kg_author_name : string | null,
+    kg_author_avatar : string | null,
+    kg_icon : string | null,
+    kg_status : string | null,
+    kg_sync_frequency : number | null,
+    kg_url : string | null,
+    rag_factor : number,
+    rag_relevant_threshold : number | null,
+    kg_is_chosen : boolean | null,
+    create_time : string | null,
+    update_time : string | null,
+    doc_cnt : number | null,
+    kg_ref_id: string | null,
+    kg_ref_status: string | null,
+}
+
+export interface DocMeta{
+    doc_id : string,
+    doc_type : string,
+    doc_format : string,
+    doc_status : string,
+    doc_author_id : number,
+    doc_name : string,
+    doc_kg_db_id : string,
+    doc_path : string,
+    doc_url : string,
+    doc_size : number,
+    doc_ref_id : string,
+    doc_ref_status : string,
+    create_time : string,
+    update_time : string,
+    is_chosen: boolean | null,
+    doc_content: string | null,
+}
+
+export interface KGRefStatus{
+    Total: number,
+    Pending: number,
+    Success: number,
+    Failure: number,
+    Error: number,
+}

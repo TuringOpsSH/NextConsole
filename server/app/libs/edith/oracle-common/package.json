@@ -1,0 +1,46 @@
+{
+    "name": "Oracle 健康检查",
+    "author": "数据库交付团队",
+    "category": "checkup",
+    "version": "1.3.0",
+    "product": "oracle",
+    "comment": "",
+    "language": "",
+    "search": [],
+    "private": true,
+    "homepage": "https://www.edithops.com/",
+    "hooksource": [
+        "@datadir",
+        "./"
+    ],
+    "operates": [
+        {
+            "key": "checkup:single",
+            "name": "通用报告"
+        },
+        {
+            "key": "checkup:cluster",
+            "name": "集群报告"
+        },
+        {
+            "key": "checkup:full",
+            "name": "汇总报告"
+        },
+        {
+            "key": "checkup:sf",
+            "name": "通用+汇总"
+        },
+        {
+            "key": "checkup:cf",
+            "name": "集群+汇总"
+        },
+        {
+            "key": "python:un",
+            "name": "解压",
+            "command": "un.py",
+            "kwargs": {
+                "datadir": "@datadir"
+            }
+        }
+    ]
+}

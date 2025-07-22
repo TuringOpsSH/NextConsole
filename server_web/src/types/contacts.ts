@@ -1,0 +1,67 @@
+export interface Company{
+  id: number;
+  parent_company_id: number | null;
+  company_code: string;
+  company_name: string;
+  company_country: string;
+  company_area: string;
+  company_address: string;
+  company_phone: string;
+  company_email: string;
+  company_website: string;
+  company_logo: string;
+  company_status: string;
+  company_type: string;
+  company_industry: string;
+  company_scale: string;
+  company_desc: string;
+  create_time: string;
+  update_time: string;
+  user_count: number | null;
+}
+export interface Department{
+  id: number;
+  company_id: number | null;
+  parent_department_id: number | null;
+  department_code: string;
+  department_name: string;
+  department_desc: string;
+  department_status: string;
+  create_time: string;
+  update_time: string;
+  user_count: number | null;
+}
+export interface Colleague{
+  user_id: number;
+  user_nick_name: string;
+  user_email: string;
+  user_gender: string;
+  user_avatar: string;
+  user_department: string;
+  user_company: string;
+  user_position: string;
+  user_name: string;
+  roles?: any;
+}
+export interface Friend{
+  user_id: number;
+  user_nick_name: string;
+  user_nick_name_py: string;
+  user_avatar: string;
+  user_email: string;
+  user_phone: string;
+  user_position: string;
+  user_gender: string;
+  user_department: string;
+  user_company: string;
+  user_account_type: string;
+  rel_status?: FriendRelation;
+}
+export interface FriendRelation{
+  id: number;
+  user_id: number;
+  friend_id: number;
+  rel_status: number;
+  create_time: string;
+  update_time: string;
+}

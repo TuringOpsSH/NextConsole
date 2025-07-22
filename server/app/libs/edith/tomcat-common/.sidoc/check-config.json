@@ -1,0 +1,233 @@
+{
+    "checks": [
+        {
+            "expr": "",
+            "rule": "pre.stat",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "post.stat",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.date",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.matchWlsMsg",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.matchTomcatMsg",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.machinelist",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.sys",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.homedir",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.first",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.byte2mb",
+            "params": []
+        },
+        {
+            "expr":  "",
+            "rule": "func.appname",
+            "params": []
+        },
+        {
+            "expr":  "",
+            "rule": "func.summary",
+            "params": []
+        },
+        {
+            "expr": "//SysStatus/*/cpupct/*",
+            "rule": "linux.cpuUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cpuUsedPercent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/host",
+            "rule": "tomcat.host",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcatConfs.host"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/serverConf",
+            "rule": "tomcat.serverConf",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcatConfs.serverConf"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/webConf",
+            "rule": "tomcat.webConf",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcatConfs.webConf"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/confRest",
+            "rule": "tomcat.confRest",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcatConfs.confRest"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatLogs/*/TomcatLog",
+            "rule": "tomcat.logs",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcat.logs"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/base",
+            "rule": "basicInfo",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "basicInfo"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/host",
+            "rule": "hostInfo",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "hostInfo"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatConfs/*/edith",
+            "rule": "tomcat.flags",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcat.flags"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        },
+        {
+            "expr": "//TomcatStatus/*/TomcatStatus",
+            "rule": "tomcat.status",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tomcat.status"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_iid",
+                    "expr": "../edith/flags/path"
+                }
+            ]
+        }
+    ],
+    "rulesDir": "./rules"
+}

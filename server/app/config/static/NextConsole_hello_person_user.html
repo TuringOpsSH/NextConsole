@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+    <title>NextConsole</title>
+    <link rel="icon" href="https://www.turingops.com.cn/images/logo.svg">
+    <style>
+        #app{
+            width: 100%; height: 100%;display: flex;flex-direction: column;gap: 12px;
+            justify-content: flex-start;align-items: flex-start
+        }
+        #logo{
+            display: flex;flex-direction: row;align-items: center;justify-content: center;gap: 16px;
+            width: 100%;height: 60px;
+        }
+        #hello{
+            padding: 16px;
+        }
+        #detail{
+            padding: 16px;
+        }
+        .user-info-item{
+            padding: 8px;
+            margin-left: 40px;
+
+        }
+        #next-step{
+            padding: 16px;
+        }
+        #support-info{
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        #end{
+            padding: 16px;
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="logo">
+        <div>
+            <img src="https://www.turingops.com.cn/images/logo.svg"
+                 alt="https://www.turingops.com.cn" style="width: 36px; height: 36px;">
+        </div>
+        <div >
+            <img src="https://www.turingops.com.cn/dev/images/logo_text.svg"
+                 alt="https://www.turingops.com.cn">
+        </div>
+    </div>
+    <div id="hello">
+        <h3>
+        尊敬的用户 {{user_name}} :
+        </h3>&nbsp;&nbsp;&nbsp;&nbsp;
+        <span>我们很高兴通知您，您的专属NextConsole账户已经成功创建！此账户可以免费体验15天！</span>
+    </div>
+    <div id="detail">
+        &nbsp;&nbsp;&nbsp;&nbsp;<span>
+            您的账户信息如下：
+        </span><br>
+        <div class="user-info-item">
+            登录地址：<a href="https://www.turingops.com.cn" >https://www.turingops.com.cn</a>
+        </div>
+        <div class="user-info-item">账户邮箱： {{user_email}}</div>
+        <div class="user-info-item">账户角色： {{user_role}}</div>
+        <div class="user-info-item">账户类型： {{user_type}}</div>
+        <div class="user-info-item">账户绑定微信： {{user_wx_nickname}}</div>
+        <div class="user-info-item">账户绑定手机号： {{user_phone}}</div>
+        <div class="user-info-item">账户有效期至： {{user_expire}}</div>
+    </div>
+    <div id="next-step">
+        <div>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span>
+                为了保证账户的安全，我们强烈建议您在第一次登录后及时更换密码！
+            </span>
+            <span>
+                如有使用上的问题，请查看<a href="https://docs.nextconsole.cn/docs/intro" >产品文档</a>。
+            </span><br/>
+            <h4>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如在体验期结束前，您对我们的产品有兴趣，欢迎联系我们的商务团队！
+            </h4>
+        </div>
+    </div>
+    <div id="support-info">
+        <h3>支持信息</h3>
+        <div>
+            <span>如需联系客服团队，请发送邮件至客服邮箱：support@turingops.com.cn</span>
+        </div>
+        <div>
+            <span>或者扫描下方微信客服二维码，将会有客服人员第一时间来解答您的疑问！</span><br><br>
+
+            <img src="https://www.turingops.com.cn/images/community_wx.svg"
+                 alt="https://www.turingops.com.cn" style="width: 100px; height: 100px;">
+        </div>
+
+    </div>
+
+    <div id="end">
+        <div>
+            <img src="https://www.turingops.com.cn/images/logo.svg" style="width: 36px;">
+        </div>
+        <div>
+            <h3>NextConsole 客户支持</h3>
+            <span>上海图灵天问智能科技有限公司</span><br/><br/>
+            <span>support@turingops.com.cn</span>
+        </div>
+    </div>
+
+
+
+
+</div>
+</body>
+</html>

@@ -1,0 +1,428 @@
+{
+    "checks": [
+        {
+            "expr": "",
+            "rule": "func.date",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.appname",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.simpleTable",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.transpose",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.summary",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.pgSummary",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.byte2mb",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.orderby",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.version",
+            "params": []
+        },
+        {
+            "expr": "//SysStatus/*/cpupct/*",
+            "rule": "linux.cpuUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cpuUsedPercent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SysConfs/*/disk/*",
+            "rule": "linux.diskUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "diskUsage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/altersettings",
+            "rule": "pg.altersettings",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "altersettings"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/autovacuum_dead_tuples",
+            "rule": "pg.autovacuum_dead_tuples",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.autovacuum_dead_tuples"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/autovacuum_resource_usage",
+            "rule": "pg.autovacuum_resource_usage",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.autovacuum_resource_usage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/autovacuum_settings",
+            "rule": "pg.autovacuum_settings",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.autovacuum_settings"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/autovacuum_settings",
+            "rule": "pg.autovacuum_settings_global",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.autovacuum_settings_global"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/autovacuum_settings",
+            "rule": "pg.autovacuum_settings_table",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.autovacuum_settings_table"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/autovacuum_wraparound",
+            "rule": "pg.autovacuum_wraparound",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.autovacuum_wraparound"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/cluster_info",
+            "rule": "pg.cluster_info",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.cluster_info"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/current_connections",
+            "rule": "pg.current_connections",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.current_connections"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/ext_settings",
+            "rule": "pg.ext_settings",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.ext_settings"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/extensions",
+            "rule": "pg.extensions",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.extensions"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/heap_bloat",
+            "rule": "pg.heap_bloat",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.heap_bloat"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/index_bloat",
+            "rule": "pg.index_bloat",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.index_bloat"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/integer_in_pk",
+            "rule": "pg.integer_in_pk",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.integer_in_pk"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/invalid_indexes",
+            "rule": "pg.invalid_indexes",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.invalid_indexes"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/memory_related_settings",
+            "rule": "pg.memory_related_settings",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.memory_related_settings"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/non_indexed_fks",
+            "rule": "pg.non_indexed_fks",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.non_indexed_fks"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/pg_conf_diff",
+            "rule": "pg.pg_conf_diff",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.pg_conf_diff"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/pgsettings",
+            "rule": "pg.pgsettings",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.pgsettings"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/pgsettings",
+            "rule": "pg.pgsettings",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.pgsettings"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/pgversion",
+            "rule": "pg.pgversion",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.pgversion"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/redundant_indexes",
+            "rule": "pg.redundant_indexes",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.redundant_indexes"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/table_sizes",
+            "rule": "pg.table_sizes",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.table_sizes"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/timeouts_locks",
+            "rule": "pg.timeouts_locks",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.timeouts_locks"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//PostgreSQL/*/unused_indexes",
+            "rule": "pg.unused_indexes",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "pg.timeouts_locks"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                }
+            ]
+        }
+    ],
+    "rulesDir": "./rules"
+}

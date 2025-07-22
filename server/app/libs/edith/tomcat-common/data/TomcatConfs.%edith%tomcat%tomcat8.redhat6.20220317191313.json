@@ -1,0 +1,103 @@
+{
+    "contextConf": {
+        "err": "XML syntax error on line 26: attribute name without = in element"
+    },
+    "edith": {
+        "version": "v1.0.6-211-gbffe3c8",
+        "command": "edith tomcat get-conf --path /home/vagrant/apache-tomcat-8.5.75 -o /edith_data -f json",
+        "flags": {
+            "format": "json",
+            "output": "/edith_data",
+            "path": "/home/vagrant/apache-tomcat-8.5.75"
+        }
+    },
+    "host": {
+        "hostname": "redhat6",
+        "uptime": 678063,
+        "bootTime": 1646891530,
+        "procs": 116,
+        "os": "linux",
+        "platform": "redhat",
+        "platformFamily": "rhel",
+        "platformVersion": "6.10",
+        "kernelVersion": "2.6.32-754.el6.x86_64",
+        "kernelArch": "x86_64",
+        "virtualizationSystem": "vbox",
+        "virtualizationRole": "guest",
+        "hostId": "b9fc1f7d-9245-4da7-8f21-dd060166e931"
+    },
+    "serverConf": {
+        "resources": [
+            {
+                "auth": "Container",
+                "description": "User database that can be updated and saved",
+                "factory": "org.apache.catalina.users.MemoryUserDatabaseFactory",
+                "name": "UserDatabase",
+                "pathname": "conf/tomcat-users.xml",
+                "type": "org.apache.catalina.UserDatabase"
+            }
+        ],
+        "serverport": "8005",
+        "services": [
+            {
+                "connectors": [
+                    {
+                        "connectionTimeout": "20000",
+                        "port": "8080",
+                        "protocol": "HTTP/1.1",
+                        "redirectPort": "8443"
+                    }
+                ],
+                "name": "Catalina"
+            }
+        ],
+        "shutdown": "SHUTDOWN"
+    },
+    "confRest": {
+        "javaVersion": "1.8.0_201",
+        "jvmParam": {
+            "Xms": "100m",
+            "Xmx": "100m",
+            "HeapDumpOnOutOfMemoryError": "on",
+            "Xloggx": "/home/liuhua/tomcat_gc.log"
+        },
+        "tomcatVersion": "Apache Tomcat/8.5.75"
+    },
+    "webConf": {
+        "servlet": [
+            {
+                "init-param": [
+                    {
+                        "param-value": "0",
+                        "servlet-name": "debug"
+                    },
+                    {
+                        "param-value": "false",
+                        "servlet-name": "listings"
+                    }
+                ],
+                "servlet-class": "org.apache.catalina.servlets.DefaultServlet",
+                "servlet-name": "default",
+                "xmlns": "1"
+            },
+            {
+                "init-param": [
+                    {
+                        "param-value": "false",
+                        "servlet-name": "fork"
+                    },
+                    {
+                        "param-value": "false",
+                        "servlet-name": "xpoweredBy"
+                    }
+                ],
+                "servlet-class": "org.apache.jasper.servlet.JspServlet",
+                "servlet-name": "jsp",
+                "xmlns": "3"
+            }
+        ],
+        "version": "3.1",
+        "xmlns": "http://xmlns.jcp.org/xml/ns/javaee",
+        "xsi": "http://www.w3.org/2001/XMLSchema-instance"
+    }
+}

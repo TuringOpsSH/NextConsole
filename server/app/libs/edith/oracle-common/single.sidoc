@@ -1,0 +1,23 @@
+{
+  "datadir": "./data",
+  "groupby": "instance",
+  "id": "oracle",
+  "latest": true,
+  "meta": {
+    "author": {
+      "email": "我的邮箱@ce-service.com.cn",
+      "name": "我的姓名"
+    },
+    "customer": "我的客户",
+    "date": "",
+    "org": "北京中亦安图科技股份有限公司",
+    "title": "Oracle健康检查报告",
+    "sys":"副标题",
+    "config": {
+      "appnames":{}
+    }
+  },
+  "output": "reports/{{customer}} - {{instance}}@{{hostname}} - Oracle健康检查报告 - {{yymmdd}}",
+  "template": "template",
+
+}

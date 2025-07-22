@@ -1,0 +1,1624 @@
+{
+    "checks": [
+        {
+            "expr": "",
+            "rule": "pre.stat",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "post.stat",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.date",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.appname",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.summary",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.byte2mb",
+            "params": []
+        },
+        {
+            "expr": "",
+            "rule": "func.orderby",
+            "params": []
+        },
+        {
+            "expr": "//SQLServer/*/agent_state",
+            "rule": "sqlserver.agent_state",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "agent_state"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_startup_parameters",
+            "rule": "sqlserver.db_startup_parameters",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_startup_parameters"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/collation",
+            "rule": "sqlserver.collation",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "collation"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/cpu_count",
+            "rule": "sqlserver.cpu_count",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cpu_count"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/cpu_physic_count",
+            "rule": "sqlserver.cpu_physic_count",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cpu_physic_count"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/cpu_type",
+            "rule": "sqlserver.cpu_type",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cpu_type"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/database_collation",
+            "rule": "sqlserver.database_collation",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "database_collation"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/database_without_backup",
+            "rule": "sqlserver.database_without_backup",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "database_without_backup"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/dbstart_time",
+            "rule": "sqlserver.dbstart_time",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dbstart_time"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/dbstate",
+            "rule": "sqlserver.dbstate",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "dbstate"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_full_backup",
+            "rule": "sqlserver.db_full_backup",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_full_backup"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_log_backup",
+            "rule": "sqlserver.db_log_backup",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_log_backup"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_log_size",
+            "rule": "sqlserver.db_log_size",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_log_size"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_max_memory",
+            "rule": "sqlserver.db_max_memory",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_max_memory"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_min_memory",
+            "rule": "sqlserver.db_min_memory",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_min_memory"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_owner",
+            "rule": "sqlserver.db_owner",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_owner"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_read_write",
+            "rule": "sqlserver.db_read_write",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_read_write"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_read_write_model",
+            "rule": "sqlserver.db_read_write_model",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_read_write_model"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_recovery_model",
+            "rule": "sqlserver.db_recovery_model",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_recovery_model"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_service_check",
+            "rule": "sqlserver.db_service_check",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_service_check"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_single_multi_user",
+            "rule": "sqlserver.db_single_multi_user",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_single_multi_user"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/db_size",
+            "rule": "sqlserver.db_size",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "db_size"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/deadlock",
+            "rule": "sqlserver.deadlock",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "deadlock"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/empty_password_user_password_is_the_same_as_username",
+            "rule": "sqlserver.empty_password_user_password_is_the_same_as_username",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "empty_password_user_password_is_the_same_as_username"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/filepath",
+            "rule": "sqlserver.filepath",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "filepath"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/filestate",
+            "rule": "sqlserver.filestate",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "filestate"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/file_growth_type",
+            "rule": "sqlserver.file_growth_type",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "file_growth_type"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/instance_collation",
+            "rule": "sqlserver.instance_collation",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "instance_collation"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/invalid_view",
+            "rule": "sqlserver.invalid_view",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "invalid_view"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/IO_read_time",
+            "rule": "sqlserver.IO_read_time",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "IO_read_time"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/IO_write_time",
+            "rule": "sqlserver.IO_write_time",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "IO_write_time"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/loginfo_check",
+            "rule": "sqlserver.loginfo_check",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "loginfo_check"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/maxworkers",
+            "rule": "sqlserver.maxworkers",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "maxworkers"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/max_parallelism_degree",
+            "rule": "sqlserver.max_parallelism_degree",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "max_parallelism_degree"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/object_status_of_each_database",
+            "rule": "sqlserver.object_status_of_each_database",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "object_status_of_each_database"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/patch_version",
+            "rule": "sqlserver.patch_version",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "patch_version"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/physical_memory",
+            "rule": "sqlserver.physical_memory",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "physical_memory"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/process",
+            "rule": "sqlserver.process",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "process"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/server_error_log",
+            "rule": "sqlserver.server_error_log",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "server_error_log"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/server_information",
+            "rule": "sqlserver.server_information",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "server_information"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/sql_version",
+            "rule": "sqlserver.sql_version",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "sql_version"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/system_disk_idle_rate",
+            "rule": "sqlserver.system_disk_idle_rate",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "system_disk_idle_rate"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/tables_without_primary_keys",
+            "rule": "sqlserver.tables_without_primary_keys",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tables_without_primary_keys"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/table_rows",
+            "rule": "sqlserver.table_rows",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "table_rows"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/tempdb_check",
+            "rule": "sqlserver.tempdb_check",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "tempdb_check"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/view_the_usage_of_bufferpools_in_various_databases",
+            "rule": "sqlserver.view_the_usage_of_bufferpools_in_various_databases",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "view_the_usage_of_bufferpools_in_various_databases"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/volume_available",
+            "rule": "sqlserver.volume_available",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "volume_available"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/executing_slower_in_past_week",
+            "rule": "sqlserver.executing_slower_in_past_week",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "executing_slower_in_past_week"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/top_10_sql_with_the_highest_average_cpu_usage",
+            "rule": "sqlserver.top_10_sql_with_the_highest_average_cpu_usage",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "top_10_sql_with_the_highest_average_cpu_usage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/locks_in_the_database",
+            "rule": "sqlserver.locks_in_the_database",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "locks_in_the_database"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/calculate_resource_wait_and_semaphore_wait_times",
+            "rule": "sqlserver.calculate_resource_wait_and_semaphore_wait_times",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "calculate_resource_wait_and_semaphore_wait_times"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/active_user_processes_and_quantity",
+            "rule": "sqlserver.active_user_processes_and_quantity",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "active_user_processes_and_quantity"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/mirror_server",
+            "rule": "sqlserver.mirror_server",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "mirror_server"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/view_failed_jobs",
+            "rule": "sqlserver.view_failed_jobs",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "view_failed_jobs"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/view_job_execution_status",
+            "rule": "sqlserver.view_job_execution_status",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "view_job_execution_status"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/high_cost_missing_indexes_for_all_databases",
+            "rule": "sqlserver.high_cost_missing_indexes_for_all_databases",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "high_cost_missing_indexes_for_all_databases"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/top_10_sql_statements_with_high_cache_usage_and_the_highest_cache_consumption",
+            "rule": "sqlserver.top_10_sql_statements_with_high_cache_usage_and_the_highest_cache_consumption",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "top_10_sql_statements_with_high_cache_usage_and_the_highest_cache_consumption"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/blocked_session",
+            "rule": "sqlserver.blocked_session",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "blocked_session"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/user_and_process_details",
+            "rule": "sqlserver.user_and_process_details",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "user_and_process_details"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/cpu_bottleneck",
+            "rule": "sqlserver.cpu_bottleneck",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cpu_bottleneck"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/temporary_database_file_status",
+            "rule": "sqlserver.temporary_database_file_status",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "temporary_database_file_status"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/temporary_database_usage",
+            "rule": "sqlserver.temporary_database_usage",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "temporary_database_usage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/users_and_roles",
+            "rule": "sqlserver.users_and_roles",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "users_and_roles"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/all_database_backup_information_in_the_past_week",
+            "rule": "sqlserver.all_database_backup_information_in_the_past_week",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "all_database_backup_information_in_the_past_week"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/average_readwrite_blocking_time_per_database_file",
+            "rule": "sqlserver.average_readwrite_blocking_time_per_database_file",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "average_readwrite_blocking_time_per_database_file"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/all_database_file_information",
+            "rule": "sqlserver.all_database_file_information",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "all_database_file_information"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/all_database_object_information",
+            "rule": "sqlserver.all_database_object_information",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "all_database_object_information"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/database_server_disk_io_and_cpu_statistics",
+            "rule": "sqlserver.database_server_disk_io_and_cpu_statistics",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "database_server_disk_io_and_cpu_statistics"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/cluster_status_check",
+            "rule": "sqlserver.cluster_status_check",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cluster_status_check"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/cluster_info_check",
+            "rule": "sqlserver.cluster_info_check",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cluster_info_check"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/ag_information_and_status_check",
+            "rule": "sqlserver.ag_information_and_status_check",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "ag_information_and_status_check"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/check_users_with_sysadmin_privileges",
+            "rule": "sqlserver.check_users_with_sysadmin_privileges",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "check_users_with_sysadmin_privileges"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/check_if_password_policy_is_used",
+            "rule": "sqlserver.check_if_password_policy_is_used",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "check_if_password_policy_is_used"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/check_if_auditing_has_been_enabled",
+            "rule": "sqlserver.check_if_auditing_has_been_enabled",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "check_if_auditing_has_been_enabled"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/statistical_information_inspection",
+            "rule": "sqlserver.statistical_information_inspection",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "statistical_information_inspection"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/view_index_fragmentation_information_for_all_databases",
+            "rule": "sqlserver.view_index_fragmentation_information_for_all_databases",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "view_index_fragmentation_information_for_all_databases"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/view_index_information_with_an_index_space_greater_than_100m",
+            "rule": "sqlserver.view_index_information_with_an_index_space_greater_than_100m",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "view_index_information_with_an_index_space_greater_than_100m"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/mem",
+            "rule": "linux.memUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "memUsedPercent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/cpupct",
+            "rule": "linux.cpuUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "cpuUsedPercent"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/disk",
+            "rule": "linux.diskUsedPercent",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "diskUsage"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/clusterfl",
+            "rule": "os.clusterfl",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "clusterfl"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/ag_property_groups",
+            "rule": "sqlserver.ag_property_groups",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "ag_property_groups"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/ag_property_replicas",
+            "rule": "sqlserver.ag_property_replicas",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "ag_property_replicas"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/listener_message",
+            "rule": "sqlserver.listener_message",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "listener_message"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/status_before_and_after_active_switchover",
+            "rule": "sqlserver.status_before_and_after_active_switchover",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "status_before_and_after_active_switchover"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/ag_synchronization_status_check",
+            "rule": "sqlserver.ag_synchronization_status_check",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "ag_synchronization_status_check"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/win_cluster_information",
+            "rule": "sqlserver.win_cluster_information",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "win_cluster_information"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        },
+        {
+            "expr": "//SQLServer/*/win_cluster_members_information",
+            "rule": "sqlserver.win_cluster_members_information",
+            "params": [
+                {
+                    "key": "_scope",
+                    "value": "win_cluster_members_information"
+                },
+                {
+                    "key": "_name",
+                    "expr": "../host/hostname"
+                },
+                {
+                    "key": "_sid",
+                    "expr": "../host/hostname"
+                }
+            ]
+        }
+    ],
+    "rulesDir": "./rules"
+}

@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "env.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.d.tsx",
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.json",
+    "src/**/*.vue",
+    "../../../../../AppData/Local/JetBrains/WebStorm2024.1/javascript/typings/node/18.19.54/node_modules/@types/node/globals.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}
