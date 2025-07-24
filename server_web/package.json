@@ -7,6 +7,9 @@
     "local": "set NODE_ENV=localhost&&vite --mode devLocal && node version.js",
     "dev": "set NODE_ENV=development&&vite && node version.js",
     "build": "vite build && node version.js",
+    "build:poc": "env-cmd -f .env.poc vite build && node version.js",
+    "build:dev": "env-cmd -f .env.development vite build && node version.js",
+    "build:prod": "env-cmd -f .env.production vite build && node version.js",
     "build:private": "env-cmd -f .env.private vite build",
     "preview": "vite preview"
   },
@@ -47,6 +50,7 @@
     "marked": "^11.1.1",
     "mermaid": "^11.5.0",
     "pdfjs-dist": "^5.3.93",
+    "pdfobject": "^2.3.1",
     "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.2.0",
     "qrcode": "^1.5.4",
@@ -71,6 +75,7 @@
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
+    "@types/pdfobject": "^2.2.5",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
     "@vitejs/plugin-vue": "^4.4.0",

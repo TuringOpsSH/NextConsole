@@ -126,7 +126,7 @@ defineOptions({
             <el-image src="images/layout_alt.svg" style="width: 16px; height: 16px" />
           </el-tooltip>
         </div>
-        <div class="std-middle-box" @click="router.push({ name: 'resource_list' })">
+        <div class="std-middle-box" @click="router.push({ name: 'resource_list' })" style="width: 200px">
           <el-text style="font-size: 16px; font-weight: 600; line-height: 24px; color: #101828; cursor: pointer">
             AI资源库
           </el-text>

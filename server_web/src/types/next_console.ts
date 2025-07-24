@@ -43,6 +43,8 @@ export interface session_item {
   session_evaluation_close?: boolean | null;
   session_cancel_reason?: string | null;
   queue_time?: string | null;
+  session_task_params_schema?: Record<string, unknown>;
+  session_task_params?: Record<string, unknown>;
 }
 export interface qa_item {
   qa_id: number;

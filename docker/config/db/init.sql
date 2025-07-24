@@ -1880,7 +1880,9 @@ CREATE TABLE "next_console"."next_console_session_info"
  "session_customer_score" double precision ,
  "session_customer_evaluation" text ,
  "session_evaluation_close" boolean ,
- "session_cancel_reason" text
+ "session_cancel_reason" text ,
+ "session_task_params" json ,
+ "session_task_params_schema" json
 )
 WITH (
     FILLFACTOR = 100,
@@ -1919,6 +1921,8 @@ COMMENT ON COLUMN "next_console"."next_console_session_info"."session_customer_s
 COMMENT ON COLUMN "next_console"."next_console_session_info"."session_customer_evaluation" IS '会话客户评价';
 COMMENT ON COLUMN "next_console"."next_console_session_info"."session_evaluation_close" IS '会话评价结束';
 COMMENT ON COLUMN "next_console"."next_console_session_info"."session_cancel_reason" IS '会话取消原因';
+COMMENT ON COLUMN "next_console"."next_console_session_info"."session_task_params" IS '会话任务参数';
+COMMENT ON COLUMN "next_console"."next_console_session_info"."session_task_params_schema" IS '会话任务参数结构';
 COMMENT ON TABLE "next_console"."next_console_session_info" IS '大模型会话信息';
 
 CREATE INDEX "user_id27"
@@ -3067,7 +3071,7 @@ INSERT INTO "next_console"."role_info" ("role_id","role_name","role_desc","creat
 INSERT INTO "next_console"."role_info" ("role_id","role_name","role_desc","create_time","update_time","status") VALUES ('4','user','普通用户','2025-07-17 16:47:55.766311+08','2025-07-17 16:47:55.766311+08',1);
 INSERT INTO "next_console"."role_info" ("role_id","role_name","role_desc","create_time","update_time","status") VALUES ('5','next_console_admin','NextConsole管理员','2025-07-17 16:47:55.810655+08','2025-07-17 16:47:55.810655+08',1);
 INSERT INTO "next_console"."role_info" ("role_id","role_name","role_desc","create_time","update_time","status") VALUES ('6','next_console_reader_admin','NextConsole只读管理员','2025-07-17 16:47:55.854884+08','2025-07-17 16:47:55.854884+08',1);
-INSERT INTO "next_console"."user_info" ("user_id","user_name","user_nick_name","user_nick_name_py","user_password","user_email","user_phone","user_gender","user_age","user_avatar","user_department","create_time","update_time","last_login_time","user_status","user_source","user_code","user_wx_nickname","user_wx_avatar","user_wx_openid","user_wx_union_id","user_position","user_company","user_account_type","user_name_py","user_expire_time","user_area","user_resource_base_path","user_company_id","user_department_id","user_resource_limit","user_accept_contact","user_invite_code") VALUES ('1','next_console','管理员','GLY','0cc5042d06a578e5eb453084a75aa2659aaf8564b87b26acec8cd3d0fd5c15ce','admin@nextconsole.cn','','男',28,'','产品研发部','2023-12-12 17:06:28+08','2025-04-20 09:36:34+08','2025-04-20 09:36:34+08',1,'admin',null,null,null,null,null,null,null,'','GLY',null,null,'个人账号',null,null,2048000,null,null);
+INSERT INTO "next_console"."user_info" ("user_id","user_name","user_nick_name","user_nick_name_py","user_password","user_email","user_phone","user_gender","user_age","user_avatar","user_department","create_time","update_time","last_login_time","user_status","user_source","user_code","user_wx_nickname","user_wx_avatar","user_wx_openid","user_wx_union_id","user_position","user_company","user_account_type","user_name_py","user_expire_time","user_area","user_resource_base_path","user_company_id","user_department_id","user_resource_limit","user_accept_contact","user_invite_code") VALUES ('1','next_console','管理员','GLY','0cc5042d06a578e5eb453084a75aa2659aaf8564b87b26acec8cd3d0fd5c15ce','admin@nextconsole.cn','','男',28,'','产品研发部','2023-12-12 17:06:28+08','2025-04-20 09:36:34+08','2025-04-20 09:36:34+08',1,'admin',null,null,null,null,null,null,null,'个人账号','GLY',null,null,'',null,null,2048000,null,null);
 INSERT INTO "next_console"."user_role_info" ("rel_id","user_id","role_id","create_time","update_time","rel_status") VALUES ('1',1,5,'2025-07-17 16:37:15.221156+08','2025-07-17 16:37:15.221156+08',1);
 INSERT INTO "next_console"."user_config_info" ("id","user_id","config_status","create_time","update_time","open_query_agent","resource_shortcut_types","resource_table_show_fields","resource_auto_rag","search_engine_language_type","search_engine_resource_type") VALUES ('1',1,'正常','2024-04-29 23:06:09+08','2025-01-30 14:58:00+08',0,null,null,'t',null,'search');
 INSERT INTO "next_console"."assistant_info" ("id","assistant_name","assistant_desc","assistant_tags","assistant_status","assistant_role_prompt","assistant_avatar","assistant_language","assistant_voice","assistant_model_name","assistant_model_temperature","create_time","update_time","assistant_memory_size","rag_miss","rag_miss_answer","rag_factor","rag_relevant_threshold","workflow","workflow_flag","assistant_model_code","assistant_title","assistant_avatar_source","assistant_prologue","assistant_preset_question") VALUES ('-12345','官方增强助手','根据给定的会话上文以及用户当前问题，构建问答任务，评审问答结果，提升问答质量与性能，优化用户体验','["\u9700\u6c42\u641c\u96c6", "\u5de5\u5355\u5904\u7406", "\u8fd0\u7ef4\u670d\u52a1\u652f\u6301"]','发布','你是一个由图灵天问公司提供的基于生成式模型的智能助手。
@@ -3567,7 +3571,7 @@ INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruc
 请直接给出回答：',null,1,'text','\n',null,null,'[]',3,'0',30);
 INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruction_name","instruction_desc","instruction_system_prompt_template","instruction_status","instruction_user_prompt_params_json_schema","instruction_result_json_schema","create_time","update_time","instruction_type","instruction_user_prompt_template","instruction_result_template","user_id","instruction_result_extract_format","instruction_result_extract_separator","instruction_result_extract_quote","instruction_system_prompt_params_json_schema","instruction_result_extract_columns","instruction_history_length","instruction_temperature","instruction_max_tokens") VALUES ('21',-12345,'WebPageFetch','网页解析',null,'正常',null,null,'2024-11-14 09:38:39+08','2024-11-14 09:38:39+08','code',null,null,1,'text','\n',null,null,'[]',0,'0',0);
 
-INSERT INTO "next_console"."llm_instance_info" ("id","llm_code","llm_name","user_id","llm_api_secret_key","llm_api_access_key","llm_type","llm_desc","llm_tags","llm_company","llm_status","create_time","update_time","llm_is_proxy","llm_base_url","llm_proxy_url","llm_source","llm_is_public","frequency_penalty","max_tokens","n","presence_penalty","response_format","stop","stream","temperature","top_p","llm_icon","is_std_openai","support_vis","support_file") VALUES ('1','ddea5407-39-43-83e','',1,'','','','','[]','','正常','2025-06-17 15:12:41+08','2025-06-17 15:12:41+08','f','','','admin','t','0',8192,1,'0','{"type": "text"}','[]','t','1','1','images/llm_deepseek.svg','t','t','f');
+INSERT INTO "next_console"."llm_instance_info" ("id","llm_code","llm_name","user_id","llm_api_secret_key","llm_api_access_key","llm_type","llm_desc","llm_tags","llm_company","llm_status","create_time","update_time","llm_is_proxy","llm_base_url","llm_proxy_url","llm_source","llm_is_public","frequency_penalty","max_tokens","n","presence_penalty","response_format","stop","stream","temperature","top_p","llm_icon","is_std_openai","support_vis","support_file") VALUES ('1','ddea5407-39-43-83e','',1,'','','','','[]','','正常','2025-06-17 15:12:41+08','2025-06-17 15:12:41+08','f','','','admin','t','0',8192,1,'0','{"type": "text"}','[]','t','1','1','images/logo.svg','t','f','f');
 
 ALTER SEQUENCE "next_console"."role_info_role_id_seq"  RESTART WITH 7;
 ALTER SEQUENCE "next_console"."user_info_user_id_seq"  RESTART WITH 2;

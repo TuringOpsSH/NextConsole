@@ -12,9 +12,11 @@ from concurrent.futures import ThreadPoolExecutor, wait
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from playwright.async_api import async_playwright
+import asyncio
 
 
-def fetch_page_content_main(resources, session_id, auto_build=True, driver='playwright'):
+async def fetch_page_content_main(resources, session_id, auto_build=True, driver='playwright'):
     """
     获取多个网页内容
     :param resources:
@@ -24,23 +26,28 @@ def fetch_page_content_main(resources, session_id, auto_build=True, driver='play
     :return:
     """
     if driver == 'playwright':
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            with ThreadPoolExecutor(max_workers=4) as executor:
-                # 使用线程池来并发执行任务
-                results = []
-                for resource in resources:
-                    future = executor.submit(fetch_page_content, browser, resource, session_id,
-                                             timeout=6000, max_size=10, auto_build=auto_build
-                                             )
-                    future.add_done_callback(
-                        lambda f: print(f"🎯 Child result: {f.result()}") if f.exception() is None
-                        else print(f"❌ Child error: {f.exception()}")
-                    )
-                    results.append(future)
-            # 关闭浏览器
-            wait(results)  # 等待所有任务完成
-            browser.close()
+        # with sync_playwright() as p:
+        #     browser = p.chromium.launch(headless=True)
+        #     with ThreadPoolExecutor(max_workers=4) as executor:
+        #         # 使用线程池来并发执行任务
+        #         results = []
+        #         for resource in resources:
+        #             future = executor.submit(fetch_page_content, browser, resource, session_id,
+        #                                      timeout=6000, max_size=10, auto_build=auto_build
+        #                                      )
+        #             future.add_done_callback(
+        #                 lambda f: print(f"🎯 Child result: {f.result()}") if f.exception() is None
+        #                 else print(f"❌ Child error: {f.exception()}")
+        #             )
+        #             results.append(future)
+        #     # 关闭浏览器
+        #     wait(results)  # 等待所有任务完成
+        #     browser.close()
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            tasks = [fetch_page_content(browser, resource, session_id) for resource in resources]
+            await asyncio.gather(*tasks)
+            await browser.close()
     else:
         with ThreadPoolExecutor(max_workers=4) as executor:
             results = []
@@ -61,7 +68,130 @@ def fetch_page_content_main(resources, session_id, auto_build=True, driver='play
     db.session.commit()
 
 
-def fetch_page_content(browser, resource, session_id, timeout=6000, max_size=10, auto_build=True):
+# def fetch_page_content(browser, resource, session_id, timeout=6000, max_size=10, auto_build=True):
+#     """
+#     获取多个网页内容
+#         支持网页内容的获取，截图
+#         支持pdf，docx等文件的下载
+#     :param browser:
+#     :param resource:
+#     :param session_id:
+#     :param timeout: 超时时间
+#     :param max_size: 最大资源大小，单位为MB
+#     :auto_build: 是否自动构建资源引用
+#     :return:
+#     """
+#     with app.app_context():
+#         from app.services.configure_center.response_utils import next_console_response
+#         resource = ResourceObjectMeta.query.filter(
+#             ResourceObjectMeta.id == resource.id
+#         ).first()
+#         if not resource:
+#             return next_console_response(
+#                 error_status=True,
+#                 error_message="资源不存在或者已被删除"
+#             )
+#         document_extensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
+#         context = browser.new_context(accept_downloads=True)
+#         page = context.new_page()
+#         # 导航到指定的URL
+#         try:
+#             # 使用请求拦截
+#             page.route('**/*', lambda route, request: handle_request(route, request, max_size=max_size))
+#             page.goto(resource.resource_source_url, timeout=timeout)
+#             page.wait_for_load_state('domcontentloaded')
+#         except Exception as e:
+#             resource.resource_desc = f'页面加载异常：{e}'
+#             db.session.add(resource)
+#             db.session.commit()
+#         if resource.resource_source_url.lower().split(".")[-1] in document_extensions:
+#             with page.expect_download(timeout=timeout) as download_info:
+#                 page.click('body')
+#             download = download_info.value
+#             download.save_as(resource.resource_path)
+#         else:
+#             content = page.content()
+#             title = page.title()
+#             icon_url = page.evaluate("""
+#                 () => {
+#                     const link = document.querySelector('link[rel="icon"]') ||
+#                                  document.querySelector('link[rel="shortcut icon"]');
+#                     return link ? link.href : null;
+#                 }
+#             """)
+#             # 更新资源
+#             if content:
+#                 with open(resource.resource_path, 'w', encoding='utf-8') as f:
+#                     f.write(content)
+#         if title:
+#             resource.resource_name = title
+#             resource.resource_title = title
+#         if icon_url:
+#             resource.resource_icon = icon_url
+#         extract_res = tldextract.extract(url=resource.resource_source_url)
+#         resource.resource_source_url_site = f"{extract_res.domain}.{extract_res.suffix}"
+#         resource.resource_size_in_MB = os.path.getsize(resource.resource_path) / 1024 / 1024
+#         with open(resource.resource_path, 'rb') as f:
+#             resource.resource_feature_code = hashlib.sha256(f.read()).hexdigest()
+#         db.session.add(resource)
+#         db.session.commit()
+#         if session_id:
+#             # 保存截图为图片型资源
+#             screenshot = page.screenshot(full_page=True, timeout=1000)
+#             new_resource_path = generate_new_path(
+#                 module_name="session",
+#                 user_id=resource.user_id,
+#             ).json.get("result")
+#             with open(new_resource_path, 'wb') as f:
+#                 f.write(screenshot)
+#             resource_feature_code = hashlib.sha256(screenshot).hexdigest()
+#             # 生成下载链接
+#             resource_show_url = generate_download_url(
+#                 module_name="session",
+#                 file_path=new_resource_path,
+#                 suffix="png",
+#             ).json.get("result")
+#             new_resource = ResourceObjectMeta(
+#                 resource_parent_id=resource.resource_parent_id,
+#                 user_id=resource.user_id,
+#                 resource_name=f"{resource.resource_name}.png",
+#                 resource_title=resource.resource_title,
+#                 resource_desc=resource.resource_desc,
+#                 resource_icon=resource.resource_icon,
+#                 resource_type="image",
+#                 resource_format="png",
+#                 resource_size_in_MB=os.path.getsize(new_resource_path) / 1024 / 1024,
+#                 resource_path=new_resource_path,
+#                 resource_source_url=resource.resource_source_url,
+#                 resource_source_url_site=resource.resource_source_url_site,
+#                 resource_show_url=resource_show_url,
+#                 resource_feature_code=resource_feature_code,
+#                 resource_status="正常",
+#                 resource_source='session'
+#             )
+#             db.session.add(new_resource)
+#             db.session.commit()
+#             # 增加到会话附件中去
+#             new_attachment = SessionAttachmentRelation(
+#                 session_id=session_id,
+#                 resource_id=new_resource.id,
+#                 attachment_source="webpage",
+#                 rel_status="正常"
+#             )
+#             db.session.add(new_attachment)
+#             db.session.commit()
+#         page.close()
+#         context.close()
+#         if auto_build:
+#             from app.services.task_center.resources_center import auto_build_resource_ref_v2
+#             auto_build_resource_ref_v2.delay({
+#                 "user_id": resource.user_id,
+#                 "resource_id": resource.id,
+#             })
+#             return resource
+
+
+async def fetch_page_content(browser, resource, session_id, timeout=6000, max_size=10, auto_build=True):
     """
     获取多个网页内容
         支持网页内容的获取，截图
@@ -71,6 +201,7 @@ def fetch_page_content(browser, resource, session_id, timeout=6000, max_size=10,
     :param session_id:
     :param timeout: 超时时间
     :param max_size: 最大资源大小，单位为MB
+    :auto_build: 是否自动构建资源引用
     :return:
     """
     with app.app_context():
@@ -84,29 +215,29 @@ def fetch_page_content(browser, resource, session_id, timeout=6000, max_size=10,
                 error_message="资源不存在或者已被删除"
             )
         document_extensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
-        context = browser.new_context(accept_downloads=True)
-        page = context.new_page()
+        context = await browser.new_context(accept_downloads=True)
+        page = await context.new_page()
         # 导航到指定的URL
         try:
             # 使用请求拦截
-            page.route('**/*', lambda route, request: handle_request(route, request, max_size=max_size))
-            page.goto(resource.resource_source_url, timeout=timeout)
-            page.wait_for_load_state('domcontentloaded')
+            await page.route('**/*', lambda route, request: handle_request(route, request, max_size=max_size))
+            await page.goto(resource.resource_source_url, timeout=timeout)
+            await page.wait_for_load_state('domcontentloaded')
         except Exception as e:
             resource.resource_desc = f'页面加载异常：{e}'
             db.session.add(resource)
             db.session.commit()
         if resource.resource_source_url.lower().split(".")[-1] in document_extensions:
             with page.expect_download(timeout=timeout) as download_info:
-                page.click('body')
+                await page.click('body')
             download = download_info.value
             download.save_as(resource.resource_path)
         else:
-            content = page.content()
-            title = page.title()
-            icon_url = page.evaluate("""
+            content = await page.content()
+            title = await page.title()
+            icon_url = await page.evaluate("""
                 () => {
-                    const link = document.querySelector('link[rel="icon"]') || 
+                    const link = document.querySelector('link[rel="icon"]') ||
                                  document.querySelector('link[rel="shortcut icon"]');
                     return link ? link.href : null;
                 }
@@ -129,51 +260,54 @@ def fetch_page_content(browser, resource, session_id, timeout=6000, max_size=10,
         db.session.commit()
         if session_id:
             # 保存截图为图片型资源
-            screenshot = page.screenshot(full_page=True, timeout=1000)
-            new_resource_path = generate_new_path(
-                module_name="session",
-                user_id=resource.user_id,
-            ).json.get("result")
-            with open(new_resource_path, 'wb') as f:
-                f.write(screenshot)
-            resource_feature_code = hashlib.sha256(screenshot).hexdigest()
-            # 生成下载链接
-            resource_show_url = generate_download_url(
-                module_name="session",
-                file_path=new_resource_path,
-                suffix="png",
-            ).json.get("result")
-            new_resource = ResourceObjectMeta(
-                resource_parent_id=resource.resource_parent_id,
-                user_id=resource.user_id,
-                resource_name=f"{resource.resource_name}.png",
-                resource_title=resource.resource_title,
-                resource_desc=resource.resource_desc,
-                resource_icon=resource.resource_icon,
-                resource_type="image",
-                resource_format="png",
-                resource_size_in_MB=os.path.getsize(new_resource_path) / 1024 / 1024,
-                resource_path=new_resource_path,
-                resource_source_url=resource.resource_source_url,
-                resource_source_url_site=resource.resource_source_url_site,
-                resource_show_url=resource_show_url,
-                resource_feature_code=resource_feature_code,
-                resource_status="正常",
-                resource_source='session'
-            )
-            db.session.add(new_resource)
-            db.session.commit()
-            # 增加到会话附件中去
-            new_attachment = SessionAttachmentRelation(
-                session_id=session_id,
-                resource_id=new_resource.id,
-                attachment_source="webpage",
-                rel_status="正常"
-            )
-            db.session.add(new_attachment)
-            db.session.commit()
-        page.close()
-        context.close()
+            try:
+                screenshot = await page.screenshot(full_page=True, timeout=1000)
+                new_resource_path = generate_new_path(
+                    module_name="session",
+                    user_id=resource.user_id,
+                ).json.get("result")
+                with open(new_resource_path, 'wb') as f:
+                    f.write(screenshot)
+                resource_feature_code = hashlib.sha256(screenshot).hexdigest()
+                # 生成下载链接
+                resource_show_url = generate_download_url(
+                    module_name="session",
+                    file_path=new_resource_path,
+                    suffix="png",
+                ).json.get("result")
+                new_resource = ResourceObjectMeta(
+                    resource_parent_id=resource.resource_parent_id,
+                    user_id=resource.user_id,
+                    resource_name=f"{resource.resource_name}.png",
+                    resource_title=resource.resource_title,
+                    resource_desc=resource.resource_desc,
+                    resource_icon=resource.resource_icon,
+                    resource_type="image",
+                    resource_format="png",
+                    resource_size_in_MB=os.path.getsize(new_resource_path) / 1024 / 1024,
+                    resource_path=new_resource_path,
+                    resource_source_url=resource.resource_source_url,
+                    resource_source_url_site=resource.resource_source_url_site,
+                    resource_show_url=resource_show_url,
+                    resource_feature_code=resource_feature_code,
+                    resource_status="正常",
+                    resource_source='session'
+                )
+                db.session.add(new_resource)
+                db.session.commit()
+                # 增加到会话附件中去
+                new_attachment = SessionAttachmentRelation(
+                    session_id=session_id,
+                    resource_id=new_resource.id,
+                    attachment_source="webpage",
+                    rel_status="正常"
+                )
+                db.session.add(new_attachment)
+                db.session.commit()
+            except Exception as e:
+                pass
+        await page.close()
+        await context.close()
         if auto_build:
             from app.services.task_center.resources_center import auto_build_resource_ref_v2
             auto_build_resource_ref_v2.delay({
@@ -183,7 +317,32 @@ def fetch_page_content(browser, resource, session_id, timeout=6000, max_size=10,
             return resource
 
 
-def handle_request(route, request, max_size=10):
+# def handle_request(route, request, max_size=10):
+#     """
+#     拦截压缩包资源
+#     拦截超过20m的资源
+#     :param route:
+#     :param request:
+#     :param max_size: 最大资源大小，单位为MB
+#     :return:
+#     """
+#     url = request.url.lower()
+#     headers = request.headers
+#     # 检查 URL 是否是非 HTML 内容（例如压缩包）
+#     non_html_extensions = ['.zip', '.rar', '.tar', '.gz', '.7z']
+#
+#     if any(url.endswith(ext) for ext in non_html_extensions):
+#         # 取消请求
+#         route.abort()
+#         return
+#     content_length = headers.get('content-length')
+#     if content_length and int(content_length) > max_size * 1024 * 1024:
+#         route.abort()
+#         return
+#     route.continue_()
+
+
+async def handle_request(route, request, max_size=10):
     """
     拦截压缩包资源
     拦截超过20m的资源
@@ -199,13 +358,13 @@ def handle_request(route, request, max_size=10):
 
     if any(url.endswith(ext) for ext in non_html_extensions):
         # 取消请求
-        route.abort()
+        await route.abort()
         return
     content_length = headers.get('content-length')
     if content_length and int(content_length) > max_size * 1024 * 1024:
-        route.abort()
+        await route.abort()
         return
-    route.continue_()
+    await route.continue_()
 
 
 def get_url_format(url):

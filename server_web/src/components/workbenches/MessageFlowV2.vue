@@ -9,7 +9,7 @@ import MarkdownIt from 'markdown-it';
 import markdownItMermaid from 'markdown-it-mermaid-plugin';
 import mermaid from 'mermaid';
 import {nextTick, onMounted, reactive, ref, watch} from 'vue';
-
+import SessionParams from "./SessionParams.vue";
 import {
   attachment_get_detail as attachmentGetDetail,
   search_messages as searchMessages,
@@ -1423,9 +1423,15 @@ watch(
           <el-col :span="20" :xs="22">
             <div id="message-flow-box" ref="msgFlowBoxRef">
               <WelComeArea
-                  v-show="!msgFlow?.length && !loadingMessages"
+                  v-show="(!msgFlow?.length && !loadingMessages) || localWelComeConfig?.keep"
                   :welcome-config="localWelComeConfig"
                   @prefix-question-click="args => emit('click-recommend-question', { question: args })"
+              />
+              <SessionParams v-if="currentSession?.session_task_params_schema?.ncOrders?.length"
+                             :schema="currentSession.session_task_params_schema"
+                             :params="currentSession.session_task_params"
+                             :session_id="currentSession.id"
+                             style="width: 100%"
               />
               <div
                   v-for="(item, idx) in msgFlow"

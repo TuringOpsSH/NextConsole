@@ -651,27 +651,23 @@ onMounted(async () => {
   color: #374151;
   transition: all 0.2s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-
-  &:hover {
-    background-color: #f9fafb;
-    border-color: #9ca3af;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
 }
-
+.app-button :hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.app-button :active {
+  transform: scale(0.98);
+}
 .app-button-pick {
   background-color: #eff6ff;
   border-color: #3b82f6;
   color: #1d4ed8;
-
-  &:hover {
-    background-color: #dbeafe;
-    border-color: #2563eb;
-  }
+}
+.app-button-pick :hover{
+  background-color: #dbeafe;
+  border-color: #2563eb;
 }
 
 .panel-sub-title {

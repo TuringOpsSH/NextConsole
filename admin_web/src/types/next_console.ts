@@ -42,6 +42,8 @@ export interface session_item{
     session_customer_evaluation?: string | null,
     session_evaluation_close?:boolean | null,
     session_stream?: boolean | null,
+    session_task_params_schema?: Record<string, unknown>;
+    session_task_params?: Record<string, unknown>;
 }
 export interface qa_item{
     qa_id: number,

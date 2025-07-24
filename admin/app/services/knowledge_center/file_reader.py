@@ -85,6 +85,7 @@ def pick_pandoc_lib():
         ('linux', 'x86_64'): 'pandoc-3.7.0.2-linux-amd64',
         ('linux', 'amd64'): 'pandoc-3.7.0.2-linux-amd64',
         ('linux', 'arm64'): 'pandoc-3.7.0.2-linux-arm64',
+        ('linux', 'aarch64'): 'pandoc-3.7.0.2-linux-arm64',
         ('windows', 'amd64'): 'pandoc-3.7.0.2-windows-x86_64',
         ('windows', 'x86_64'): 'pandoc-3.7.0.2-windows-x86_64'
     }

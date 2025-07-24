@@ -7,6 +7,9 @@
     "local": "set NODE_ENV=local&&vite && node version.js",
     "dev": "set NODE_ENV=development&&vite && node version.js",
     "build": "vite build",
+    "build:dev": "env-cmd -f .env.development vite build && node version.js",
+    "build:test": "env-cmd -f .env.test vite build",
+    "build:prod": "env-cmd -f .env.production vite build && node version.js",
     "build:private": "env-cmd -f .env.private vite build",
     "preview": "vite preview"
   },

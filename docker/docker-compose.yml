@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   redis:
-    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc-redis:2.2.2
+    image: redis:latest
     ports:
       - "6379:6379"
     command: redis-server --requirepass ncRedisPassword
@@ -12,7 +12,7 @@ services:
       - app_network
 
   db:
-    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc-pg-17:2.2.2
+    image: pgvector/pgvector:pg17
     environment:
       POSTGRES_USER: next_console
       POSTGRES_PASSWORD: ncDBPassword
@@ -27,7 +27,7 @@ services:
       - app_network
 
   server:
-    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc:2.2.2
+    image: nextconsole/nc:2.2.3
     command:  ["sh", "-c", "cd /app/server && /app/server/entrypoint.sh"]
     volumes:
       - ./config/server/config_private.py:/app/server/app/config/config_private.py
@@ -47,7 +47,7 @@ services:
       - app_network
 
   server-worker:
-    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc:2.2.2
+    image: nextconsole/nc:2.2.3
     command: ["sh", "-c", "cd /app/server && celery -A app.celery worker -l INFO -P gevent --concurrency=80 -Q nc_server_queue"]
     volumes:
       - ./config/server/config_private.py:/app/server/app/config/config_private.py
@@ -62,7 +62,7 @@ services:
 
 
   admin:
-    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc:2.2.2
+    image: nextconsole/nc:2.2.3
     command: ["sh", "-c", "cd /app/admin && /app/admin/entrypoint.sh"]
     volumes:
       - ./config/admin/config_private.py:/app/admin/app/config/config_private.py
@@ -78,7 +78,7 @@ services:
       - app_network
 
   admin-worker:
-    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc:2.2.2
+    image: nextconsole/nc:2.2.3
     command: ["python", "/app/admin/run_admin_celery_worker.py"]
     volumes:
       - ./config/server/config_private.py:/app/server/app/config/config_private.py
@@ -92,7 +92,7 @@ services:
       - app_network
 
   web:
-    image: registry.cn-hangzhou.aliyuncs.com/next_console/nc-web:2.2.2
+    image: nextconsole/nc-web:2.2.3
     ports:
       - "8080:6668"
       - "8082:6669"

@@ -1999,9 +1999,9 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  &:hover {
-    background: #f0f9ff;
-  }
+}
+.quote-right-container :hover {
+  background: #f0f9ff;
 }
 .question-button:hover {
   background: #f0f9ff;

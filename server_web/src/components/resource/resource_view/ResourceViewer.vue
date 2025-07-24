@@ -18,10 +18,12 @@ import hljs from "highlight.js";
 import markdownItKatex from "@vscode/markdown-it-katex";
 import markdownItMermaid from "markdown-it-mermaid-plugin";
 import MarkdownTasks from "markdown-it-task-lists";
+
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/web/pdf_viewer.css';
 import 'pdfjs-dist/build/pdf.worker.min.mjs';
-
+import PDFObject from 'pdfobject';
+import {ElMessage} from "element-plus";
 const props = defineProps({
   resource_id: {
     type: String,
@@ -301,7 +303,7 @@ async function initResourceViewer() {
   resourceViewerLoading.value = true;
   await getCurrentResourceObject();
   resourceViewerLoading.value = false;
-  console.log(currentViewResource.view_config?.engine)
+  console.log(currentViewResource.view_config?.engine, nodeEnv)
   if (currentViewResource.view_config?.engine == "wps") {
     await initWpsDoc();
   } else if (currentViewResource.view_config?.engine == "vue-office") {
@@ -347,11 +349,9 @@ async function initWpsDoc() {
 }
 async function initPdfViewer() {
   try {
-    const loadingTask = pdfjsLib.getDocument(currentViewResource.resource_show_url);
-    const pdf = await loadingTask.promise;
+    const pdf = await pdfjsLib.getDocument(currentViewResource.resource_show_url).promise;
     // 获取 PDF 的总页数
     const numPages = pdf.numPages;
-
     // 遍历每一页
     for (let pageNum = 1; pageNum <= numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
@@ -363,13 +363,8 @@ async function initPdfViewer() {
       const context = canvas.getContext('2d');
       canvas.height = viewport.height;
       canvas.width = viewport.width;
-
-      // 将每个 canvas 元素添加一个间隔样式，便于区分不同页面
       canvas.style.marginBottom = '20px';
-
-      // 将 canvas 添加到容器中
       pdfContainer.value.appendChild(canvas);
-
       // 渲染页面
       const renderContext = {
         canvasContext: context,
@@ -378,8 +373,30 @@ async function initPdfViewer() {
       await page.render(renderContext).promise;
     }
   } catch (error) {
-    console.error('Error rendering PDF:', error);
+    console.log(error, 'PDF加载失败', '尝试使用其他方式加载');
+    try {
+      const pdfOptions = {
+        // 可选配置
+        pdfOpenParams: {
+          view: 'FitV', // 适合宽度查看
+          page: 1,      // 默认打开第一页
+          zoom: 100     // 100%缩放
+        },
+      }
+      pdfContainer.value.innerHTML = '';
+      const success = PDFObject.embed(
+          currentViewResource.resource_show_url,
+          pdfContainer.value,
+          pdfOptions
+      )
+      if (!success) {
+        ElMessage.info('您的浏览器不支持 PDF 预览，请下载查看')
+      }
+    } catch (error) {
+      console.error('PDF加载失败', error);
+    }
   }
+
 }
 async function initExcelViewer() {
   if (!currentViewResource.resource_show_url) {
