@@ -106,8 +106,11 @@ def next_search_add_message_v3(params):
                     })
                 }
             ).json.get("result")
-            if true_question and true_question[1]:
-                question_content = true_question[1]
+            try:
+                if true_question and true_question[1]:
+                    question_content = true_question[1]
+            except Exception as e:
+                app.logger.error(f"run instruction error: {e}")
         # 资源检索
         rag_instruction = AssistantInstruction.query.filter(
             AssistantInstruction.assistant_id == assistant_id,

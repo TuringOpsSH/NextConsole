@@ -33,18 +33,19 @@ def check_task_precondition(task_record):
         return True
 
 
-def load_task_params(task_record, global_params, model="input"):
+def load_task_params(task_record, global_params, model="input", isStart=False):
     """
     加载入参
     """
     # 加载入参
+
     if model == "input":
         properties = task_record.workflow_node_ipjs.get("properties", {})
     elif model == "output":
         properties = task_record.workflow_node_rpjs.get("properties", {})
     else:
         properties = {}
-    task_params = load_properties(properties, global_params)
+    task_params = load_properties(properties, global_params, isStart)
     return task_params
 
 
@@ -53,12 +54,14 @@ def load_task_result(task_record):
     解析任务结果
     """
     exec_result = task_record.task_result.strip()
+    # print(exec_result, task_record.workflow_node_result_format)
     if task_record.workflow_node_result_format == "json" and exec_result:
         if exec_result.startswith("```json"):
             exec_result = exec_result.lstrip("```json").rstrip("```")
         try:
             exec_result = json.loads(exec_result)
         except Exception as e:
+            print(e)
             task_record.task_trace_log = str(e)
             db.session.add(task_record)
             db.session.commit()
@@ -74,8 +77,11 @@ def load_task_result(task_record):
                     pass
         try:
             if task_record.workflow_node_rpjs:
+                # print(exec_result, type(exec_result))
+                # print("校验结果格式", task_record.workflow_node_rpjs)
                 validate(exec_result, task_record.workflow_node_rpjs)
         except Exception as e:
+            print(e)
             task_record.task_trace_log = str(e)
             db.session.add(task_record)
             db.session.commit()
@@ -205,15 +211,19 @@ def check_edge_conditions(edge_config, global_params):
     return edge_condition_result
 
 
-def load_properties(properties, global_params):
+def load_properties(properties, global_params, isStart=False):
     """
     从全局变量中加载出所有的变量
     :return:
     """
     data = {}
+    if isStart:
+        data = global_params["session_task_params"]
+        return data
     try:
         for k in properties:
             ref = properties.get(k).get("ref")
+            required = k in properties.get("required", [])
             # 固定值
             if properties.get(k).get("value"):
                 data[k] = properties.get(k).get("value")
@@ -221,11 +231,15 @@ def load_properties(properties, global_params):
             elif ref:
                 # 固定值
                 if isinstance(ref, (str, int)):
+                    if required and ref == '':
+                        raise ValueError(f"Required field '{k}' is missing in global parameters.")
                     if properties.get(k).get("type") == "boolean":
                         if ref == 'false':
                             ref = False
                         elif ref == 'true':
                             ref = True
+                        else:
+                            ref = None
                     data[k] = ref
                     continue
                 node_code = ref.get("nodeCode")
@@ -242,9 +256,21 @@ def load_properties(properties, global_params):
                             find_flag = True
                     if not find_flag:
                         target_params = ''
+                if required and not target_params:
+                    raise RuntimeError(f"Required field '{k}' is missing in global parameters.")
                 data[k] = target_params
-            else:
+
+            elif global_params.get(k):
                 data[k] = global_params.get(k, '')
+            elif properties.get(k).get("properties"):
+                data[k] = load_properties(properties.get(k).get("properties", {}), global_params)
+            elif isStart and global_params["session_task_params"].get(k):
+                data[k] = global_params["session_task_params"].get(k)
+            elif required:
+                raise RuntimeError(f"Required field '{k}' is missing in global parameters.")
         return data
+    except RuntimeError as e:
+        raise e
     except Exception as e:
         return data
+

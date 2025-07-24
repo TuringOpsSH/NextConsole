@@ -117,11 +117,35 @@ def get_app_session_service(params):
     else:
         if int(target_app.user_id) != int(user_id) and not check_user_access(target_user, app_code):
             return next_console_response(error_status=True, error_message="用户无权访问！", error_code=1002)
+        target_start_node = WorkFlowMetaInfo.query.filter(
+            WorkFlowMetaInfo.workflow_is_main == True,
+            WorkFlowMetaInfo.workflow_status == "正常",
+            WorkFlowMetaInfo.environment == '生产'
+        ).join(
+            AppWorkFlowRelation,
+            AppWorkFlowRelation.workflow_code == WorkFlowMetaInfo.workflow_code
+        ).filter(
+            AppWorkFlowRelation.app_code == target_app.app_code,
+            AppWorkFlowRelation.environment == '生产',
+            AppWorkFlowRelation.rel_status == '正常'
+        ).join(
+            WorkflowNodeInfo,
+            WorkflowNodeInfo.workflow_id == WorkFlowMetaInfo.id
+        ).filter(
+            WorkflowNodeInfo.node_type == 'start',
+            WorkflowNodeInfo.node_status == '正常'
+        ).with_entities(
+            WorkflowNodeInfo
+        ).first()
+        session_task_params_schema = {}
+        if target_start_node:
+            session_task_params_schema = target_start_node.node_input_params_json_schema or {}
         result = add_session({
             "user_id": user_id,
             "session_topic": f"{target_app.app_name} 会话",
             "session_status": "正常",
             "session_source": target_app.app_code,
+            "session_task_params_schema": session_task_params_schema,
         }).json.get("result")
     result["app_icon"] = target_app.app_icon
     return next_console_response(result=result)
@@ -555,7 +579,10 @@ def agent_run_workflow(params):
         global_params["session_id"] = current_session.get("id")
         global_params["session_topic"] = current_session.get("session_topic")
         global_params["msg_id"] = msg_id
-        global_params["USER_INPUT"] = message
+        global_params["qa_id"] = params.get("qa_id")
+        global_params["session_task_params"] = current_session.get("session_task_params")
+        global_params["SessionId"] = current_session.get("id")
+        global_params["UserInput"] = message
         global_params["end_node_instance"] = end_node_instance
         SessionAttachments = SessionAttachmentRelation.query.filter(
             SessionAttachmentRelation.session_id == current_session.get("id"),
@@ -605,7 +632,8 @@ def agent_run_node(task_record_id, global_params=None):
             return
         try:
             # 加载入参
-            task_params = load_task_params(task_record, global_params)
+            task_params = load_task_params(task_record, global_params,
+                                           isStart=task_record.workflow_node_type == "start")
             task_record.task_params = task_params
             task_record.task_status = "执行中"
             task_record.begin_time = datetime.now()
@@ -616,7 +644,7 @@ def agent_run_node(task_record_id, global_params=None):
             with Timeout(task_record.workflow_node_timeout):
                 # 路由到对应的执行器
                 if task_record.workflow_node_type == "start":
-                    start_node_execute(task_record, global_params)
+                    start_node_execute(task_params, task_record, global_params)
                 elif task_record.workflow_node_type == "llm":
                     if task_record.workflow_node_run_model_config.get("node_run_model") == "parallel":
                         # 并发执行
@@ -700,12 +728,12 @@ def invoke_next_task(task_record, global_params):
         global_params["futures"].append(future)
 
 
-def start_node_execute(task_record, global_params):
+def start_node_execute(task_params, task_record, global_params):
     # 加载用户全局变量
     task_result = {
-        "USER_INPUT": global_params.get("USER_INPUT"),
-        "session_id": global_params.get("session_id"),
-        "current_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "UserInput": global_params.get("UserInput"),
+        "SessionId": global_params.get("SessionId"),
+        "CurrentTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
     MessageAttachmentList = []
     SessionAttachmentList = []
@@ -725,6 +753,7 @@ def start_node_execute(task_record, global_params):
         })
     task_result["MessageAttachmentList"] = MessageAttachmentList
     task_result["SessionAttachmentList"] = SessionAttachmentList
+    task_result.update(task_params)
     task_record.task_result = json.dumps(task_result)
     task_record.task_status = "已完成"
     task_record.end_time = datetime.now()
@@ -1281,14 +1310,18 @@ def handle_node_failed(task_record, global_params, error=''):
         return invoke_next_task(task_record, global_params)
     # 直接退出模式
     end_node = global_params["end_node_instance"]
-    end_node.task_status = "异常"
-    end_node.task_result = json.dumps({
-        "error": error,
-        "message": "任务执行异常，请检查日志"
-    })
-    end_node.end_time = datetime.now()
-    db.session.add(end_node)
-    db.session.commit()
+    end_node = WorkFlowNodeInstance.query.filter(
+        WorkFlowNodeInstance.id == end_node.id
+    ).first()
+    if end_node:
+        end_node.task_status = "异常"
+        end_node.task_result = json.dumps({
+            "error": error,
+            "message": "任务执行异常，请检查日志"
+        })
+        end_node.end_time = datetime.now()
+        db.session.add(end_node)
+        db.session.commit()
     for future in global_params["futures"]:
         future.cancel()
     global_params["futures"] = [future for future in global_params["futures"] if future.done()]

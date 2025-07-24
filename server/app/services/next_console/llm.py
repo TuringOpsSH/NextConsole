@@ -326,7 +326,7 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
              llm_client, messages, stream, response_format, temperature=0,
              max_tokens=None, create_time=None):
     begin_time = time.time()
-    reasoning_content = ""
+    msg_reasoning_content = ""
     msg_content = ""
     msg_token_used = 0
     msg_is_cut_off = False
@@ -340,21 +340,36 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
     try:
         completion = llm_client.chat(stream_chat_params)
         for chunk in completion:
-            if hasattr(chunk, "usage") and chunk.usage and chunk.usage.total_tokens > 0:
-                msg_token_used = chunk.usage.total_tokens
-            if chunk.choices and (
-                    chunk.choices[0].delta.content or hasattr(chunk.choices[0].delta, "reasoning_content")):
-                if hasattr(chunk.choices[0].delta, "reasoning_content"):
-                    reasoning_content += chunk.choices[0].delta.reasoning_content
-                else:
-                    msg_content += chunk.choices[0].delta.content
-                chunk_res = chunk.model_dump_json()
-                chunk_res = json.loads(chunk_res)
+            chunk_res = chunk.model_dump_json()
+            chunk_res = json.loads(chunk_res)
+            try:
+                total_tokens = chunk_res.get("usage").get("total_tokens", 0)
+            except Exception as e:
+                total_tokens = 0
+            try:
+                reasoning_content = chunk_res.get("choices")[0].get("delta").get("reasoning_content", "")
+            except Exception as e:
+                reasoning_content = ""
+            try:
+                content = chunk_res.get("choices")[0].get("delta").get("content", "")
+            except Exception as e:
+                content = ""
+            if not reasoning_content:
+                reasoning_content = ''
+            if not content:
+                content = ''
+            msg_reasoning_content += reasoning_content
+            msg_content += content
+            if total_tokens:
+                msg_token_used = total_tokens
+            if reasoning_content or content:
                 chunk_res["session_id"] = session_id
                 chunk_res["qa_id"] = qa_id
                 chunk_res["msg_parent_id"] = msg_parent_id
                 chunk_res["msg_id"] = msg_id
                 chunk_res["create_time"] = create_time
+                chunk_res["choices"][0]["delta"]["content"] = content
+                chunk_res["choices"][0]["delta"]["reasoning_content"] = reasoning_content
                 chunk_res = json.dumps(chunk_res)
                 yield f'data: {chunk_res}\n\n'
     except GeneratorExit:
@@ -425,7 +440,7 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
             "msg_token_used": msg_token_used,
             "msg_time_used": end_time - begin_time,
             "msg_is_cut_off": msg_is_cut_off,
-            "reasoning_content": reasoning_content,
+            "reasoning_content": msg_reasoning_content,
         }
         if "对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~" in msg_content:
             answer_params["msg_is_cut_off"] = True

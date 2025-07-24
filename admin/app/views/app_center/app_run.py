@@ -66,9 +66,9 @@ def get_app_workflow_debug_info():
     """
     user_id = get_jwt_identity()
     data = request.get_json()
-    qa_list = data.get("qa_list", [])
-    if not qa_list:
-        return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
     data["user_id"] = user_id
+    workflow_instance_id = data.get("workflow_instance_id")
+    if workflow_instance_id:
+        return get_app_workflow_debug_full_info(data)
     return search_app_workflow_debug_info(data)
 

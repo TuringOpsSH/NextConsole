@@ -33,6 +33,7 @@ def add_session(params):
     session_attachment_webpage_switch = params.get("session_attachment_webpage_switch", False)
     session_local_resource_switch = params.get("session_local_resource_switch", False)
     session_local_resource_use_all = params.get("session_local_resource_use_all", False)
+    session_task_params_schema = params.get("session_task_params_schema", {})
     # 使用 UUID4 生成基于随机数的唯一标识符
     unique_id = uuid.uuid4().hex
     # 使用 SHA-256 生成哈希值，保证唯一性和长度一致
@@ -75,7 +76,8 @@ def add_session(params):
         session_attachment_file_switch=session_attachment_file_switch,
         session_attachment_webpage_switch=session_attachment_webpage_switch,
         session_local_resource_switch=session_local_resource_switch,
-        session_local_resource_use_all=session_local_resource_use_all
+        session_local_resource_use_all=session_local_resource_use_all,
+        session_task_params_schema=session_task_params_schema
     )
     db.session.add(new_session)
     db.session.commit()
@@ -112,6 +114,7 @@ def update_session(params):
     session_attachment_webpage_switch = params.get("session_attachment_webpage_switch")
     session_local_resource_switch = params.get("session_local_resource_switch")
     session_local_resource_use_all = params.get("session_local_resource_use_all")
+    session_task_params = params.get("session_task_params", {})
     if not target_session:
         return next_console_response(error_status=True, error_code=1001, error_message="会话不存在", result=params)
 
@@ -157,6 +160,8 @@ def update_session(params):
             target_session.session_local_resource_use_all = False
     if session_local_resource_use_all is not None:
         target_session.session_local_resource_use_all = session_local_resource_use_all
+    if session_task_params is not None:
+        target_session.session_task_params = session_task_params
     try:
         db.session.add(target_session)
         db.session.commit()

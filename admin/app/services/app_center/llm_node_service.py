@@ -40,7 +40,7 @@ def llm_node_execute(params, task_record, global_params):
         db.session.commit()
         return next_console_response(error_status=True, error_message=f"此模型{task_record.workflow_node_llm_code}暂不支持")
     msg_content = ""
-    reasoning_content = ""
+    msg_reasoning_content = ""
     msg_token_used = 0
     answer_msg = None
     if workflow_node_llm_params.get("stream", False):
@@ -67,22 +67,36 @@ def llm_node_execute(params, task_record, global_params):
             for chunk in completion:
                 if global_params.get("stop_flag"):
                     raise GeneratorExit
-                if hasattr(chunk, "usage") and chunk.usage and chunk.usage.total_tokens > 0:
-                    msg_token_used = chunk.usage.total_tokens
-                if chunk.choices and (
-                        chunk.choices[0].delta.content or hasattr(chunk.choices[0].delta, "reasoning_content")):
-                    if hasattr(chunk.choices[0].delta, "reasoning_content") and chunk.choices[0].delta.reasoning_content:
-                        reasoning_content += chunk.choices[0].delta.reasoning_content
-                    elif chunk.choices[0].delta.content:
-                        msg_content += chunk.choices[0].delta.content
-                    if global_params["stream"] and output_flag:
-                        chunk_res = chunk.model_dump_json()
-                        chunk_res = json.loads(chunk_res)
-                        chunk_res["session_id"] = task_record.session_id
-                        chunk_res["qa_id"] = task_record.qa_id
-                        chunk_res["msg_parent_id"] = task_record.msg_id
-                        chunk_res["msg_id"] = answer_msg.msg_id
-                        global_params["message_queue"].put(chunk_res)
+                chunk_res = chunk.model_dump_json()
+                chunk_res = json.loads(chunk_res)
+                try:
+                    total_tokens = chunk_res.get("usage").get("total_tokens", 0)
+                except Exception as e:
+                    total_tokens = 0
+                try:
+                    reasoning_content = chunk_res.get("choices")[0].get("delta").get("reasoning_content", "")
+                except Exception as e:
+                    reasoning_content = ""
+                try:
+                    content = chunk_res.get("choices")[0].get("delta").get("content", "")
+                except Exception as e:
+                    content = ""
+                if not reasoning_content:
+                    reasoning_content = ''
+                if not content:
+                    content = ''
+                msg_reasoning_content += reasoning_content
+                msg_content += content
+                if total_tokens:
+                    msg_token_used = total_tokens
+                if global_params["stream"] and output_flag and (content or reasoning_content):
+                    chunk_res["session_id"] = task_record.session_id
+                    chunk_res["qa_id"] = task_record.qa_id
+                    chunk_res["msg_parent_id"] = task_record.msg_id
+                    chunk_res["msg_id"] = answer_msg.msg_id
+                    chunk_res["choices"][0]["delta"]["content"] = content
+                    chunk_res["choices"][0]["delta"]["reasoning_content"] = reasoning_content
+                    global_params["message_queue"].put(chunk_res)
         except GeneratorExit:
             pass
         except Exception as e3:
@@ -118,7 +132,7 @@ def llm_node_execute(params, task_record, global_params):
                 try:
                     reference_md = add_reference_md(task_record, global_params)
                 except Exception as e:
-                    print(e)
+                    print('llm_node_execute', e)
                     reference_md = ''
                 global_params["message_queue"].put({
                     "session_id": task_record.session_id,
@@ -138,7 +152,7 @@ def llm_node_execute(params, task_record, global_params):
                 msg_content += reference_md
             task_record.task_result = json.dumps({
                 "content": msg_content,
-                "reasoning_content": reasoning_content,
+                "reasoning_content": msg_reasoning_content,
             })
             task_record.end_time = datetime.now()
             task_record.task_status = "已完成"
@@ -147,7 +161,7 @@ def llm_node_execute(params, task_record, global_params):
             db.session.commit()
             if output_flag:
                 answer_msg.msg_content = msg_content
-                answer_msg.reasoning_content = reasoning_content
+                answer_msg.reasoning_content = msg_reasoning_content
                 answer_msg.msg_token_used = msg_token_used
                 db.session.add(answer_msg)
                 db.session.commit()
@@ -158,7 +172,7 @@ def llm_node_execute(params, task_record, global_params):
             res = llm_client.chat(workflow_node_llm_params).model_dump_json()
             res = json.loads(res)
             msg_content = res.get("choices")[0].get("message").get("content")
-            reasoning_content = res.get("choices")[0].get("reasoning_content", "")
+            msg_reasoning_content = res.get("choices")[0].get("reasoning_content", "")
             msg_token_used = res.get("usage", {}).get("total_tokens", 0)
             task_record.task_status = "已完成"
             task_record.task_token_used = msg_token_used
@@ -172,7 +186,7 @@ def llm_node_execute(params, task_record, global_params):
             msg_content += reference_md
         task_record.task_result = json.dumps({
                 "content": msg_content,
-                "reasoning_content": reasoning_content,
+                "reasoning_content": msg_reasoning_content,
             })
         task_record.task_status = "已完成"
         task_record.end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -305,14 +319,18 @@ def add_reference_md(task_record, global_params):
     ncOrders = task_record.workflow_node_ipjs.get('ncOrders', [])
     md_content = ''
     for attr in ncOrders:
-        prop = task_record.workflow_node_ipjs.get('properties', {}).get(attr, {})
+        try:
+            prop = task_record.workflow_node_ipjs.get('properties', {}).get(attr, {})
+        except Exception as e:
+            continue
         if prop.get('ref', {}).get("nodeType") == "rag":
             node_code = prop.get('ref', {}).get("nodeCode")
             node_results = global_params.get(node_code, {})
             if not node_results:
                 continue
             details = node_results.get("details", [])
-            chunk_list = [detail.get("chunk_id") for detail in details if detail.get("chunk_id")]
+            chunk_list = [detail.get("chunk_id") for detail in details if isinstance(detail, dict)
+                          and detail.get("chunk_id")]
             all_md_resources = ResourceChunkInfo.query.filter(
                 ResourceChunkInfo.id.in_(chunk_list)
             ).join(
@@ -349,7 +367,7 @@ def add_reference_md(task_record, global_params):
                 if parent_resource.resource_type == "webpage":
                     md_content += f"\n\n[{index}]: {parent_resource.resource_source_url}"
                 elif parent_resource.resource_type == "document":
-                    md_content += f"\n\n[{index}]: {app.config['domain']}/#/next_console_admin/resources/resource_viewer/{resource_parent_id}"
+                    md_content += f"\n\n[{index}]: {app.config['domain']}/#/next_console/resources/resource_viewer/{resource_id}"
                 else:
                     md_content += f"\n\n[{index}]: {parent_resource.resource_download_url}"
                 index += 1

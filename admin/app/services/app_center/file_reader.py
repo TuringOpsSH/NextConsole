@@ -167,7 +167,7 @@ def execlReader(resource, task_params):
             "id": new_resource.id,
             "format": new_resource.resource_format,
             "url": new_resource.resource_download_url,
-            "content": content[:20000],
+            "content": content,
         })
         db.session.commit()
     return output_resources
@@ -285,7 +285,7 @@ def pandocReader(resource, task_params):
             "id": new_resource.id,
             "format": new_resource.resource_format,
             "url": new_resource.resource_download_url,
-            "content": content[:20000],
+            "content": content,
         }
     )
     db.session.commit()

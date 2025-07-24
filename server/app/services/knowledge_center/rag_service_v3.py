@@ -429,7 +429,9 @@ def rag_query_v3(params):
     query_log["time_usage"]["embedding_time"] = time.time() - embedding_begin_time
 
     if rerank_enabled and all_ref_chunks:
-        all_ref_chunks = rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log)
+        all_recall_chunks = rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log)
+        if isinstance(all_recall_chunks, list):
+            all_ref_chunks = all_recall_chunks
     # 组装返回结果
     for resource_chunk in all_ref_chunks:
         result['details'].append({

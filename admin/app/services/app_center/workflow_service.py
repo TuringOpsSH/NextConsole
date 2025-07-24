@@ -343,14 +343,17 @@ def check_app_flow_schema(params):
         # rule6 检查节点输入参数
         if isinstance(target_node.node_input_params_json_schema, dict):
             # 值为空
+            if target_node.node_type == "start":
+                continue
             for attr in target_node.node_input_params_json_schema["properties"]:
                 attr_define = target_node.node_input_params_json_schema["properties"][attr]
                 if attr_define and not attr_define.get("ref") and not attr_define.get("value"):
-                    all_check_info.append({
-                        "id": f'alter-输入参数{target_node.id}',
-                        'title': f'工作流{target_workflow.workflow_name}-节点{target_node.node_name}:输入参数{attr}配置异常',
-                        'type': 'error'
-                    })
+                    if not attr_define.get("properties"):
+                        all_check_info.append({
+                            "id": f'alter-输入参数{target_node.id}',
+                            'title': f'工作流{target_workflow.workflow_name}-节点{target_node.node_name}:输入参数{attr}配置异常',
+                            'type': 'error'
+                        })
         all_check_info.extend(check_input_ref_params(target_workflow, target_node, global_params))
         if target_node.node_enable_message:
             has_message_config = True
@@ -469,7 +472,10 @@ def check_input_ref_params(workflow, node, global_params):
     if not schema.get("properties"):
         return error_info
     from app.services.app_center.app_run_service import load_properties
-    result = load_properties(schema.get("properties"), global_params)
+    try:
+        result = load_properties(schema.get("properties"), global_params)
+    except Exception as e:
+        result = []
     if not result:
         error_info.append({
             "id": f"alter-节点引用参数{node.id}",
@@ -496,7 +502,9 @@ def valid_fake_result(properties, fake_result):
     """
     invalid_attrs = []
     for attr, attr_define in properties.items():
-        if attr not in fake_result:
+        if attr_define.get("ref") and isinstance(attr_define.get("ref"), str):
+            continue
+        if attr not in fake_result and not attr_define.get("properties", {}):
             invalid_attrs.append(attr)
             continue
         if attr_define.get("type") == "string" and not isinstance(fake_result[attr], str):
@@ -508,7 +516,7 @@ def valid_fake_result(properties, fake_result):
         elif attr_define.get("type") == "boolean" and not isinstance(fake_result[attr], bool):
             invalid_attrs.append(attr)
         elif attr_define.get("type") == "object":
-            invalid_attrs.extend(valid_fake_result(attr_define.get("properties", {}), fake_result[attr]))
+            invalid_attrs.extend(valid_fake_result(attr_define.get("properties", {}), fake_result.get(attr, {})))
         elif attr_define.get("type") == "array":
             if not isinstance(fake_result[attr], list):
                 invalid_attrs.append(attr)
@@ -767,9 +775,9 @@ def init_start_node(new_node):
     new_node.node_result_params_json_schema = {
         "type": "object",
         "properties": {
-            "USER_INPUT": {
+            "UserInput": {
                 "type": "string",
-                "description": "输入参数"
+                "description": "用户问题"
             },
             "SessionAttachmentList": {
                 "type": "array",
@@ -780,23 +788,27 @@ def init_start_node(new_node):
                             "ref": "",
                             "showSubArea": False,
                             "type": "string",
-                            "value": ""
+                            "value": "",
+                            "description": "文件格式"
                         },
                         "id": {
                             "showSubArea": False,
-                            "type": "number"
+                            "type": "number",
+                            "description": "附件id"
                         },
                         "name": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "string",
-                            "value": ""
+                            "value": "",
+                            "description": "附件名称"
                         },
                         "size": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "number",
-                            "value": ""
+                            "value": "",
+                            "description": "附件大小"
                         }
                     },
                     "type": "object",
@@ -812,23 +824,27 @@ def init_start_node(new_node):
                             "ref": "",
                             "showSubArea": False,
                             "type": "string",
-                            "value": ""
+                            "value": "",
+                            "description": "文件格式"
                         },
                         "id": {
                             "showSubArea": False,
-                            "type": "number"
+                            "type": "number",
+                            "description": "附件id"
                         },
                         "name": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "string",
-                            "value": ""
+                            "value": "",
+                            "description": "附件名称"
                         },
                         "size": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "number",
-                            "value": ""
+                            "value": "",
+                            "description": "附件大小"
                         }
                     },
                     "type": "object",
@@ -837,16 +853,16 @@ def init_start_node(new_node):
                 "showSubArea": True,
                 "type": "array"
             },
-            "session_id": {
+            "SessionId": {
                 "type": "number",
                 "description": "会话id"
             },
-            "current_time": {
+            "CurrentTime": {
                 "type": "string",
                 "description": "当前时间"
             }
         },
-        "ncOrders": ['USER_INPUT', 'session_id', 'SessionAttachmentList', 'MessageAttachmentList', 'current_time']
+        "ncOrders": ['UserInput', 'SessionId', 'SessionAttachmentList', 'MessageAttachmentList', 'CurrentTime']
     }
 
 
@@ -891,36 +907,42 @@ def init_rag_node(new_node):
                             "properties": {
                                 "source": {
                                     "showSubArea": False,
-                                    "type": "number"
+                                    "type": "number",
+                                    "description": "数据源ID",
                                 },
                                 "source_type": {
                                     "ref": "",
                                     "showSubArea": False,
                                     "type": "string",
-                                    "value": ""
+                                    "value": "",
+                                    "description": "数据源类型",
                                 }
                             },
                             "ref": "",
                             "showSubArea": True,
                             "type": "object",
                             "value": "",
-                            "ncOrders": ["source", "source_type"]
+                            "ncOrders": ["source", "source_type"],
+                            "description": "元信息"
                         },
                         "recall_score": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "number",
-                            "value": ""
+                            "value": "",
+                            "description": "召回分数"
                         },
                         "rerank_score": {
                             "showSubArea": False,
-                            "type": "number"
+                            "type": "number",
+                            "description": "重排序分数",
                         },
                         "text": {
                             "ref": "",
                             "showSubArea": True,
                             "type": "string",
-                            "value": ""
+                            "value": "",
+                            "description": "召回文本"
                         }
                     },
                     "type": "object",
@@ -929,7 +951,8 @@ def init_rag_node(new_node):
                 "ref": "",
                 "showSubArea": True,
                 "type": "array",
-                "value": ""
+                "value": "",
+                "description": "RAG召回结果列表",
             },
             "reference_texts": {
                 "items": {
@@ -938,7 +961,8 @@ def init_rag_node(new_node):
                 "ref": "",
                 "showSubArea": True,
                 "type": "array",
-                "value": ""
+                "value": "",
+                "description": "参考文本列表",
             },
         },
         "type": "object",

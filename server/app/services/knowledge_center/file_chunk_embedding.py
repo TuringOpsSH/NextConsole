@@ -1,5 +1,6 @@
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from app.app import app
 
 
 def chunk_embedding(params):
@@ -133,7 +134,11 @@ def rerank_call(params):
         "authorization": "Bearer {}".format(key)
     }
     scores = [0 for i in range(len(documents))]
-    result = requests.post(api, json=payload, headers=headers).json()
+    try:
+        result = requests.post(api, json=payload, headers=headers).json()
+    except Exception as e:
+        app.logger.error(f"Rerank API call failed: {str(e)}")
+        return []
     if model == "gte-rerank-v2":
         result = result.get("output", {})
     try:
@@ -141,14 +146,15 @@ def rerank_call(params):
             scores[e['index']] = e['relevance_score']
     except KeyError as e:
         return []
-    try:
-        response = requests.post(api, json=payload, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        for item in data.get("results", []):
-            scores[item['index']] = item['relevance_score']
-        return scores
-    except requests.exceptions.RequestException as e:
-        return []
-    except Exception as e:
-        return []
+    return scores
+    # try:
+    #     response = requests.post(api, json=payload, headers=headers)
+    #     response.raise_for_status()
+    #     data = response.json()
+    #     for item in data.get("results", []):
+    #         scores[item['index']] = item['relevance_score']
+    #     return scores
+    # except requests.exceptions.RequestException as e:
+    #     return []
+    # except Exception as e:
+    #     return []

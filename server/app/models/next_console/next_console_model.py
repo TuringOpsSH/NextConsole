@@ -35,6 +35,8 @@ class NextConsoleSession(db.Model):
     session_customer_evaluation = db.Column(db.Text, comment='会话客户评价')
     session_evaluation_close = db.Column(db.Boolean, default=False, comment='会话评价关闭')
     session_cancel_reason = db.Column(db.Text, comment='会话取消原因')
+    session_task_params_schema = db.Column(db.JSON, default={}, comment='任务参数schema')
+    session_task_params = db.Column(db.JSON, default={}, comment='任务参数')
     create_time = db.Column(db.DateTime, default=func.now(), comment='接受时间')
     update_time = db.Column(db.DateTime, default=func.now(), comment='更新时间')
 
@@ -71,6 +73,8 @@ class NextConsoleSession(db.Model):
             "session_customer_evaluation": self.session_customer_evaluation,
             "session_evaluation_close": self.session_evaluation_close,
             "session_cancel_reason": self.session_cancel_reason,
+            "session_task_params_schema": self.session_task_params_schema,
+            "session_task_params": self.session_task_params,
             "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             "update_time": self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
         }

@@ -2,7 +2,7 @@ import queue
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
-
+from sqlalchemy import func
 from flask import stream_with_context, Response
 from flask_jwt_extended import (
     create_access_token
@@ -80,14 +80,39 @@ def get_app_session_service(params):
     else:
         if target_app.app_status != "正常" and not session_test:
             return next_console_response(error_status=True, error_message="应用状态不正确！", error_code=1002)
-        if check_workflow_permission(user_id, app_code) is not True and not check_user_access(target_user.user_code, app_code):
+        if check_workflow_permission(user_id, app_code) is not True and not check_user_access(
+                target_user.user_code, app_code):
             return next_console_response(error_status=True, error_message="用户无权访问！", error_code=1002)
+        target_start_node = WorkFlowMetaInfo.query.filter(
+            WorkFlowMetaInfo.workflow_code == workflow_code,
+            WorkFlowMetaInfo.workflow_status == "正常",
+            WorkFlowMetaInfo.environment == '开发'
+        ).join(
+            AppWorkFlowRelation,
+            AppWorkFlowRelation.workflow_code == WorkFlowMetaInfo.workflow_code
+        ).filter(
+            AppWorkFlowRelation.app_code == target_app.app_code,
+            AppWorkFlowRelation.environment == '开发',
+            AppWorkFlowRelation.rel_status == '正常'
+        ).join(
+            WorkflowNodeInfo,
+            WorkflowNodeInfo.workflow_id == WorkFlowMetaInfo.id
+        ).filter(
+            WorkflowNodeInfo.node_type == 'start',
+            WorkflowNodeInfo.node_status == '正常'
+        ).with_entities(
+            WorkflowNodeInfo
+        ).first()
+        session_task_params_schema = {}
+        if target_start_node:
+            session_task_params_schema = target_start_node.node_input_params_json_schema or {}
         result = add_session({
             "user_id": user_id,
             "session_topic": f"{target_app.app_name} 会话",
             "session_status": "正常" if not session_test else "测试",
             "session_source": target_app.app_code,
-            "session_task_id": workflow_code
+            "session_task_id": workflow_code,
+            "session_task_params_schema": session_task_params_schema,
         }).json.get("result")
     return next_console_response(result=result)
 
@@ -532,7 +557,10 @@ def agent_run_workflow(params):
         global_params["session_id"] = current_session.get("id")
         global_params["session_topic"] = current_session.get("session_topic")
         global_params["msg_id"] = msg_id
-        global_params["USER_INPUT"] = message
+        global_params["qa_id"] = params.get("qa_id")
+        global_params["session_task_params"] = current_session.get("session_task_params")
+        global_params["SessionId"] = current_session.get("id")
+        global_params["UserInput"] = message
         global_params["end_node_instance"] = end_node_instance
         SessionAttachments = SessionAttachmentRelation.query.filter(
             SessionAttachmentRelation.session_id == current_session.get("id"),
@@ -582,7 +610,8 @@ def agent_run_node(task_record_id, global_params=None):
             return
         try:
             # 加载入参
-            task_params = load_task_params(task_record, global_params)
+            task_params = load_task_params(task_record, global_params,
+                                           isStart=task_record.workflow_node_type == "start")
             task_record.task_params = task_params
             task_record.task_status = "执行中"
             task_record.begin_time = datetime.now()
@@ -593,7 +622,7 @@ def agent_run_node(task_record_id, global_params=None):
             with Timeout(task_record.workflow_node_timeout):
                 # 路由到对应的执行器
                 if task_record.workflow_node_type == "start":
-                    start_node_execute(task_record, global_params)
+                    start_node_execute(task_params, task_record, global_params)
                 elif task_record.workflow_node_type == "llm":
                     if task_record.workflow_node_run_model_config.get("node_run_model") == "parallel":
                         # 并发执行
@@ -613,6 +642,7 @@ def agent_run_node(task_record_id, global_params=None):
                     file_reader_node_execute(task_params, task_record, global_params)
             # 解析结果
             exec_result = load_task_result(task_record)
+            # print(' 解析结果',task_record, exec_result)
             if exec_result:
                 task_record.task_result = json.dumps(exec_result)
                 task_record.task_status = "已完成"
@@ -677,12 +707,12 @@ def invoke_next_task(task_record, global_params):
         global_params["futures"].append(future)
 
 
-def start_node_execute(task_record, global_params):
+def start_node_execute(task_params, task_record, global_params):
     # 加载用户全局变量
     task_result = {
-        "USER_INPUT": global_params.get("USER_INPUT"),
-        "session_id": global_params.get("session_id"),
-        "current_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "UserInput": global_params.get("UserInput"),
+        "SessionId": global_params.get("SessionId"),
+        "CurrentTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
     MessageAttachmentList = []
     SessionAttachmentList = []
@@ -702,6 +732,7 @@ def start_node_execute(task_record, global_params):
         })
     task_result["MessageAttachmentList"] = MessageAttachmentList
     task_result["SessionAttachmentList"] = SessionAttachmentList
+    task_result.update(task_params)
     task_record.task_result = json.dumps(task_result)
     task_record.task_status = "已完成"
     task_record.end_time = datetime.now()
@@ -1261,14 +1292,18 @@ def handle_node_failed(task_record, global_params, error=''):
         return invoke_next_task(task_record, global_params)
     # 直接退出模式
     end_node = global_params["end_node_instance"]
-    end_node.task_status = "异常"
-    end_node.task_result = json.dumps({
-        "error": error,
-        "message": "任务执行异常，请检查日志"
-    })
-    end_node.end_time = datetime.now()
-    db.session.add(end_node)
-    db.session.commit()
+    end_node = WorkFlowNodeInstance.query.filter(
+        WorkFlowNodeInstance.id == end_node.id
+    ).first()
+    if end_node:
+        end_node.task_status = "异常"
+        end_node.task_result = json.dumps({
+            "error": error,
+            "message": "任务执行异常，请检查日志"
+        })
+        end_node.end_time = datetime.now()
+        db.session.add(end_node)
+        db.session.commit()
     for future in global_params["futures"]:
         future.cancel()
     global_params["futures"] = [future for future in global_params["futures"] if future.done()]
@@ -1281,16 +1316,26 @@ def search_app_workflow_debug_info(data):
     """
     user_id = int(data.get("user_id"))
     qa_list = data.get("qa_list", [])
+    session_id = data.get("session_id", None)
     from app.services.next_console.base import search_qa
     target_qas = search_qa({
         "user_id": user_id,
         "qa_id": qa_list
     }).json.get("result", [])
-    if not target_qas:
-        return next_console_response(error_status=True, error_message="未找到对应的工作流调试信息")
-    target_instances = WorkFlowNodeInstance.query.filter(
-        WorkFlowNodeInstance.qa_id.in_(qa_list)
-    ).all()
+    if target_qas:
+        target_instances = WorkFlowNodeInstance.query.filter(
+            WorkFlowNodeInstance.qa_id.in_(qa_list)
+        ).all()
+    else:
+        max_qa_id = WorkFlowNodeInstance.query.filter(
+            WorkFlowNodeInstance.user_id == user_id,
+            WorkFlowNodeInstance.session_id == session_id
+        ).with_entities(
+            func.max(WorkFlowNodeInstance.qa_id)
+        ).scalar()
+        target_instances = WorkFlowNodeInstance.query.filter(
+            WorkFlowNodeInstance.qa_id == max_qa_id
+        ).all()
     result = []
     for instance in target_instances:
         duration = (instance.end_time - instance.begin_time).total_seconds() if instance.begin_time and instance.end_time else None,
@@ -1308,9 +1353,9 @@ def search_app_workflow_debug_info(data):
             "msg_id": instance.msg_id,
             "task_params": instance.task_params,
             "task_prompt": instance.task_prompt,
+            "task_result": instance.task_result[:1000],
             "task_status": instance.task_status,
             "task_retry_cnt": instance.task_retry_cnt,
-            "task_result": instance.task_result,
             "begin_time": instance.begin_time.strftime('%Y-%m-%d %H:%M:%S') if instance.begin_time else None,
             "end_time": instance.end_time.strftime('%Y-%m-%d %H:%M:%S') if instance.end_time else None,
             "task_token_used": instance.task_token_used,
@@ -1323,3 +1368,46 @@ def search_app_workflow_debug_info(data):
     return next_console_response(result=result)
 
 
+def get_app_workflow_debug_full_info(data):
+    """
+
+    :param data:
+    :return:
+    """
+    user_id = int(data.get("user_id"))
+    workflow_instance_id = data.get("workflow_instance_id")
+    target_instance = WorkFlowNodeInstance.query.filter(
+        WorkFlowNodeInstance.id == workflow_instance_id,
+        WorkFlowNodeInstance.user_id == user_id
+    ).first()
+    if not target_instance:
+        return next_console_response(error_status=True, error_message="工作流实例不存在", error_code=1002)
+    if target_instance.begin_time and target_instance.end_time:
+        duration = (target_instance.end_time - target_instance.begin_time).total_seconds()
+    else:
+        duration = None
+    return next_console_response(result={
+        "id": target_instance.id,
+        "workflow_id": target_instance.workflow_id,
+        "workflow_node_id": target_instance.workflow_node_id,
+        "workflow_node_name": target_instance.workflow_node_name,
+        "workflow_node_type": target_instance.workflow_node_type,
+        "workflow_node_icon": target_instance.workflow_node_icon,
+        "workflow_node_desc": target_instance.workflow_node_desc,
+        "session_id": target_instance.session_id,
+        "qa_id": target_instance.qa_id,
+        "user_id": target_instance.user_id,
+        "msg_id": target_instance.msg_id,
+        "task_params": target_instance.task_params,
+        "task_prompt": target_instance.task_prompt,
+        "task_result": target_instance.task_result,
+        "task_status": target_instance.task_status,
+        "task_retry_cnt": target_instance.task_retry_cnt,
+        "begin_time": target_instance.begin_time.strftime('%Y-%m-%d %H:%M:%S') if target_instance.begin_time else None,
+        "end_time": target_instance.end_time.strftime('%Y-%m-%d %H:%M:%S') if target_instance.end_time else None,
+        "task_token_used": target_instance.task_token_used,
+        "create_time": target_instance.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+        "update_time": target_instance.update_time.strftime('%Y-%m-%d %H:%M:%S'),
+        "duration": duration,
+        "task_trace_log": target_instance.task_trace_log,
+    })
