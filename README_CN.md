@@ -122,24 +122,20 @@ docker compose up -d
 ##### 1. 构建后端服务镜像
 ```bash
 git clone https://github.com/TuringOpsSH/NextConsole.git
-cd next_console/docker/build/server
-docker build -t nc:standalone .
+cd NextConsole
+docker build -f docker/build/server/Dockerfile -t nc:standalone . 
 
 ```
 ##### 2. 构建前端服务镜像
 ```bash
-cd ../web
-docker build -t nc-web:standalone .
+docker build -f docker/build/web/Dockerfile -t nc-web:standalone .
 ```
 
 ##### 3. 启动服务
 ```bash
-cd ../
-docker compose up -d
+vi docker/docker-compose.yml # 修改配置文件
+docker compose up -f docker/docker-compose.yml -d
 ```
-
-
-
 
 
 

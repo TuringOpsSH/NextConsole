@@ -121,20 +121,19 @@ By following the above steps, you can quickly start NextConsole and begin using 
 #### 1. Build Backend Service Image
 ```bash
 git clone https://github.com/TuringOpsSH/NextConsole.git
-cd next_console/docker/build/server
-docker build -t nc:standalone .
+cd NextConsole
+docker build -f docker/build/server/Dockerfile -t nc:standalone . 
 ```
 
 #### 2. Build Frontend Service Image
 ```bash
-cd ../web
-docker build -t nc-web:standalone .
+docker build -f docker/build/web/Dockerfile -t nc-web:standalone .
 ```
 
 #### 3. Launch Services
 ```bash
-cd ../
-docker compose up -d
+vi docker/docker-compose.yml 
+docker-compose -f ./docker/docker-compose.yml up -d
 ```
 
 ### Core Feature Descriptions

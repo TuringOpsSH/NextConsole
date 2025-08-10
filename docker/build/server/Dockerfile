@@ -5,7 +5,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # 先复制 requirements.txt 并安装依赖
-COPY requirements.txt /app/
+COPY server/requirements.txt /app/
 #RUN pip install --upgrade pip --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 #RUN pip install --no-cache-dir -r requirements.txt --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 RUN pip install --upgrade pip
@@ -16,8 +16,8 @@ RUN playwright install-deps
 RUN apt install libreoffice fonts-wqy-zenhei fonts-wqy-microhei -y
 
 # 复制当前目录内容到工作目录
-COPY ../../server/. /app/server/
-COPY ./../admin/. /app/admin/
+COPY server/. /app/server/
+COPY admin/. /app/admin/
 
 # 脱敏工作
 RUN rm -rf /app/server/.git && \

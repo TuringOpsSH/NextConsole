@@ -837,8 +837,8 @@ def get_parse_resource_chunks_service(params):
             "chunk_embedding_content": chunk.chunk_embedding_content,
             "chunk_embedding_type": chunk.chunk_embedding_type,
             "chunk_hit_counts": chunk.chunk_hit_counts,
-            "chunk_embedding": chunk.chunk_embedding.tolist() if chunk.chunk_embedding.any() else None,
-            "chunk_embedding_length": len(chunk.chunk_embedding) if chunk.chunk_embedding.any() is not None else 0,
+            "chunk_embedding": chunk.chunk_embedding.tolist() if chunk.chunk_embedding is not None and chunk.chunk_embedding.any() else None,
+            "chunk_embedding_length": len(chunk.chunk_embedding) if chunk.chunk_embedding is not None and chunk.chunk_embedding.any() is not None else 0,
             "status": chunk.status
         } for chunk in all_resource_chunks
     ]

@@ -1,19 +1,19 @@
 # 使用多阶段构建
-FROM node:18-alpine as builder
+FROM node:18-alpine AS builder
 
 # 第一阶段：构建 server_web
 WORKDIR /app/server_web
-COPY ../../../server_web/package*.json ./
+COPY server_web/package*.json ./
 RUN npm install
-COPY ../../../server_web/ .
-RUN npm run build
+COPY server_web/ .
+RUN npm run build:private
 
 # 第二阶段：构建 admin_web
 WORKDIR /app/admin_web
-COPY ../../../admin_web/package*.json ./
+COPY admin_web/package*.json ./
 RUN npm install
-COPY ../../../admin_web/ .
-RUN npm run build
+COPY admin_web/ .
+RUN npm run build:private
 
 # 最终阶段使用nginx
 FROM nginx:alpine
@@ -25,7 +25,7 @@ RUN rm /etc/nginx/nginx.conf
 RUN mkdir -p /data/downloads && chown -R nginx:nginx /data/downloads
 
 # 复制自定义Nginx配置
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY docker/build/web/nginx.conf /etc/nginx/nginx.conf
 
 # 从builder阶段复制构建好的dist文件
 COPY --from=builder /app/server_web/dist /usr/share/nginx/html/server/
