@@ -90,9 +90,11 @@ def embedding_call(params):
         return index, embeddings, data.get("usage", {}).get("total_tokens", 0)
     except requests.exceptions.RequestException as e:
         print(e)
+        app.logger.warning(e)
         return None
     except Exception as e:
         print(e)
+        app.logger.warning(e)
         return None
 
 

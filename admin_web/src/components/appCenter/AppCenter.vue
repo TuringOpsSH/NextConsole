@@ -21,9 +21,8 @@ onUnmounted(() => {
 <template>
   <el-container style="height: 100vh">
     <el-container>
-      <el-aside width="160">
+      <el-aside width="120px">
         <div id="app-panel">
-          <div>
             <el-menu router :default-active="currentIndex">
               <el-menu-item index="/next_console/app_center/app_list">
                 <el-icon><IconMenu /></el-icon>
@@ -46,7 +45,6 @@ onUnmounted(() => {
                 <span>效果评测</span>
               </el-menu-item>
             </el-menu>
-          </div>
         </div>
       </el-aside>
       <el-main style="padding: 0">

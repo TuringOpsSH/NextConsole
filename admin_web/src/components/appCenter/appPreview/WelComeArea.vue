@@ -5,13 +5,26 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
     required: false
+  },
+  disable: {
+    type: Boolean,
+    default: false,
+    required: false
   }
 });
 const localWelcomeConfig = ref();
+const localDisable = ref(false);
 watch(
   () => props.welcomeConfig,
   (newVal) => {
     localWelcomeConfig.value = newVal;
+  },
+  { immediate: true }
+);
+watch(
+  () => props.disable,
+  (newVal) => {
+    localDisable.value = newVal;
   },
   { immediate: true }
 );
@@ -34,7 +47,7 @@ const emits = defineEmits(['prefixQuestionClick']);
       </div>
     </div>
     <div class="preview-area-body"></div>
-    <div class="preview-area-foot">
+    <div class="preview-area-foot" v-show="!localDisable">
       <el-tag
         v-for="(question, index) in localWelcomeConfig.prefixQuestions"
         :key="index"
@@ -51,13 +64,12 @@ const emits = defineEmits(['prefixQuestionClick']);
 
 <style scoped>
 .preview-area {
-  width: calc(100% - 32px);
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border-radius: 8px; /* 圆角 */
-  padding: 20px; /* 内边距 */
-  position: relative; /* 为标题装饰定位 */
+  border-radius: 8px;
+  position: relative;
 }
 
 .preview-area-top {
@@ -115,6 +127,6 @@ const emits = defineEmits(['prefixQuestionClick']);
 .welcome-icon {
   width: 40px;
   height: 40px;
-  background: #f2f4f7;
+  border-radius: 8px;
 }
 </style>

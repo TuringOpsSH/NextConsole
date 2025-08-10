@@ -8,7 +8,7 @@ import path from "path";
 const isLocalhost = process.env.NODE_ENV === 'localhost2';
 
 // 根据环境变量设置代理目标地址
-const proxyTarget = isLocalhost ? 'http://127.0.0.1:5011' : 'http://116.62.30.184:6688';
+const proxyTarget = isLocalhost ? 'http://127.0.0.1:5011' : 'https://dev-admin.turingops.com.cn';
 export default defineConfig({
   plugins: [
     vue(),viteCommonjs(),
@@ -26,6 +26,7 @@ export default defineConfig({
     }
   },
   server: {
+    port: 8082,
     proxy: {
       '/next_console_admin': {
         target: proxyTarget, // 这里填入你要请求的接口的前缀

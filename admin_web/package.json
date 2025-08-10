@@ -1,6 +1,6 @@
 {
   "name": "next_console_frontend",
-  "version": "2.3.0",
+  "version": "0.2.4",
   "private": true,
   "scripts": {
     "all_local": "set NODE_ENV=localhost2&&vite --mode devLocal && node version.js",

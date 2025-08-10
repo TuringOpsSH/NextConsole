@@ -9,7 +9,7 @@ const props = defineProps({
     required: false
   }
 });
-interface IAttachmentDetail {
+export interface IAttachmentDetail {
   resource_id: number;
   resource_name: string;
   resource_icon: string;
@@ -71,7 +71,6 @@ const emits = defineEmits(['remove-attachment']);
 
 <style scoped>
 .attachment-list {
-  padding: 12px 12px 2px;
   background: #fff;
   box-sizing: border-box;
   display: flex;

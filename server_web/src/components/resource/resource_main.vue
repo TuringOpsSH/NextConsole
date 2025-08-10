@@ -28,7 +28,7 @@ defineOptions({
       <welcome_home v-if="router.currentRoute.value.path == '/next_console/resources'" />
       <router-view v-else />
       <div v-show="panel_width == '0px'" id="layout_button2" @click="switchPanel">
-        <el-tooltip :content="$t('closeSidebar')" effect="light">
+        <el-tooltip :content="$t('openSidebar')" effect="light">
           <el-image id="layout_alt" src="images/layout_alt_blue.svg" />
         </el-tooltip>
       </div>
@@ -39,7 +39,7 @@ defineOptions({
 <style scoped>
 #layout_button2 {
   position: fixed;
-  left: 60px;
+  left: 50px;
   top: 8px;
   margin: 10px;
   cursor: pointer;

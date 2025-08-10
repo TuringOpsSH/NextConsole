@@ -21,7 +21,7 @@ onMounted(async () => {
 <template>
   <el-container>
 
-    <el-aside width="60px" >
+    <el-aside width="48px" >
       <next_console_left_menu/>
     </el-aside>
 

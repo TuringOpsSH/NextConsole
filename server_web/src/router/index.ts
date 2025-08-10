@@ -209,7 +209,8 @@ const routes: RouteRecordRaw[] = [
                         meta: { requiresAuth: true },
                         strict: true,
                         props: route => ({
-                            resource_id: route.params.resource_id
+                            resource_id: route.params.resource_id,
+                            pane: route.query.pane || 'preview',
                         })
                     },
                     {

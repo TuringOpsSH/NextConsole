@@ -9,7 +9,7 @@ const props = defineProps({
     required: false
   }
 });
-interface IAttachmentDetail {
+export interface IAttachmentDetail {
   resource_id: number;
   resource_name: string;
   resource_icon: string;
@@ -33,11 +33,11 @@ function reformatFileSize(bytes: number) {
   return `${newBytes.toFixed(2)} ${units[unitIndex]}`;
 }
 watch(
-  () => props.attachmentList,
-  async newVal => {
-    localAttachmentList.value = newVal;
-  },
-  { immediate: true }
+    () => props.attachmentList,
+    async newVal => {
+      localAttachmentList.value = newVal;
+    },
+    { immediate: true }
 );
 const emits = defineEmits(['remove-attachment']);
 </script>
@@ -71,56 +71,37 @@ const emits = defineEmits(['remove-attachment']);
 
 <style scoped>
 .attachment-list {
-  padding: 12px 12px 2px;
   background: #fff;
   box-sizing: border-box;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -ms-flex-wrap: wrap;
   flex-wrap: wrap;
   gap: 8px 9px;
   max-height: 100px;
   overflow-y: auto;
-}
 
-/* Webkit浏览器滚动条样式 */
-.attachment-list::-webkit-scrollbar {
-  width: 8px; /* 垂直滚动条宽度 */
-  height: 8px; /* 水平滚动条高度 */
-}
+  &::-webkit-scrollbar {
+    width: 8px; /* 垂直滚动条宽度 */
+    height: 8px; /* 水平滚动条高度 */
+  }
 
-.attachment-list::-webkit-scrollbar-track {
-  background-color: #f5f5f5; /* 滚动条轨道背景色 */
-  -webkit-border-radius: 4px; /* 轨道圆角 */
-  border-radius: 4px;
-}
+  &::-webkit-scrollbar-track {
+    background-color: #f5f5f5; /* 滚动条轨道背景色 */
+    border-radius: 4px; /* 轨道圆角 */
+  }
 
-.attachment-list::-webkit-scrollbar-thumb {
-  background-color: #c1c1c1; /* 滚动条滑块颜色 */
-  -webkit-border-radius: 4px; /* 滑块圆角 */
-  border-radius: 4px;
-}
+  &::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1; /* 滚动条滑块颜色 */
+    border-radius: 4px; /* 滑块圆角 */
+  }
 
-.attachment-list::-webkit-scrollbar-thumb:hover {
-  background-color: #a8a8a8; /* 鼠标悬停时滑块颜色 */
-}
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #a8a8a8; /* 鼠标悬停时滑块颜色 */
+  }
 
-/* Firefox浏览器滚动条样式 */
-.attachment-list {
+  /* Firefox 浏览器滚动条样式 */
   scrollbar-width: thin; /* 滚动条宽度 */
   scrollbar-color: #c1c1c1 #f5f5f5; /* 滑块颜色和轨道颜色 */
 }
-
-/* 兼容旧版Firefox */
-@-moz-document url-prefix() {
-  .attachment-list {
-    scrollbar-width: thin;
-    scrollbar-face-color: #c1c1c1;
-    scrollbar-track-color: #f5f5f5;
-  }
-}
-
 .attachment-item {
   display: flex;
   flex-direction: row;
@@ -131,14 +112,15 @@ const emits = defineEmits(['remove-attachment']);
   padding: 12px 16px;
   border: 1px solid #d0d5dd;
   border-radius: 6px;
+
   position: relative;
   transition: all 0.3s ease;
-}
-.attachment-item :hover {
-  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.15);
-}
-.attachment-item :hover .close-icon{
-  display: flex;
+  &:hover {
+    box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.15);
+  }
+  &:hover .close-icon {
+    display: flex;
+  }
 }
 .attachment-item-img {
   width: 36px;
@@ -160,15 +142,14 @@ const emits = defineEmits(['remove-attachment']);
   height: 16px;
   border-radius: 50%;
   display: none;
-
-}
-.close-icon-icon {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  background: #fff;
-}
-.close-icon-icon :focus{
-  outline: none;
+  .close-icon-icon {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    background: #fff;
+    &:focus {
+      outline: none;
+    }
+  }
 }
 </style>

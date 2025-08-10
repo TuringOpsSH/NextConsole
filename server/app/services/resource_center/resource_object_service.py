@@ -120,9 +120,15 @@ def search_resource_object(params):
     all_resource_ref = RagRefInfo.query.filter(
         RagRefInfo.resource_id.in_(all_resource_ids)
     ).all()
-    resource_ref_dict = {resource_ref.resource_id: resource_ref.ref_status for resource_ref in all_resource_ref}
+    resource_ref_dict = {}
+    for resource_ref in all_resource_ref:
+        if resource_ref.resource_id not in resource_ref_dict:
+            resource_ref_dict[resource_ref.resource_id] = resource_ref
+        if resource_ref.id > resource_ref_dict[resource_ref.resource_id].id:
+            resource_ref_dict[resource_ref.resource_id] = resource_ref
     for resource_item in data:
-        resource_item["rag_status"] = resource_ref_dict.get(resource_item.get("id"))
+        if resource_ref_dict.get(resource_item.get("id")):
+            resource_item["rag_status"] = resource_ref_dict.get(resource_item.get("id")).ref_status
     if "rag" in resource_type:
         # 过滤掉非rag资源
         data = [resource_item for resource_item in data if resource_item.get("rag_status") == "成功"]
@@ -2531,6 +2537,7 @@ def search_rag_enhanced(params):
         "ref_ids": all_rag_ref_ids,
         "config": {
             "search_engine_enhanced": False,
+            "rerank_enabled": False,
         }
     }
     try:

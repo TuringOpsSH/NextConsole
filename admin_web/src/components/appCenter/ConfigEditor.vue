@@ -19,7 +19,8 @@ const welcomeConfig = reactive({
   title: '欢迎使用',
   description: '这是一个配置示例',
   image: 'images/welcome.svg',
-  prefixQuestions: ['你喜欢什么样的界面？', '你希望添加哪些功能？']
+  prefixQuestions: ['你喜欢什么样的界面？', '你希望添加哪些功能？'],
+  keep: false
 });
 const welcomeConfigRules = {
   title: [{ required: true, message: '标题不能为空', trigger: 'blur' }],
@@ -31,7 +32,13 @@ const uploadHeader = {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Authorization: 'Bearer ' + getToken()
 };
-
+const paramsConfigRef = ref(null);
+const paramsConfig = reactive({
+  title: '应用参数',
+})
+const paramsConfigRules = {
+  title: [{ required: true, message: '标题不能为空', trigger: 'blur' }],
+};
 function beforeAvatarUpload(file: File) {
   const isLt5M = file.size / 1024 / 1024 < 5;
   if (!isLt5M) {
@@ -48,15 +55,24 @@ async function handleAvatarUploadSuccess(res: any) {
 }
 
 async function commitSaveConfig() {
-  const validRes = await welcomeConfigRef.value.validate();
-  if (!validRes) {
-    return;
-  }
   const configData = {
     app_code: currentApp.app_code,
     app_config: currentApp.app_config
   };
-  configData.app_config.welcome = welcomeConfig;
+  if (welcomeConfigRef.value && currentAppConfigArea.value?.area == 'welcome') {
+    const validRes = await welcomeConfigRef.value.validate();
+    if (!validRes) {
+      return;
+    }
+    configData.app_config.welcome = welcomeConfig;
+  }
+  if (paramsConfigRef.value && currentAppConfigArea.value?.area == 'params') {
+    const validRes2 = await paramsConfigRef.value?.validate();
+    if (!validRes2) {
+      return;
+    }
+    configData.app_config.params = paramsConfig;
+  }
   const res = await appUpdate(configData);
   if (!res.error_status) {
     ElMessage.success('配置保存成功');
@@ -83,6 +99,14 @@ watch(
           welcomeConfig.title = currentApp.app_config?.[area.area]?.title || '欢迎使用';
           welcomeConfig.description = currentApp.app_config?.[area.area]?.description || '这是一个配置示例';
           welcomeConfig.prefixQuestions = currentApp.app_config?.[area.area]?.prefixQuestions || [];
+          welcomeConfig.keep = currentApp.app_config?.[area.area]?.keep || false;
+        }
+        else if (newVal == 'params') {
+          paramsConfig.title = currentApp.app_config?.[area.area]?.title || '应用参数';
+          // 这里可以添加更多的参数配置逻辑
+        }
+        else {
+          ElMessage.error('未知配置区域');
         }
       }
     }
@@ -93,7 +117,7 @@ watch(
 
 <template>
   <el-container>
-    <el-main>
+    <el-main v-if="currentAppConfigArea?.area == 'welcome'">
       <div class="preview-area">
         <div class="preview-area-top">
           <div class="top-row">
@@ -141,10 +165,10 @@ watch(
                 :before-upload="beforeAvatarUpload"
                 :action="api.app_icon_upload"
                 :on-success="handleAvatarUploadSuccess"
-                style="min-width: 160px"
+                style="min-width: 160px; max-width: 200px"
               >
                 <div v-if="welcomeConfig.image">
-                  <el-image :src="welcomeConfig.image" style="width: 40px; height: 40px" />
+                  <el-image :src="welcomeConfig.image" style="border-radius: 10%"/>
                 </div>
                 <div v-else>
                   <el-avatar src="images/upload_cloud.svg" style="background: #f2f4f7" fit="scale-down" />
@@ -163,8 +187,31 @@ watch(
                 default-first-option
               />
             </el-form-item>
+            <el-form-item label="持久显示">
+              <el-switch v-model="welcomeConfig.keep" active-text="开启" inactive-text="关闭" />
+            </el-form-item>
             <el-form-item>
-              <el-popconfirm title="确认更新应用配置么" @confirm="commitSaveConfig">
+              <el-popconfirm title="确认更新应用配置么" @confirm="commitSaveConfig" width="180">
+                <template #reference>
+                  <el-button type="primary">保存配置</el-button>
+                </template>
+              </el-popconfirm>
+            </el-form-item>
+          </el-form>
+        </el-scrollbar>
+      </div>
+    </el-main>
+    <el-main v-if="currentAppConfigArea?.area == 'params'">
+      <div class="config-area">
+        <el-scrollbar>
+          <el-form ref="paramsConfigRef" :model="paramsConfig" :rules="paramsConfigRules">
+            <el-form-item label="会话参数标题" prop="title">
+              <el-input v-model="paramsConfig.title" placeholder="请输入标题" />
+            </el-form-item>
+
+
+            <el-form-item>
+              <el-popconfirm title="确认更新应用配置么" @confirm="commitSaveConfig" width="180">
                 <template #reference>
                   <el-button type="primary">保存配置</el-button>
                 </template>
@@ -272,6 +319,6 @@ watch(
 .welcome-icon {
   width: 40px;
   height: 40px;
-  background: #f2f4f7;
+  border-radius: 8px;
 }
 </style>

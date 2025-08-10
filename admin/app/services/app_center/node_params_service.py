@@ -54,7 +54,6 @@ def load_task_result(task_record):
     解析任务结果
     """
     exec_result = task_record.task_result.strip()
-    # print(exec_result, task_record.workflow_node_result_format)
     if task_record.workflow_node_result_format == "json" and exec_result:
         if exec_result.startswith("```json"):
             exec_result = exec_result.lstrip("```json").rstrip("```")
@@ -76,9 +75,7 @@ def load_task_result(task_record):
                 except json.JSONDecodeError:
                     pass
         try:
-            if task_record.workflow_node_rpjs:
-                # print(exec_result, type(exec_result))
-                # print("校验结果格式", task_record.workflow_node_rpjs)
+            if task_record.workflow_node_rpjs and task_record.workflow_node_type != "start":
                 validate(exec_result, task_record.workflow_node_rpjs)
         except Exception as e:
             print(e)

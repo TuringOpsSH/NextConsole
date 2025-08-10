@@ -4,12 +4,13 @@ import { ref, watch } from 'vue';
 import { onBeforeMount } from 'vue-demi';
 import {appDetail, initAppSession} from '@/api/appCenterApi';
 import { search_session as ISearchSession } from '@/api/next_console';
-import ConsoleInput from '@/components/appCenter/appPreview/ConsoleInput.vue';
-import MessageFlowV2 from '@/components/appCenter/appPreview/MessageFlowV2.vue';
-import { consoleInputRef } from '@/components/appCenter/appPreview/console_input';
-import { msgFlowRef } from '@/components/appCenter/appPreview/message_flow';
+import ConsoleInput from './ConsoleInput.vue';
+import MessageFlowV2 from './MessageFlowV2.vue';
+import { consoleInputRef } from './console_input';
+import { msgFlowRef } from './message_flow';
 import { CurrentEditFlow, showAgentApp } from '@/components/appCenter/ts/workflow-edit';
 import { initSocket, socket } from '@/components/global/web_socket/web_socket';
+import SessionParams from "./SessionParams.vue";
 const props = defineProps({
   appCode: {
     type: String,
@@ -18,7 +19,6 @@ const props = defineProps({
   }
 });
 const agentAppRef = ref(null);
-const consoleInputHeight = ref(180);
 const currentSession = ref({
   session_code: '',
   session_source: ''
@@ -29,6 +29,7 @@ const startX = ref(0);
 const startWidth = ref(0);
 const streaming = ref(true);
 const currentApp = ref({});
+const sessionParamsRef = ref(null);
 async function initTestSession(newVal, keepSession = false) {
   const params = {
     app_code: newVal,
@@ -121,7 +122,6 @@ watch(
         });
         if (!res.error_status) {
           currentApp.value = res.result?.meta;
-          console.log('Current App:', currentApp.value);
         }
       }
       if (newVal && newVal != currentSession.value?.session_source && showAgentApp.value) {
@@ -148,28 +148,34 @@ defineExpose({
       @mouseup="onMouseUp"
       @mouseleave="onMouseLeave"
   >
+    <SessionParams
+        ref="sessionParamsRef"
+        v-if="currentSession?.session_task_params_schema?.ncOrders?.length"
+        :session="currentSession"
+        :title="currentApp.app_config?.params?.title"
+       style="width: 100%"
+    />
     <MessageFlowV2
         ref="msgFlowRef"
         :session-code="currentSession?.session_code"
-        :height="'calc(100% - ' + consoleInputHeight + 'px)'"
-        style="width: 100%"
+        style="width: 100%; height: 100%"
         :streaming="streaming"
         :debug="true"
+        :disable="sessionParamsRef && !sessionParamsRef?.schemaReady"
         :welcome-config="currentApp.app_config?.welcome"
         @click-recommend-question="data => consoleInputRef?.clickRecommendQuestion(data)"
     />
     <ConsoleInput
         ref="consoleInputRef"
         :session="currentSession"
-        :height="consoleInputHeight.toString() + 'px'"
         style="width: 100%"
         :streaming="streaming"
         :socket="socket"
+        :disable="sessionParamsRef && !sessionParamsRef?.schemaReady"
         @begin-answer="data => msgFlowRef.beginAnswer(data)"
         @update-answer="newMsg => msgFlowRef.updateAnswer(newMsg)"
         @finish-answer="args => msgFlowRef?.finishAnswer(args)"
         @stop-answer="args => msgFlowRef?.stopAnswer(args)"
-        @height-change="args => (consoleInputHeight = args.newHeight)"
     />
   </div>
 </template>
@@ -201,7 +207,7 @@ defineExpose({
   background: white;
   z-index: 999;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   flex-direction: column;
   gap: 12px;

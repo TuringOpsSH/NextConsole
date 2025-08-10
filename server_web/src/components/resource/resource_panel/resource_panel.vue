@@ -84,7 +84,7 @@ const myResourceActive = ref(route.name === 'resource_list');
 const showRecentArea = useSessionStorage('showRecentArea', false);
 const showLabelArea = useSessionStorage('showLabelArea', false);
 
-panel_width.value = isShowResourcePanel.value ? '400px' : '0px';
+panel_width.value = isShowResourcePanel.value ? '200px' : '0px';
 
 onMounted(async () => {
   init_system_tags();
@@ -122,7 +122,7 @@ defineOptions({
     <div id="panel_head">
       <div id="panel_head_left">
         <div class="std-middle-box" style="cursor: pointer" @click="switchPanel">
-          <el-tooltip :content="$t('openSidebar')" effect="light">
+          <el-tooltip :content="$t('closeSidebar')" effect="light">
             <el-image src="images/layout_alt.svg" style="width: 16px; height: 16px" />
           </el-tooltip>
         </div>
@@ -140,7 +140,9 @@ defineOptions({
           style="width: 80%"
           :status="show_resource_progress_status()"
         />
-        <el-text>{{ current_resource_usage }}M/{{ format_resource_size(user_info?.user_resource_limit) }}</el-text>
+        <el-text size="small">
+          {{ current_resource_usage }}M/{{ format_resource_size(user_info?.user_resource_limit) }}
+        </el-text>
       </div>
     </div>
     <div id="panel_face">
@@ -186,14 +188,14 @@ defineOptions({
       <div id="panel_recent_area">
         <div id="panel_recent_head">
           <div class="std-middle-box">
-            <el-text> 标签 </el-text>
+            <el-text style="width: 40px"> 标签 </el-text>
           </div>
           <div id="panel_label_head_buttons">
             <div class="panel_label_head_button">
               <el-select
                 size="small"
-                style="width: 200px"
                 placeholder="搜索标签"
+                style="width: 100px"
                 filterable
                 clearable
                 remote
@@ -294,9 +296,6 @@ defineOptions({
                 >
                   <el-image src="images/edit_label.svg" style="width: 16px; height: 16px" />
                 </div>
-              </div>
-              <div v-show="!panel_user_labels.length" class="std-middle-box">
-                <el-empty description="快来创建第一个资源标签吧" :image-size="80"></el-empty>
               </div>
             </div>
           </el-scrollbar>
@@ -445,19 +444,7 @@ defineOptions({
                 <Search />
               </el-icon>
             </template>
-            <template #suffix>
-              <div class="std-middle-box">
-                <el-switch v-model="rag_enhance" active-text="内容检索" style="margin-right: 6px"></el-switch>
-                <el-tooltip effect="dark" placement="top">
-                  <template #default>
-                    <div class="std-middle-box">
-                      <el-image src="images/tooltip.svg" style="width: 16px; height: 16px" />
-                    </div>
-                  </template>
-                  <template #content> 基于内容理解的深度搜索，提供更精准的搜索结果 </template>
-                </el-tooltip>
-              </div>
-            </template>
+
           </el-input>
         </div>
         <el-popover trigger="click" width="160px" ref="show_upload_button">
@@ -639,12 +626,12 @@ defineOptions({
 }
 #panel_head {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
-  gap: 36px;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 7px;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.1);
+
 }
 #panel_head_left {
   display: flex;
@@ -665,7 +652,7 @@ defineOptions({
 #panel_face {
   display: flex;
   flex-direction: column;
-  padding: 12px 16px;
+  padding: 8px 12px;
   gap: 12px;
 }
 #panel_recent_area {
@@ -684,14 +671,14 @@ defineOptions({
 }
 #panel_recent_body {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
   width: 100%;
 }
 .recent-shortcut {
-  width: calc(50% - 20px);
+  width: calc(100% - 16px);
   display: flex;
   flex-direction: row;
   padding: 4px 8px;
@@ -714,7 +701,7 @@ defineOptions({
   gap: 8px;
 }
 .recent-shortcut-cnt {
-  border: 1.5px solid #1570ef;
+  border: 1px solid #1570ef;
   padding: 0 8px;
   border-radius: 16px;
   display: flex;
@@ -727,7 +714,8 @@ defineOptions({
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 4px;
+  width: 100%;
 }
 .panel_label_head_button {
   display: flex;
@@ -738,7 +726,7 @@ defineOptions({
 }
 #panel_label_body {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   gap: 8px;
@@ -889,8 +877,8 @@ defineOptions({
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 12px 16px;
-  width: calc(100% - 32px);
+  padding: 6px 8px;
+  width: calc(100% - 16px);
 }
 #panel_upload_button {
   display: flex;
@@ -928,7 +916,7 @@ defineOptions({
 }
 
 #panel_foot_body {
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-top: 1px solid #d0d5dd;
   display: flex;
   flex-direction: row;

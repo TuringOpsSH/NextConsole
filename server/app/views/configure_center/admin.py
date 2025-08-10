@@ -21,6 +21,19 @@ def get_version():
     return next_console_response(result=version)
 
 
+@app.route('/next_console/domain', methods=['POST'])
+def get_domain():
+    """
+    获取版本号并返回
+    :return:
+    """
+    admin_domain = app.config.get("admin_domain", "https://admin.turingops.com")
+    result = {
+        "admin_domain": admin_domain,
+    }
+    return next_console_response(result=result)
+
+
 @app.route('/next_console/reinit_user_resource_path', methods=['POST'])
 def reinit_user():
     """

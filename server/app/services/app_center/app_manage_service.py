@@ -89,20 +89,20 @@ def search_all_apps(params):
         AppMetaInfo.create_time.desc()
     )
     total = target_apps.count()
-    page_res = target_apps.paginate(page=page_num, per_page=page_size, error_out=False)
+    all_data = target_apps.all()
     data = []
-    for sub_app, user_nick_name, user_avatar in page_res:
+    for item in all_data:
         data.append({
-            "app_code": sub_app.app_code,
-            "app_name": sub_app.app_name,
-            "app_desc": sub_app.app_desc,
-            "app_icon": sub_app.app_icon,
-            "app_type": sub_app.app_type,
-            "app_status": sub_app.app_status,
-            "create_time": sub_app.create_time.strftime('%Y-%m-%d %H:%M:%S'),
-            "update_time": sub_app.update_time.strftime('%Y-%m-%d %H:%M:%S'),
-            "user_nick_name": user_nick_name,
-            "user_avatar": user_avatar
+            "app_code": item.AppMetaInfo.app_code,
+            "app_name": item.AppMetaInfo.app_name,
+            "app_desc": item.AppMetaInfo.app_desc,
+            "app_icon": item.AppMetaInfo.app_icon,
+            "app_type": item.AppMetaInfo.app_type,
+            "app_status": item.AppMetaInfo.app_status,
+            "create_time": item.AppMetaInfo.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            "update_time": item.AppMetaInfo.update_time.strftime('%Y-%m-%d %H:%M:%S'),
+            "user_nick_name": item.user_nick_name,
+            "user_avatar": item.user_avatar
         })
     result = {
         "total": total,

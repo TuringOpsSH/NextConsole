@@ -43,6 +43,7 @@ from app.views.task_center.workflow import *
 
 # 知识中心
 from app.views.knowledge_center.rag_api import *
+from app.views.knowledge_center.resource_api import *
 
 # 应用中心
 from app.views.app_center.app_manage_view import *

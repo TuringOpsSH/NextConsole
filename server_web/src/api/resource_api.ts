@@ -47,6 +47,12 @@ export const api = {
   get_resource_recycle_object: envUrl + '/next_console/resources/recycle_object/get',
   // 资源查看
   resource_view_meta_get: envUrl + '/next_console/resources_view/get',
+  resource_rag_config_get: envUrl + '/next_console/knowledge_center/get_resource_rag_config',
+  resource_parse_get: envUrl + '/next_console/knowledge_center/get_parse_resource',
+  resource_chunks_get: envUrl + '/next_console/knowledge_center/get_parse_resource_chunks',
+  resource_chunks_delete: envUrl + '/next_console/knowledge_center/delete_parse_resource_chunks',
+  resource_chunk_update: envUrl + '/next_console/knowledge_center/update_parse_resource_chunk',
+  resource_chunk_recall: envUrl + '/next_console/knowledge_center/recall_parse_resource_chunk',
   // 资源共享
   resource_share_get_access_list: envUrl + '/next_console/resources/share_object/get_access_list',
   resource_share_update_access_list: envUrl + '/next_console/resources/share_object/update_access_list',
@@ -414,6 +420,57 @@ export async function resource_view_meta_get(params: object): Promise<ServerResp
     // noAuth: true
   });
 }
+
+export async function resource_parse_get(params: object): Promise<ServerResponse> {
+    // @ts-ignore
+    return request({
+        url: api.resource_parse_get,
+        data: params,
+        responseType: 'json'
+        // noAuth: true
+    });
+}
+
+export async function resource_chunks_get(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.resource_chunks_get,
+    data: params,
+    responseType: 'json'
+    // noAuth: true
+  });
+}
+
+export async function resource_chunks_delete(params: object): Promise<ServerResponse> {
+  // @ts-ignore
+  return request({
+    url: api.resource_chunks_delete,
+    data: params,
+    responseType: 'json'
+    // noAuth: true
+  });
+}
+
+
+export async function resource_chunk_update(params: object): Promise<ServerResponse> {
+  // @ts-ignore
+  return request({
+    url: api.resource_chunk_update,
+    data: params,
+    responseType: 'json'
+    // noAuth: true
+  });
+}
+
+export async function resource_chunk_recall(params: object): Promise<ServerResponse> {
+    // @ts-ignore
+    return request({
+        url: api.resource_chunk_recall,
+        data: params,
+        responseType: 'json'
+        // noAuth: true
+    });
+}
+
 // 资源共享
 export async function resource_share_get_access_list(params: object): Promise<ServerResponse> {
   // @ts-ignore

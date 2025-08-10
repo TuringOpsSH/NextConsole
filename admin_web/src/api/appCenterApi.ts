@@ -17,6 +17,7 @@ export const api = {
   workflow_delete: envUrl + '/next_console_admin/app_center/app_manage/workflow/delete',
   workflow_update: envUrl + '/next_console_admin/app_center/app_manage/workflow/update',
   workflow_detail: envUrl + '/next_console_admin/app_center/app_manage/workflow/detail',
+  workflow_search: envUrl + '/next_console_admin/app_center/app_manage/workflow/search',
   workflow_restore: envUrl + '/next_console_admin/app_center/app_manage/workflow/restore',
   workflow_export: envUrl + '/next_console_admin/app_center/app_manage/workflow/export',
   workflow_import: envUrl + '/next_console_admin/app_center/app_manage/workflow/import',
@@ -144,6 +145,14 @@ export async function workflowDetail(params: object): Promise<ServerResponse> {
     data: params,
     responseType: 'json'
   });
+}
+
+export async function workflowSearch(params: object): Promise<ServerResponse> {
+    return request({
+        url: api.workflow_search,
+        data: params,
+        responseType: 'json'
+    });
 }
 
 export async function workflowRestore(params: object): Promise<ServerResponse> {

@@ -227,6 +227,8 @@ class WorkflowNodeInfo(db.Model):
     node_message_schema_type = db.Column(db.String(100), comment='节点消息结构类型')
     node_message_schema = db.Column(db.JSON, default=[], comment='节点消息结构')
     node_file_reader_config = db.Column(db.JSON, default={}, comment='文档读取配置')
+    node_file_splitter_config = db.Column(db.JSON, default={}, comment='文档分割配置')
+    node_sub_workflow_config = db.Column(db.JSON, default={}, comment='子工作流配置')
     create_time = db.Column(db.DateTime, default=func.now())
     update_time = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
 
@@ -285,6 +287,8 @@ class WorkflowNodeInfo(db.Model):
             'node_message_schema_type': self.node_message_schema_type,
             'node_message_schema': self.node_message_schema,
             'node_file_reader_config': self.node_file_reader_config,
+            'node_file_splitter_config': self.node_file_splitter_config,
+            'node_sub_workflow_config': self.node_sub_workflow_config,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
         }
@@ -344,6 +348,8 @@ class WorkFlowNodeInstance(db.Model):
     workflow_node_message_schema_type = db.Column(db.String(100), comment='节点消息结构类型')
     workflow_node_message_schema = db.Column(db.JSON, default=[], comment='节点消息结构')
     workflow_node_file_reader_config = db.Column(db.JSON, default={}, comment='文档读取配置')
+    workflow_node_file_splitter_config = db.Column(db.JSON, default={}, comment='文档分割配置')
+    workflow_node_sub_workflow_config = db.Column(db.JSON, default={}, comment='子工作流配置')
     session_id = db.Column(db.Integer, nullable=False, comment='会话id')
     qa_id = db.Column(db.Integer, nullable=False, comment='问答id')
     msg_id = db.Column(db.Integer, nullable=False, comment='消息id')
@@ -420,6 +426,8 @@ class WorkFlowNodeInstance(db.Model):
             "workflow_node_message_schema": self.workflow_node_message_schema,
             "workflow_node_message_schema_type": self.workflow_node_message_schema_type,
             "workflow_node_file_reader_config": self.workflow_node_file_reader_config,
+            "workflow_node_file_splitter_config": self.workflow_node_file_splitter_config,
+            "workflow_node_sub_workflow_config": self.workflow_node_sub_workflow_config,
             "begin_time": self.begin_time.strftime('%Y-%m-%d %H:%M:%S') if self.begin_time else None,
             "end_time": self.end_time.strftime('%Y-%m-%d %H:%M:%S') if self.end_time else None,
             "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),

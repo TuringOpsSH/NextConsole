@@ -472,7 +472,7 @@ def search_messages(params, in_call=False):
         ).order_by(
             desc(NextConsoleMessage.session_id),
             desc(NextConsoleMessage.qa_id),
-            desc(NextConsoleMessage.msg_id),
+            asc(NextConsoleMessage.msg_id),
             asc(NextConsoleMessage.msg_remark)
         )
     else:
@@ -481,7 +481,7 @@ def search_messages(params, in_call=False):
         ).order_by(
             asc(NextConsoleMessage.session_id),
             asc(NextConsoleMessage.qa_id),
-            desc(NextConsoleMessage.msg_id),
+            asc(NextConsoleMessage.msg_id),
             asc(NextConsoleMessage.msg_remark)
         )
     messages_list = [message.to_dict() for message in messages_list]

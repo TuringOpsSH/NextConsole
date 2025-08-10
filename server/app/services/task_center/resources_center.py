@@ -343,9 +343,7 @@ def auto_build_resource_ref_v2(params):
         ]
         if target_resource.resource_format == "pdf":
             file_reader_config["engine"] = "pymupdf"
-            file_reader_config["pymupdf_config"] = {
-
-            }
+            file_reader_config["pymupdf_config"] = {}
         elif target_resource.resource_format in ("html", "shtml", "phtml", "htm"):
             file_reader_config["engine"] = "html2text"
             ref_type = "webpage"
@@ -417,9 +415,13 @@ def start_ref_task(params):
             "resource_id": resource_id,
             "rag_status": target_ref.ref_status
         })
-        if not (reader_result and isinstance(reader_result, dict) and reader_result.get("status") == "success"):
-            return '文件解析失败，请检查文件格式或内容'
+        if not (reader_result and isinstance(reader_result, dict) and reader_result.get("content")):
+            target_ref.ref_status = "文件解析失败"
+            db.session.add(target_ref)
+            db.session.commit()
+            return f'文件解析失败，请检查文件格式或内容:{reader_result.json.get("error_message")}'
         params["resource_id"] = reader_result["id"]
+        params["content"] = reader_result["content"]
         # 文件切分
         split_result = file_split(params)
         db.session.refresh(target_ref)
@@ -429,7 +431,10 @@ def start_ref_task(params):
             "rag_status": target_ref.ref_status
         })
         if not (split_result and isinstance(split_result, dict) and split_result.get("status") == "success"):
-            return '文件切分失败，请检查文件格式或内容'
+            target_ref.ref_status = "文件切分失败"
+            db.session.add(target_ref)
+            db.session.commit()
+            return f'文件切分失败，请检查文件格式或内容:{split_result.json.get("error_message")}'
         abstract_result = file_chunk_abstract(params)
         db.session.refresh(target_ref)
         emit_resource_status.delay({

@@ -43,6 +43,24 @@ export const userButtonData = reactive([
     new_window: false
   },
   {
+    icon: 'logo.svg',
+    active_icon: 'logo.svg',
+    text: '服务端',
+    is_active: false,
+    url: '',
+    name: 'server_app',
+    new_window: true
+  },
+  {
+    icon: 'book-open.svg',
+    active_icon: 'logo.svg',
+    text: '使用文档',
+    is_active: false,
+    url: 'https://docs.nextconsole.cn',
+    name: 'contract',
+    new_window: true
+  },
+  {
     icon: 'privacy.svg',
     active_icon: 'privacy.svg',
     text: '隐私说明',

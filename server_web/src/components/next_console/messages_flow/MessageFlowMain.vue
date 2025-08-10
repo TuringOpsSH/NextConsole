@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import 'highlight.js/styles/vs2015.min.css';
 import { ref } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import ConsoleInput from '@/components/next_console/messages_flow/ConsoleInput.vue';

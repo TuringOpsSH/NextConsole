@@ -7,11 +7,10 @@ import {
   add_messages as addMessages,
   attachment_add_resources_into_session as attachmentAddResourcesIntoSession,
   attachment_remove_from_session as attachmentRemoveFromSession, attachmentSearchInSession,
-  update_session as updateSession
 } from '@/api/next_console';
-import AttachmentPreview from '@/components/appCenter/appPreview/AttachmentPreview.vue';
-import ResourceUploadManager from '@/components/appCenter/appPreview/ResourceUploadManager.vue';
-import ResourcesSearch from '@/components/appCenter/appPreview/ResourcesSearch.vue';
+import AttachmentPreview from './AttachmentPreview.vue';
+import ResourceUploadManager from './ResourceUploadManager.vue';
+import ResourcesSearch from './ResourcesSearch.vue';
 import {running_question_meta as IRunningQuestionMeta, session_item as ISessionItem} from '@/types/next_console';
 import {getInfo} from '@/utils/auth';
 
@@ -38,10 +37,6 @@ const props = defineProps({
     default: {},
     required: false
   },
-  height: {
-    type: String,
-    default: '130px'
-  },
   streaming: {
     type: Boolean,
     default: true
@@ -49,10 +44,14 @@ const props = defineProps({
   socket: {
     type: Object,
     default: null
+  },
+  disable: {
+    type: Boolean,
+    default: false
   }
 });
-const consoleHeight = ref('180px');
 const isRecording = ref(false);
+const localDisable = ref(false);
 interface IResourceItem {
   id?: number;
   resource_parent_id?: number;
@@ -475,7 +474,6 @@ onMounted(async () => {
   if (window.innerWidth >= 768) {
     userInputRef.value.focus();
   }
-  consoleHeight.value = props.height;
 });
 watch(
   () => props.session,
@@ -489,10 +487,11 @@ watch(
   { immediate: true }
 );
 watch(
-  () => props.height,
+  () => props.disable,
   newVal => {
-    consoleHeight.value = newVal;
-  }
+    localDisable.value = newVal;
+  },
+  { immediate: true }
 );
 defineExpose({
   clickRecommendQuestion,
@@ -502,8 +501,8 @@ defineExpose({
 </script>
 
 <template>
-  <div id="console-input" :style="{ height: consoleHeight }">
-    <div id="console-input-box" ref="consoleInputRef">
+  <div id="console-input">
+    <div id="console-input-box" ref="consoleInputRef" :class="{ 'disabled-state': localDisable }">
       <div id="console-input-box-inner">
         <div id="console-input-box-inner-head">
           <AttachmentPreview
@@ -527,12 +526,13 @@ defineExpose({
               @compositionend="userComposition = false"
               @compositionstart="userComposition = true"
               @input="handleInputChange"
+              :disabled="localDisable"
             />
           </div>
         </div>
         <div id="console-input-box-inner-foot">
           <div class="std-middle-box">
-            <el-popover ref="attachmentButtonRef" trigger="click">
+            <el-popover ref="attachmentButtonRef" trigger="click" :disabled="localDisable">
               <template #reference>
                 <el-image src="images/paperclip.svg" class="footer-icon" />
               </template>
@@ -572,6 +572,7 @@ defineExpose({
             <div class="std-middle-box">
               <div
                 class="input-button"
+                v-if="!localDisable"
                 @mousedown.prevent="startRecording(1)"
                 @mouseup="stopRecording(2)"
                 @touchstart.prevent="startRecording(3)"
@@ -590,7 +591,7 @@ defineExpose({
                 </el-tooltip>
               </div>
             </div>
-            <div class="std-middle-box">
+            <div class="std-middle-box" v-if="!localDisable">
               <div
                 v-show="userBatchSize == 1"
                 class="input-button"
@@ -626,6 +627,11 @@ defineExpose({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    <div v-if="localDisable" class="mask-layer">
+      <div class="mask-content">
+        <span class="hint-text">请先填写必要参数</span>
       </div>
     </div>
     <div id="input-tips">
@@ -820,6 +826,36 @@ defineExpose({
   height: 24px;
   cursor: pointer;
 }
+.disabled-state {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.mask-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.mask-content {
+  background-color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hint-text {
+  color: #f56c6c;
+  font-weight: 500;
+}
+
 /* 录音盒子样式 */
 .recording-box {
   position: absolute;

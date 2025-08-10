@@ -1,6 +1,6 @@
 import {Graph} from '@antv/x6';
 import {ElMessage} from 'element-plus';
-import {ref} from 'vue';
+import {nextTick, ref} from 'vue';
 import {nodeDelete, nodeInit, workflowDetail, workflowUpdate} from '@/api/appCenterApi';
 import {currentApp, getWorkFlowSession} from '@/components/appCenter/ts/app-detail';
 import {IWorkflowEdgeInfo, IWorkflowMetaInfo, IWorkflowNodeInfo} from '@/types/appCenterType';
@@ -41,8 +41,7 @@ export async function initCurrentWorkflowEdit(appCode: string, workflowCode: str
     // 初始化画布
     if (graphWrapper.value) {
       if (Object.keys(res.result.workflow_edit_schema).length) {
-        const jsonData = JSON.parse(res.result.workflow_edit_schema);
-        await graphWrapper.value.fromJSON(jsonData);
+        await graphWrapper.value.fromJSON(res.result.workflow_edit_schema);
       } else {
         // 清空数据
         graphWrapper.value.fromJSON({});
@@ -87,7 +86,7 @@ export async function addStartNode() {
       node_code: newNode.id,
       node_type: 'start',
       node_name: '开始',
-      node_desc: '开始节点可以选择工作流的系统变量与用户输入',
+      node_desc: '开始节点可以获取系统变量与设定工作流输入变量',
       node_icon: 'images/node_start.svg'
     });
     if (addRes.error_status) {
@@ -96,12 +95,14 @@ export async function addStartNode() {
       return false;
     }
     const graphData = graphWrapper.value.toJSON();
-    const jsonData = JSON.stringify(graphData, null, 2);
-    await workflowUpdate({
-      app_code: currentApp.app_code,
-      workflow_code: CurrentEditFlow.value.workflow_code,
-      workflow_edit_schema: jsonData
-    });
+    if (graphData) {
+      await workflowUpdate({
+        app_code: currentApp.app_code,
+        workflow_code: CurrentEditFlow.value.workflow_code,
+        workflow_edit_schema: graphData
+      });
+    }
+
   }
 }
 export async function addEndNode() {
@@ -113,7 +114,7 @@ export async function addEndNode() {
       y: newPosition.y,
       data: {
         nodeType: 'end',
-        nodeDesc: '结束节点用于标识工作流的最终状态与处理工作流异常情况',
+        nodeDesc: '结束节点用于标识工作流的最终状态与输出数据',
         nodeName: '结束',
         nodeIcon: 'images/node_end.svg',
         nodeInput: 'string',
@@ -128,7 +129,7 @@ export async function addEndNode() {
       node_code: newNode.id,
       node_type: 'end',
       node_name: '结束',
-      node_desc: '结束节点用于标识工作流的最终状态与处理工作流异常情况',
+      node_desc: '结束节点用于标识工作流的最终状态与输出数据',
       node_icon: 'images/node_end.svg'
     });
     if (addRes.error_status) {
@@ -137,12 +138,14 @@ export async function addEndNode() {
       return false;
     }
     const graphData = graphWrapper.value.toJSON();
-    const jsonData = JSON.stringify(graphData, null, 2);
-    await workflowUpdate({
-      app_code: currentApp.app_code,
-      workflow_code: CurrentEditFlow.value.workflow_code,
-      workflow_edit_schema: jsonData
-    });
+    if (graphData) {
+      await workflowUpdate({
+        app_code: currentApp.app_code,
+        workflow_code: CurrentEditFlow.value.workflow_code,
+        workflow_edit_schema: graphData
+      });
+    }
+
   }
 }
 function generateNewNodePosition(graph: Graph) {
@@ -198,14 +201,19 @@ export async function keyboardDeleteNode() {
   selectedEdges.value = [];
   // 保存数据
   const graphData = graphWrapper.value.toJSON();
-  const jsonData = JSON.stringify(graphData, null, 2);
-  workflowUpdate({
-    app_code: currentApp.app_code,
-    workflow_code: CurrentEditFlow.value.workflow_code,
-    workflow_edit_schema: jsonData
-  });
+  if (graphData) {
+    workflowUpdate({
+      app_code: currentApp.app_code,
+      workflow_code: CurrentEditFlow.value.workflow_code,
+      workflow_edit_schema: graphData
+    });
+  }
+
   ElMessage.success('删除成功');
-  showEdgeFlag.value = true;
+  showNodeFlag.value = false;
+  showEdgeFlag.value = false;
+  await nextTick();
+
 }
 export async function deleteCurrentNode() {
   const params = {
@@ -248,15 +256,18 @@ export async function deleteCurrentNode() {
 
   // 保存数据
   const graphData = graphWrapper.value.toJSON();
-  const jsonData = JSON.stringify(graphData, null, 2);
-  workflowUpdate({
-    app_code: currentApp.app_code,
-    workflow_code: CurrentEditFlow.value.workflow_code,
-    workflow_edit_schema: jsonData
-  });
+  if (graphData) {
+    workflowUpdate({
+      app_code: currentApp.app_code,
+      workflow_code: CurrentEditFlow.value.workflow_code,
+      workflow_edit_schema: graphData
+    });
+  }
   showDeleteNodeConfirm.value = false;
   ElMessage.success('删除成功');
   showNodeFlag.value = false;
+  showEdgeFlag.value = false;
+  await nextTick();
 }
 
 // @ts-ignore

@@ -38,10 +38,6 @@ const props = defineProps({
     default: {},
     required: false
   },
-  height: {
-    type: String,
-    default: '130px'
-  },
   streaming: {
     type: Boolean,
     default: true
@@ -49,10 +45,14 @@ const props = defineProps({
   socket: {
     type: Object,
     default: null
+  },
+  disable: {
+    type: Boolean,
+    default: false
   }
 });
-const consoleHeight = ref('180px');
 const isRecording = ref(false);
+const localDisable = ref(false);
 interface IResourceItem {
   id?: number;
   resource_parent_id?: number;
@@ -475,7 +475,6 @@ onMounted(async () => {
   if (window.innerWidth >= 768) {
     userInputRef.value.focus();
   }
-  consoleHeight.value = props.height;
 });
 watch(
   () => props.session,
@@ -489,10 +488,11 @@ watch(
   { immediate: true, deep: true }
 );
 watch(
-  () => props.height,
-  newVal => {
-    consoleHeight.value = newVal;
-  }
+    () => props.disable,
+    newVal => {
+      localDisable.value = newVal;
+    },
+    { immediate: true }
 );
 defineExpose({
   clickRecommendQuestion,
@@ -502,66 +502,67 @@ defineExpose({
 </script>
 
 <template>
-  <div id="console-input" :style="{ height: consoleHeight }">
-    <div id="console-input-box" ref="consoleInputRef">
+  <div id="console-input">
+    <div id="console-input-box" ref="consoleInputRef" :class="{ 'disabled-state': localDisable }">
       <div id="console-input-box-inner">
         <div id="console-input-box-inner-head">
           <AttachmentPreview
-            :attachment-list="currentMsgAttachment"
-            @remove-attachment="args => handleRemoveAttachment(args)"
+              :attachment-list="currentMsgAttachment"
+              @remove-attachment="args => handleRemoveAttachment(args)"
           />
         </div>
         <div id="console-input-box-inner-body">
           <div id="input-text-box">
             <el-input
-              ref="userInputRef"
-              v-model="userInput"
-              placeholder="请输入您想咨询的问题"
-              type="textarea"
-              input-style="box-shadow: none; border-radius: 8px; border: none;"
-              class="msg-input-textarea"
-              resize="none"
-              :autosize="{ minRows: 2, maxRows: 6 }"
-              @keydown.enter.prevent
-              @keydown="handleKeyDown"
-              @compositionend="userComposition = false"
-              @compositionstart="userComposition = true"
-              @input="handleInputChange"
+                ref="userInputRef"
+                v-model="userInput"
+                placeholder="请输入您想咨询的问题"
+                type="textarea"
+                input-style="box-shadow: none; border-radius: 8px; border: none;"
+                class="msg-input-textarea"
+                resize="none"
+                :autosize="{ minRows: 2, maxRows: 6 }"
+                @keydown.enter.prevent
+                @keydown="handleKeyDown"
+                @compositionend="userComposition = false"
+                @compositionstart="userComposition = true"
+                @input="handleInputChange"
+                :disabled="localDisable"
             />
           </div>
         </div>
         <div id="console-input-box-inner-foot">
           <div class="std-middle-box">
-            <el-popover ref="attachmentButtonRef" trigger="click">
+            <el-popover ref="attachmentButtonRef" trigger="click" :disabled="localDisable">
               <template #reference>
                 <el-image src="images/paperclip.svg" class="footer-icon" />
               </template>
               <div>
                 <div class="std-middle-box">
-                  <el-button text @click="resourceSearchDialogShow = true">From AI资源库</el-button>
+                  <el-button text @click="resourceSearchDialogShow = true">From AI网盘</el-button>
                 </div>
                 <div class="std-middle-box">
                   <el-upload
-                    ref="uploadFileRef"
-                    v-model:file-list="uploadFileList"
-                    action=""
-                    :show-file-list="false"
-                    :auto-upload="true"
-                    multiple
-                    name="chunk_content"
-                    accept="*"
-                    :before-upload="resourceUploadManagerRef?.prepareUploadFile"
-                    :http-request="resourceUploadManagerRef?.uploadFileContent"
-                    :on-success="resourceUploadManagerRef?.uploadFileSuccess"
+                      ref="uploadFileRef"
+                      v-model:file-list="uploadFileList"
+                      action=""
+                      :show-file-list="false"
+                      :auto-upload="true"
+                      multiple
+                      name="chunk_content"
+                      accept="*"
+                      :before-upload="resourceUploadManagerRef?.prepareUploadFile"
+                      :http-request="resourceUploadManagerRef?.uploadFileContent"
+                      :on-success="resourceUploadManagerRef?.uploadFileSuccess"
                   >
                     <el-button text>From 本地文件</el-button>
                   </el-upload>
                   <div id="upload-box">
                     <ResourceUploadManager
-                      ref="resourceUploadManagerRef"
-                      v-model:file-list="uploadFileList"
-                      v-model:current-session="currentSession"
-                      @upload-success="data => handleUploadSuccess(data)"
+                        ref="resourceUploadManagerRef"
+                        v-model:file-list="uploadFileList"
+                        v-model:current-session="currentSession"
+                        @upload-success="data => handleUploadSuccess(data)"
                     />
                   </div>
                 </div>
@@ -571,11 +572,12 @@ defineExpose({
           <div class="std-middle-box">
             <div class="std-middle-box">
               <div
-                class="input-button"
-                @mousedown.prevent="startRecording(1)"
-                @mouseup="stopRecording(2)"
-                @touchstart.prevent="startRecording(3)"
-                @touchend="stopRecording(4)"
+                  class="input-button"
+                  v-if="!localDisable"
+                  @mousedown.prevent="startRecording(1)"
+                  @mouseup="stopRecording(2)"
+                  @touchstart.prevent="startRecording(3)"
+                  @touchend="stopRecording(4)"
               >
                 <div v-show="isRecording" class="recording-box">
                   <div class="wave"></div>
@@ -590,12 +592,12 @@ defineExpose({
                 </el-tooltip>
               </div>
             </div>
-            <div class="std-middle-box">
+            <div class="std-middle-box" v-if="!localDisable">
               <div
-                v-show="userBatchSize == 1"
-                class="input-button"
-                style="background-color: red"
-                @click="stopQuestion()"
+                  v-show="userBatchSize == 1"
+                  class="input-button"
+                  style="background-color: red"
+                  @click="stopQuestion()"
               >
                 <el-image src="images/pause_white.svg" class="input-icon" />
               </div>
@@ -608,9 +610,9 @@ defineExpose({
                   </el-badge>
                 </template>
                 <div
-                  v-for="(running_question, idx) in runningQuestions"
-                  :key="running_question.qa_item_idx"
-                  class="running_question_item_box"
+                    v-for="(running_question, idx) in runningQuestions"
+                    :key="running_question.qa_item_idx"
+                    class="running_question_item_box"
                 >
                   <div class="running-question-idx-box">
                     <el-text truncated> 第{{ idx + 1 }}个问题 </el-text>
@@ -626,6 +628,11 @@ defineExpose({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    <div v-if="localDisable" class="mask-layer">
+      <div class="mask-content">
+        <span class="hint-text">请先填写必要表单参数</span>
       </div>
     </div>
     <div id="input-tips">
@@ -819,6 +826,35 @@ defineExpose({
   width: 24px;
   height: 24px;
   cursor: pointer;
+}
+.disabled-state {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.mask-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.mask-content {
+  background-color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hint-text {
+  color: #f56c6c;
+  font-weight: 500;
 }
 /* 录音盒子样式 */
 .recording-box {

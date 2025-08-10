@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Picture as IconPicture } from '@element-plus/icons-vue';
 import { onMounted, ref, watch } from 'vue';
-import SimpleProgress from '@/components/appCenter/appPreview/SimpleProgress.vue';
+import SimpleProgress from './SimpleProgress.vue';
 import { workflow_task_item } from '@/types/next_console';
 const props = defineProps({
   workflowTask: {

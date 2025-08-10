@@ -2,7 +2,8 @@ from datetime import timedelta
 from app.app import app
 
 # 应用配置
-app.config["domain"] = "http://127.0.0.1:8080" 
+app.config["domain"] = "http://127.0.0.1:8080"
+app.config['admin_domain'] = "http://127.0.0.1:8082"
 app.config['bucket_size'] = 5000
 app.config['data_dir'] = "/app/data"
 app.config["download_dir"] = '/app/data/download'

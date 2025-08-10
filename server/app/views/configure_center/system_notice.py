@@ -14,6 +14,7 @@ def handle_connect():
     处理客户端连接事件，并记录客户端信息至redis
     :return:
     """
+    print("Client connected:", request.sid)
     return
 
 
@@ -25,6 +26,7 @@ def handle_auth(data):
     token = data.get('token')
     client_fingerprint = data.get('client_fingerprint')
     if not token:
+        print("Authentication failed: No token provided.")
         disconnect()
         return False
     try:
@@ -33,6 +35,7 @@ def handle_auth(data):
         user_id = decoded_token['sub']
         # 进一步的用户认证操作
     except Exception as e:
+        print("Authentication failed:", e, token)
         disconnect()  # 验证失败则断开连接
         return False
     current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

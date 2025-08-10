@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import 'highlight.js/styles/vs2015.min.css';
+import 'highlight.js/styles/stackoverflow-light.min.css';
 import { Picture as IconPicture } from '@element-plus/icons-vue';
 import markdownItKatex from '@vscode/markdown-it-katex';
 import Clipboard from 'clipboard';
@@ -25,6 +25,7 @@ import SimpleProgress from '@/components/next_console/messages_flow/SimpleProgre
 import WorkFlowArea from '@/components/next_console/WorkFlowArea.vue';
 import { close_upload_manager as closeUploadManager } from '@/components/resource/resource_upload/resource_upload';
 import router from '@/router';
+import {ArrowUp, ArrowDown} from '@element-plus/icons-vue';
 import {
   msg_item as IMsgItem,
   msg_queue_item as IMsgQueueItem,
@@ -120,39 +121,13 @@ let mdAnswer = new MarkdownIt({
     );
   }
 });
-const defaultTableRule =
-    mdAnswer.renderer.rules.table_open ||
-    function (tokens, idx, options, env, self) {
-      return self.renderToken(tokens, idx, options);
-    };
-mdAnswer.renderer.rules.table_open = function (tokens, idx, options, env, self) {
-  tokens[idx].attrPush(['class', 'custom-table']);
-  return defaultTableRule(tokens, idx, options, env, self);
-};
 mdAnswer.use(markdownItKatex, {
   throwOnError: false,
   errorColor: ' #cc0000',
   strict: false // 允许非标准语法
 });
 mdAnswer.use(markdownItMermaid);
-const customTableStyle = `
-    <style>
-    .custom-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 1rem;
-    }
-    .custom-table th, .custom-table td {
-        border: 1px solid #D0D5DD;
-        padding: 8px;
-        text-align: left;
-    }
-    .custom-table th {
-        background-color: #f2f2f2;
-    }
-    </style>
-`;
-document.head.insertAdjacentHTML('beforeend', customTableStyle);
+
 mdAnswer.renderer.rules.image = function (tokens, idx, options, env, self) {
   const token = tokens[idx];
   const src = token.attrGet('src');
@@ -348,15 +323,30 @@ async function showSupDetailFn(item: IMsgQueueItem, event) {
       const targetLink = isSupLink ? target.getAttribute('href') :
           target.querySelector('a')?.getAttribute('href');
       const targetIndex =  event.target.textContent;
+      let targetIndexNumber = -1;
+      // 使用正则表达式匹配 [数字] 格式
+      const match = targetIndex.match(/\[(\d+)\]/);
+      if (match) {
+        // 如果匹配成功，提取第一个捕获组并转为整数
+        targetIndexNumber = parseInt(match[1], 10);
+      }
+      else {
+        // 如果不是 [数字] 格式，尝试直接转为整数
+        try  {
+          targetIndexNumber = parseInt(targetIndex, 10);
+        } catch (e) {
+
+        }
+      }
       for (let i = 0; i <= referenceList.length; i++) {
-        if (referenceList[i]?.resource_source_url == targetLink
-            || referenceList[i]?.resource_download_url == targetLink
-            || targetLink.includes('next_console/resources/resource_viewer/' + referenceList[i]?.resource_id)
+        if (
+            (referenceList[i]?.resource_source_url == targetLink && targetLink)
+            || (referenceList[i]?.resource_download_url == targetLink && targetLink)
+            || targetLink?.includes('next_console/resources/resource_viewer/' + referenceList[i]?.resource_id)
+            || (i === targetIndexNumber)
         ) {
           currentSupDetail.value = referenceList[i];
-          if (i == targetIndex - 1) {
-            break;
-          }
+          break;
         }
       }
     }
@@ -1595,17 +1585,39 @@ watch(
                         :workflow-task="qaWorkflowMap?.[item.qa_id]"
                     />
                     <div class="msg-flow-answer-inner" :class="{ 'msg-flow-answer-inner-short': item?.short_answer }">
-                      <div v-for="(sub_finish_msg, idx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]">
-                        <div v-show="sub_finish_msg?.msg_reason_content_finish_html?.length" class="reason-box">
-                          <div
-                              v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_reason_content_finish_html"
-                              :key="idx"
-                              style="width: 100%"
-                              @mouseover="showSupDetailFn(item, $event)"
-                              v-html="sub_finish_msg_content"
-                          ></div>
-                        </div>
+                      <div v-for="(sub_finish_msg, idx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]"
+                           style="width: 100%"
+                      >
+                        <div v-show="sub_finish_msg?.msg_reason_content_finish_html?.length" class="reason-container">
+                          <div class="reason-header">
+                            <el-button v-if="!sub_finish_msg?.msg_reason_content_hide"
+                                       @click="sub_finish_msg.msg_reason_content_hide = true"
 
+                                       :icon="ArrowUp"
+                            >
+
+                              收起推理过程
+                            </el-button>
+                            <el-button v-if="sub_finish_msg?.msg_reason_content_hide"
+                                       @click="sub_finish_msg.msg_reason_content_hide = false"
+                                       :icon="ArrowDown"
+
+                            > 展开推理过程
+                            </el-button>
+
+                          </div>
+                          <transition name="fade">
+                            <div v-show="!sub_finish_msg?.msg_reason_content_hide"  class="reason-box">
+                              <div
+                                  v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_reason_content_finish_html"
+                                  :key="idx"
+                                  style="width: 100%"
+                                  @mouseover="showSupDetailFn(item, $event)"
+                                  v-html="sub_finish_msg_content"
+                              ></div>
+                            </div>
+                          </transition>
+                        </div>
                         <div
                             v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_content_finish_html"
                             :key="idx"
@@ -1614,7 +1626,6 @@ watch(
                             v-html="sub_finish_msg_content"
                         ></div>
                       </div>
-
                       <SimpleProgress v-if="item?.qa_finished == false && !item?.qa_workflow_open" />
                       <div v-if="item?.qa_is_cut_off">
                         <el-text style="color: #c8cad9; font-size: 12px"> 此回答已停止 </el-text>
@@ -2490,6 +2501,54 @@ sup {
   font-size: 14px;
   line-height: 20px;
   color: #667085;
+}
+.reason-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 6px;
+}
+.reason-header {
+
+  /* 增大圆角半径，使盒子更圆润 */
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+
+}
+
+
+/* 定义淡入淡出动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+:deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+:deep(th) {
+  border: 1px solid #D0D5DD;
+  padding: 8px;
+  text-align: left;
+}
+:deep(td) {
+  border: 1px solid #D0D5DD;
+  padding: 8px;
+  text-align: left;
+}
+:deep(th) {
+  background-color: #f2f2f2;
 }
 @media (width<768px) {
   #message-flow-box {

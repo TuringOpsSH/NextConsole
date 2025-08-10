@@ -6,9 +6,16 @@ tmp/*
 !tmp/.gitkeep
 .idea
 venv
-app/logs/*
+server/app/logs/*
+server/app/data/*
+server/app/libs/*
+admin/app/logs/*
+admin/app/data/*
+admin/app/libs/*
+
 .idea/*
 celerybeat-schedule.dat
 celerybeat-schedule.bak
 celerybeat-schedule.dir
+
 

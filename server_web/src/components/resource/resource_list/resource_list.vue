@@ -367,7 +367,7 @@ async function handleSelectionChange(val: ResourceItem[]) {
                     />
                   </div>
                   <div class="std-middle-box" :id="item.id.toString()">
-                    <el-text class="card-title" truncated style="width: 200px" :id="item.id.toString()">
+                    <el-text class="card-title" truncated style="width: 140px" :id="item.id.toString()">
                       {{ item.resource_name }}
                     </el-text>
                   </div>
@@ -534,8 +534,8 @@ async function handleSelectionChange(val: ResourceItem[]) {
   flex-direction: column;
   border: 1px solid #d0d5dd;
   border-radius: 6px;
-  width: 300px;
-  height: 200px;
+  width: 240px;
+  height: 160px;
   cursor: pointer;
   box-sizing: border-box;
 }
@@ -732,7 +732,7 @@ async function handleSelectionChange(val: ResourceItem[]) {
   margin-left: 16px;
   box-shadow: -5px 0 10px -5px rgba(0, 0, 0, 0.1);
   // transition: all 0.5s ease-in-out;
-  width: 400px;
+  width: 320px;
   box-sizing: border-box;
   flex-shrink: 0;
   padding: 16px;

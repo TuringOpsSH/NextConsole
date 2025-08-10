@@ -528,8 +528,8 @@ function checkRoleChangeAvailable(row) {
           </el-form-item>
           <el-form-item prop="user_gender" label="用户性别">
             <el-radio-group v-model="newUserForm.user_gender">
-              <el-radio value="男" label="男"></el-radio>
-              <el-radio value="女" label="女"></el-radio>
+              <el-radio value="男">男</el-radio>
+              <el-radio value="女">女</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item prop="user_resource_limit" label="用户资源空间(MB)">

@@ -238,6 +238,9 @@ export interface IWorkflowNodeInfo {
   node_message_schema_type?: string;
   node_rag_ref_show?: boolean;
   node_file_reader_config?: IFileReaderConfig;
+  node_file_splitter_config?: IFileSplitterConfig;
+  node_sub_workflow_config?: IWorkflowConfig;
+  subWorkflowOptions?: IWorkflowMetaInfo[];
   [property: string]: any;
 }
 
@@ -303,6 +306,7 @@ export interface IWorkflowEdgeInfo {
   edge_type?: string;
   edge_condition_type?: string;
   edge_conditions?: IWorkflowEdgeCondition[];
+  routerName?: string;
 }
 export interface IWorkflowEdgeCondition {
   src_node: Record<string, unknown>;
@@ -314,4 +318,14 @@ export interface IFileReaderConfig{
   src_format: string;
   engine: string;
   tgt_format: string;
+}
+export interface IFileSplitterConfig{
+  method: string;
+  chunk_size: number;
+  length_config: Record<string, unknown>;
+  symbol_config: Record<string, unknown>;
+  layout_config: Record<string, unknown>;
+}
+export interface IWorkflowConfig {
+  target_workflow_code: string;
 }

@@ -1,9 +1,9 @@
 from datetime import timedelta
 from app.app import app
-from celery.schedules import crontab
 
 # 应用配置
-app.config["domain"] = ""
+app.config['domain'] = ""
+app.config['admin_domain'] = ""
 app.config['bucket_size'] = 5000
 app.config['data_dir'] = "/app/data"
 app.config["download_dir"] = '/app/data/download'

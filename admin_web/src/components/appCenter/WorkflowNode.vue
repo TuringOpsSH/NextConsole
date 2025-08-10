@@ -34,7 +34,7 @@ function SingleDeleteNode(node) {
     <div class="agent-head">
       <div class="agent-head-left">
         <div class="std-middle-box">
-          <el-image class="agent-node-icon" :src="nodeData?.nodeIcon" />
+          <img class="agent-node-icon" :src="nodeData?.nodeIcon" />
         </div>
         <div class="std-middle-box">
           <el-text class="agent-node-name">
@@ -45,13 +45,16 @@ function SingleDeleteNode(node) {
       <div class="agent-head-right">
         <div class="std-middle-box">
           <el-tooltip content="测试运行" effect="light" placement="top">
-            <el-button v-if="nodeData?.nodeStatus == '运行中'" text :icon="VideoPause" disabled />
-            <el-button v-else text :icon="VideoPlay" disabled />
+            <VideoPause  v-if="nodeData?.nodeStatus == '运行中'"
+                         class="agent-node-svg"
+                         style="" />
+            <VideoPlay v-else class="agent-node-svg" />
+
           </el-tooltip>
         </div>
         <div class="std-middle-box">
           <el-dropdown>
-            <el-button text :icon="MoreFilled" />
+            <MoreFilled class="agent-node-svg" />
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item divided disabled>创建副本</el-dropdown-item>
@@ -67,7 +70,12 @@ function SingleDeleteNode(node) {
         <div class="std-middle-box">
           <el-text class="agent-body-row-name"> 输入 </el-text>
         </div>
-        <div class="std-middle-box">
+        <div v-if="nodeData?.nodeParams?.length>0" class="params-tag-area">
+          <el-tag v-for="param in nodeData.nodeParams">
+            {{param}}
+          </el-tag>
+        </div>
+        <div class="std-middle-box" v-else>
           <el-text>{{ nodeData?.nodeInput }}</el-text>
         </div>
       </div>
@@ -75,7 +83,12 @@ function SingleDeleteNode(node) {
         <div class="agent-body-row-name">
           <el-text> 输出 </el-text>
         </div>
-        <div>
+        <div v-if="nodeData?.nodeResultParams?.length>0" class="params-tag-area">
+          <el-tag v-for="param in nodeData.nodeResultParams">
+            {{param}}
+          </el-tag>
+        </div>
+        <div v-else>
           <el-text>{{ nodeData?.nodeOutput }}</el-text>
         </div>
       </div>
@@ -157,4 +170,20 @@ function SingleDeleteNode(node) {
   font-size: 14px;
   font-weight: bold;
 }
+.params-tag-area {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.agent-node-svg {
+  width: 1em;
+  height: 1em;
+  margin-right: 8px;
+  cursor: pointer;
+  &:focus {
+  outline: none !important;
+  }
+}
+
 </style>

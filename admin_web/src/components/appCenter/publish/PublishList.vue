@@ -195,7 +195,7 @@ function getTagType(status) {
                 </div>
               </div>
               <div class="app-item-icon">
-                <el-image :src="app.app_icon" fit="cover" style="width: 60px; height: 60px" />
+                <el-image :src="app.app_icon" fit="cover" style="width: 60px; height: 60px; border-radius: 12px" />
               </div>
             </div>
             <div class="app-item-foot">

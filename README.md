@@ -109,6 +109,32 @@ Log in to the Server service at port `8080`. Click on the "AI Workbench" to star
 
 By following the above steps, you can quickly start NextConsole and begin using it! 😃
 
+## Building from Source
+
+### Prerequisites
+- Docker 21+ installed
+- Node.js 16+ (for frontend build)
+- Python 3.10+ (for backend services)
+
+### Build Steps
+
+#### 1. Build Backend Service Image
+```bash
+git clone https://github.com/TuringOpsSH/NextConsole.git
+cd NextConsole
+docker build -f docker/build/server/Dockerfile -t nc:standalone . 
+```
+
+#### 2. Build Frontend Service Image
+```bash
+docker build -f docker/build/web/Dockerfile -t nc-web:standalone .
+```
+
+#### 3. Launch Services
+```bash
+vi docker/docker-compose.yml 
+docker-compose -f ./docker/docker-compose.yml up -d
+```
 
 ### Core Feature Descriptions
 
@@ -137,3 +163,14 @@ The AI Application Factory enables visual construction and management of large -
 | ---- | ---- |
 | Visual Construction | Uses a graphical interface to drag and drop components without complex coding. A business department can build an intelligent customer - service workflow, for example. |
 | Release Management | Supports version control, performance monitoring, etc., and allows for on - demand optimization. A development team can regularly optimize agents. |
+
+### Official Resources
+
+Visit [NextConsole Official Documentation](https://docs.nextconsole.cn) to access:
+- Latest version documentation  
+- API reference  
+- Advanced development guides  
+- Best practice cases  
+- Frequently asked questions  
+
+Our documentation center is continuously updated. We recommend bookmarking this address for the latest materials 📚

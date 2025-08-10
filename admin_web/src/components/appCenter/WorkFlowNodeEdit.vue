@@ -12,7 +12,7 @@ import {
   SuccessFilled,
   WarningFilled
 } from '@element-plus/icons-vue';
-import { nodeUpdate, workflowUpdate } from '@/api/appCenterApi';
+import { nodeUpdate, workflowUpdate, workflowSearch } from '@/api/appCenterApi';
 import { type CSSProperties, onMounted, reactive, ref, nextTick } from 'vue';
 import JsonSchemaForm from '@/components/appCenter/JsonSchemaForm.vue';
 import TemplateEditor from '@/components/appCenter/TemplateEditor.vue';
@@ -114,6 +114,7 @@ oralce的最新版本<sup>[1]</sup><sup>[2]</sup>是13c。
 答案中不要丢失参考资料文本中的那些具有参考价值的格式化元素，比如markdown里面的图片、视频、表格、代码块等元素。"
 技巧2：如果打开显示参考资料，系统将会按照变量定义顺序渲染参考文献。
 `
+const searchSubWorkflowLoading = ref(false);
 function handleOverNodeDetail(event) {
   const rect = nodeDetailRef.value.getBoundingClientRect();
   const leftBorderWidth = 10; // 左侧边框可触发拖拉的宽度范围
@@ -207,7 +208,7 @@ async function updateNodeOutputConfig() {
       showSubArea: true
     };
   }
-  nodeUpdate({
+  const res = await nodeUpdate({
     app_code: currentApp.app_code,
     node_code: currentNodeDetail.value.node_code,
     node_result_format: currentNodeDetail.value.node_result_format,
@@ -220,6 +221,21 @@ async function updateNodeOutputConfig() {
     node_message_schema_type: currentNodeDetail.value.node_message_schema_type,
     node_message_schema: currentNodeDetail.value.node_message_schema
   });
+  if (!res.error_status) {
+    // 更新工作流节点的输出参数
+    const currentNode = graphWrapper.value.getCellById(currentNodeDetail.value.node_code);
+    currentNode.updateData({
+      nodeResultParams: currentNodeDetail.value.node_result_params_json_schema?.ncOrders
+    });
+    const graphData = graphWrapper.value.toJSON();
+    if (graphData) {
+      workflowUpdate({
+        app_code: currentApp.app_code,
+        workflow_code: CurrentEditFlow.value.workflow_code,
+        workflow_edit_schema: graphData
+      });
+    }
+  }
 }
 async function switchLLMInstance(targetLLMInstance: LLMInstance) {
   if (!currentNodeDetail.value.node_llm_params) {
@@ -241,7 +257,7 @@ async function switchLLMInstance(targetLLMInstance: LLMInstance) {
     currentNodeDetail.value.node_llm_code = targetLLMInstance.llm_code;
     // 更新工作流节点的模型字段
     const currentNode = graphWrapper.value.getCellById(currentNodeDetail.value.node_code);
-    currentNode.setData({
+    currentNode.updateData({
       nodeModel: targetLLMInstance.llm_desc
     });
   }
@@ -292,16 +308,45 @@ async function updateNodeInputConfig() {
     node_input_params_json_schema: currentNodeDetail.value.node_input_params_json_schema
   }
   if (currentNodeDetail.value.node_type == 'start') {
-    // merge输入变量到输出参数中
-    for (const key in currentNodeDetail.value.node_input_params_json_schema.properties) {
-      console.log(key)
-      if (!currentNodeDetail.value.node_result_params_json_schema.properties[key]) {
-        currentNodeDetail.value.node_result_params_json_schema.properties[
-            key] =  currentNodeDetail.value.node_input_params_json_schema.properties[key]
+    // 输出参数从第六个参数移出自定义参数,
+    const invalidKeys = [];
+    for (let i = 5; i < currentNodeDetail.value.node_result_params_json_schema.ncOrders.length; i++) {
+      invalidKeys.push(currentNodeDetail.value.node_result_params_json_schema.ncOrders[i]);
+
+    }
+    for (const key of invalidKeys) {
+      delete currentNodeDetail.value.node_result_params_json_schema.properties[key];
+      const index = currentNodeDetail.value.node_result_params_json_schema.ncOrders.indexOf(key);
+      if (index > -1) {
+        currentNodeDetail.value.node_result_params_json_schema.ncOrders.splice(index, 1);
       }
     }
+    // merge输入变量到输出参数中
+    for (const key of currentNodeDetail.value.node_input_params_json_schema.ncOrders) {
+      currentNodeDetail.value.node_result_params_json_schema.ncOrders.push(key);
+      currentNodeDetail.value.node_result_params_json_schema.properties[
+          key] = currentNodeDetail.value.node_input_params_json_schema.properties[key];
+    }
+    params["node_result_params_json_schema"] = currentNodeDetail.value.node_result_params_json_schema;
   }
-  nodeUpdate(params);
+  const res = await nodeUpdate(params);
+  if (!res.error_status) {
+    // 更新节点入参
+    const currentNode = graphWrapper.value.getCellById(currentNodeDetail.value.node_code);
+    const nodeParams = currentNodeDetail.value.node_input_params_json_schema?.ncOrders
+
+    currentNode.updateData({
+      nodeParams: nodeParams
+    });
+    const graphData = graphWrapper.value.toJSON();
+    if (graphData) {
+      workflowUpdate({
+        app_code: currentApp.app_code,
+        workflow_code: CurrentEditFlow.value.workflow_code,
+        workflow_edit_schema: graphData
+      });
+    }
+  }
 }
 async function initAllLLM() {
   const res = await llmInstanceSearch({
@@ -391,13 +436,15 @@ function setNodeMessageSchema(msgSchema: any) {
       properties: {},
       ncOrders: []
     };
-  } else if (msgSchema.schema_type == 'messageFlow') {
+  }
+  else if (msgSchema.schema_type == 'messageFlow') {
     if (currentNodeDetail.value.node_type == 'llm') {
       msgSchema.schema = {
         type: 'object',
         properties: {
           content: {
             type: 'string',
+            typeName: 'string',
             value: '',
             ref: {
               nodeCode: currentNodeDetail.value.node_code,
@@ -411,11 +458,12 @@ function setNodeMessageSchema(msgSchema: any) {
             },
             showSubArea: true,
             attrFixed: true,
-            typeFixed: true,
+            description: '输出消息',
             // valueFixed: true
           },
           reasoning_content: {
             type: 'string',
+            typeName: 'string',
             value: '',
             ref: {
               nodeCode: currentNodeDetail.value.node_code,
@@ -430,77 +478,94 @@ function setNodeMessageSchema(msgSchema: any) {
             showSubArea: true,
             attrFixed: true,
             typeFixed: true,
+            description: '推理消息',
             // valueFixed: true
           }
         },
         ncOrders: ['content', 'reasoning_content']
       };
-    } else {
+    }
+    else {
       msgSchema.schema = {
         type: 'object',
         properties: {
           content: {
             type: 'string',
+            typeName: 'string',
             value: '',
             ref: '',
             showSubArea: true,
             attrFixed: true,
-            typeFixed: true
+            typeFixed: true,
+            description: '输出消息',
           },
           reasoning_content: {
             type: 'string',
+            typeName: 'string',
             value: '',
             ref: '',
             showSubArea: true,
             attrFixed: true,
-            typeFixed: true
+            typeFixed: true,
+            description: '推理消息',
           }
         },
         ncOrders: ['content', 'reasoning_content']
       };
     }
-  } else if (msgSchema.schema_type == 'workflow') {
+  }
+  else if (msgSchema.schema_type == 'workflow') {
     msgSchema.schema = {
       type: 'object',
       properties: {
         title: {
           type: 'string',
+          typeName: 'string',
           value: '',
           ref: '',
           showSubArea: true,
           attrFixed: true,
-          typeFixed: true
+          typeFixed: true,
+          description: '标题',
         },
         description: {
           type: 'string',
+          typeName: 'string',
           value: '',
           ref: '',
           showSubArea: true,
           attrFixed: true,
-          typeFixed: true
+          typeFixed: true,
+          description: '描述',
         }
       },
       ncOrders: ['title', 'description']
     };
-  } else if (msgSchema.schema_type == 'null') {
+  }
+  else if (msgSchema.schema_type == 'null') {
     // 从消息结构中移除
     currentNodeDetail.value.node_message_schema = currentNodeDetail.value.node_message_schema.filter(
         item => item.schema_type != 'null'
     );
-  } else if (msgSchema.schema_type == 'recommendQ') {
+  }
+  else if (msgSchema.schema_type == 'recommendQ') {
     msgSchema.schema = {
       type: 'object',
       properties: {
         questions: {
           items: {
-            type: 'string'
+            type: 'string',
+            typeName: 'string',
+            description: '推荐问题',
           },
           ref: '',
           showSubArea: false,
           type: 'array',
+          typeName: 'array',
           value: '',
           attrFixed: true,
-          typeFixed: true
+          typeFixed: true,
+          description: '推荐问题列表',
         }
       },
       ncOrders: ['questions']
@@ -517,6 +582,7 @@ function initNewMessageSchema() {
         properties: {
           content: {
             type: 'string',
+            typeName: 'string',
             value: '',
             ref: {
               nodeCode: currentNodeDetail.value.node_code,
@@ -530,11 +596,12 @@ function initNewMessageSchema() {
             },
             showSubArea: true,
             attrFixed: true,
-            typeFixed: true,
+            description: '输出消息',
             // valueFixed: true
           },
           reasoning_content: {
             type: 'string',
+            typeName: 'string',
             value: '',
             ref: {
               nodeCode: currentNodeDetail.value.node_code,
@@ -549,13 +616,15 @@ function initNewMessageSchema() {
             showSubArea: true,
             attrFixed: true,
             typeFixed: true,
+            description: '推理消息',
             // valueFixed: true
           }
         },
         ncOrders: ['content', 'reasoning_content']
       }
     })
-  } else {
+  }
+  else {
     currentNodeDetail.value.node_message_schema.push({
       schema_type: 'messageFlow',
       schema: {
@@ -563,19 +632,22 @@ function initNewMessageSchema() {
         properties: {
           content: {
             type: 'string',
+            typeName: 'string',
             value: '',
             ref: '',
             showSubArea: true,
             attrFixed: true,
-            typeFixed: true
+            description: '输出消息',
           },
           reasoning_content: {
             type: 'string',
+            typeName: 'string',
             value: '',
             ref: '',
             showSubArea: true,
             attrFixed: true,
-            typeFixed: true
+            typeFixed: true,
+            description: '推理消息',
           }
         },
         ncOrders: ['content', 'reasoning_content']
@@ -611,15 +683,529 @@ function fixResourceIcon(url: string) {
   return url;
 }
 async function updateNodeFileReaderConfig() {
+  // 修正目标格式为png时的输出格式
+  if (['png', 'jpg'].includes(currentNodeDetail.value.node_file_reader_config?.tgt_format)
+  && currentNodeDetail.value.node_result_params_json_schema.ncOrders[0] == 'output_resource'
+  ) {
+    currentNodeDetail.value.node_input_params_json_schema.properties['input_resources'] = {
+      type: 'array',
+      typeName: 'file-list',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      description: '输入文档列表',
+      items: {
+        type: 'object',
+        typeName: 'file',
+        value: '',
+        ref: '',
+        showSubArea: true,
+        attrFixed: true,
+        typeFixed: true,
+        description: '输入文档',
+        properties: fileSchema,
+        ncOrders: ['id', 'name', 'size', 'format', 'icon']
+      }
+    };
+    delete currentNodeDetail.value.node_input_params_json_schema.properties['input_resource'];
+    currentNodeDetail.value.node_input_params_json_schema.ncOrders[0] = 'input_resources';
+
+    currentNodeDetail.value.node_result_params_json_schema.properties['output_resources'] = {
+      type: 'array',
+      typeName: 'file-list',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      description: '输出文档内容',
+      items: {
+        ncOrders: [
+          "id",
+          "name",
+          "format",
+          "size",
+          "content",
+          "url"
+        ],
+        properties: {
+          content: {
+            description: "文件内容",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          },
+          "format": {
+            "description": "文件名称",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          },
+          "id": {
+            "description": "文件ID",
+            "ref": "",
+            "showSubArea": false,
+            "type": "integer",
+            "typeName": "integer",
+            "value": ""
+          },
+          "name": {
+            "description": "文件名称",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          },
+          "size": {
+            "description": "文件大小",
+            "ref": "",
+            "showSubArea": false,
+            "type": "number",
+            "typeName": "number",
+            "value": ""
+          },
+          "url": {
+            "description": "文件URL",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          }
+        },
+        required: [],
+        type: "object",
+        typeName: "file"
+      }
+    };
+    delete currentNodeDetail.value.node_result_params_json_schema.properties['output_resource'];
+    currentNodeDetail.value.node_result_params_json_schema.ncOrders[0] = 'output_resources';
+  }
+
   nodeUpdate({
     app_code: currentApp.app_code,
     node_code: currentNodeDetail.value.node_code,
     node_file_reader_config: currentNodeDetail.value.node_file_reader_config
   });
 }
+async function updateNodeFileSplitterConfig() {
+  nodeUpdate({
+    app_code: currentApp.app_code,
+    node_code: currentNodeDetail.value.node_code,
+    node_file_splitter_config: currentNodeDetail.value.node_file_splitter_config
+  });
+}
+async function handleFileReaderModeChange(val:string) {
+  // 将input_resources 入参进行处理
+  const fileSchema = {
+    id: {
+      type: 'integer',
+      typeName: 'integer',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      valueFixed: true,
+      description: '资源ID'
+    },
+    name: {
+      type: 'string',
+      typeName: 'string',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      valueFixed: true,
+      description: '资源名称'
+    },
+    size: {
+      type: 'number',
+      typeName: 'number',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      valueFixed: true,
+      description: '资源大小'
+    },
+    format : {
+      type: 'string',
+      typeName: 'string',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      valueFixed: true,
+      description: '资源格式'
+    },
+    icon : {
+      type: 'string',
+      typeName: 'string',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      valueFixed: true,
+      description: '资源图标',
+      valueFixed: true
+    }
+  }
+  if (val == 'single') {
+    currentNodeDetail.value.node_input_params_json_schema.properties['input_resource'] = {
+      type: 'object',
+      typeName: 'file',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      description: '输入文档',
+      properties: fileSchema,
+      ncOrders: ['id', 'name', 'size', 'format', 'icon']
+    };
+    delete currentNodeDetail.value.node_input_params_json_schema.properties['input_resources'];
+    currentNodeDetail.value.node_input_params_json_schema.ncOrders[0] = 'input_resource';
+
+    currentNodeDetail.value.node_result_params_json_schema.properties['output_resource'] = {
+      ncOrders: [
+        "id",
+        "name",
+        "format",
+        "size",
+        "content",
+        "url"
+      ],
+      properties: {
+        content: {
+          description: "文件内容",
+          ref: "",
+          showSubArea: false,
+          type: "string",
+          typeName: "string",
+          value: ""
+        },
+        format: {
+          "description": "文件名称",
+          "ref": "",
+          "showSubArea": false,
+          "type": "string",
+          "typeName": "string",
+          "value": ""
+        },
+        id: {
+          "description": "文件ID",
+          "ref": "",
+          "showSubArea": false,
+          "type": "integer",
+          "typeName": "integer",
+          "value": ""
+        },
+        name: {
+          "description": "文件名称",
+          "ref": "",
+          "showSubArea": false,
+          "type": "string",
+          "typeName": "string",
+          "value": ""
+        },
+        size: {
+          "description": "文件大小",
+          "ref": "",
+          "showSubArea": false,
+          "type": "number",
+          "typeName": "number",
+          "value": ""
+        },
+        url: {
+          "description": "文件URL",
+          "ref": "",
+          "showSubArea": false,
+          "type": "string",
+          "typeName": "string",
+          "value": ""
+        }
+      },
+      required: [],
+      type: "object",
+      typeName: "file"
+    };
+    delete currentNodeDetail.value.node_result_params_json_schema.properties['output_resources'];
+    currentNodeDetail.value.node_result_params_json_schema.ncOrders[0] = 'output_resource';
+  }
+  else if (val == 'list') {
+    currentNodeDetail.value.node_input_params_json_schema.properties['input_resources'] = {
+      type: 'array',
+      typeName: 'file-list',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      description: '输入文档列表',
+      items: {
+        type: 'object',
+        typeName: 'file',
+        value: '',
+        ref: '',
+        showSubArea: true,
+        attrFixed: true,
+        typeFixed: true,
+        description: '输入文档',
+        properties: fileSchema,
+        ncOrders: ['id', 'name', 'size', 'format', 'icon']
+      }
+    };
+    delete currentNodeDetail.value.node_input_params_json_schema.properties['input_resource'];
+    currentNodeDetail.value.node_input_params_json_schema.ncOrders[0] = 'input_resources';
+
+    currentNodeDetail.value.node_result_params_json_schema.properties['output_resources'] = {
+      type: 'array',
+      typeName: 'file-list',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      description: '输出文档内容',
+      items: {
+        ncOrders: [
+          "id",
+          "name",
+          "format",
+          "size",
+          "content",
+          "url"
+        ],
+        properties: {
+          content: {
+            description: "文件内容",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          },
+          "format": {
+            "description": "文件名称",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          },
+          "id": {
+            "description": "文件ID",
+            "ref": "",
+            "showSubArea": false,
+            "type": "integer",
+            "typeName": "integer",
+            "value": ""
+          },
+          "name": {
+            "description": "文件名称",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          },
+          "size": {
+            "description": "文件大小",
+            "ref": "",
+            "showSubArea": false,
+            "type": "number",
+            "typeName": "number",
+            "value": ""
+          },
+          "url": {
+            "description": "文件URL",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          }
+        },
+        required: [],
+        type: "object",
+        typeName: "file"
+      }
+    };
+    delete currentNodeDetail.value.node_result_params_json_schema.properties['output_resource'];
+    currentNodeDetail.value.node_result_params_json_schema.ncOrders[0] = 'output_resources';
+  }
+  updateNodeInputConfig();
+  updateNodeOutputConfig();
+  updateNodeFileReaderConfig();
+}
+async function handleFileReaderTargetFormatChange(val:string) {
+  if (['png', 'jpg'].includes(val) && currentNodeDetail.value.node_file_reader_config?.src_format == 'pdf'
+      &&  currentNodeDetail.value.node_file_reader_config?.engine == 'PyMuPDF') {
+    currentNodeDetail.value.node_result_params_json_schema.properties['output_resources'] = {
+      type: 'array',
+      typeName: 'file-list',
+      value: '',
+      ref: '',
+      showSubArea: true,
+      attrFixed: true,
+      typeFixed: true,
+      description: '输出文档内容',
+      items: {
+        ncOrders: [
+          "id",
+          "name",
+          "format",
+          "size",
+          "content",
+          "url"
+        ],
+        properties: {
+          content: {
+            description: "文件内容",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          },
+          "format": {
+            "description": "文件名称",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          },
+          "id": {
+            "description": "文件ID",
+            "ref": "",
+            "showSubArea": false,
+            "type": "integer",
+            "typeName": "integer",
+            "value": ""
+          },
+          "name": {
+            "description": "文件名称",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          },
+          "size": {
+            "description": "文件大小",
+            "ref": "",
+            "showSubArea": false,
+            "type": "number",
+            "typeName": "number",
+            "value": ""
+          },
+          "url": {
+            "description": "文件URL",
+            "ref": "",
+            "showSubArea": false,
+            "type": "string",
+            "typeName": "string",
+            "value": ""
+          }
+        },
+        required: [],
+        type: "object",
+        typeName: "file"
+      }
+    };
+    delete currentNodeDetail.value.node_result_params_json_schema.properties['output_resource'];
+    currentNodeDetail.value.node_result_params_json_schema.ncOrders[0] = 'output_resources';
+  }
+  updateNodeOutputConfig();
+  updateNodeFileReaderConfig()
+}
+async function searchSubWorkflow(val:string) {
+  searchSubWorkflowLoading.value = true;
+  const workflow_codes = []
+  if (currentNodeDetail.value.node_sub_workflow_config?.target_workflow_code) {
+    workflow_codes.push(currentNodeDetail.value.node_sub_workflow_config.target_workflow_code);
+  }
+  const res = await workflowSearch({
+    app_code: currentApp.app_code,
+    keyword: val,
+    workflow_codes: workflow_codes,
+    page_size: 10
+  });
+  if (!res.error_status) {
+    currentNodeDetail.value.subWorkflowOptions = res.result.data;
+  }
+  searchSubWorkflowLoading.value = false;
+}
+async function updateNodeSubWorkflowConfig() {
+  const pickSubWorkflow = currentNodeDetail.value.subWorkflowOptions.find(
+    item => item.workflow_code == currentNodeDetail.value.node_sub_workflow_config.target_workflow_code
+  );
+
+  currentNodeDetail.value.node_input_params_json_schema = pickSubWorkflow.workflow_params_schema;
+  currentNodeDetail.value.node_result_params_json_schema = pickSubWorkflow.workflow_result_schema;
+  currentNodeDetail.value.node_input_params_json_schema.attrFixed = true;
+  currentNodeDetail.value.node_result_params_json_schema.attrFixed = true;
+  for (let k of currentNodeDetail.value.node_input_params_json_schema.ncOrders) {
+    if (currentNodeDetail.value.node_input_params_json_schema.properties[k]) {
+      currentNodeDetail.value.node_input_params_json_schema.properties[k].attrFixed = true;
+      currentNodeDetail.value.node_input_params_json_schema.properties[k].typeFixed = true;
+    }
+  }
+  for (let k of currentNodeDetail.value.node_result_params_json_schema.ncOrders) {
+    if (currentNodeDetail.value.node_result_params_json_schema.properties[k]) {
+      currentNodeDetail.value.node_result_params_json_schema.properties[k].attrFixed = true;
+      currentNodeDetail.value.node_result_params_json_schema.properties[k].typeFixed = true;
+    }
+  }
+  const res = await nodeUpdate({
+    app_code: currentApp.app_code,
+    node_code: currentNodeDetail.value.node_code,
+    node_sub_workflow_config: currentNodeDetail.value.node_sub_workflow_config,
+    node_input_params_json_schema: currentNodeDetail.value.node_input_params_json_schema,
+    node_result_params_json_schema: currentNodeDetail.value.node_result_params_json_schema
+  });
+  if (!res.error_status) {
+    currentNodeDetail.value.node_sub_workflow_config.target_workflow_name = pickSubWorkflow.workflow_name;
+    // 更新工作流节点的名称
+    const currentNode = graphWrapper.value.getCellById(currentNodeDetail.value.node_code);
+    currentNode.updateData({
+      nodeParams:  currentNodeDetail.value.node_input_params_json_schema?.ncOrders,
+      nodeResultParams: currentNodeDetail.value.node_result_params_json_schema?.ncOrders
+    });
+    const graphData = graphWrapper.value.toJSON();
+    workflowUpdate({
+      app_code: currentApp.app_code,
+      workflow_code: CurrentEditFlow.value.workflow_code,
+      workflow_edit_schema: graphData
+    });
+  }
+}
+function getSubWorkflowInfo(val: string) {
+  return currentNodeDetail.value.subWorkflowOptions?.find(
+    item => item.workflow_code == val
+  );
+}
 onMounted(async () => {
   initAllLLM();
 });
+defineExpose(
+  {
+    searchSubWorkflow,
+  }
+)
 </script>
 
 <template>
@@ -681,7 +1267,7 @@ onMounted(async () => {
             <el-input v-model="currentNodeDetail.node_desc" @blur="updateNodeDesc" />
           </div>
         </div>
-        <div v-if="!['tool'].includes(currentNodeDetail?.node_type)" class="config-item">
+        <div v-if="!['tool', 'end'].includes(currentNodeDetail?.node_type)" class="config-item">
           <div class="config-head">
             <div class="std-middle-box">
               <el-icon v-if="showInputParamsFlag" class="config-arrow" @click="showInputParamsFlag = false">
@@ -692,10 +1278,10 @@ onMounted(async () => {
               </el-icon>
             </div>
             <div class="std-middle-box">
-              <el-text> 输入设置 </el-text>
+              <el-text> 输入参数 </el-text>
             </div>
             <div>
-              <el-tooltip content="配置节点输入变量">
+              <el-tooltip :content="currentNodeDetail?.node_type == 'start' ? '配置工作流输入变量，请不要与系统变量命名冲突~' :'配置节点输入变量'">
                 <el-icon>
                   <QuestionFilled />
                 </el-icon>
@@ -704,13 +1290,13 @@ onMounted(async () => {
           </div>
           <div v-show="showInputParamsFlag" class="config-area">
             <el-form :model="currentNodeDetail" label-position="top" style="padding: 12px">
-              <el-form-item prop="node_input_params_json_schema" label="输入参数">
+              <el-form-item prop="node_input_params_json_schema">
                 <el-row style="width: 100%">
-                  <el-col :span="8">
-                    <el-text v-if="currentNodeDetail?.node_type == 'start'" type="info" size="small">
-                      系统变量名称
-                    </el-text>
-                    <el-text v-else type="info" size="small"> 变量名称 </el-text>
+                  <el-col :span="4">
+                    <el-text type="info" size="small"> 变量名称 </el-text>
+                  </el-col>
+                  <el-col :span="4">
+                    <el-text type="info" size="small"> 变量描述 </el-text>
                   </el-col>
                   <el-col :span="8">
                     <el-text type="info" size="small"> 变量类型 </el-text>
@@ -722,6 +1308,7 @@ onMounted(async () => {
                 <JsonSchemaForm
                     :jsonSchema="currentNodeDetail.node_input_params_json_schema"
                     :value-define="true"
+                    :require-define="true"
                     :node-upstream="currentNodeDetail?.node_upstream"
                     @update:schema="updateNodeInputConfig"
                 />
@@ -877,8 +1464,10 @@ onMounted(async () => {
                     currentNodeDetail.node_llm_params.support_vis && currentNodeDetail.node_llm_params?.enable_visual
                   "
                     label="图片输入"
+                    label-position="top"
                 >
                   <JsonSchemaForm
+                      style="margin-left: 24px"
                       :jsonSchema="currentNodeDetail.node_llm_params.visual_schema"
                       :value-define="true"
                       :node-upstream="currentNodeDetail?.nodeSelf"
@@ -1036,6 +1625,20 @@ onMounted(async () => {
                 </el-select>
               </el-form-item>
               <el-form-item prop="node_tool_http_header" label="Header" style="padding: 0 12px">
+                <el-row style="width: 100%">
+                  <el-col :span="4">
+                    <el-text type="info" size="small"> 变量名称 </el-text>
+                  </el-col>
+                  <el-col :span="4">
+                    <el-text type="info" size="small"> 变量描述 </el-text>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-text type="info" size="small"> 变量类型 </el-text>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-text type="info" size="small"> 变量取值 </el-text>
+                  </el-col>
+                </el-row>
                 <JsonSchemaForm
                     :jsonSchema="currentNodeDetail.node_tool_http_header"
                     :value-define="true"
@@ -1044,6 +1647,20 @@ onMounted(async () => {
                 />
               </el-form-item>
               <el-form-item prop="node_tool_http_params" label="Query" style="padding: 0 12px">
+                <el-row style="width: 100%">
+                  <el-col :span="4">
+                    <el-text type="info" size="small"> 变量名称 </el-text>
+                  </el-col>
+                  <el-col :span="4">
+                    <el-text type="info" size="small"> 变量描述 </el-text>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-text type="info" size="small"> 变量类型 </el-text>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-text type="info" size="small"> 变量取值 </el-text>
+                  </el-col>
+                </el-row>
                 <JsonSchemaForm
                     :jsonSchema="currentNodeDetail.node_tool_http_params"
                     :value-define="true"
@@ -1054,16 +1671,22 @@ onMounted(async () => {
               <el-form-item prop="node_tool_http_body" label="Body" style="padding: 0 12px">
                 <el-row style="width: 100%">
                   <el-radio-group v-model="currentNodeDetail.node_tool_http_body_type" @change="updateNodeToolConfig">
-                    <el-radio label="json" value="json" />
-                    <el-radio label="form-data" value="form-data" />
+                    <el-radio value="json" >json</el-radio>
+                    <el-radio value="form-data" >form-data</el-radio>
                   </el-radio-group>
                 </el-row>
                 <el-row style="width: 100%">
-                  <el-col :span="12">
+                  <el-col :span="4">
                     <el-text type="info" size="small"> 变量名称 </el-text>
                   </el-col>
-                  <el-col :span="12">
+                  <el-col :span="4">
+                    <el-text type="info" size="small"> 变量描述 </el-text>
+                  </el-col>
+                  <el-col :span="6">
                     <el-text type="info" size="small"> 变量类型 </el-text>
+                  </el-col>
+                  <el-col :span="6">
+                    <el-text type="info" size="small"> 变量取值 </el-text>
                   </el-col>
                 </el-row>
                 <JsonSchemaForm
@@ -1175,9 +1798,8 @@ onMounted(async () => {
                 <el-select
                     v-model="currentNodeDetail.node_rag_recall_config.recall_similarity"
                     @change="updateNodeRagConfig">
+                  <el-option value="ip" label="最大内积" />
                   <el-option value="cosine" label="余弦相似度" />
-                  <el-option value="euclidean" label="欧氏距离" />
-                  <el-option value="manhattan" label="曼哈顿距离相似度" />
                 </el-select>
               </el-form-item>
               <el-form-item label="召回阈值" style="padding: 0 12px">
@@ -1326,6 +1948,15 @@ onMounted(async () => {
         <div v-if="currentNodeDetail?.node_type == 'file_reader'" class="config-item">
           <div class="config-area">
             <el-form :model="currentNodeDetail" label-position="top">
+              <el-form-item prop="mode" label="模式" style="padding: 0 12px">
+                <el-radio-group
+                    v-model="currentNodeDetail.node_file_reader_config.mode"
+                    @change="handleFileReaderModeChange"
+                >
+                  <el-radio value="single">单文件</el-radio>
+                  <el-radio value="list">文件列表</el-radio>
+                </el-radio-group>
+              </el-form-item>
               <el-form-item prop="src_format" label="来源格式" style="padding: 0 12px">
                 <el-select
                   v-model="currentNodeDetail.node_file_reader_config.src_format"
@@ -1336,6 +1967,7 @@ onMounted(async () => {
                 >
                   <el-option value="pdf" label="pdf" />
                   <el-option value="docx" label="docx" />
+                  <el-option value="doc" label="doc" />
                   <el-option value="pptx" label="pptx" />
                   <el-option value="xlsx" label="xlsx" />
                   <el-option value="xls" label="xls" />
@@ -1348,7 +1980,7 @@ onMounted(async () => {
                     filterable
                     allow-create
                     placeholder="请选择或输入目标格式"
-                    @change="updateNodeFileReaderConfig"
+                    @change="handleFileReaderTargetFormatChange"
                 >
                   <el-option value="pdf" label="pdf" />
                   <el-option value="text" label="text" />
@@ -1358,7 +1990,7 @@ onMounted(async () => {
                   <el-option value="html" label="html" />
                 </el-select>
               </el-form-item>
-              <el-form-item prop="tat_format" label="处理引擎" style="padding: 0 12px">
+              <el-form-item prop="engine" label="处理引擎" style="padding: 0 12px">
                 <el-select
                     v-model="currentNodeDetail.node_file_reader_config.engine"
                     filterable
@@ -1368,10 +2000,145 @@ onMounted(async () => {
                   <el-option value="pandoc" label="pandoc" />
                   <el-option value="PyMuPDF" label="PyMuPDF" />
                   <el-option value="openpyxl" label="openpyxl" />
-                  <el-option value="tika" label="tika" disabled />
-                  <el-option value="pydocx" label="pydocx" disabled />
+                  <el-option value="python-pptx" label="python-pptx" />
+                  <el-option value="html2text" label="html2text" />
+                  <el-option value="liboffice" label="liboffice" disabled/>
+                  <el-option value="tika" label="tika" disabled/>
                 </el-select>
               </el-form-item>
+            </el-form>
+          </div>
+        </div>
+        <div v-if="currentNodeDetail?.node_type == 'file_splitter'" class="config-item">
+          <div class="config-area">
+            <el-form :model="currentNodeDetail" label-position="top">
+              <el-form-item prop="method" label="切分方法" style="padding: 0 12px">
+                <el-select
+                    v-model="currentNodeDetail.node_file_splitter_config.method"
+                    placeholder="请选择切分方法"
+                    @change="updateNodeFileSplitterConfig"
+                >
+                  <el-option value="length" label="长度" />
+                  <el-option value="symbol" label="分隔符" />
+                  <el-option value="layout" label="布局结构" disabled/>
+                </el-select>
+              </el-form-item>
+              <el-form-item prop="method" label="分块基础大小" style="padding: 0 12px">
+                <el-input-number v-model="currentNodeDetail.node_file_splitter_config.chunk_size"
+                                :min="1"
+                                :max="10000" placeholder="请选择分块基础大小" :precision="0"
+                                 style="width: 100%"
+                                @change="updateNodeFileSplitterConfig"
+                />
+              </el-form-item>
+              <el-form-item prop="chunk_overlap" label="分块重叠值" style="padding: 0 12px"
+                            v-show="currentNodeDetail.node_file_splitter_config.method == 'length'">
+                <el-input-number
+                    v-model="currentNodeDetail.node_file_splitter_config.length_config.chunk_overlap"
+                    :min="0"
+                    :max="currentNodeDetail.node_file_splitter_config.chunk_size"
+                    placeholder="请选择分块重叠值，值越大分段上下文重叠区域越大" :precision="0"
+                    style="width: 100%"
+                    @change="updateNodeFileSplitterConfig"
+                />
+              </el-form-item>
+              <el-form-item prop="separators" label="分隔符" style="padding: 0 12px"
+                            v-show="currentNodeDetail.node_file_splitter_config.method == 'symbol'"
+              >
+                <el-input
+                    v-model="currentNodeDetail.node_file_splitter_config.symbol_config.separators"
+                    placeholder="请输入分隔符"
+                    @change="updateNodeFileSplitterConfig"
+                />
+              </el-form-item>
+              <el-form-item prop="keep_separator" label="保留分隔符" style="padding: 0 12px"
+                            v-show="currentNodeDetail.node_file_splitter_config.method == 'symbol'"
+              >
+                <el-switch
+                    v-model="currentNodeDetail.node_file_splitter_config.symbol_config.keep_separator"
+                    @change="updateNodeFileSplitterConfig"
+                />
+              </el-form-item>
+              <el-form-item prop="merge_chunks" label="合并小于基础长度的小分块" style="padding: 0 12px"
+                            v-show="currentNodeDetail.node_file_splitter_config.method == 'symbol'"
+              >
+                <el-switch
+                    v-model="currentNodeDetail.node_file_splitter_config.symbol_config.merge_chunks"
+                    @change="updateNodeFileSplitterConfig"
+                />
+              </el-form-item>
+              <el-form-item prop="merge_chunks" label="合并小于基础长度的小分块" style="padding: 0 12px"
+                            v-show="currentNodeDetail.node_file_splitter_config.method == 'layout'"
+              >
+                <el-switch
+                    v-model="currentNodeDetail.node_file_splitter_config.layout_config.merge_chunks"
+                    @change="updateNodeFileSplitterConfig"
+                />
+              </el-form-item>
+              <el-form-item prop="preserve_structures" label="保留元素结构" style="padding: 0 12px"
+                            v-show="currentNodeDetail.node_file_splitter_config.method == 'layout'"
+              >
+                <el-select multiple
+                    v-model="currentNodeDetail.node_file_splitter_config.layout_config.preserve_structures"
+                    @change="updateNodeFileSplitterConfig"
+                >
+                  <el-option value="paragraph" label="段落" />
+                  <el-option value="heading" label="标题" />
+                  <el-option value="list" label="列表" />
+                  <el-option value="table" label="表格" />
+                  <el-option value="code" label="代码块" />
+                </el-select>
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+        <div v-if="currentNodeDetail?.node_type == 'workflow'" class="config-item">
+          <div class="config-area">
+            <el-form :model="currentNodeDetail" label-position="top">
+              <el-form-item prop="target_workflow_code" label="目标工作流" style="padding: 0 12px">
+                <el-select
+                    v-model="currentNodeDetail.node_sub_workflow_config.target_workflow_code"
+                    placeholder="请搜索子工作流"
+                    @change="updateNodeSubWorkflowConfig"
+                    filterable
+                    remote
+                    :loading="searchSubWorkflowLoading"
+                    :remote-method="searchSubWorkflow"
+                >
+                  <template #label="{ label, value }">
+                    <div class="std-middle-box" style="justify-content: flex-start; gap: 4px">
+                      <div class="std-middle-box">
+                        <el-image :src="getSubWorkflowInfo(value)?.workflow_icon"
+                                  style="width: 16px;height: 16px;border-radius: 20%" />
+                      </div>
+                      <div>
+                        <el-tooltip :content="getSubWorkflowInfo(value)?.workflow_desc" :show-after="1000">
+                          <el-text>{{label}}</el-text>
+                        </el-tooltip>
+                      </div>
+                    </div>
+                  </template>
+                  <el-option
+                      v-for="item in currentNodeDetail.subWorkflowOptions"
+                      :key="item.id"
+                      :label="item.workflow_name"
+                      :value="item.workflow_code"
+                  >
+
+                    <div class="std-middle-box" style="justify-content: flex-start; gap: 4px">
+                      <div class="std-middle-box">
+                        <el-image :src="item.workflow_icon" style="width: 16px;height: 16px;border-radius: 20%" />
+                      </div>
+                      <div>
+                        <el-tooltip :content="item.workflow_desc" :show-after="1000">
+                          <el-text>{{item.workflow_name}}</el-text>
+                        </el-tooltip>
+                      </div>
+                    </div>
+                  </el-option>
+                </el-select>
+              </el-form-item>
+
             </el-form>
           </div>
         </div>
@@ -1406,7 +2173,8 @@ onMounted(async () => {
               <el-form-item prop="node_result_format" label="数据格式">
                 <el-select
                     v-model="currentNodeDetail.node_result_format"
-                    :disabled="['start', 'rag', 'llm', 'file_reader'].includes(currentNodeDetail?.node_type)"
+                    :disabled="['start', 'rag', 'llm', 'file_reader', 'file_splitter', 'workflow', 'end'].includes(
+                        currentNodeDetail?.node_type)"
                     @change="updateNodeOutputConfig"
                 >
                   <el-option value="text" label="text" />
@@ -1455,8 +2223,11 @@ onMounted(async () => {
                   label="输出变量"
               >
                 <el-row style="width: 100%">
-                  <el-col :span="12">
+                  <el-col :span="8">
                     <el-text type="info" size="small"> 变量名称 </el-text>
+                  </el-col>
+                  <el-col :span="4">
+                    <el-text type="info" size="small"> 变量描述 </el-text>
                   </el-col>
                   <el-col :span="12">
                     <el-text type="info" size="small"> 变量类型 </el-text>
@@ -1477,8 +2248,11 @@ onMounted(async () => {
                   label="输出变量"
               >
                 <el-row style="width: 100%">
-                  <el-col :span="12">
+                  <el-col :span="8">
                     <el-text type="info" size="small"> 变量名称 </el-text>
+                  </el-col>
+                  <el-col :span="4">
+                    <el-text type="info" size="small"> 变量描述 </el-text>
                   </el-col>
                   <el-col :span="12">
                     <el-text type="info" size="small"> 变量类型 </el-text>
@@ -1496,6 +2270,7 @@ onMounted(async () => {
                 <el-switch v-model="currentNodeDetail.node_enable_message" @change="updateNodeOutputConfig" />
               </el-form-item>
               <div v-show="currentNodeDetail.node_enable_message" class="node-message-list">
+
                 <el-button type="primary" round @click="initNewMessageSchema">新增输出消息</el-button>
                 <div v-for="(msgSchema, idx) in currentNodeDetail.node_message_schema" :key="idx">
                   <el-form-item prop="node_message_schema" label="输出消息格式" label-position="left">
@@ -1508,6 +2283,20 @@ onMounted(async () => {
                       <el-option value="null" label="空" />
                     </el-select>
                   </el-form-item>
+                  <el-row style="width: 100%">
+                    <el-col :span="4">
+                      <el-text type="info" size="small"> 变量名称 </el-text>
+                    </el-col>
+                    <el-col :span="4">
+                      <el-text type="info" size="small"> 变量描述 </el-text>
+                    </el-col>
+                    <el-col :span="6">
+                      <el-text type="info" size="small"> 变量类型 </el-text>
+                    </el-col>
+                    <el-col :span="6">
+                      <el-text type="info" size="small"> 变量取值 </el-text>
+                    </el-col>
+                  </el-row>
                   <JsonSchemaForm
                       style="margin-top: 40px"
                       :jsonSchema="msgSchema.schema"
@@ -1546,10 +2335,10 @@ onMounted(async () => {
               <el-form-item label="运行方式" prop="node_run_model">
                 <el-radio-group v-model="currentNodeDetail.node_run_model_config.node_run_model"
                                 @change="updateNodeRunConfig">
-                  <el-radio-button label="默认" value="sync" />
-                  <el-radio-button label="并行" value="parallel" />
-                  <el-radio-button label="异步" value="async" disabled/>
-                  <el-radio-button label="循环" value="loop" disabled/>
+                  <el-radio-button value="sync" >默认</el-radio-button>
+                  <el-radio-button value="parallel" >并行</el-radio-button>
+                  <el-radio-button value="async" disabled >异步</el-radio-button>
+                  <el-radio-button value="loop" disabled >循环</el-radio-button>
                 </el-radio-group>
               </el-form-item>
               <el-form-item v-show="currentNodeDetail.node_run_model_config.node_run_model == 'parallel'"
@@ -1576,9 +2365,9 @@ onMounted(async () => {
               <el-form-item label="失败策略" prop="node_failed_solution">
                 <el-radio-group v-model="currentNodeDetail.node_failed_solution" @change="updateNodeRunConfig">
                   <el-radio-button v-show="currentNodeDetail.node_type != 'end'" label="重试" value="retry" />
-                  <el-radio-button label="退出" value="exit" />
-                  <el-radio-button label="异常处理" value="catch" />
-                  <el-radio-button label="跳过" value="pass" />
+                  <el-radio-button value="exit" >退出</el-radio-button>
+                  <el-radio-button value="catch" >异常处理</el-radio-button>
+                  <el-radio-button value="pass" >跳过</el-radio-button>
                 </el-radio-group>
               </el-form-item>
               <el-form-item v-show="currentNodeDetail.node_failed_solution == 'retry'" label="最大重试次数">
@@ -1598,9 +2387,9 @@ onMounted(async () => {
               </el-form-item>
               <el-form-item v-show="currentNodeDetail.node_failed_solution == 'retry'" label="重试后策略">
                 <el-radio-group v-model="currentNodeDetail.node_retry_model" @change="updateNodeRunConfig">
-                  <el-radio label="退出" :value="1" />
-                  <el-radio label="异常处理" :value="2" />
-                  <el-radio label="跳过" :value="3" />
+                  <el-radio label="退出" :value="1" >退出</el-radio>
+                  <el-radio label="异常处理" :value="2">异常处理</el-radio>
+                  <el-radio label="跳过" :value="3">跳过</el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item v-show="currentNodeDetail.node_failed_solution == 'catch'" label="异常输出结果">

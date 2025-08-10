@@ -4,7 +4,7 @@ import { Export } from '@antv/x6-plugin-export';
 import { Keyboard } from '@antv/x6-plugin-keyboard';
 import { Snapline } from '@antv/x6-plugin-snapline';
 import { getTeleport, register } from '@antv/x6-vue-shape';
-import { Bell, MagicStick, Plus, VideoPlay } from '@element-plus/icons-vue';
+import { Bell, MagicStick, Plus, VideoPlay, Connection, Lock, Unlock } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { defineProps, onMounted, ref, watch } from 'vue';
 import { nodeDetail, nodeInit, nodeSearch, workflowCheck, workflowUpdate } from '@/api/appCenterApi';
@@ -89,6 +89,7 @@ const props = defineProps({
 });
 const workflowAlters = ref([]);
 const alterRef = ref(null);
+const globalRouter = ref('metro')
 // 定义颜色常量
 const SELECTED_COLOR = '#ADD8E6'; // 淡蓝色，可根据需要调整
 const UNSELECTED_COLOR = 'black';
@@ -107,6 +108,8 @@ const unselectedEdgeStyle = {
   filter: 'none',
   transition: `stroke ${TRANSITION_DURATION}, stroke-width ${TRANSITION_DURATION}, filter ${TRANSITION_DURATION}`
 };
+const workflowNodeRef = ref(null);
+const graphLock = ref(false);
 function generateNewNodePosition(graph: Graph) {
   const nodes = graph.getNodes();
   // 如果图为空，返回画布中央的坐标
@@ -144,16 +147,30 @@ async function addAgentNode(nodeType: string) {
       data.nodeType = 'tool';
       data.nodeDesc = '通过api调用外部工具，扩展Agent能力';
       data.nodeName = '工具调用';
-    } else if (nodeType == 'rag') {
+    }
+    else if (nodeType == 'rag') {
       data.nodeIcon = 'images/node_rag.svg';
       data.nodeType = 'rag';
       data.nodeDesc = '通过调用外部知识，扩展Agent能力';
       data.nodeName = '知识调用';
-    } else if (nodeType == 'file_reader') {
+    }
+    else if (nodeType == 'file_reader') {
       data.nodeIcon = 'images/node_file_reader.svg';
       data.nodeType = 'file_reader';
       data.nodeDesc = '读取文件为指定格式，供Agent使用';
       data.nodeName = '文件阅读';
+    }
+    else if (nodeType == 'file_splitter') {
+      data.nodeIcon = 'images/node_file_splitter.svg';
+      data.nodeType = 'file_splitter';
+      data.nodeDesc = '将文本切分段落，供Agent使用';
+      data.nodeName = '文本切分';
+    }
+    else if (nodeType == 'workflow') {
+      data.nodeIcon = 'images/node_flow.svg';
+      data.nodeType = 'workflow';
+      data.nodeDesc = '调用执行其他工作流';
+      data.nodeName = '工作流节点';
     }
     const newNode = graphWrapper.value.addNode({
       shape: 'custom-vue-node',
@@ -177,14 +194,16 @@ async function addAgentNode(nodeType: string) {
       graphWrapper.value.removeNode(newNode);
       return false;
     }
-
+    graphWrapper.value.centerCell(newNode);
     const graphData = graphWrapper.value.toJSON();
-    const jsonData = JSON.stringify(graphData, null, 2);
-    workflowUpdate({
-      app_code: currentApp.app_code,
-      workflow_code: CurrentEditFlow.value.workflow_code,
-      workflow_edit_schema: jsonData
-    });
+    if (graphData) {
+      workflowUpdate({
+        app_code: currentApp.app_code,
+        workflow_code: CurrentEditFlow.value.workflow_code,
+        workflow_edit_schema: graphData
+      });
+    }
+
   }
 }
 function optimizedLayout() {
@@ -275,12 +294,13 @@ function handleClickBlank() {
   selectedEdges.value = [];
   // 保存数据
   const graphData = graphWrapper.value.toJSON();
-  const jsonData = JSON.stringify(graphData, null, 2);
-  workflowUpdate({
-    app_code: currentApp.app_code,
-    workflow_code: CurrentEditFlow.value.workflow_code,
-    workflow_edit_schema: jsonData
-  });
+  if (graphData) {
+    workflowUpdate({
+      app_code: currentApp.app_code,
+      workflow_code: CurrentEditFlow.value.workflow_code,
+      workflow_edit_schema: graphData
+    });
+  }
   preCheckWorkflow();
 }
 function handleClickNode(node: any, e) {
@@ -345,10 +365,8 @@ async function searchNodeUpstream(nodeId: string) {
     nodeIdMap[item.node_code] = item;
   });
   const nodeUpstream = [];
-  console.log(predecessors)
   for (let i = 0; i < predecessors.length; i++) {
     const predecessorNode = predecessors[i];
-    console.log(predecessorNode.id, 1, nodeId)
     nodeUpstream.push({
       nodeCode: predecessorNode.id,
       nodeName: predecessorNode.data.nodeName,
@@ -360,7 +378,6 @@ async function searchNodeUpstream(nodeId: string) {
       nodeResultExtractColumns: nodeIdMap?.[predecessorNode.id]?.node_result_extract_columns
     });
   }
-  console.log(nodeUpstream);
   return nodeUpstream;
 }
 async function showEdgeDetail(edge: any) {
@@ -378,16 +395,19 @@ async function showEdgeDetail(edge: any) {
     });
     edge.prop('labels', ['充分']);
     const graphData = graphWrapper.value.toJSON();
-    const jsonData = JSON.stringify(graphData, null, 2);
-    workflowUpdate({
-      app_code: currentApp.app_code,
-      workflow_code: CurrentEditFlow.value.workflow_code,
-      workflow_edit_schema: jsonData
-    });
+    if (graphData) {
+      workflowUpdate({
+        app_code: currentApp.app_code,
+        workflow_code: CurrentEditFlow.value.workflow_code,
+        workflow_edit_schema: graphData
+      });
+    }
+
   }
   // 补充前序节点信息
   currentEdgeDetail.value = edge.getData();
   currentEdgeDetail.value['node_upstream'] = await searchNodeUpstream(edge.id);
+  currentEdgeDetail.value["routerName"] = edge.getRouter()?.name || 'normal';
   loadingEdgeInfo.value = false;
 }
 function highlightNode(node, e) {
@@ -454,7 +474,41 @@ async function showNodeDetail(node: any) {
     nodeResultFormat: currentNodeDetail.value.node_result_format,
     nodeResultJsonSchema: currentNodeDetail.value.node_result_params_json_schema
   });
+  if (currentNodeDetail.value.node_type == 'workflow') {
+    await workflowNodeRef.value?.searchSubWorkflow()
+  }
   loadingNodeInfo.value = false;
+}
+
+async function changeAllEdgeRouter(name: string) {
+  const allEdges = graphWrapper.value?.getEdges();
+  allEdges.forEach(edge => {
+    edge.setRouter({ name: name });
+  });
+  const graphData = graphWrapper.value.toJSON();
+  if (graphData) {
+    await workflowUpdate({
+      app_code: currentApp.app_code,
+      workflow_code: CurrentEditFlow.value.workflow_code,
+      workflow_edit_schema: graphData
+    });
+  }
+  ElMessage.success("已成功更新了所有边的路由~");
+}
+async function switchGraphLock() {
+  graphLock.value = !graphLock.value;
+  if (graphWrapper.value.options.interacting) {
+    graphWrapper.value.options.interacting = false;
+  } else {
+    graphWrapper.value.options.interacting = true;
+  }
+  if (graphLock.value) {
+    graphWrapper.value.disablePanning();
+    graphWrapper.value.disableMouseWheel();
+  } else {
+    graphWrapper.value.enablePanning();
+    graphWrapper.value.enableMouseWheel();
+  }
 }
 onMounted(async () => {
   if (!props.workflowCode) {
@@ -517,7 +571,7 @@ onMounted(async () => {
   graphWrapper.value.on('edge:connected', ({ isNew, edge }) => {
     if (isNew) {
       // 设置边的 router 为 manhattan
-      edge.setRouter({ name: 'metro' });
+      edge.setRouter({ name: 'normal' });
       edge.setData({
         edge_icon: 'images/edge.svg',
         edge_name: '关系',
@@ -530,12 +584,13 @@ onMounted(async () => {
       edge.prop('labels', ['默认']);
     }
     const graphData = graphWrapper.value.toJSON();
-    const jsonData = JSON.stringify(graphData, null, 2);
-    workflowUpdate({
-      app_code: currentApp.app_code,
-      workflow_code: CurrentEditFlow.value.workflow_code,
-      workflow_edit_schema: jsonData
-    });
+    if (graphData) {
+      workflowUpdate({
+        app_code: currentApp.app_code,
+        workflow_code: CurrentEditFlow.value.workflow_code,
+        workflow_edit_schema: graphData
+      });
+    }
   });
   // 单击节点事件
   graphWrapper.value.on('node:click', ({ node, e }) => {
@@ -569,6 +624,7 @@ watch(
         <div id="edit-area">
           <div id="container"></div>
           <TeleportContainer />
+          <div v-if="graphLock" class="lock-area"></div>
           <div
               id="operation-panel"
               :style="{
@@ -576,6 +632,36 @@ watch(
             }"
           >
             <div id="panel-left">
+              <div class="std-middle-box">
+                <el-tooltip content="锁定画布" placement="top" v-if="!graphLock">
+                  <el-icon class="panel-icon" @click="switchGraphLock">
+                    <Unlock />
+                  </el-icon>
+                </el-tooltip>
+                <el-tooltip content="解锁画布" placement="top" v-else>
+                  <el-icon class="panel-icon" @click="switchGraphLock" color="#409eff">
+                    <Lock />
+                  </el-icon>
+                </el-tooltip>
+              </div>
+              <div class="std-middle-box">
+                <el-popover placement="top" trigger="click" width="400" title="连线路由">
+                  <template #reference>
+                    <el-icon class="panel-icon">
+                      <Connection />
+                    </el-icon>
+                  </template>
+                  <el-radio-group v-model="globalRouter" @change="changeAllEdgeRouter" size="small">
+                    <el-radio-button value="normal"> 普通 </el-radio-button>
+                    <el-radio-button value="orth" > 正交 </el-radio-button>
+                    <el-radio-button value="oneSide"> 受限正交 </el-radio-button>
+                    <el-radio-button value="manhattan"> 智能正交 </el-radio-button>
+                    <el-radio-button value="metro"> 地铁 </el-radio-button>
+                    <el-radio-button value="er"> 实体关系 </el-radio-button>
+                  </el-radio-group>
+
+                </el-popover>
+              </div>
               <div class="std-middle-box">
                 <el-tooltip content="优化布局" placement="top">
                   <el-icon class="panel-icon" @click="optimizedLayout">
@@ -636,6 +722,26 @@ watch(
                         </div>
                       </div>
                     </el-dropdown-item>
+                    <el-dropdown-item divided @click="addAgentNode('file_splitter')">
+                      <div class="agent-node-option">
+                        <div class="std-middle-box">
+                          <el-image src="images/node_file_splitter.svg" class="agent-node-icon" />
+                        </div>
+                        <div>
+                          <el-text> 文本切分 </el-text>
+                        </div>
+                      </div>
+                    </el-dropdown-item>
+                    <el-dropdown-item divided @click="addAgentNode('workflow')">
+                      <div class="agent-node-option">
+                        <div class="std-middle-box">
+                          <el-image src="images/node_flow.svg" class="agent-node-icon" />
+                        </div>
+                        <div>
+                          <el-text> 工作流节点 </el-text>
+                        </div>
+                      </div>
+                    </el-dropdown-item>
                     <el-dropdown-item divided disabled>
                       <div class="agent-node-option">
                         <div class="std-middle-box">
@@ -646,7 +752,6 @@ watch(
                         </div>
                       </div>
                     </el-dropdown-item>
-
                     <el-dropdown-item divided disabled>
                       <div class="agent-node-option">
                         <div class="std-middle-box">
@@ -667,23 +772,14 @@ watch(
                         </div>
                       </div>
                     </el-dropdown-item>
-                    <el-dropdown-item divided disabled>
-                      <div class="agent-node-option">
-                        <div class="std-middle-box">
-                          <el-image src="images/node_flow.svg" class="agent-node-icon" />
-                        </div>
-                        <div>
-                          <el-text> 工作流节点 </el-text>
-                        </div>
-                      </div>
-                    </el-dropdown-item>
+
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
             </div>
             <div id="panel-right">
               <div class="std-middle-box">
-                <el-popover ref="alterRef" width="600">
+                <el-popover ref="alterRef" width="600" :show-after="400">
                   <template #reference>
                     <el-badge :value="workflowAlters?.length" :show-zero="false">
                       <el-icon>
@@ -733,7 +829,7 @@ watch(
       </el-scrollbar>
     </el-main>
   </el-container>
-  <WorkFlowNodeEdit />
+  <WorkFlowNodeEdit ref="workflowNodeRef"/>
   <WorkFlowEdgeEdit />
   <AgentApp ref="agentAppRef" :appCode="currentApp.app_code" />
   <el-dialog v-model="showDeleteNodeConfirm" title="删除节点" style="max-width: 500px">
@@ -788,7 +884,6 @@ watch(
   background-color: white;
   padding: 6px;
 }
-
 .add-node-button {
   display: flex;
   flex-direction: row;
@@ -828,5 +923,12 @@ watch(
   flex-direction: column;
   gap: 8px;
   max-height: 40vh;
+}
+.lock-area {
+  position: fixed;
+  z-index: 999;
+  width: 100vw;
+  height: calc(100vh - 200px);
+  top:120px;
 }
 </style>

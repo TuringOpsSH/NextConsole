@@ -74,8 +74,7 @@ def embedding_call(params):
     }
     payload = {
         "input": content,
-        "model": model,
-        "encoding_format": encoding_format
+        "model": model
     }
     try:
         response = requests.post(api, json=payload, headers=headers)
@@ -113,9 +112,6 @@ def rerank_call(params):
         "model": model,
         "query": query,
         "documents": documents,
-        "return_documents": False,
-        "max_chunks_per_doc": max_chunks_per_doc,
-        "overlap_tokens": overlap_tokens
     }
     if model == "gte-rerank-v2":
         payload = {
@@ -123,9 +119,6 @@ def rerank_call(params):
             "input": {
                 "query": query,
                 "documents": documents
-            },
-            "parameters": {
-                "return_documents": False
             }
         }
     headers = {

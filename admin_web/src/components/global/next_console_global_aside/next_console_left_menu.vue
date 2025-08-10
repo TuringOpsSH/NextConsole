@@ -18,6 +18,7 @@ import { user_info } from '@/components/user_center/user';
 import { get_user_avatar } from '@/components/user_center/user_manage';
 import router from '@/router';
 import { getInfo, loginOut } from '@/utils/auth';
+import { domainGet } from "@/api/base";
 
 const route = useRoute();
 const showButtonPop = ref();
@@ -48,6 +49,16 @@ async function chooseMenuItem(item) {
 }
 async function callUserButton(item) {
   if (item.new_window) {
+    if (item?.url) {
+      window.open(item.url, '_blank');
+      return
+    }
+    if (item?.name == 'server_app') {
+      const res = await domainGet()
+      const server_domain = res.result.server_domain;
+      window.open(server_domain, '_blank');
+      return
+    }
     window.open(router.resolve({ name: item.name }).href, '_blank');
   } else {
     await router.push({ name: item.name });

@@ -11,46 +11,6 @@ from app.models.contacts.company_model import CompanyInfo
 GLOBAL_APP_blueprints = {}
 
 
-def load_all_app_blueprints():
-    """
-    加载所有应用蓝图
-    """
-    pass
-
-
-def register_business_blueprint_service(params):
-    """
-    动态注册业务项目蓝图
-    """
-    user_id = int(params.get("user_id"))
-    app_code = params.get("app_code")
-    target_user = UserInfo.query.filter(
-        UserInfo.user_id == user_id,
-        UserInfo.user_status == 1
-    ).first()
-    if not target_user:
-        return next_console_response(error_status=True, error_message="用户不存在！", error_code=1002)
-    target_app = AppMetaInfo.query.filter(
-        AppMetaInfo.app_code == app_code
-    ).first()
-    if not target_app:
-        return next_console_response(error_status=True, error_message="应用不存在！", error_code=1002)
-    if target_app.app_status != "注册中":
-        return next_console_response(error_status=True, error_message="应用状态不正确！", error_code=1002)
-    if app_code not in GLOBAL_APP_blueprints:
-        try:
-            # 导入业务项目的路由模块
-            business_view_module = __import__(f'app.views.app_center.{app_code}', fromlist=['blueprint'])
-            blueprint = business_view_module.blueprint
-            GLOBAL_APP_blueprints[app_code] = blueprint
-            app.register_blueprint(blueprint, url_prefix=f'/next_console/app_center/{app_code}')
-        except Exception as e:
-            print(f"Failed to import blueprint for {app_code}, error:{e}")
-            app.logger.error(f"Failed to import blueprint for {app_code}, ")
-            return next_console_response(error_status=True, error_message="应用注册失败！", error_code=1002)
-    return next_console_response( result="应用注册成功！")
-
-
 def check_user_access(target_user, app_code):
     """
     检查用户是否有权限访问应用
@@ -135,58 +95,6 @@ def get_app_detail_service(params):
     result["assistant_preset_question"] = target_assistant.assistant_preset_question or []
     result['assistant_avatar'] = target_assistant.assistant_avatar or 'images/logo.svg'
     return next_console_response(result=result)
-
-
-# def get_app_session_service(params):
-#     """
-#     检查用户权限，通过后，
-#         如果session—code 不存在，创建一个session，
-#         如果session-code 存在，返回target session
-#             如果session-status 不是正常，返回错误
-#     """
-#     user_id = int(params.get("user_id"))
-#     app_code = params.get("app_code")
-#     session_code = params.get("session_code")
-#     target_user = UserInfo.query.filter(
-#         UserInfo.user_id == user_id,
-#         UserInfo.user_status == 1
-#     ).first()
-#     if not target_user:
-#         return next_console_response(error_status=True, error_message="用户不存在！", error_code=1002)
-#     target_app = AppMetaInfo.query.filter(
-#         AppMetaInfo.app_code == app_code
-#     ).first()
-#     if not target_app:
-#         return next_console_response(error_status=True, error_message="应用不存在！", error_code=1002)
-#     if target_app.app_status != "正常":
-#         return next_console_response(error_status=True, error_message="应用状态不正确！", error_code=1002)
-#     if not check_user_access(target_user.user_code, app_code):
-#         return next_console_response(error_status=True, error_message="用户无权访问！", error_code=1002)
-#     if not session_code:
-#         session_llm_code = Assistant.query.filter(
-#             Assistant.id == target_app.app_default_assistant
-#         ).first().assistant_model_code
-#
-#         return add_session({
-#             "user_id": user_id,
-#             "session_topic": f"{target_app.app_name} 会话",
-#             "session_status": "正常",
-#             "session_assistant_id": target_app.app_default_assistant,
-#             "session_source": target_app.app_code,
-#             "session_local_resource_switch": True,
-#             "session_local_resource_use_all": True,
-#             "session_llm_code": session_llm_code,
-#         })
-#     target_session = NextConsoleSession.query.filter(
-#         NextConsoleSession.session_code == session_code,
-#         NextConsoleSession.user_id == user_id,
-#         NextConsoleSession.session_source == target_app.app_code
-#     ).first()
-#     if not target_session:
-#         return next_console_response(error_status=True, error_message="会话不存在！", error_code=1002)
-#     if target_session.session_status != "正常":
-#         return next_console_response(error_status=True, error_message="会话状态不正确！", error_code=1002)
-#     return next_console_response(result=target_session.to_dict())
 
 
 def router_app_messages(params):
