@@ -16,8 +16,8 @@ RUN playwright install-deps
 RUN apt install libreoffice fonts-wqy-zenhei fonts-wqy-microhei -y
 
 # 复制当前目录内容到工作目录
-COPY ./server/. /app/server/
-COPY ./admin/. /app/admin/
+COPY ../../server/. /app/server/
+COPY ./../admin/. /app/admin/
 
 # 脱敏工作
 RUN rm -rf /app/server/.git && \

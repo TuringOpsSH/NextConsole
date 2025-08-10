@@ -109,6 +109,40 @@ docker compose up -d
 
 按照以上步骤操作，您就可以快速启动 NextConsole 并开始使用啦😃。
 
+
+### 源码构建镜像
+
+#### 前置准备
+- 已安装 Docker 21+
+- 已安装 Node.js 16+ (用于前端构建)
+- 已安装 Python 3.10+ (用于后端服务)
+
+#### 构建步骤
+
+##### 1. 构建后端服务镜像
+```bash
+git clone https://github.com/TuringOpsSH/NextConsole.git
+cd next_console/docker/build/server
+docker build -t nc:standalone .
+
+```
+##### 2. 构建前端服务镜像
+```bash
+cd ../web
+docker build -t nc-web:standalone .
+```
+
+##### 3. 启动服务
+```bash
+cd ../
+docker compose up -d
+```
+
+
+
+
+
+
 ### 核心功能特性说明
 
 #### 1、AI 资源库 📚
@@ -148,3 +182,5 @@ AI 应用工厂可可视化构建大模型智能体并管理发布。
 - 常见问题解答
 
 我们的文档中心会持续更新，建议收藏该地址以便随时查阅最新资料 📚
+
+

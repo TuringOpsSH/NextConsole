@@ -109,6 +109,33 @@ Log in to the Server service at port `8080`. Click on the "AI Workbench" to star
 
 By following the above steps, you can quickly start NextConsole and begin using it! 😃
 
+## Building from Source
+
+### Prerequisites
+- Docker 21+ installed
+- Node.js 16+ (for frontend build)
+- Python 3.10+ (for backend services)
+
+### Build Steps
+
+#### 1. Build Backend Service Image
+```bash
+git clone https://github.com/TuringOpsSH/NextConsole.git
+cd next_console/docker/build/server
+docker build -t nc:standalone .
+```
+
+#### 2. Build Frontend Service Image
+```bash
+cd ../web
+docker build -t nc-web:standalone .
+```
+
+#### 3. Launch Services
+```bash
+cd ../
+docker compose up -d
+```
 
 ### Core Feature Descriptions
 
