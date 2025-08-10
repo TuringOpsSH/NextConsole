@@ -24,7 +24,7 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 import queue
 import time
-from app.services.app_center.file_reader import file_reader_node_execute
+from app.services.app_center.file_reader import file_reader_node_execute, file_splitter_node_execute
 from app.services.app_center.expermental_features import parallel_llm_node_execute
 from app.services.app_center.llm_node_service import llm_node_execute
 from app.services.app_center.node_params_service import *
@@ -90,6 +90,7 @@ def get_app_session_service(params):
     user_id = params.get("user_id")
     app_code = params.get("app_code")
     session_code = params.get("session_code")
+    workflow_code = params.get("workflow_code", None)
     target_user = UserInfo.query.filter(
         UserInfo.user_id == user_id,
         UserInfo.user_status == 1
@@ -214,8 +215,11 @@ def agent_add_message(params):
     app_code = params.get("app_code")
     session_code = params.get("session_code")
     message = params.get("message")
+    question_id = params.get("msg_id")
     attachments = params.get("attachments")
     is_stream = params.get("stream", True)
+    task_code = params.get("task_code", None)
+    workflow_params = params.get("workflow_params", {})
     current_session_result = get_app_session_service({
         "user_id": user_id,
         "app_code": app_code,
@@ -233,12 +237,21 @@ def agent_add_message(params):
     if not target_app:
         return next_console_response(error_status=True, error_message="应用不存在！", error_code=1002)
     # 保存问题
-    question = save_user_question({
-        "user_id": user_id,
-        "session": current_session,
-        "message": message,
-        "attachments": attachments
-    }).json.get("result")
+    if not question_id:
+        question = save_user_question({
+            "user_id": user_id,
+            "session": current_session,
+            "message": message,
+            "attachments": attachments
+        }).json.get("result")
+    else:
+        question = NextConsoleMessage.query.filter(
+            NextConsoleMessage.msg_id == question_id,
+            NextConsoleMessage.user_id == user_id
+        ).first()
+        if question:
+            question = question.to_dict()
+            message = question.get("msg_content")
     history_list = NextConsoleQa.query.filter(
         NextConsoleQa.session_id == current_session.get("id"),
         NextConsoleQa.qa_status == "正常",
@@ -257,6 +270,7 @@ def agent_add_message(params):
         "target_app": target_app,
         "question": question,
         "session": current_session,
+        "task_code": task_code,
     })
     if workflow_result.json.get("error_status"):
         return next_console_response(error_status=True, error_message="工作流解析异常！", error_code=1002,
@@ -268,6 +282,8 @@ def agent_add_message(params):
     task_queue = queue.Queue()
     executor = ThreadPoolExecutor(max_workers=20)
     global_params = {
+        "app_code": app_code,
+        "session_code": session_code,
         "message_queue": message_queue,
         "task_queue": task_queue,
         "executor": executor,
@@ -284,6 +300,7 @@ def agent_add_message(params):
         "message": message,
         "workflow_id": workflow_result.get("workflow_id"),
         "global_params": global_params,
+        "workflow_params": workflow_params,
     })
     future.add_done_callback(
         lambda f: print(f"🎯 Child result: {f.result()}") if f.exception() is None
@@ -317,10 +334,14 @@ def agent_add_message(params):
                         break
                 if all_done:
                     # 退出循环
-                    if global_params.get("end_node_instance").task_status == "初始化":
+                    end_node = global_params.get("end_node_instance")
+                    end_node_instance = WorkFlowNodeInstance.query.filter(
+                        WorkFlowNodeInstance.id == end_node.id
+                    ).first()
+                    if end_node_instance.task_status == "初始化":
                         # 异常处理结束节点
                         handle_node_failed(
-                            task_record=global_params.get("end_node_instance"),
+                            task_record=end_node_instance,
                             global_params=global_params,
                             error='工作流异常中断，请检查中间节点的启动条件'
                         )
@@ -347,13 +368,13 @@ def workflow_messages_stream_generate(message_queue, global_params):
             try:
                 message = message_queue.get(timeout=1)
                 if message == "stop":
-                    print('收到 stop')
                     yield "data: [DONE]\n\n"
                     message_queue.task_done()
                     break
                 yield "data: " + json.dumps(message) + "\n\n"
                 message_queue.task_done()
             except Exception as e:
+                print(e)
                 pass
             # 检查所有线程是否完成：全部为最终状态则退出
             all_done = True
@@ -364,11 +385,15 @@ def workflow_messages_stream_generate(message_queue, global_params):
                     break
             if all_done:
                 # 退出循环
-                print('全部完成')
-                if global_params.get("end_node_instance").task_status == "初始化":
+                end_node = global_params.get("end_node_instance")
+                end_node_instance = WorkFlowNodeInstance.query.filter(
+                    WorkFlowNodeInstance.id == end_node.id
+                ).first()
+                db.session.add(end_node_instance)
+                if end_node_instance.task_status == "初始化":
                     # 异常处理结束节点
                     handle_node_failed(
-                        task_record=global_params.get("end_node_instance"),
+                        task_record=end_node_instance,
                         global_params=global_params,
                         error='工作流异常中断，请检查中间节点的启动条件'
                     )
@@ -404,25 +429,39 @@ def analysis_workflow_schema(params):
     """
     target_app = params.get("target_app")
     question = params.get("question")
-    main_workflow = AppWorkFlowRelation.query.filter(
-        AppWorkFlowRelation.app_code == target_app.app_code,
-        AppWorkFlowRelation.environment == '生产',
-        AppWorkFlowRelation.rel_status == "正常",
-    ).join(
-        WorkFlowMetaInfo,
-        WorkFlowMetaInfo.workflow_code == AppWorkFlowRelation.workflow_code
-    ).filter(
-        WorkFlowMetaInfo.workflow_status == "正常",
-        AppWorkFlowRelation.rel_status == "正常",
-        WorkFlowMetaInfo.workflow_is_main == True,
-        WorkFlowMetaInfo.environment == '生产'
-    ).with_entities(
-        WorkFlowMetaInfo
-    ).first()
+    session_task_id = params.get("session").get("session_task_id")
+    task_code = params.get("task_code")
+    if task_code:
+        main_workflow = WorkFlowMetaInfo.query.filter(
+            WorkFlowMetaInfo.workflow_code == task_code,
+            WorkFlowMetaInfo.workflow_status == "正常",
+            WorkFlowMetaInfo.environment == '生产'
+        ).first()
+    elif session_task_id:
+        main_workflow = WorkFlowMetaInfo.query.filter(
+            WorkFlowMetaInfo.workflow_code == session_task_id,
+            WorkFlowMetaInfo.workflow_status == "正常",
+            WorkFlowMetaInfo.environment == '生产'
+        ).first()
+    else:
+        main_workflow = AppWorkFlowRelation.query.filter(
+            AppWorkFlowRelation.app_code == target_app.app_code,
+            AppWorkFlowRelation.environment == "生产",
+            AppWorkFlowRelation.rel_status == "正常",
+        ).join(
+            WorkFlowMetaInfo,
+            WorkFlowMetaInfo.workflow_code == AppWorkFlowRelation.workflow_code
+        ).filter(
+            WorkFlowMetaInfo.workflow_status == "正常",
+            AppWorkFlowRelation.rel_status == "正常",
+            WorkFlowMetaInfo.workflow_is_main == True,
+            WorkFlowMetaInfo.environment == '生产'
+        ).with_entities(
+            WorkFlowMetaInfo
+        ).first()
     if not main_workflow or not main_workflow.workflow_schema:
         return next_console_response(error_status=True, error_message="工作流不存在！", error_code=1002)
-    workflow_schema = json.loads(main_workflow.workflow_schema)
-    cells = workflow_schema.get("cells")
+    cells = main_workflow.workflow_schema.get("cells")
     start_node = None
     end_node = None
     all_node_code = []
@@ -490,6 +529,8 @@ def analysis_workflow_schema(params):
             workflow_node_message_schema_type=node_info.node_message_schema_type,
             workflow_node_message_schema=node_info.node_message_schema,
             workflow_node_file_reader_config=node_info.node_file_reader_config,
+            workflow_node_file_splitter_config=node_info.node_file_splitter_config,
+            workflow_node_sub_workflow_config=node_info.node_sub_workflow_config,
             session_id=question.get("session_id"),
             qa_id=question.get("qa_id"),
             msg_id=question.get("msg_id"),
@@ -562,6 +603,7 @@ def agent_run_workflow(params):
         message = params.get("message")
         workflow_id = params.get("workflow_id")
         global_params = params.get("global_params", {})
+        session_task_params = params.get("workflow_params")
         # 读取开始节点
         start_node_instance = WorkFlowNodeInstance.query.filter(
             WorkFlowNodeInstance.workflow_id == workflow_id,
@@ -580,7 +622,7 @@ def agent_run_workflow(params):
         global_params["session_topic"] = current_session.get("session_topic")
         global_params["msg_id"] = msg_id
         global_params["qa_id"] = params.get("qa_id")
-        global_params["session_task_params"] = current_session.get("session_task_params")
+        global_params["session_task_params"] = session_task_params or current_session.get("session_task_params")
         global_params["SessionId"] = current_session.get("id")
         global_params["UserInput"] = message
         global_params["end_node_instance"] = end_node_instance
@@ -656,19 +698,18 @@ def agent_run_node(task_record_id, global_params=None):
                     tool_node_execute(task_params, task_record, global_params)
                 elif task_record.workflow_node_type == "rag":
                     rag_node_execute(task_params, task_record, global_params)
-                elif task_record.workflow_node_type == "function":
-                    function_node_execute(task_params, task_record, global_params)
                 elif task_record.workflow_node_type == "end":
                     end_node_execute(task_params, task_record, global_params)
                 elif task_record.workflow_node_type == "file_reader":
                     file_reader_node_execute(task_params, task_record, global_params)
+                elif task_record.workflow_node_type == "file_splitter":
+                    file_splitter_node_execute(task_params, task_record, global_params)
+                elif task_record.workflow_node_type == "workflow":
+                    workflow_node_execute(task_params, task_record, global_params)
             # 解析结果
             exec_result = load_task_result(task_record)
-            if exec_result:
-                task_record.task_result = json.dumps(exec_result)
-                task_record.task_status = "已完成"
-            else:
-                task_record.task_status = "异常"
+            task_record.task_result = json.dumps(exec_result)
+            task_record.task_status = "已完成"
             task_record.end_time = datetime.now()
             db.session.add(task_record)
             db.session.commit()
@@ -691,6 +732,8 @@ def invoke_next_task(task_record, global_params):
     启动下游节点
         根据条件表达式，判断边是否可以通过，通过则启动下游节点，不通过则不启动
     """
+    if task_record.workflow_node_type == "end":
+        global_params["message_queue"].put("stop")
     # 更新下游节点的前置条件并提交任务
     node_downstream_ids = [instance.get("id") for instance in task_record.task_downstream]
     node_downstream_id_map = {instance.get("id"): instance for instance in task_record.task_downstream}
@@ -743,6 +786,9 @@ def start_node_execute(task_params, task_record, global_params):
             "name": attachment.resource_name,
             "format": attachment.resource_format,
             "size": attachment.resource_size_in_MB,
+            "icon": attachment.resource_icon,
+            "content": "",
+            "content_chunks": []
         })
     for attachment in global_params.get("SessionAttachmentList", []):
         SessionAttachmentList.append({
@@ -750,6 +796,9 @@ def start_node_execute(task_params, task_record, global_params):
             "name": attachment.resource_name,
             "format": attachment.resource_format,
             "size": attachment.resource_size_in_MB,
+            "icon": attachment.resource_icon,
+            "content": "",
+            "content_chunks": []
         })
     task_result["MessageAttachmentList"] = MessageAttachmentList
     task_result["SessionAttachmentList"] = SessionAttachmentList
@@ -775,34 +824,38 @@ def tool_node_execute(task_params, task_record, global_params):
     :param global_params:
     :return:
     """
-    access_token = create_access_token(identity=str(task_record.user_id),
-                                       expires_delta=timedelta(days=30)
-                                       )
+    # 解析 header 参数
+    headers_schema = task_record.workflow_node_tool_http_header.get("properties", {})
+    headers = load_properties(headers_schema, global_params)
+    if "Authorization" not in headers:
+        access_token = create_access_token(identity=str(task_record.user_id),
+                                           expires_delta=timedelta(days=30)
+                                           )
+        headers["Authorization"] = f"Bearer {access_token}"
+    # 解析 query 参数
+    query_schema = task_record.workflow_node_tool_http_params.get("properties", {})
+    query = load_properties(query_schema, global_params)
     # 解析 body 参数
-    properties = task_record.workflow_node_tool_http_body.get("properties", {})
-    data = load_properties(properties, global_params)
+    body_schema = task_record.workflow_node_tool_http_body.get("properties", {})
+    data = load_properties(body_schema, global_params)
     try:
         if task_record.workflow_node_tool_http_body_type == "form-data":
             res = requests.request(
                 method=task_record.workflow_node_tool_http_method,
                 url=task_record.workflow_node_tool_api_url,
-                headers={
-                    'Authorization': f"Bearer {access_token}"
-                },
+                headers=headers,
                 files=None,
                 data=data,
-                params={},
+                params=query,
                 timeout=task_record.workflow_node_timeout,
             )
         else:
             res = requests.request(
                 method=task_record.workflow_node_tool_http_method,
                 url=task_record.workflow_node_tool_api_url,
-                headers={
-                    'Authorization': f"Bearer {access_token}",
-                },
+                headers=headers,
                 json=data,
-                params={},
+                params=query,
                 timeout=task_record.workflow_node_timeout,
             )
         task_record.task_result = res.text
@@ -903,49 +956,162 @@ def rag_node_execute(params, task_record, global_params):
     return task_record.task_result
 
 
-def function_node_execute(params, task_record, global_params):
-    """
-    function 节点执行器
-        1. 读取节点信息
-        2. 读取任务记录
-        3. 读取会话信息
-        4. 读取消息记录
-        5. 读取助手信息
-        6. 读取模型信息
-        7. 读取助手配置
-        8. 执行助手指令
-        9. 执行function模型
-    :param params:
-    :return:
-    """
-    # 获取节点信息
-    node_info = WorkflowNodeInfo.query.filter(
-        WorkflowNodeInfo.node_code == params.get("node_code")
-    ).first()
-    if not node_info:
-        return next_console_response(error_status=True, error_message="节点不存在！", error_code=1002)
-    # 获取任务记录
-    task_record = WorkFlowTaskInfo.query.filter(
-        WorkFlowTaskInfo.task_code == params.get("task_code")
-    ).first()
-    if not task_record:
-        return next_console_response(error_status=True, error_message="任务记录不存在！", error_code=1002)
-
-
 def end_node_execute(task_params, task_record, global_params):
     """
     此节点为工作流的结束节点，更新回答消息，返回服务器响应
-    :param save_flag:
+    :param task_params:
     :param global_params:
     :param task_record:
     :return:
     """
-    # 解析结果
     task_record.end_time = datetime.now()
+    task_result = load_properties(task_record.workflow_node_rpjs.get("properties"), global_params)
+    task_record.task_result = json.dumps(task_result)
     task_record.task_status = "已完成"
     db.session.add(task_record)
     db.session.commit()
-    global_params["message_queue"].put("stop")
+
+
+def workflow_node_execute(task_params, task_record, global_params):
+    """
+    执行子workflow节点
+        新建会话，因为工作流节点的入参是从会话参数中提取的？
+    :param task_params:
+    :param task_record:
+    :param global_params:
+    :return:
+    """
+    from app.services.next_console.llm import NextConsoleLLMClient
+    nc_client = NextConsoleLLMClient({
+        "user_id": task_record.user_id,
+        "is_nc": True
+    })
+    task_code = task_record.workflow_node_sub_workflow_config.get("target_workflow_code", "")
+    main_workflow = WorkFlowMetaInfo.query.filter(
+        WorkFlowMetaInfo.workflow_code == task_code,
+        WorkFlowMetaInfo.workflow_status == "正常",
+        WorkFlowMetaInfo.environment == '生产'
+    ).first()
+    if global_params.get("stream", False):
+        try:
+            completion = nc_client.chat({
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": global_params.get("UserInput", ""),
+                    }
+                ],
+                "stream": True,
+                "extra_body": {
+                    "user_id": task_record.user_id,
+                    "app_code": global_params.get("app_code"),
+                    "session_code": global_params.get("session_code"),
+                    "is_stream": True,
+                    "msg_id": task_record.msg_id,
+                    "task_code": task_code,
+                    "workflow_params": task_params,
+                },
+                "extra_headers": {
+                    "Authorization": f"""Bearer {create_access_token(identity=str(task_record.user_id),
+                                                           expires_delta=timedelta(days=30))}"""
+                }
+            })
+            for chunk in completion:
+                if global_params.get("stop_flag"):
+                    raise GeneratorExit
+                try:
+                    chunk_res = chunk.model_dump_json()
+                    chunk_res = json.loads(chunk_res)
+                except Exception as e:
+                    continue
+                if global_params["stream"]:
+                    global_params["message_queue"].put(chunk_res)
+        except GeneratorExit:
+            pass
+        except Exception as e3:
+            app.logger.error(f"调用基模型异常：{str(e3)}")
+            error_msg = "\n\n **对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~**"
+            if task_record.workflow_node_enable_message and global_params["stream"]:
+                if task_record.workflow_node_message_schema_type == "messageFlow":
+                    except_result = {
+                        "id": "",
+                        "session_id": task_record.session_id,
+                        "qa_id": task_record.qa_id,
+                        "msg_parent_id": task_record.msg_id,
+                        "created": 0,
+                        "model": '',
+                        "object": "chat.completion",
+                        "choices": [
+                            {
+                                "finish_reason": "error",
+                                "index": 0,
+                                "delta": {
+                                    "content": error_msg,
+                                    "role": "assistant"
+                                },
+
+                            }
+                        ]
+                    }
+                    global_params["message_queue"].put(except_result)
+        finally:
+            # 更新节点记录-子工作流的结束节点的结果
+            result_node = WorkFlowNodeInstance.query.filter(
+                WorkFlowNodeInstance.workflow_node_type == "end",
+                WorkFlowNodeInstance.workflow_id == main_workflow.id,
+                WorkFlowNodeInstance.msg_id == task_record.msg_id,
+            ).order_by(
+                WorkFlowNodeInstance.id.desc()
+            ).first()
+            task_record.task_result = result_node.task_result
+            task_record.end_time = datetime.now()
+            task_record.task_status = "已完成"
+            db.session.add(task_record)
+            db.session.commit()
+        return True
+    else:
+        # 非流式执行
+        try:
+            nc_client.chat({
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": global_params.get("UserInput", ""),
+                    }
+                ],
+                "stream": False,
+                "extra_body": {
+                    "user_id": task_record.user_id,
+                    "app_code": global_params.get("app_code"),
+                    "session_code": global_params.get("session_code"),
+                    "is_stream": False,
+                    "msg_id": task_record.msg_id,
+                    "task_code": task_code,
+                    "workflow_params": task_params,
+                },
+                "extra_headers": {
+                        "Authorization": f""""Bearer {create_access_token(identity=str(task_record.user_id), 
+                                                               expires_delta=timedelta(days=30))}"""""
+                    }
+            }).model_dump_json()
+            task_record.task_status = "已完成"
+        except Exception as e:
+            task_record.task_status = "异常"
+            app.logger.error(f"workflow_chat error: {e}")
+            task_record.task_trace_log = str(e)
+        result_node = WorkFlowNodeInstance.query.filter(
+            WorkFlowNodeInstance.workflow_node_type == "end",
+            WorkFlowNodeInstance.workflow_id == main_workflow.id,
+            WorkFlowNodeInstance.msg_id == task_record.msg_id,
+        ).order_by(
+            WorkFlowNodeInstance.id.desc()
+        ).first()
+        task_record.task_result = result_node.task_result
+        task_record.task_status = "已完成"
+        task_record.end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        db.session.add(task_record)
+        db.session.commit()
+        return True
 
 
 def get_all_resource_ref_ids(all_resource_ids):
@@ -995,17 +1161,17 @@ def transform_to_message(task_record, global_params):
         schema = message_schema.get("schema", {})
         schema_type = message_schema.get("schema_type")
         message_item = load_properties(schema.get("properties"), global_params)
-
         if schema_type == "messageFlow" and not (
                 global_params['stream'] and task_record.workflow_node_llm_params.get("stream", False)):
             answer_msg = NextConsoleMessage(
                 user_id=task_record.user_id,
                 session_id=task_record.session_id,
                 qa_id=task_record.qa_id,
+                msg_parent_id=task_record.msg_id,
+                task_id=task_record.id,
                 msg_format=schema_type,
                 msg_llm_type=task_record.workflow_node_llm_code,
                 msg_role="assistant",
-                msg_parent_id=task_record.msg_id,
                 msg_content=''
             )
             db.session.add(answer_msg)
@@ -1049,19 +1215,20 @@ def transform_to_message(task_record, global_params):
                 user_id=task_record.user_id,
                 session_id=task_record.session_id,
                 qa_id=task_record.qa_id,
+                msg_parent_id=task_record.msg_id,
+                task_id=task_record.id,
                 msg_format=schema_type,
                 msg_llm_type=task_record.workflow_node_llm_code,
                 msg_role="assistant",
-                msg_parent_id=task_record.msg_id,
                 msg_content=''
             )
             db.session.add(answer_msg)
             db.session.commit()
             data = {
-                "msg_format": schema_type,
-                "title": message_item.get("title", ""),
-                "description": message_item.get("description", ""),
-            }
+                    "msg_format": schema_type,
+                    "title": message_item.get("title", ""),
+                    "description": message_item.get("description", ""),
+                }
             if global_params["stream"]:
                 finish_reason = "stop"
                 if task_record.task_status != "已完成":
@@ -1096,10 +1263,11 @@ def transform_to_message(task_record, global_params):
                 user_id=task_record.user_id,
                 session_id=task_record.session_id,
                 qa_id=task_record.qa_id,
+                msg_parent_id=task_record.msg_id,
+                task_id=task_record.id,
                 msg_format=schema_type,
                 msg_llm_type=task_record.workflow_node_llm_code,
                 msg_role="assistant",
-                msg_parent_id=task_record.msg_id,
                 msg_content=''
             )
             db.session.add(answer_msg)
@@ -1117,6 +1285,7 @@ def transform_to_message(task_record, global_params):
                     "qa_id": task_record.qa_id,
                     "msg_parent_id": task_record.msg_id,
                     "msg_id": answer_msg.msg_id,
+                    "msg_format": schema_type,
                     "id": answer_msg.msg_id,
                     "created": answer_msg.create_time.strftime('%Y-%m-%d %H:%M:%S'),
                     "object": "chat.completion.chunk",
@@ -1144,10 +1313,11 @@ def transform_to_message(task_record, global_params):
                 user_id=task_record.user_id,
                 session_id=task_record.session_id,
                 qa_id=task_record.qa_id,
+                msg_parent_id=task_record.msg_id,
+                task_id=task_record.id,
                 msg_format=schema_type,
                 msg_llm_type=task_record.workflow_node_llm_code,
                 msg_role="assistant",
-                msg_parent_id=task_record.msg_id,
                 msg_content=''
             )
             db.session.add(answer_msg)
@@ -1293,10 +1463,8 @@ def handle_node_failed(task_record, global_params, error=''):
         db.session.add(task_record)
         db.session.commit()
         global_params[task_record.workflow_node_code] = exec_result
-        print('兜底输出', task_record.workflow_node_code, exec_result)
         # 处理消息
         if task_record.workflow_node_enable_message:
-            print('开始输出消息', task_record,)
             transform_to_message(task_record, global_params)
         return invoke_next_task(task_record, global_params)
     # 跳过模式
@@ -1306,7 +1474,6 @@ def handle_node_failed(task_record, global_params, error=''):
         db.session.add(task_record)
         db.session.commit()
         global_params[task_record.workflow_node_code] = {}
-        print('跳过输出', task_record.workflow_node_code, {})
         return invoke_next_task(task_record, global_params)
     # 直接退出模式
     end_node = global_params["end_node_instance"]

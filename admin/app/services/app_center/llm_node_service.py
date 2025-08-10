@@ -128,28 +128,28 @@ def llm_node_execute(params, task_record, global_params):
         finally:
             # 更新llm节点记录
             # 如果有RAG引用，则添加到消息中
+            reference_md = ''
             if task_record.workflow_node_rag_ref_show:
                 try:
                     reference_md = add_reference_md(task_record, global_params)
                 except Exception as e:
                     print('llm_node_execute', e)
-                    reference_md = ''
-                global_params["message_queue"].put({
-                    "session_id": task_record.session_id,
-                    "qa_id": task_record.qa_id,
-                    "msg_parent_id": task_record.msg_id,
-                    "msg_id": answer_msg.msg_id,
-                    "msg_format": "messageFlow",
-                    "choices": [{
-                        "finish_reason": "stop",
-                        "index": 0,
-                        "delta": {
-                            "content": reference_md,
-                            "role": "assistant"
-                        },
-                    }]
-                })
-                msg_content += reference_md
+            global_params["message_queue"].put({
+                "session_id": task_record.session_id,
+                "qa_id": task_record.qa_id,
+                "msg_parent_id": task_record.msg_id,
+                "msg_id": answer_msg.msg_id,
+                "msg_format": "messageFlow",
+                "choices": [{
+                    "finish_reason": "stop",
+                    "index": 0,
+                    "delta": {
+                        "content": reference_md,
+                        "role": "assistant"
+                    },
+                }]
+            })
+            msg_content += reference_md
             task_record.task_result = json.dumps({
                 "content": msg_content,
                 "reasoning_content": msg_reasoning_content,
@@ -230,22 +230,24 @@ def load_llm_prams(task_params, task_record, global_params):
             workflow_node_llm_params.get("enable_visual") and workflow_node_llm_params.get("visual_schema")):
         # 获取图片信息
         visual_schema = workflow_node_llm_params.get("visual_schema")
-        attachment_id_list = load_properties(visual_schema.get('properties'), {
+        attachment_list = load_properties(visual_schema.get('properties'), {
             task_record.workflow_node_code: {
                 task_record.workflow_node_code: task_params}
         }).get("images", [])
-        if attachment_id_list:
+        if attachment_list:
+            attachment_id_list = [attachment.get("id") for attachment in attachment_list]
+            app.logger.warning(f"visual_schema: {visual_schema.get('properties')}, task_params: {task_params}, attachment_id_list: {attachment_id_list}")
             image_list = []
             target_attachments = ResourceObjectMeta.query.filter(
                 ResourceObjectMeta.id.in_(attachment_id_list),
                 ResourceObjectMeta.resource_status == "正常"
             ).all()
             for resource in target_attachments:
-                if resource.resource_type == "image" and resource.resource_download_url:
+                if resource.resource_type in ("image", "media") and resource.resource_download_url:
                     image_list.append({
                         "type": "image_url",
                         "image_url": {
-                            "url": resource.resource_download_url,
+                            "url": app.config.get("domain") + "/next_console/knowledge_center/resource_images?resource_id={}".format(resource.id),
                             "detail": "auto"
                         }
                     })
@@ -328,48 +330,32 @@ def add_reference_md(task_record, global_params):
             node_results = global_params.get(node_code, {})
             if not node_results:
                 continue
+            all_source_resource_ids = []
             details = node_results.get("details", [])
-            chunk_list = [detail.get("chunk_id") for detail in details if isinstance(detail, dict)
-                          and detail.get("chunk_id")]
-            all_md_resources = ResourceChunkInfo.query.filter(
-                ResourceChunkInfo.id.in_(chunk_list)
-            ).join(
-                ResourceObjectMeta,
-                ResourceObjectMeta.id == ResourceChunkInfo.resource_id
-            ).with_entities(
-                ResourceChunkInfo.id,
-                ResourceObjectMeta.id,
-                ResourceObjectMeta.resource_parent_id,
-            ).all()
-            all_parent_resources_ids = list(set(resource.resource_parent_id for resource in all_md_resources
-                                                if resource.resource_parent_id))
-            all_parent_resources = ResourceObjectMeta.query.filter(
-                ResourceObjectMeta.id.in_(all_parent_resources_ids),
+            chunk_resource_map = {}
+            for detail in details:
+                if isinstance(detail, dict) and detail.get("chunk_id"):
+                    resource_id = detail.get("meta",{}).get("source")
+                    if resource_id:
+                        all_source_resource_ids.append(resource_id)
+                        chunk_resource_map[detail.get("chunk_id")] = resource_id
+            all_source_resources = ResourceObjectMeta.query.filter(
+                ResourceObjectMeta.id.in_(all_source_resource_ids),
                 ResourceObjectMeta.resource_status == "正常"
-            ).with_entities(
-                ResourceObjectMeta.id,
-                ResourceObjectMeta.resource_type,
-                ResourceObjectMeta.resource_download_url,
-                ResourceObjectMeta.resource_source_url,
             ).all()
-            all_parent_resources_map = {
-                resource.id: resource
-                for resource in all_parent_resources
-            }
-
-            if not all_md_resources:
-                continue
+            all_parent_resources_map = {res.id: res for res in all_source_resources}
             index = 1
-            for chunk_id, resource_id, resource_parent_id in all_md_resources:
-                parent_resource = all_parent_resources_map.get(resource_parent_id)
-                if not parent_resource:
+            for detail in details:
+                resource_id = detail.get("meta", {}).get("source")
+                source_resource = all_parent_resources_map.get(resource_id)
+                if not source_resource:
                     continue
-                if parent_resource.resource_type == "webpage":
-                    md_content += f"\n\n[{index}]: {parent_resource.resource_source_url}"
-                elif parent_resource.resource_type == "document":
+                if source_resource.resource_type == "webpage":
+                    md_content += f"\n\n[{index}]: {source_resource.resource_source_url}"
+                elif source_resource.resource_type == "document":
                     md_content += f"\n\n[{index}]: {app.config['domain']}/#/next_console/resources/resource_viewer/{resource_id}"
                 else:
-                    md_content += f"\n\n[{index}]: {parent_resource.resource_download_url}"
+                    md_content += f"\n\n[{index}]: {source_resource.resource_download_url}"
                 index += 1
     return md_content
 

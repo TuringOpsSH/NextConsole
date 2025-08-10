@@ -1,5 +1,5 @@
- <script setup lang="ts">
-import 'highlight.js/styles/vs2015.min.css';
+<script setup lang="ts">
+import 'highlight.js/styles/stackoverflow-light.min.css';
 import {Picture as IconPicture} from '@element-plus/icons-vue';
 import markdownItKatex from '@vscode/markdown-it-katex';
 import Clipboard from 'clipboard';
@@ -20,9 +20,10 @@ import {
   update_messages as updateMessages
 } from '@/api/next_console';
 import {download_resource_object as downloadResourceObject} from '@/api/resource_api';
-import SimpleProgress from '@/components/appCenter/appPreview/SimpleProgress.vue';
-import WorkFlowArea from '@/components/appCenter/appPreview/WorkFlowArea.vue';
+import SimpleProgress from './SimpleProgress.vue';
+import WorkFlowArea from './WorkFlowArea.vue';
 import router from '@/router';
+import {ArrowUp, ArrowDown} from '@element-plus/icons-vue';
 import {
   msg_item as IMsgItem,
   msg_queue_item as IMsgQueueItem,
@@ -40,17 +41,13 @@ import {ResourceItem} from '@/types/resource_type';
 import {Users} from '@/types/users';
 import {getInfo} from '@/utils/auth';
 import '@/styles/katex.min.css';
-import WelComeArea from "@/components/appCenter/appPreview/WelComeArea.vue";
-
+import WelComeArea from "./WelComeArea.vue";
+import VueJsonPretty from 'vue-json-pretty';
+import 'vue-json-pretty/lib/styles.css';
 const props = defineProps({
   sessionCode: {
     type: String,
     default: '',
-    required: false
-  },
-  height: {
-    type: String,
-    default: '100%',
     required: false
   },
   streaming: {
@@ -66,6 +63,11 @@ const props = defineProps({
   welcomeConfig: {
     type: Object,
     default: () => ({}),
+    required: false
+  },
+  disable: {
+    type: Boolean,
+    default: false,
     required: false
   }
 });
@@ -84,7 +86,6 @@ const msgFlow = ref<IMsgQueueItem[]>([]);
 const msgFlowReference = ref<IReferenceMap>({});
 const currentSession = reactive<ISessionItem>({});
 const qaList = ref<IQaItem[]>([]);
-const msgFlowHeight = ref();
 let mdAnswer = new MarkdownIt({
   html: true,
   linkify: true,
@@ -128,39 +129,12 @@ let mdAnswer = new MarkdownIt({
     );
   }
 });
-const defaultTableRule =
-    mdAnswer.renderer.rules.table_open ||
-    function (tokens, idx, options, env, self) {
-      return self.renderToken(tokens, idx, options);
-    };
-mdAnswer.renderer.rules.table_open = function (tokens, idx, options, env, self) {
-  tokens[idx].attrPush(['class', 'custom-table']);
-  return defaultTableRule(tokens, idx, options, env, self);
-};
 mdAnswer.use(markdownItKatex, {
   throwOnError: false,
   errorColor: ' #cc0000',
   strict: false // 允许非标准语法
 });
 mdAnswer.use(markdownItMermaid);
-const customTableStyle = `
-    <style>
-    .custom-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 1rem;
-    }
-    .custom-table th, .custom-table td {
-        border: 1px solid #D0D5DD;
-        padding: 8px;
-        text-align: left;
-    }
-    .custom-table th {
-        background-color: #f2f2f2;
-    }
-    </style>
-`;
-document.head.insertAdjacentHTML('beforeend', customTableStyle);
 mdAnswer.renderer.rules.image = function (tokens, idx, options, env, self) {
   const token = tokens[idx];
   const src = token.attrGet('src');
@@ -240,6 +214,10 @@ const currentDebugInfo = ref([]);
 const showDebugInfoFlag = ref(false);
 const currentDebugInfoViewModel = ref('table');
 const localWelComeConfig = ref({});
+const showFullTaskResultFlag = ref(false);
+const currentFullTaskResult = ref('');
+const loadingFullTaskResult = ref(false);
+const localDisable = ref(false);
 function showReferenceDrawerFn(data: IReferenceItem[] | null) {
   referenceDrawerData.value = data;
   showReferenceDrawer.value = true;
@@ -360,15 +338,30 @@ async function showSupDetailFn(item: IMsgQueueItem, event) {
       const targetLink = isSupLink ? target.getAttribute('href') :
           target.querySelector('a')?.getAttribute('href');
       const targetIndex =  event.target.textContent;
+      let targetIndexNumber = -1;
+      // 使用正则表达式匹配 [数字] 格式
+      const match = targetIndex.match(/\[(\d+)\]/);
+      if (match) {
+        // 如果匹配成功，提取第一个捕获组并转为整数
+        targetIndexNumber = parseInt(match[1], 10);
+      }
+      else {
+        // 如果不是 [数字] 格式，尝试直接转为整数
+        try  {
+          targetIndexNumber = parseInt(targetIndex, 10);
+        } catch (e) {
+
+        }
+      }
       for (let i = 0; i <= referenceList.length; i++) {
-        if (referenceList[i]?.resource_source_url == targetLink
-            || referenceList[i]?.resource_download_url == targetLink
-            || targetLink.includes('next_console/resources/resource_viewer/' + referenceList[i]?.resource_id)
+        if (
+            (referenceList[i]?.resource_source_url == targetLink && targetLink)
+            || (referenceList[i]?.resource_download_url == targetLink && targetLink)
+            || targetLink?.includes('next_console/resources/resource_viewer/' + referenceList[i]?.resource_id)
+            || (i === targetIndexNumber)
         ) {
           currentSupDetail.value = referenceList[i];
-          if (i == targetIndex - 1) {
-            break;
-          }
+          break;
         }
       }
     }
@@ -1085,7 +1078,8 @@ function generateNewMsg(jsonData) {
       assistant_id: -12345,
       shop_assistant_id: null
     };
-  } else if (msgFormat == 'recommendQ') {
+  }
+  else if (msgFormat == 'recommendQ') {
     newMsgItem = <IMsgItem>{
       msg_content: JSON.stringify(jsonData?.choices[0].delta),
       msg_format: 'recommendQ',
@@ -1099,7 +1093,8 @@ function generateNewMsg(jsonData) {
       assistant_id: -12345,
       shop_assistant_id: null
     };
-  } else {
+  }
+  else {
     newMsgItem = <IMsgItem>{
       msg_content: msgContent,
       reasoning_content: msgReasonContent,
@@ -1347,6 +1342,7 @@ function reformatFileSize(bytes: number) {
 }
 async function getQADebugInfo(item) {
   const res = await getDebugInfo({
+    session_id: currentSession.id,
     qa_list: [item.qa_id]
   });
   if (!res.error_status) {
@@ -1361,6 +1357,26 @@ function isJson(result: string) {
     return false;
   }
   return true;
+}
+async function showFullTaskResult(item, col='task_result') {
+  showFullTaskResultFlag.value = true;
+  loadingFullTaskResult.value = true;
+  const res = await getDebugInfo({
+    workflow_instance_id: item.id
+  });
+  if (!res.error_status){
+    const val = res.result?.[col];
+    if (isJson(val)) {
+      try {
+        currentFullTaskResult.value = JSON.parse(val);
+      } catch (e) {
+        currentFullTaskResult.value = val;
+      }
+    } else {
+      currentFullTaskResult.value = val;
+    }
+  }
+  loadingFullTaskResult.value = false;
 }
 onMounted(async () => {
   userInfo.value = await getInfo();
@@ -1392,16 +1408,6 @@ watch(
     { immediate: true }
 );
 watch(
-    () => props.height,
-    async newVal => {
-      if (newVal && newVal !== msgFlowHeight.value) {
-        msgFlowHeight.value = newVal;
-        await nextTick();
-      }
-    },
-    { immediate: true }
-);
-watch(
     () => props.welcomeConfig,
     async newVal => {
       // console.log(newVal);
@@ -1411,238 +1417,275 @@ watch(
     },
     { immediate: true }
 );
+watch(
+    () => props.disable,
+    async newVal => {
+      localDisable.value = newVal;
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
-  <el-container :style="{ height: props.height }">
-    <el-main class="msg-main" @dragover.prevent="handleDragOver">
-      <el-scrollbar
-          ref="msgFlowScrollbarRef"
-          v-loading="loadingMessages"
-          element-loading-text="记忆加载中..."
-          wrap-style="width: 100%;"
-          view-style="width: 100%;height: 100%;"
-          @scroll="handleScroll"
-          @wheel="handleWheel"
-      >
-        <el-row style="width: 100%" :style="{ height: msgFlowHeight }">
-          <el-col :span="2" :xs="1" />
-          <el-col :span="20" :xs="22">
-            <div id="message-flow-box" ref="msgFlowBoxRef">
-              <WelComeArea
-                  v-show="!msgFlow?.length"
-                  :welcome-config="localWelComeConfig"
-                  @prefix-question-click="args => emit('click-recommend-question', { question: args })"
-              />
-              <div
-                  v-for="(item, idx) in msgFlow"
-                  :key="idx"
-                  class="msg-flow-qa-box"
-                  @mouseleave="
+  <el-scrollbar style="width: 100%" ref="msgFlowScrollbarRef"
+                v-loading="loadingMessages"
+                element-loading-text="记忆加载中..."
+                wrap-style="width: 100%;"
+                view-style="width: 100%;height: 100%;"
+                @scroll="handleScroll"
+                @wheel="handleWheel">
+    <el-container>
+      <el-main class="msg-main" @dragover.prevent="handleDragOver">
+          <el-row style="width: 100%">
+            <el-col :span="2" :xs="1" />
+            <el-col :span="20" :xs="22">
+              <div id="message-flow-box" ref="msgFlowBoxRef">
+                <WelComeArea
+                    v-show="!msgFlow?.length || localWelComeConfig?.keep"
+                    :welcome-config="localWelComeConfig"
+                    :disable="localDisable"
+                    @prefix-question-click="args => emit('click-recommend-question', { question: args })"
+                />
+                <div
+                    v-for="(item, idx) in msgFlow"
+                    :key="idx"
+                    class="msg-flow-qa-box"
+                    @mouseleave="
                   item.show_button_question_area = false;
                   item.show_button_answer_area = false;
                 "
-              >
-                <div class="msg-flow-question-box" @mouseenter="item.show_button_question_area = true">
-                  <div v-if="item?.qa_value?.question?.[0] && chooseModel" class="msg-check-box">
-                    <el-checkbox
-                        v-model="item.qa_value.question[0].msg_is_selected"
-                        @change="checkSelectMsgMiddleStatus"
-                    />
-                  </div>
-                  <div class="msg-flow-question-content">
-                    <div v-show="item?.show_button_question_area" class="msg-question-head-button-area">
-                      <div class="question-create-time-box">
-                        <el-text class="msg-tips-text" style="min-width: 122px">
-                          {{ item?.qa_value.question[0].create_time }}
+                >
+                  <div class="msg-flow-question-box" @mouseenter="item.show_button_question_area = true">
+                    <div v-if="item?.qa_value?.question?.[0] && chooseModel" class="msg-check-box">
+                      <el-checkbox
+                          v-model="item.qa_value.question[0].msg_is_selected"
+                          @change="checkSelectMsgMiddleStatus"
+                      />
+                    </div>
+                    <div class="msg-flow-question-content">
+                      <div v-show="item?.show_button_question_area" class="msg-question-head-button-area">
+                        <div class="question-create-time-box">
+                          <el-text class="msg-tips-text" style="min-width: 122px">
+                            {{ item?.qa_value.question[0].create_time }}
+                          </el-text>
+                        </div>
+                        <div class="question-button-box">
+                          <div class="quote-right-container">
+                            <el-tooltip content="引用" placement="top">
+                              <SvgIcon
+                                  name="quote-right"
+                                  :width="16"
+                                  :height="16"
+                                  @click="addQuote(item.qa_value.question[0]?.attachment_list)"
+                              />
+                            </el-tooltip>
+                          </div>
+                          <div class="question-button" @click="copyQuestion(item)">
+                            <el-image class="question-button-icon" src="images/copy.svg" />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="attachment-area">
+                        <div v-for="(attachment, idx2) in item.qa_value.question[0]?.attachment_list" :key="idx2">
+                          <div v-if="attachment.resource_type == 'image'" class="attachment-item">
+                            <el-image
+                                :zoom-rate="1.2"
+                                :max-scale="7"
+                                :min-scale="0.2"
+                                fit="cover"
+                                :src="attachment.resource_download_url || attachment.resource_show_url"
+                                :preview-src-list="[attachment.resource_download_url || attachment.resource_show_url]"
+                                class="attachment-item-img"
+                            />
+                          </div>
+                          <template v-else-if="attachment.resource_type == 'document'">
+                            <slot
+                                v-if="$slots['document-attachment']"
+                                name="document-attachment"
+                                :attachment="attachment"
+                            ></slot>
+                            <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
+                              <div class="std-middle-box">
+                                <el-image
+                                    :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
+                                    class="attachment-item-img"
+                                />
+                              </div>
+                              <div class="attachment-item-right">
+                                <el-text style="width: 120px" truncated>
+                                  {{ attachment.resource_name }}
+                                </el-text>
+                                <div>
+                                  <el-text class="msg-tips-text" style="font-size: 12px; color: #909399">
+                                    {{ reformatFileSize(attachment.resource_size_in_MB) }}
+                                  </el-text>
+                                </div>
+                              </div>
+                            </div>
+                          </template>
+                          <template v-else-if="attachment.resource_type == 'code'">
+                            <slot
+                                v-if="$slots['document-attachment']"
+                                name="document-attachment"
+                                :attachment="attachment"
+                            ></slot>
+                            <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
+                              <div class="std-middle-box">
+                                <el-image
+                                    :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
+                                    class="attachment-item-img"
+                                />
+                              </div>
+                              <div class="attachment-item-right">
+                                <el-text style="width: 120px" truncated>
+                                  {{ attachment.resource_name }}
+                                </el-text>
+                                <div>
+                                  <el-text class="msg-tips-text" style="font-size: 12px; color: #909399">
+                                    {{ reformatFileSize(attachment.resource_size_in_MB) }}
+                                  </el-text>
+                                </div>
+                              </div>
+                            </div>
+                          </template>
+                          <div v-else-if="attachment.resource_type == 'video'" class="attachment-item">
+                            <video controls style="height: 120px; width: 160px">
+                              <source
+                                  :src="attachment.resource_download_url || attachment.resource_show_url"
+                                  type="video/mp4"
+                              />
+                              <source
+                                  :src="attachment.resource_download_url || attachment.resource_show_url"
+                                  type="video/webm"
+                              />
+                              <source
+                                  :src="attachment.resource_download_url || attachment.resource_show_url"
+                                  type="video/ogg"
+                              />
+                              Your browser does not support the video tag.
+                            </video>
+                          </div>
+                          <div v-else-if="attachment.resource_type == 'audio'" class="attachment-item">
+                            <audio controls>
+                              <source
+                                  :src="attachment.resource_download_url || attachment.resource_show_url"
+                                  type="audio/mpeg"
+                              />
+                              <source
+                                  :src="attachment.resource_download_url || attachment.resource_show_url"
+                                  type="audio/ogg"
+                              />
+                              <source
+                                  :src="attachment.resource_download_url || attachment.resource_show_url"
+                                  type="audio/wav"
+                              />
+                              <source
+                                  :src="attachment.resource_download_url || attachment.resource_show_url"
+                                  type="audio/mp4"
+                              />
+                              <source
+                                  :src="attachment.resource_download_url || attachment.resource_show_url"
+                                  type="audio/x-m4a"
+                              />
+                              Your browser does not support the audio tag.
+                            </audio>
+                          </div>
+                          <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
+                            <div class="std-middle-box">
+                              <el-image src="images/file.svg" class="attachment-item-img" />
+                            </div>
+                            <div class="attachment-item-right">
+                              <el-text style="width: 120px" truncated>
+                                {{ attachment.resource_name }}
+                              </el-text>
+                              <div>
+                                <el-text class="msg-tips-text" style="font-size: 12px; color: #909399">
+                                  {{ reformatFileSize(attachment.resource_size_in_MB) }}
+                                </el-text>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="question-content">
+                        <el-text class="question-content-text">
+                          {{ item?.qa_value.question[0].msg_content }}
                         </el-text>
                       </div>
-                      <div class="question-button-box">
-                        <div class="quote-right-container">
-                          <el-tooltip content="引用" placement="top">
-                            <SvgIcon
-                                name="quote-right"
-                                :width="16"
-                                :height="16"
-                                @click="addQuote(item.qa_value.question[0]?.attachment_list)"
-                            />
-                          </el-tooltip>
-                        </div>
-                        <div class="question-button" @click="copyQuestion(item)">
-                          <el-image class="question-button-icon" src="images/copy.svg" />
-                        </div>
-                      </div>
                     </div>
-                    <div class="attachment-area">
-                      <div v-for="(attachment, idx2) in item.qa_value.question[0]?.attachment_list" :key="idx2">
-                        <div v-if="attachment.resource_type == 'image'" class="attachment-item">
-                          <el-image
-                              :zoom-rate="1.2"
-                              :max-scale="7"
-                              :min-scale="0.2"
-                              fit="cover"
-                              :src="attachment.resource_download_url || attachment.resource_show_url"
-                              :preview-src-list="[attachment.resource_download_url || attachment.resource_show_url]"
-                              class="attachment-item-img"
-                          />
-                        </div>
-                        <template v-else-if="attachment.resource_type == 'document'">
-                          <slot
-                              v-if="$slots['document-attachment']"
-                              name="document-attachment"
-                              :attachment="attachment"
-                          ></slot>
-                          <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
-                            <div class="std-middle-box">
-                              <el-image
-                                  :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
-                                  class="attachment-item-img"
-                              />
+                    <div class="msg-flow-question-avatar">
+                      <el-avatar
+                          v-if="currentSession?.user_info?.user_avatar"
+                          :src="currentSession?.user_info?.user_avatar"
+                          style="background-color: white"
+                      />
+                      <el-avatar v-else style="background: #d1e9ff; cursor: pointer">
+                        <el-text style="font-weight: 600; color: #1570ef">
+                          {{ currentSession?.user_info?.user_nick_name_py }}
+                        </el-text>
+                      </el-avatar>
+                    </div>
+                  </div>
+                  <div class="msg-flow-answer-box" @mouseenter="item.show_button_answer_area = true">
+                    <div
+                        v-if="item.qa_value.answer[item.qa_value.question[0]?.msg_id]?.[0] && chooseModel"
+                        class="msg-check-box"
+                    >
+                      <el-checkbox
+                          v-model="item.qa_value.answer[item.qa_value.question[0].msg_id][0].msg_is_selected"
+                          @change="checkSelectMsgMiddleStatus"
+                      />
+                    </div>
+                    <div class="msg-flow-answer-avatar">
+                      <el-image
+                          :src="currentSession?.app_icon || currentSession?.session_assistant_avatar"
+                          style="background-color: white"
+                          shape="square"
+                          class="answer-avatar"
+                          :style="'margin-top: ' + (qaWorkflowMap?.[item.qa_id]?.length ? '0' : '20px')"
+                      />
+                    </div>
+                    <div class="msg-flow-answer-content">
+                      <WorkFlowArea
+                          :qa-finished="item.qa_finished"
+                          :qa-workflow-open="item.qa_workflow_open"
+                          :workflow-task="qaWorkflowMap?.[item.qa_id]"
+                      />
+                      <div class="msg-flow-answer-inner" :class="{ 'msg-flow-answer-inner-short': item?.short_answer }">
+                        <div v-for="(sub_finish_msg, idx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]">
+                          <div v-show="sub_finish_msg?.msg_reason_content_finish_html?.length" class="reason-container">
+                            <div class="reason-header">
+                              <el-button v-if="!sub_finish_msg?.msg_reason_content_hide"
+                                         @click="sub_finish_msg.msg_reason_content_hide = true"
+
+                                         :icon="ArrowUp"
+                              >
+
+                                收起推理过程
+                              </el-button>
+                              <el-button v-if="sub_finish_msg?.msg_reason_content_hide"
+                                         @click="sub_finish_msg.msg_reason_content_hide = false"
+                                         :icon="ArrowDown"
+
+                              > 展开推理过程
+                              </el-button>
+
                             </div>
-                            <div class="attachment-item-right">
-                              <el-text style="width: 120px" truncated>
-                                {{ attachment.resource_name }}
-                              </el-text>
-                              <div>
-                                <el-text class="msg-tips-text" style="font-size: 12px; color: #909399">
-                                  {{ reformatFileSize(attachment.resource_size_in_MB) }}
-                                </el-text>
+                            <transition name="fade">
+                              <div v-show="!sub_finish_msg?.msg_reason_content_hide"  class="reason-box">
+                                <div
+                                    v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_reason_content_finish_html"
+                                    :key="idx"
+                                    style="width: 100%"
+                                    @mouseover="showSupDetailFn(item, $event)"
+                                    v-html="sub_finish_msg_content"
+                                ></div>
                               </div>
-                            </div>
+                            </transition>
                           </div>
-                        </template>
-                        <template v-else-if="attachment.resource_type == 'code'">
-                          <slot
-                              v-if="$slots['document-attachment']"
-                              name="document-attachment"
-                              :attachment="attachment"
-                          ></slot>
-                          <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
-                            <div class="std-middle-box">
-                              <el-image
-                                  :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
-                                  class="attachment-item-img"
-                              />
-                            </div>
-                            <div class="attachment-item-right">
-                              <el-text style="width: 120px" truncated>
-                                {{ attachment.resource_name }}
-                              </el-text>
-                              <div>
-                                <el-text class="msg-tips-text" style="font-size: 12px; color: #909399">
-                                  {{ reformatFileSize(attachment.resource_size_in_MB) }}
-                                </el-text>
-                              </div>
-                            </div>
-                          </div>
-                        </template>
-                        <div v-else-if="attachment.resource_type == 'video'" class="attachment-item">
-                          <video controls style="height: 120px; width: 160px">
-                            <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="video/mp4"
-                            />
-                            <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="video/webm"
-                            />
-                            <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="video/ogg"
-                            />
-                            Your browser does not support the video tag.
-                          </video>
-                        </div>
-                        <div v-else-if="attachment.resource_type == 'audio'" class="attachment-item">
-                          <audio controls>
-                            <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/mpeg"
-                            />
-                            <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/ogg"
-                            />
-                            <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/wav"
-                            />
-                            <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/mp4"
-                            />
-                            <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/x-m4a"
-                            />
-                            Your browser does not support the audio tag.
-                          </audio>
-                        </div>
-                        <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
-                          <div class="std-middle-box">
-                            <el-image src="images/file.svg" class="attachment-item-img" />
-                          </div>
-                          <div class="attachment-item-right">
-                            <el-text style="width: 120px" truncated>
-                              {{ attachment.resource_name }}
-                            </el-text>
-                            <div>
-                              <el-text class="msg-tips-text" style="font-size: 12px; color: #909399">
-                                {{ reformatFileSize(attachment.resource_size_in_MB) }}
-                              </el-text>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="question-content">
-                      <el-text class="question-content-text">
-                        {{ item?.qa_value.question[0].msg_content }}
-                      </el-text>
-                    </div>
-                  </div>
-                  <div class="msg-flow-question-avatar">
-                    <el-avatar
-                        v-if="currentSession?.user_info?.user_avatar"
-                        :src="currentSession?.user_info?.user_avatar"
-                        style="background-color: white"
-                    />
-                    <el-avatar v-else style="background: #d1e9ff; cursor: pointer">
-                      <el-text style="font-weight: 600; color: #1570ef">
-                        {{ currentSession?.user_info?.user_nick_name_py }}
-                      </el-text>
-                    </el-avatar>
-                  </div>
-                </div>
-                <div class="msg-flow-answer-box" @mouseenter="item.show_button_answer_area = true">
-                  <div
-                      v-if="item.qa_value.answer[item.qa_value.question[0]?.msg_id]?.[0] && chooseModel"
-                      class="msg-check-box"
-                  >
-                    <el-checkbox
-                        v-model="item.qa_value.answer[item.qa_value.question[0].msg_id][0].msg_is_selected"
-                        @change="checkSelectMsgMiddleStatus"
-                    />
-                  </div>
-                  <div class="msg-flow-answer-avatar">
-                    <el-avatar
-                        :src="currentSession?.app_icon || currentSession?.session_assistant_avatar"
-                        style="background-color: white"
-                        shape="square"
-                        :style="'margin-top: ' + (qaWorkflowMap?.[item.qa_id]?.length ? '0' : '20px')"
-                    />
-                  </div>
-                  <div class="msg-flow-answer-content">
-                    <WorkFlowArea
-                        :qa-finished="item.qa_finished"
-                        :qa-workflow-open="item.qa_workflow_open"
-                        :workflow-task="qaWorkflowMap?.[item.qa_id]"
-                    />
-                    <div class="msg-flow-answer-inner" :class="{ 'msg-flow-answer-inner-short': item?.short_answer }">
-                      <div v-for="(sub_finish_msg, idx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]">
-                        <div v-show="sub_finish_msg?.msg_reason_content_finish_html?.length" class="reason-box">
+
                           <div
-                              v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_reason_content_finish_html"
+                              v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_content_finish_html"
                               :key="idx"
                               style="width: 100%"
                               @mouseover="showSupDetailFn(item, $event)"
@@ -1650,302 +1693,315 @@ watch(
                           ></div>
                         </div>
 
+                        <SimpleProgress v-if="item?.qa_finished == false && !item?.qa_workflow_open" />
+                        <div v-if="item?.qa_is_cut_off">
+                          <el-text style="color: #c8cad9; font-size: 12px"> 此回答已停止 </el-text>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                        v-if="showScrollbarButton"
+                        v-show="item.show_button_answer_area == true || item?.short_answer"
+                        class="msg-answer-right-button-area"
+                    >
+                      <div class="answer-button-box">
+                        <div class="answer-button" @click="switchAnswerLength(item)">
+                          <el-image v-if="item?.short_answer" src="images/arrow_down_grey2.svg" />
+                          <el-image v-else src="images/arrow_up_grey2.svg" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="msg-flow-footer-box">
+                    <div class="msg-flow-answer-button-area">
+                      <div class="msg-flow-answer-button-area-left">
                         <div
-                            v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_content_finish_html"
-                            :key="idx"
-                            style="width: 100%"
-                            @mouseover="showSupDetailFn(item, $event)"
-                            v-html="sub_finish_msg_content"
-                        ></div>
-                      </div>
-
-                      <SimpleProgress v-if="item?.qa_finished == false && !item?.qa_workflow_open" />
-                      <div v-if="item?.qa_is_cut_off">
-                        <el-text style="color: #c8cad9; font-size: 12px"> 此回答已停止 </el-text>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                      v-if="showScrollbarButton"
-                      v-show="item.show_button_answer_area == true || item?.short_answer"
-                      class="msg-answer-right-button-area"
-                  >
-                    <div class="answer-button-box">
-                      <div class="answer-button" @click="switchAnswerLength(item)">
-                        <el-image v-if="item?.short_answer" src="images/arrow_down_grey2.svg" />
-                        <el-image v-else src="images/arrow_up_grey2.svg" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="msg-flow-footer-box">
-                  <div class="msg-flow-answer-button-area">
-                    <div class="msg-flow-answer-button-area-left">
-                      <div
-                          v-show="msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]"
-                          @click="showReferenceDrawerFn(msgFlowReference?.[item.qa_value.question?.[0]?.msg_id])"
-                      >
-                        <el-text class="reference-link-text"> 参考来源 </el-text>
-                      </div>
-                      <div class="reference-link-box">
-                        <el-text class="reference-link-cnt">
-                          {{ msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]?.length }}
-                        </el-text>
-                      </div>
-                      <el-divider
-                          v-show="msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]"
-                          direction="vertical"
-                      />
-                      <div class="answer-create-time-box">
-                        <el-text class="msg-tips-text">
-                          {{ getAnswerCreateTime(item) }}
-                        </el-text>
-                      </div>
-                    </div>
-                    <div class="msg-flow-answer-button-area-right">
-                      <div class="msg-flow-answer-button" @click="copyAnswer(item)">
-                        <div class="msg-flow-answer-button-icon-box">
-                          <el-image class="msg-flow-answer-button-icon" src="images/copy.svg" />
+                            v-show="msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]"
+                            @click="showReferenceDrawerFn(msgFlowReference?.[item.qa_value.question?.[0]?.msg_id])"
+                        >
+                          <el-text class="reference-link-text"> 参考来源 </el-text>
+                        </div>
+                        <div class="reference-link-box">
+                          <el-text class="reference-link-cnt">
+                            {{ msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]?.length }}
+                          </el-text>
+                        </div>
+                        <el-divider
+                            v-show="msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]"
+                            direction="vertical"
+                        />
+                        <div class="answer-create-time-box">
+                          <el-text class="msg-tips-text">
+                            {{ getAnswerCreateTime(item) }}
+                          </el-text>
                         </div>
                       </div>
-                      <div class="msg-flow-answer-button" @click="addLike(item)">
-                        <div class="msg-flow-answer-button-icon-box">
-                          <el-image
-                              v-if="item?.qa_value?.answer?.[item?.qa_value?.question?.[0]?.msg_id]?.[0]?.msg_remark == 1"
-                              class="msg-flow-answer-button-icon"
-                              src="images/thumbs_up_green.svg"
-                          />
-                          <el-image v-else class="msg-flow-answer-button-icon" src="images/thumbs_up_grey.svg" />
+                      <div class="msg-flow-answer-button-area-right">
+                        <div class="msg-flow-answer-button" @click="copyAnswer(item)">
+                          <div class="msg-flow-answer-button-icon-box">
+                            <el-image class="msg-flow-answer-button-icon" src="images/copy.svg" />
+                          </div>
                         </div>
-                      </div>
-                      <div class="msg-flow-answer-button" @click="addDislike(item)">
-                        <div class="msg-flow-answer-button-icon-box">
-                          <el-image
-                              v-if="
+                        <div class="msg-flow-answer-button" @click="addLike(item)">
+                          <div class="msg-flow-answer-button-icon-box">
+                            <el-image
+                                v-if="item?.qa_value?.answer?.[item?.qa_value?.question?.[0]?.msg_id]?.[0]?.msg_remark == 1"
+                                class="msg-flow-answer-button-icon"
+                                src="images/thumbs_up_green.svg"
+                            />
+                            <el-image v-else class="msg-flow-answer-button-icon" src="images/thumbs_up_grey.svg" />
+                          </div>
+                        </div>
+                        <div class="msg-flow-answer-button" @click="addDislike(item)">
+                          <div class="msg-flow-answer-button-icon-box">
+                            <el-image
+                                v-if="
                               item?.qa_value?.answer?.[item?.qa_value?.question?.[0]?.msg_id]?.[0]?.msg_remark == -1
                             "
-                              class="msg-flow-answer-button-icon"
-                              src="images/thumbs_down_red.svg"
-                          />
-                          <el-image v-else class="msg-flow-answer-button-icon" src="images/thumbs_down_grey.svg" />
+                                class="msg-flow-answer-button-icon"
+                                src="images/thumbs_down_red.svg"
+                            />
+                            <el-image v-else class="msg-flow-answer-button-icon" src="images/thumbs_down_grey.svg" />
+                          </div>
                         </div>
-                      </div>
-                      <div v-if="props.debug" class="msg-flow-answer-button" @click="getQADebugInfo(item)">
-                        <div class="msg-flow-answer-button-icon-box">
-                          <el-image class="msg-flow-answer-button-icon" src="images/debug.svg" />
+                        <div v-if="props.debug" class="msg-flow-answer-button" @click="getQADebugInfo(item)">
+                          <div class="msg-flow-answer-button-icon-box">
+                            <el-image class="msg-flow-answer-button-icon" src="images/debug.svg" />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="msg-flow-recommend-area">
-                    <div
-                        v-for="(sub_question, index) in msgRecommendQuestion?.[item?.qa_value.question?.[0]?.msg_id]"
-                        :key="index"
-                        class="msg-flow-recommend-box"
-                        @click="clickRecommendQuestion(sub_question)"
-                    >
-                      <el-text>
-                        {{ sub_question.recommend_question }}
-                      </el-text>
-                      <div class="relate-question-button">
-                        <el-image src="images/arrow_right_grey.svg" style="width: 12px; height: 12px" />
+                    <div class="msg-flow-recommend-area">
+                      <div
+                          v-for="(sub_question, index) in msgRecommendQuestion?.[item?.qa_value.question?.[0]?.msg_id]"
+                          :key="index"
+                          class="msg-flow-recommend-box"
+                          @click="clickRecommendQuestion(sub_question)"
+                      >
+                        <el-text>
+                          {{ sub_question.recommend_question }}
+                        </el-text>
+                        <div class="relate-question-button">
+                          <el-image src="images/arrow_right_grey.svg" style="width: 12px; height: 12px" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </el-col>
+            <el-col :span="2" :xs="1" />
+          </el-row>
+        <div
+            v-show="scrollToFlag && showScrollbarButton"
+            class="to-bottom-box"
+            @click="scrollToTargetQa(1)"
+            @dblclick="scrollToBottom()"
+        >
+          <el-button class="to-top-button">
+            <el-image src="images/to_bottom.svg" class="to-top-button-icon" />
+          </el-button>
+        </div>
+        <div
+            v-show="scrollToFlag && showScrollbarButton"
+            class="to-top-box"
+            @click="scrollToTargetQa(-1)"
+            @dblclick="scrollToTop()"
+        >
+          <el-button class="to-top-button">
+            <el-image src="images/to_top.svg" class="to-top-button-icon" />
+          </el-button>
+        </div>
+
+        <div v-if="showSupDetail" id="sup_detail_box" :style="tooltipStyle" @mouseleave="showSupDetail = false">
+          <div class="reference-title">
+            <div class="std-middle-box">
+              <el-image
+                  v-if="currentSupDetail?.resource_icon"
+                  :id="currentSupDetail?.resource_icon"
+                  :src="getResourceIcon(currentSupDetail)"
+                  class="reference-img"
+                  @error="retryGetIcon(currentSupDetail)"
+              >
+                <template #error>
+                  <div class="image-slot">
+                    <el-icon><IconPicture /></el-icon>
+                  </div>
+                </template>
+              </el-image>
             </div>
-          </el-col>
-          <el-col :span="2" :xs="1" />
-        </el-row>
-      </el-scrollbar>
-      <div
-          v-show="scrollToFlag && showScrollbarButton"
-          class="to-bottom-box"
-          @click="scrollToTargetQa(1)"
-          @dblclick="scrollToBottom()"
-      >
-        <el-button class="to-top-button">
-          <el-image src="images/to_bottom.svg" class="to-top-button-icon" />
-        </el-button>
-      </div>
-      <div
-          v-show="scrollToFlag && showScrollbarButton"
-          class="to-top-box"
-          @click="scrollToTargetQa(-1)"
-          @dblclick="scrollToTop()"
-      >
-        <el-button class="to-top-button">
-          <el-image src="images/to_top.svg" class="to-top-button-icon" />
-        </el-button>
-      </div>
-      <div
-          v-show="questionRunningCnt"
-          class="scroll-box"
-          :style="{ left: '50%' }"
-          :class="{ 'glowing-border': !userStopScroll }"
-          @click="
-          userStopScroll = !userStopScroll;
-          scrollToBottom();
-        "
-      >
-        <el-button class="to-top-button">
-          <el-image src="images/to_bottom.svg" class="to-top-button-icon" />
-        </el-button>
-      </div>
-      <div v-if="showSupDetail" id="sup_detail_box" :style="tooltipStyle" @mouseleave="showSupDetail = false">
-        <div class="reference-title">
-          <div class="std-middle-box">
-            <el-image
-                v-if="currentSupDetail?.resource_icon"
-                :id="currentSupDetail?.resource_icon"
-                :src="getResourceIcon(currentSupDetail)"
-                class="reference-img"
-                @error="retryGetIcon(currentSupDetail)"
-            >
-              <template #error>
-                <div class="image-slot">
-                  <el-icon><IconPicture /></el-icon>
-                </div>
-              </template>
-            </el-image>
+            <div class="std-middle-box" style="max-width: 95%; justify-content: flex-start">
+              <el-text truncated class="reference-site-name">
+                {{ currentSupDetail?.resource_name }}
+              </el-text>
+            </div>
           </div>
-          <div class="std-middle-box" style="max-width: 95%; justify-content: flex-start">
-            <el-text truncated class="reference-site-name">
-              {{ currentSupDetail?.resource_name }}
+          <div class="reference-name">
+            <el-text truncated class="reference-name-text" @click="openReference(currentSupDetail)">
+              {{ currentSupDetail?.resource_title }}
+            </el-text>
+          </div>
+          <div class="reference-text-box">
+            <el-text line-clamp="2" class="reference-text">
+              {{ currentSupDetail?.ref_text }}
             </el-text>
           </div>
         </div>
-        <div class="reference-name">
-          <el-text truncated class="reference-name-text" @click="openReference(currentSupDetail)">
-            {{ currentSupDetail?.resource_title }}
-          </el-text>
-        </div>
-        <div class="reference-text-box">
-          <el-text line-clamp="2" class="reference-text">
-            {{ currentSupDetail?.ref_text }}
-          </el-text>
-        </div>
-      </div>
-      <el-drawer v-model="showReferenceDrawer" title="参考来源" :size="referenceDrawerWidth">
-        <el-scrollbar>
-          <div id="reference_drawer_body">
-            <div
-                v-for="(item, idx) in referenceDrawerData"
-                :key="idx"
-                class="reference-item"
-            >
-              <div class="reference-title">
-                <div class="std-middle-box">
-                  <el-image
-                      v-if="item?.resource_icon"
-                      :id="item?.resource_icon"
-                      :src="getResourceIcon(item)"
-                      class="reference-img"
-                      @error="retryGetIcon(item)"
-                  >
-                    <template #error>
-                      <div class="image-slot">
-                        <el-icon><IconPicture /></el-icon>
-                      </div>
-                    </template>
-                  </el-image>
+        <el-drawer v-model="showReferenceDrawer" title="参考来源" :size="referenceDrawerWidth">
+          <el-scrollbar>
+            <div id="reference_drawer_body">
+              <div
+                  v-for="(item, idx) in referenceDrawerData"
+                  :key="idx"
+                  class="reference-item"
+              >
+                <div class="reference-title">
+                  <div class="std-middle-box">
+                    <el-image
+                        v-if="item?.resource_icon"
+                        :id="item?.resource_icon"
+                        :src="getResourceIcon(item)"
+                        class="reference-img"
+                        @error="retryGetIcon(item)"
+                    >
+                      <template #error>
+                        <div class="image-slot">
+                          <el-icon><IconPicture /></el-icon>
+                        </div>
+                      </template>
+                    </el-image>
+                  </div>
+                  <div class="std-middle-box">
+                    <el-text truncated class="reference-site-name">
+                      {{ item?.resource_name }}
+                    </el-text>
+                  </div>
                 </div>
-                <div class="std-middle-box">
-                  <el-text truncated class="reference-site-name">
-                    {{ item?.resource_name }}
+                <div class="reference-name" @click="openReference(item)">
+                  <el-text truncated class="reference-name-text">
+                    {{ item.resource_title }}
+                  </el-text>
+                </div>
+                <div class="reference-text-box">
+                  <div  v-show="item?.showAll" v-html="mdAnswer.render(item?.ref_text)"
+                        style="cursor: pointer"
+                        @click="item.showAll=false"/>
+                  <el-text v-show="!item?.showAll" truncated class="reference-text"
+                           style="cursor: pointer"
+                           @click="item.showAll=true">
+                    {{item?.ref_text}}
                   </el-text>
                 </div>
               </div>
-              <div class="reference-name" @click="openReference(item)">
-                <el-text truncated class="reference-name-text">
-                  {{ item.resource_title }}
-                </el-text>
-              </div>
-              <div class="reference-text-box">
-                <div  v-show="item?.showAll" v-html="mdAnswer.render(item?.ref_text)"
-                      style="cursor: pointer"
-                      @click="item.showAll=false"/>
-                <el-text v-show="!item?.showAll" truncated class="reference-text"
-                         style="cursor: pointer"
-                         @click="item.showAll=true">
-                  {{item?.ref_text}}
-                </el-text>
-              </div>
             </div>
-          </div>
-        </el-scrollbar>
-      </el-drawer>
-      <el-dialog v-model="showDebugInfoFlag" title="工作流明细" width="90vw" :fullscreen="true">
-        <el-tabs v-model="currentDebugInfoViewModel">
-          <el-tab-pane label="表格" name="table">
-            <el-table :data="currentDebugInfo" stripe border highlight-current-row height="80vh">
-              <el-table-column prop="id" label="ID" width="100" sortable />
-              <el-table-column prop="user_id" label="用户ID" width="100" sortable />
-              <el-table-column prop="workflow_id" label="工作流ID" width="120" sortable />
-              <el-table-column prop="workflow_node_id" label="节点ID" width="100" sortable />
-              <el-table-column prop="workflow_node_name" label="节点名称" width="160">
-                <template #default="scope">
-                  <div class="workflow_node_name">
-                    <div class="std-middle-box">
-                      <el-image :src="scope.row.workflow_node_icon" class="node-icon" />
+          </el-scrollbar>
+        </el-drawer>
+        <el-dialog v-model="showDebugInfoFlag" title="工作流明细" :fullscreen="true">
+          <el-tabs v-model="currentDebugInfoViewModel">
+            <el-tab-pane label="表格" name="table">
+              <el-table :data="currentDebugInfo" stripe border highlight-current-row height="80vh"
+                        @cell-dblclick="(	row, column, cell, event) => showFullTaskResult(row, column.property)">
+                >
+                <el-table-column prop="id" label="ID" width="100" sortable />
+                <el-table-column prop="user_id" label="用户ID" width="100" sortable />
+                <el-table-column prop="workflow_id" label="工作流ID" width="120" sortable />
+                <el-table-column prop="workflow_node_id" label="节点ID" width="100" sortable />
+                <el-table-column prop="workflow_node_name" label="节点名称" width="160">
+                  <template #default="scope">
+                    <div class="workflow_node_name">
+                      <div class="std-middle-box">
+                        <el-image :src="scope.row.workflow_node_icon" class="node-icon" />
+                      </div>
+                      <div class="std-middle-box">
+                        <el-tooltip :content="scope.row.workflow_node_desc" placement="top">
+                          <el-text>{{ scope.row.workflow_node_name }}</el-text>
+                        </el-tooltip>
+                      </div>
                     </div>
-                    <div class="std-middle-box">
-                      <el-tooltip :content="scope.row.workflow_node_desc" placement="top">
-                        <el-text>{{ scope.row.workflow_node_name }}</el-text>
-                      </el-tooltip>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="task_status" label="执行状态" width="120" sortable />
+                <el-table-column prop="task_params" label="任务参数" min-width="120" show-overflow-tooltip sortable>
+                  <template #default="scope">
+                    <div>
+                      <el-text>{{ scope.row.task_params }}</el-text>
                     </div>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="task_status" label="执行状态" width="120" sortable />
-              <el-table-column prop="task_params" label="任务参数" min-width="120" show-overflow-tooltip sortable>
-                <template #default="scope">
-                  <div>
-                    <el-text>{{ scope.row.task_params }}</el-text>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="task_retry_cnt" label="任务重试" width="120" sortable />
-              <el-table-column prop="task_result" label="任务提示词" min-width="120" show-overflow-tooltip sortable>
-                <template #default="scope">
-                  <div>
-                    <el-text>
-                      {{ scope.row.task_prompt }}
-                    </el-text>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="task_result" label="执行结果" min-width="120" show-overflow-tooltip sortable>
-                <template #default="scope">
-                  <div>
-                    <el-text v-if="isJson(scope.row.task_result)">
-                      {{ JSON.parse(scope.row.task_result, null) }}
-                    </el-text>
-                    <el-text v-else>
-                      {{ scope.row.task_result }}
-                    </el-text>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="task_trace_log" label="异常日志" min-width="120" sortable>
-                <template #default="scope">
-                  <div>
-                    <el-text truncated>
-                      {{ scope.row.task_trace_log }}
-                    </el-text>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="begin_time" label="开始时间" width="180" sortable />
-              <el-table-column prop="end_time" label="完成时间" width="180" sortable />
-              <el-table-column prop="duration" label="耗时（秒）" width="180" sortable />
-            </el-table>
-          </el-tab-pane>
-        </el-tabs>
-      </el-dialog>
-    </el-main>
-  </el-container>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="task_retry_cnt" label="任务重试" width="120" sortable />
+                <el-table-column prop="task_prompt" label="任务提示词" min-width="120" show-overflow-tooltip sortable>
+                  <template #default="scope">
+                    <div>
+                      <el-text>
+                        {{ scope.row.task_prompt }}
+                      </el-text>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="task_result" label="执行结果" min-width="120" show-overflow-tooltip sortable>
+                  <template #default="scope">
+                    <div >
+                      <el-text v-if="isJson(scope.row.task_result)">
+                        {{ JSON.parse(scope.row.task_result, null) }}
+                      </el-text>
+                      <el-text v-else>
+                        {{ scope.row.task_result }}
+                      </el-text>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="task_trace_log" label="异常日志" min-width="120" sortable>
+                  <template #default="scope">
+                    <div>
+                      <el-text truncated>
+                        {{ scope.row.task_trace_log }}
+                      </el-text>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="begin_time" label="开始时间" width="180" sortable />
+                <el-table-column prop="end_time" label="完成时间" width="180" sortable />
+                <el-table-column prop="duration" label="耗时（秒）" width="180" sortable />
+              </el-table>
+            </el-tab-pane>
+          </el-tabs>
+        </el-dialog>
+        <el-dialog
+            v-model="showFullTaskResultFlag"
+            title="完整结果"
+        >
+          <el-scrollbar>
+            <div v-loading="loadingFullTaskResult" element-loading-text="加载中" style="max-height: 60vh">
+              <vue-json-pretty
+                  :data="currentFullTaskResult"
+                  :showLength="true"
+                  :showLineNumber="true"
+                  :showIcon="true"
+                  :showSelectController="true"
+              />
+            </div>
+          </el-scrollbar>
+
+
+        </el-dialog>
+      </el-main>
+
+    </el-container>
+    <div
+        v-show="questionRunningCnt"
+        class="scroll-box"
+        :style="{ left: '50%' }"
+        :class="{ 'glowing-border': !userStopScroll }"
+        @click="
+          userStopScroll = !userStopScroll;
+          scrollToBottom();
+        "
+    >
+      <el-button class="to-top-button">
+        <el-image src="images/to_bottom.svg" class="to-top-button-icon" />
+      </el-button>
+    </div>
+  </el-scrollbar>
 </template>
 
 <style scoped lang="scss">
@@ -2003,7 +2059,7 @@ watch(
 }
 .scroll-box {
   position: absolute;
-  bottom: 200px;
+  bottom: 60px;
   z-index: 999;
   border: 2px solid transparent; /* 初始边框为透明 */
   border-radius: 24px;
@@ -2619,6 +2675,61 @@ sup {
   justify-content: flex-start;
   gap: 4px;
 }
+.answer-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+}
+.reason-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 6px;
+}
+.reason-header {
+
+  /* 增大圆角半径，使盒子更圆润 */
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+
+}
+
+
+/* 定义淡入淡出动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+:deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+:deep(th) {
+  border: 1px solid #D0D5DD;
+  padding: 8px;
+  text-align: left;
+}
+:deep(td) {
+  border: 1px solid #D0D5DD;
+  padding: 8px;
+  text-align: left;
+}
+:deep(th) {
+  background-color: #f2f2f2;
+}
+
 @media (width<768px) {
   #message-flow-box {
     gap: 0;

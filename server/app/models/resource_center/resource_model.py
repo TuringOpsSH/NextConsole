@@ -27,6 +27,7 @@ class ResourceObjectMeta(db.Model):
     resource_feature_code = db.Column(db.String(255), default="", comment='资源特征编码')
     resource_is_share = db.Column(db.Boolean, default=False, comment='资源是否共享')
     resource_is_public = db.Column(db.Boolean, default=False, comment='资源是否公开')
+    resource_is_open = db.Column(db.Boolean, default=False, comment='资源是否开放')
     resource_public_access = db.Column(db.String(255), default="", comment='资源公开访问权限')
     resource_language = db.Column(db.String(255), default="简体中文", comment='资源语言')
     resource_status = db.Column(db.String(255), default="正常", comment='资源状态')

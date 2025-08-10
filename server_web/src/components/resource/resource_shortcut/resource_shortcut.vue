@@ -822,8 +822,8 @@ defineOptions({
   flex-direction: column;
   border: 1px solid #d0d5dd;
   border-radius: 6px;
-  width: 300px;
-  height: 200px;
+  width: 240px;
+  height: 160px;
   cursor: pointer;
   box-sizing: border-box;
 }

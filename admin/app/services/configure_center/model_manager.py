@@ -36,6 +36,8 @@ def model_instance_get(params):
     }
     if user_id == author_info.user_id or check_has_role(user_id, "next_console_admin"):
         result["is_editable"] = True
+        result["llm_api_access_key"] = llm_instance.llm_api_access_key
+        result["llm_api_secret_key"] = llm_instance.llm_api_secret_key
     else:
         result["is_editable"] = False
         result["llm_api_access_key"] = "****************"

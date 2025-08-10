@@ -127,6 +127,15 @@ def add_app(data):
         app_icon=app_icon,
         app_type=app_type,
         app_status=app_status,
+        app_config={
+            "welcome": {
+              "description": "这是一个配置示例",
+              "image": "images/welcome.svg",
+              "keep": False,
+              "prefixQuestions": [],
+              "title": "欢迎使用"
+            }
+        },
         environment='开发',
     )
     db.session.add(app_info)
@@ -531,6 +540,8 @@ def merge_workflow_data(new_app, all_dev_workflows):
                     node_message_schema_type=dev_node.node_message_schema_type,
                     node_message_schema=dev_node.node_message_schema,
                     node_file_reader_config=dev_node.node_file_reader_config,
+                    node_file_splitter_config=dev_node.node_file_splitter_config,
+                    node_sub_workflow_config=dev_node.node_sub_workflow_config,
                     environment="生产",
                     version=new_app.version
                 )
@@ -1368,7 +1379,7 @@ def import_workflow_schema(params):
             node_name=workflow_node.get("node_name"),
             node_desc=workflow_node.get("node_desc"),
             node_run_model_config=workflow_node.get("node_run_model_config"),
-            node_llm_code=workflow_node.get("node_llm_code"),
+            node_llm_code='',
             node_llm_params=workflow_node.get("node_llm_params"),
             node_llm_system_prompt_template=workflow_node.get("node_llm_system_prompt_template"),
             node_llm_user_prompt_template=workflow_node.get("node_llm_user_prompt_template"),
@@ -1412,6 +1423,8 @@ def import_workflow_schema(params):
             node_message_schema_type=workflow_node.get("node_message_schema_type"),
             node_message_schema=workflow_node.get("node_message_schema"),
             node_file_reader_config=workflow_node.get("node_file_reader_config"),
+            node_file_splitter_config=workflow_node.get("node_file_splitter_config"),
+            node_sub_workflow_config=workflow_node.get("node_sub_workflow_config")
         )
         db.session.add(new_workflow_node)
         new_workflow_nodes.append(new_workflow_node)
@@ -1425,6 +1438,7 @@ def import_workflow_schema(params):
         'node_result_params_json_schema', 'node_result_template',
         'node_message_schema',
         'node_failed_template',
+        'node_llm_params'
     ]
     for new_node in new_workflow_nodes:
         # 针对导入节点的引入ref变量的属性，将ref变量中的旧的node_code替换为新的node_code
@@ -1586,7 +1600,7 @@ def import_app_schema(data):
             node_name=workflow_node.get("node_name"),
             node_desc=workflow_node.get("node_desc"),
             node_run_model_config=workflow_node.get("node_run_model_config"),
-            node_llm_code=workflow_node.get("node_llm_code"),
+            node_llm_code='',
             node_llm_params=workflow_node.get("node_llm_params"),
             node_llm_system_prompt_template=workflow_node.get("node_llm_system_prompt_template"),
             node_llm_user_prompt_template=workflow_node.get("node_llm_user_prompt_template"),
@@ -1629,7 +1643,9 @@ def import_app_schema(data):
             node_enable_message=workflow_node.get("node_enable_message"),
             node_message_schema_type=workflow_node.get("node_message_schema_type"),
             node_message_schema=workflow_node.get("node_message_schema"),
-            node_file_reader_config=workflow_node.get("node_file_reader_config")
+            node_file_reader_config=workflow_node.get("node_file_reader_config"),
+            node_file_splitter_config=workflow_node.get("node_file_splitter_config"),
+            node_sub_workflow_config=workflow_node.get("node_sub_workflow_config"),
         )
         db.session.add(new_workflow_node)
         new_workflow_nodes.append(new_workflow_node)
@@ -1643,6 +1659,7 @@ def import_app_schema(data):
         'node_result_params_json_schema', 'node_result_template',
         'node_message_schema',
         'node_failed_template',
+        'node_llm_params'
     ]
     for new_node in new_workflow_nodes:
         # 针对导入节点的引入ref变量的属性，将ref变量中的旧的node_code替换为新的node_code
@@ -1699,7 +1716,7 @@ def delete_app_publish(data):
     user_id = int(data.get("user_id"))
     prod_app_info = AppMetaInfo.query.filter(
         AppMetaInfo.app_code == app_code,
-        AppMetaInfo.app_status != '已删除',
+        AppMetaInfo.app_status == '正常',
         AppMetaInfo.environment == '生产'
     ).first()
     if not prod_app_info:

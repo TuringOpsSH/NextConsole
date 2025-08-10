@@ -86,8 +86,8 @@ def login_by_password():
     if not user_account and not user_password:
         return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
     client_ip = request.headers.get('X-Real-IP', request.remote_addr)
-    if client_ip:
-        app.logger.warning(f"ip监控:{client_ip}:{user_account}")
+    # if client_ip:
+    #     app.logger.warning(f"ip监控:{client_ip}:{user_account}")
     return login_user(data)
 
 

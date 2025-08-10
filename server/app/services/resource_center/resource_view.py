@@ -91,7 +91,7 @@ def get_resource_view_meta(params):
             view_config["engine"] = "json"
             try:
                 view_config["data"] = json.loads(res["resource_content"])
-            except json.JSONDecodeError:
+            except Exception as e:
                 view_config["data"] = {}
         elif resource_view.resource_format == 'html':
             view_config["engine"] = "webpage"
@@ -831,7 +831,7 @@ def get_resource_pdf_view_url(resource):
     try:
         subprocess.run(["soffice", "--version"], check=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError:
+    except Exception:
         app.logger.error("LibreOffice is not installed or not found in PATH.")
         return None
     # 使用liboffice转换为PDF
@@ -911,7 +911,7 @@ def get_resource_html_view_url(resource):
     try:
         subprocess.run(["soffice", "--version"], check=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError:
+    except Exception as e:
         app.logger.error("LibreOffice is not installed or not found in PATH.")
         return None
     # 使用liboffice转换为HTML

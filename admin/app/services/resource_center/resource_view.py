@@ -344,7 +344,7 @@ def wps_upload_address(params):
         "code": 0,
         "data": {
             "method": "PUT",
-            "url": app.config.get("domain") + "/next_console_admin/resources_view/WPS/v3/3rd/files/{}/upload".format(file_id),
+            "url": app.config.get("domain") + "/next_console/resources_view/WPS/v3/3rd/files/{}/upload".format(file_id),
             "params": {
                 "resource_path": new_resource_path,
                 "user_id": user_id,

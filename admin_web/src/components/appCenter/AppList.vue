@@ -36,7 +36,7 @@ const appList = ref<IAppMetaInfo[]>([]);
 const newAppForm = reactive<IAppMetaInfo>({
   app_code: '',
   app_desc: '',
-  app_icon: '',
+  app_icon: 'images/logo.svg',
   app_name: '',
   app_status: '',
   app_type: '',

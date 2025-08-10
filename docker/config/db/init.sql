@@ -901,7 +901,8 @@ CREATE TABLE "next_console"."resource_object_meta_info"
  "resource_source" varchar(100) ,
  "resource_language" varchar(100) ,
  "resource_public_access" varchar(255) ,
- "resource_version" integer DEFAULT 1
+ "resource_version" integer DEFAULT 1,
+ "resource_is_open" boolean
 )
 WITH (
     FILLFACTOR = 100,
@@ -934,7 +935,9 @@ COMMENT ON COLUMN "next_console"."resource_object_meta_info"."resource_source" I
 COMMENT ON COLUMN "next_console"."resource_object_meta_info"."resource_language" IS '资源语言';
 COMMENT ON COLUMN "next_console"."resource_object_meta_info"."resource_public_access" IS '资源公开权限';
 COMMENT ON COLUMN "next_console"."resource_object_meta_info"."resource_version" IS '资源版本';
+COMMENT ON COLUMN "next_console"."resource_object_meta_info"."resource_is_open" IS '资源是否公开';
 COMMENT ON TABLE "next_console"."resource_object_meta_info" IS '大模型提问信息';
+
 
 
 CREATE TRIGGER update_resource_object_meta_info_trigger BEFORE UPDATE ON "next_console"."resource_object_meta_info" FOR EACH ROW
@@ -2635,7 +2638,9 @@ CREATE TABLE "next_console"."workflow_node_info"
  "node_enable_message" boolean ,
  "node_message_schema" json ,
  "node_message_schema_type" varchar(100) ,
- "node_file_reader_config" json
+ "node_file_reader_config" json,
+ "node_file_splitter_config" json ,
+ "node_sub_workflow_config" json
 )
 WITH (
     FILLFACTOR = 100,
@@ -2697,6 +2702,8 @@ COMMENT ON COLUMN "next_console"."workflow_node_info"."node_enable_message" IS '
 COMMENT ON COLUMN "next_console"."workflow_node_info"."node_message_schema" IS '节点消息结构';
 COMMENT ON COLUMN "next_console"."workflow_node_info"."node_message_schema_type" IS '节点消息结构类型';
 COMMENT ON COLUMN "next_console"."workflow_node_info"."node_file_reader_config" IS '文档阅读器配置';
+COMMENT ON COLUMN "next_console"."workflow_node_info"."node_file_reader_config" IS '文档阅读器配置';
+COMMENT ON COLUMN "next_console"."workflow_node_info"."node_file_splitter_config" IS '文本切分配置';
 COMMENT ON TABLE "next_console"."workflow_node_info" IS '工作流节点信息表';
 
 CREATE INDEX "user_id89"
@@ -2771,7 +2778,9 @@ CREATE TABLE "next_console"."workflow_node_instance"
  "workflow_node_enable_message" boolean ,
  "workflow_node_message_schema_type" varchar(100) ,
  "workflow_node_message_schema" json ,
- "workflow_node_file_reader_config" json
+ "workflow_node_file_reader_config" json ,
+ "workflow_node_file_splitter_config" json ,
+ "workflow_node_sub_workflow_config" json
 )
 WITH (
     FILLFACTOR = 100,
@@ -2838,6 +2847,8 @@ COMMENT ON COLUMN "next_console"."workflow_node_instance"."workflow_node_enable_
 COMMENT ON COLUMN "next_console"."workflow_node_instance"."workflow_node_message_schema_type" IS '节点消息结构类型';
 COMMENT ON COLUMN "next_console"."workflow_node_instance"."workflow_node_message_schema" IS '节点消息结构';
 COMMENT ON COLUMN "next_console"."workflow_node_instance"."workflow_node_file_reader_config" IS '文档阅读器配置';
+COMMENT ON COLUMN "next_console"."workflow_node_instance"."workflow_node_file_reader_config" IS '文档阅读器配置';
+COMMENT ON COLUMN "next_console"."workflow_node_instance"."workflow_node_file_splitter_config" IS '文档切分配置';
 COMMENT ON TABLE "next_console"."workflow_node_instance" IS '工作流节点实例';
 
 

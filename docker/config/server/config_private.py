@@ -1,20 +1,20 @@
 from datetime import timedelta
 from app.app import app
-from celery.schedules import crontab
 
 # 应用配置
 app.config["domain"] = "http://127.0.0.1:8080"
+app.config['admin_domain'] = "http://127.0.0.1:8082"
 app.config['bucket_size'] = 5000
 app.config['data_dir'] = "/app/data"
 app.config["download_dir"] = '/app/data/download'
-app.config['JWT_SECRET_KEY'] = 'ncddodoieo494ifo'
+app.config['JWT_SECRET_KEY'] = 'ncddodoieo4ii94ifo'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
 app.config['LOG_DIR'] = '/app/server/logs'
 app.config['LOG_FILE'] = 'next_console.log'
 app.config['LOG_LEVEL'] = "INFO"
 app.config['LOG_MAX_BYTES'] = 10*1024*1024
 app.config['LOG_BACKUP_COUNT'] = 10
-app.config['SECRET_KEY'] = '146827-a8ac-4a28-8efd5-c13e5df11529'
+app.config['SECRET_KEY'] = '146827-a8ac-4a28-8efd5-c13e5f11529'
 app.config['download_cool_time'] = 7200
 app.config['download_max_count'] = 100
 

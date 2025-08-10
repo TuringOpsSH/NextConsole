@@ -218,13 +218,9 @@ def search_in_session(params):
     ).first()
     if not target_user:
         return next_console_response(error_status=True, error_message="用户不存在！")
-    is_nc_admin = check_has_role(user_id, "next_console_admin")
     target_session = NextConsoleSession.query.filter(
         NextConsoleSession.id == session_id,
-        or_(
-            is_nc_admin,
-            NextConsoleSession.user_id == user_id
-        )
+        NextConsoleSession.user_id == user_id
     ).first()
     if not target_session:
         return next_console_response(error_status=True, error_message="会话不存在！")
@@ -246,9 +242,9 @@ def search_in_session(params):
         ResourceObjectMeta
     ).all()
     res = []
-    for attachment in target_attachments:
+    for attachment_source, attachment in target_attachments:
         sub_res = attachment.show_info()
-        sub_res["attachment_source"] = attachment.attachment_source
+        sub_res["attachment_source"] = attachment_source
         res.append(sub_res)
     return next_console_response(result=res)
 
@@ -1018,21 +1014,3 @@ def search_share_resources(params):
             if resource.get("id") in all_has_ref_resource:
                 new_res["data"].append(resource)
     return next_console_response(result=new_res)
-
-
-def check_has_role(user_id, role_name):
-    """
-    检查用户是否有指定角色
-    :param user_id:
-    :param role_name:
-    :return:
-    """
-    from app.models.user_center.user_role_info import UserRoleInfo
-    from app.models.user_center.role_info import RoleInfo
-    user_roles = UserRoleInfo.query.filter(UserRoleInfo.user_id == user_id).all()
-    all_role_ids = [role.role_id for role in user_roles]
-    all_roles = RoleInfo.query.filter(RoleInfo.role_id.in_(all_role_ids)).all()
-    user_roles = [role.role_name for role in all_roles]
-    if role_name in user_roles:
-        return True
-    return False

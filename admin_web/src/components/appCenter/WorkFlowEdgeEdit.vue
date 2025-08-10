@@ -77,12 +77,13 @@ async function updateEdgeConfig() {
   });
   currentEdge.prop('labels', [currentEdgeDetail.value.edge_type]);
   const graphData = graphWrapper.value.toJSON();
-  const jsonData = JSON.stringify(graphData, null, 2);
-  workflowUpdate({
-    app_code: currentApp.app_code,
-    workflow_code: CurrentEditFlow.value.workflow_code,
-    workflow_edit_schema: jsonData
-  });
+  if (graphData) {
+    workflowUpdate({
+      app_code: currentApp.app_code,
+      workflow_code: CurrentEditFlow.value.workflow_code,
+      workflow_edit_schema: graphData
+    });
+  }
 }
 async function addEdgeCondition() {
   const currentEdge = graphWrapper.value.getCellById(currentEdgeDetail.value.edge_code);
@@ -90,20 +91,22 @@ async function addEdgeCondition() {
     currentEdgeDetail.value.edge_conditions = [];
   }
   currentEdgeDetail.value.edge_conditions.push({
-    src_node: null,
+    src_node: "",
     operator: '==',
-    tgt_node: null
+    tgt_node: ""
   });
   currentEdge.updateData({
     edge_conditions: currentEdgeDetail.value.edge_conditions
   });
   const graphData = graphWrapper.value.toJSON();
-  const jsonData = JSON.stringify(graphData, null, 2);
-  workflowUpdate({
-    app_code: currentApp.app_code,
-    workflow_code: CurrentEditFlow.value.workflow_code,
-    workflow_edit_schema: jsonData
-  });
+  if (graphData) {
+    workflowUpdate({
+      app_code: currentApp.app_code,
+      workflow_code: CurrentEditFlow.value.workflow_code,
+      workflow_edit_schema: graphData
+    });
+  }
+
 }
 async function deleteEdgeCondition(idx: number) {
   const currentEdge = graphWrapper.value.getCellById(currentEdgeDetail.value.edge_code);
@@ -113,12 +116,14 @@ async function deleteEdgeCondition(idx: number) {
       edge_conditions: currentEdgeDetail.value.edge_conditions
     });
     const graphData = graphWrapper.value.toJSON();
-    const jsonData = JSON.stringify(graphData, null, 2);
-    workflowUpdate({
-      app_code: currentApp.app_code,
-      workflow_code: CurrentEditFlow.value.workflow_code,
-      workflow_edit_schema: jsonData
-    });
+    if (graphData) {
+      workflowUpdate({
+        app_code: currentApp.app_code,
+        workflow_code: CurrentEditFlow.value.workflow_code,
+        workflow_edit_schema:  graphData
+      });
+    }
+
   }
 }
 async function updateEdgeCondition(idx: number, type: string, newValue) {
@@ -129,11 +134,26 @@ async function updateEdgeCondition(idx: number, type: string, newValue) {
       edge_conditions: currentEdgeDetail.value.edge_conditions
     });
     const graphData = graphWrapper.value.toJSON();
-    const jsonData = JSON.stringify(graphData, null, 2);
+    if (graphData) {
+      workflowUpdate({
+        app_code: currentApp.app_code,
+        workflow_code: CurrentEditFlow.value.workflow_code,
+        workflow_edit_schema: graphWrapper.value.toJSON()
+      });
+    }
+  }
+}
+async function changeEdgeRouter(name: string) {
+  const currentEdge = graphWrapper.value.getCellById(currentEdgeDetail.value.edge_code);
+  currentEdge?.setRouter({
+    name: name,
+  });
+  const graphData = graphWrapper.value.toJSON();
+  if (graphData) {
     workflowUpdate({
       app_code: currentApp.app_code,
       workflow_code: CurrentEditFlow.value.workflow_code,
-      workflow_edit_schema: jsonData
+      workflow_edit_schema: graphData
     });
   }
 }
@@ -174,15 +194,15 @@ async function updateEdgeCondition(idx: number, type: string, newValue) {
             <el-form :model="currentEdgeDetail" label-position="top" style="padding: 12px">
               <el-form-item prop="edge_type" label="关系种类">
                 <el-radio-group v-model="currentEdgeDetail.edge_type" @change="updateEdgeConfig">
-                  <el-radio label="充分" value="充分" />
-                  <el-radio label="必要" value="必要" />
-                  <el-radio label="默认" value="默认" />
+                  <el-radio value="充分" >充分</el-radio>
+                  <el-radio value="必要" >必要</el-radio>
+                  <el-radio value="默认" >默认</el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item prop="edge_condition_type" label="条件连接类型">
                 <el-radio-group v-model="currentEdgeDetail.edge_condition_type" @change="updateEdgeConfig">
-                  <el-radio label="or" value="or" />
-                  <el-radio label="and" value="and" />
+                  <el-radio value="or" >or</el-radio>
+                  <el-radio value="and" >and</el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item prop="edge_conditions" label="条件列表">
@@ -231,6 +251,17 @@ async function updateEdgeCondition(idx: number, type: string, newValue) {
 
             </el-form>
           </div>
+        </div>
+        <div class="config-item" v-if="currentEdgeDetail?.routerName">
+          <el-text>边路由配置</el-text>
+          <el-select v-model="currentEdgeDetail.routerName" @change="changeEdgeRouter">
+            <el-option label="默认" value="normal" />
+            <el-option label="正交" value="orth" />
+            <el-option label="受限正交" value="oneSide" />
+            <el-option label="智能正交" value="manhattan" />
+            <el-option label="地铁" value="metro" />
+            <el-option label="实体关系" value="er" />
+          </el-select>
         </div>
       </div>
     </el-scrollbar>

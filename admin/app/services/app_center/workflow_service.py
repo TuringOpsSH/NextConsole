@@ -26,6 +26,134 @@ def create_workflow(params):
     workflow_icon = params.get("workflow_icon", 'images/workflow.svg')
     workflow_is_main = params.get("workflow_is_main", False)
     workflow_code = str(uuid.uuid4())
+    start_node_code = str(uuid.uuid4())
+    end_node_code = str(uuid.uuid4())
+    init_schema = {
+      "cells": [
+        {
+          "position": {
+            "x": 180,
+            "y": 270
+          },
+          "size": {
+            "width": 300,
+            "height": 100
+          },
+          "view": "vue-shape-view",
+          "shape": "custom-vue-node",
+          "ports": {
+            "groups": {
+              "top": {
+                "position": "left",
+                "attrs": {
+                  "circle": {
+                    "r": 4,
+                    "magnet": True,
+                    "stroke": "#31d0c6",
+                    "strokeWidth": 2,
+                    "fill": "#fff"
+                  }
+                }
+              },
+              "bottom": {
+                "position": "right",
+                "attrs": {
+                  "circle": {
+                    "r": 4,
+                    "magnet": True,
+                    "stroke": "#31d0c6",
+                    "strokeWidth": 2,
+                    "fill": "#fff"
+                  }
+                }
+              }
+            },
+            "items": [
+              {
+                "group": "top",
+                "id": str(uuid.uuid4())
+              },
+              {
+                "group": "bottom",
+                "id": str(uuid.uuid4())
+              }
+            ]
+          },
+          "id": start_node_code,
+          "data": {
+            "nodeType": "start",
+            "nodeDesc": "开始节点",
+            "nodeName": "开始",
+            "nodeIcon": "images/node_start.svg",
+            "nodeInput": "string",
+            "nodeOutput": "string",
+            "nodeModel": ""
+          },
+          "zIndex": 1
+        },
+        {
+          "position": {
+            "x": 930,
+            "y": 270
+          },
+          "size": {
+            "width": 300,
+            "height": 100
+          },
+          "view": "vue-shape-view",
+          "shape": "custom-vue-node",
+          "ports": {
+            "groups": {
+              "top": {
+                "position": "left",
+                "attrs": {
+                  "circle": {
+                    "r": 4,
+                    "magnet": True,
+                    "stroke": "#31d0c6",
+                    "strokeWidth": 2,
+                    "fill": "#fff"
+                  }
+                }
+              },
+              "bottom": {
+                "position": "right",
+                "attrs": {
+                  "circle": {
+                    "r": 4,
+                    "magnet": True,
+                    "stroke": "#31d0c6",
+                    "strokeWidth": 2,
+                    "fill": "#fff"
+                  }
+                }
+              }
+            },
+            "items": [
+              {
+                "group": "top",
+                "id": str(uuid.uuid4())
+              },
+              {
+                "group": "bottom",
+                "id": str(uuid.uuid4())
+              }
+            ]
+          },
+          "id": end_node_code,
+          "data": {
+            "nodeType": "end",
+            "nodeDesc": "结束节点用于标识工作流的最终状态与输出数据",
+            "nodeName": "结束",
+            "nodeIcon": "images/node_end.svg",
+            "nodeInput": "string",
+            "nodeOutput": "返回文本",
+            "nodeModel": ""
+          },
+          "zIndex": 2
+        }
+      ]
+    }
     workflow_info = WorkFlowMetaInfo(
         user_id=user_id,
         workflow_code=workflow_code,
@@ -33,6 +161,8 @@ def create_workflow(params):
         workflow_desc=workflow_desc,
         workflow_icon=workflow_icon,
         workflow_is_main=workflow_is_main,
+        workflow_schema=init_schema,
+        workflow_edit_schema=init_schema,
     )
     db.session.add(workflow_info)
     db.session.commit()
@@ -45,6 +175,27 @@ def create_workflow(params):
     )
     db.session.add(new_relation)
     db.session.commit()
+    # 生成工作流的初始节点
+    start_node = init_app_flow_node({
+        "user_id": user_id,
+        "app_code": app_code,
+        "workflow_code": workflow_code,
+        "node_code": start_node_code,
+        "node_type": "start",
+        "node_name": "开始",
+        "node_desc": "工作流开始节点",
+        "node_icon": "images/node_start.svg",
+    })
+    end_node = init_app_flow_node({
+        "user_id": user_id,
+        "app_code": app_code,
+        "workflow_code": workflow_code,
+        "node_code": end_node_code,
+        "node_type": "end",
+        "node_name": "结束",
+        "node_desc": "工作流结束节点",
+        "node_icon": "images/node_end.svg",
+    })
     return next_console_response(result=workflow_info.to_dict())
 
 
@@ -110,7 +261,6 @@ def update_app_flow(params):
     flow_name = params.get("workflow_name")
     flow_desc = params.get("workflow_desc")
     flow_icon = params.get("workflow_icon")
-    flow_schema = params.get("workflow_schema")
     workflow_edit_schema = params.get("workflow_edit_schema")
     flow_is_main = params.get("workflow_is_main")
     check_res = check_workflow_permission(user_id, app_code)
@@ -147,8 +297,6 @@ def update_app_flow(params):
         target_flow.workflow_desc = flow_desc
     if flow_icon is not None:
         target_flow.workflow_icon = flow_icon
-    if flow_schema is not None:
-        target_flow.workflow_schema = flow_schema
     if workflow_edit_schema is not None:
         target_flow.workflow_edit_schema = workflow_edit_schema
     if flow_is_main is True and app_code:
@@ -218,12 +366,110 @@ def get_app_flow_detail(params):
             "workflow_name": target_flow.workflow_name,
             "workflow_desc": target_flow.workflow_desc,
             "workflow_icon": target_flow.workflow_icon,
-            "workflow_schema": target_flow.workflow_schema,
             "workflow_edit_schema": target_flow.workflow_edit_schema,
             "workflow_is_main": target_flow.workflow_is_main,
             "id": target_flow.id
         })
     return next_console_response(error_status=True, error_message="工作流不存在！", error_code=1002)
+
+
+def search_app_flow(params):
+    """
+    搜索应用工作流
+        平台管理员和应用作者
+    :param params:
+    :return:
+    """
+    user_id = int(params.get("user_id"))
+    app_code = params.get("app_code")
+    keyword = params.get("keyword", "")
+    workflow_codes = params.get("workflow_codes", [])
+    page_num = params.get("page_num", 1)
+    page_size = params.get("page_size", 20)
+    check_res = check_workflow_permission(user_id, app_code)
+    if check_res is not True:
+        return check_res
+    target_app = AppMetaInfo.query.filter(
+            AppMetaInfo.app_code == app_code,
+            AppMetaInfo.app_status != '已删除',
+            AppMetaInfo.environment == '开发'
+        ).first()
+    if not target_app:
+        return next_console_response(error_status=True, error_message="应用不存在！", error_code=1002)
+    filter_condition = [
+        WorkFlowMetaInfo.workflow_status != '已删除',
+        WorkFlowMetaInfo.environment == '开发',
+
+    ]
+    if keyword:
+        filter_condition.append(
+            or_(
+                WorkFlowMetaInfo.workflow_name.like(f"%{keyword}%"),
+                WorkFlowMetaInfo.workflow_code.like(f"%{keyword}%"),
+                WorkFlowMetaInfo.workflow_desc.like(f"%{keyword}%")
+            )
+        )
+    elif workflow_codes:
+        filter_condition.append(
+            WorkFlowMetaInfo.workflow_code.in_(workflow_codes)
+        )
+    target_flows = AppWorkFlowRelation.query.filter(
+        AppWorkFlowRelation.app_code == app_code,
+        AppWorkFlowRelation.rel_status != '已删除'
+    ).join(
+        WorkFlowMetaInfo,
+        WorkFlowMetaInfo.workflow_code == AppWorkFlowRelation.workflow_code
+    ).filter(
+        *filter_condition
+    ).with_entities(
+        WorkFlowMetaInfo
+    )
+    total = target_flows.count()
+    target_flows = target_flows.order_by(
+        WorkFlowMetaInfo.version.desc()
+    ).paginate(page=page_num, per_page=page_size, error_out=False)
+    all_flow_ids = [target_flow.id for target_flow in target_flows]
+    all_start_nodes = WorkflowNodeInfo.query.filter(
+        WorkflowNodeInfo.workflow_id.in_(all_flow_ids),
+        WorkflowNodeInfo.node_type == 'start',
+        WorkflowNodeInfo.node_status != '已删除',
+        WorkflowNodeInfo.environment == '开发'
+    ).with_entities(
+        WorkflowNodeInfo
+    ).all()
+    all_workflow_input_params_schema_map = {
+        start_node.workflow_id: start_node.node_input_params_json_schema
+        for start_node in all_start_nodes
+    }
+    all_end_nodes = WorkflowNodeInfo.query.filter(
+        WorkflowNodeInfo.workflow_id.in_(all_flow_ids),
+        WorkflowNodeInfo.node_type == 'end',
+        WorkflowNodeInfo.node_status == '正常',
+        WorkflowNodeInfo.environment == '开发'
+    ).with_entities(
+        WorkflowNodeInfo
+    ).all()
+    all_workflow_result_params_schema_map = {
+        end_node.workflow_id: end_node.node_result_params_json_schema
+        for end_node in all_end_nodes
+    }
+    result = {
+        "data": [{
+            "workflow_code": target_flow.workflow_code,
+            "workflow_name": target_flow.workflow_name,
+            "workflow_desc": target_flow.workflow_desc,
+            "workflow_icon": target_flow.workflow_icon,
+            "workflow_is_main": target_flow.workflow_is_main,
+            "workflow_params_schema": all_workflow_input_params_schema_map.get(target_flow.id, {}),
+            "workflow_result_schema": all_workflow_result_params_schema_map.get(target_flow.id, {}),
+            "id": target_flow.id
+    } for target_flow in target_flows],
+        "total": total,
+        "page_num": page_num,
+        "page_size": page_size
+    }
+
+    return next_console_response(result=result)
 
 
 def restore_app_flow_schema(params):
@@ -258,7 +504,7 @@ def restore_app_flow_schema(params):
     ).first()
     if not target_workflow:
         return next_console_response(error_status=True, error_message="工作流不存在！", error_code=1002)
-    if target_workflow.workflow_schema == target_workflow.workflow_edit_schema and target_workflow.workflow_schema:
+    if str(target_workflow.workflow_schema) == str(target_workflow.workflow_edit_schema) and target_workflow.workflow_schema:
         return next_console_response(error_message="该工作流没有变化！", error_code=1002)
     target_workflow.workflow_edit_schema = target_workflow.workflow_schema
     db.session.add(target_workflow)
@@ -291,7 +537,7 @@ def check_app_flow_schema(params):
     ).first()
     if not target_workflow:
         return next_console_response(error_status=True, error_message="工作流不存在！", error_code=1002)
-    if not target_workflow.workflow_schema:
+    if not target_workflow.workflow_edit_schema:
         return next_console_response(error_status=True, error_message="工作流schema不存在！", error_code=1002)
     # 所有节点
     all_nodes = WorkflowNodeInfo.query.filter(
@@ -396,7 +642,7 @@ def export_app_flow_schema(params):
     ).first()
     if not target_workflow:
         return next_console_response(error_status=True, error_message="工作流不存在！", error_code=1002)
-    if not target_workflow.workflow_schema:
+    if not target_workflow.workflow_edit_schema:
         return next_console_response(error_status=True, error_message="工作流schema不存在！", error_code=1002)
     target_workflow_nodes = WorkflowNodeInfo.query.filter(
         WorkflowNodeInfo.workflow_id == target_workflow.id,
@@ -620,14 +866,57 @@ def init_app_flow_node(params):
             "type": "object",
             "properties": {
                 "images": {
-                    "type": "array[number]",
+                    "type": "array",
+                    "typeName": "file-list",
                     "items": {
-
+                        "type": "object",
+                        "typeName": "file",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "typeName": "string",
+                                "description": "图片ID",
+                                "attrFixed": True,
+                                "typeFixed": True,
+                                "valueFixed": True,
+                                "ref": ""
+                            },
+                            "name": {
+                                "type": "string",
+                                "typeName": "string",
+                                "description": "图片名称",
+                                "attrFixed": True,
+                                "typeFixed": True,
+                                "valueFixed": True,
+                                "ref": ""
+                            },
+                            "format": {
+                                "type": "string",
+                                "typeName": "string",
+                                "description": "图片格式",
+                                "attrFixed": True,
+                                "typeFixed": True,
+                                "valueFixed": True,
+                                "ref": ""
+                            },
+                            "size": {
+                                "type": "integer",
+                                "typeName": "number",
+                                "description": "图片大小",
+                                "attrFixed": True,
+                                "typeFixed": True,
+                                "valueFixed": True,
+                                "ref": ""
+                            }
+                        },
+                        "attrFixed": True,
+                        "typeFixed": True,
+                        "ncOrders": ["id", "name", "format", "size"]
                     },
                     "description": "图片列表",
                     "typeFixed": True,
                     "attrFixed": True,
-                    "ref": {},
+                    "ref": None,
                 }
             },
             "ncOrders": ["images"],
@@ -652,6 +941,7 @@ def init_app_flow_node(params):
         "properties": {
             "OUTPUT": {
                 "type": "string",
+                "typeName": "string",
                 "description": "输出参数"
             }
         },
@@ -679,21 +969,26 @@ def init_app_flow_node(params):
         init_rag_node(new_node)
     if node_type == 'file_reader':
         init_file_reader_node(new_node)
+    if node_type == 'file_splitter':
+        init_file_splitter_node(new_node)
+    if node_type == 'workflow':
+        init_workflow_node(new_node)
+    if node_type == 'end':
+        init_end_node(new_node)
     db.session.add(new_node)
     db.session.commit()
-    # 修改工作流的schema
-    new_workflow_schem = target_flow.workflow_schema
-    if not new_workflow_schem:
-        with open(os.path.join(app.config['config_static'], "schema.json"), 'r', encoding="utf8") as f:
-            new_workflow_schem = json.load(f)
-    if not isinstance(new_workflow_schem, dict):
-        new_workflow_schem = json.loads(new_workflow_schem)
-    # 根据节点类型添加前端节点
-    first_node = new_workflow_schem.get("cells")[0]
+    try:
+        first_node = target_flow.workflow_edit_schema.get("cells")[0]
+        end_node = target_flow.workflow_edit_schema.get("cells")[-1]
+        new_x = int((first_node["position"]["x"] + end_node["position"]["x"])/2) + 100
+        new_y = int((first_node["position"]["y"] + end_node["position"]["y"])/2) + 100
+    except Exception as e:
+        new_x = 100
+        new_y = 100
     new_node_config = {
             "position": {
-                "x": first_node["position"]["x"] + 100,
-                "y": first_node["position"]["y"] + 100,
+                "x": new_x,
+                "y": new_y,
             },
             "size": {
                 "width": 300,
@@ -744,15 +1039,15 @@ def init_app_flow_node(params):
                 "nodeType": node_type,
                 "nodeDesc": node_desc,
                 "nodeName": node_name,
-                "nodeInput": "string",
-                "nodeOutput": "string",
-                "nodeModel": ""
+                "nodeInput": "",
+                "nodeOutput": "",
+                "nodeModel": "",
+                "nodeParams": [],
+                "nodeResultParams": []
             },
             "zIndex": 3
         }
-    new_workflow_schem.get("cells").append(new_node_config)
-    target_flow.workflow_schema = json.dumps(new_workflow_schem)
-    target_flow.workflow_edit_schema = json.dumps(new_workflow_schem)
+    target_flow.workflow_edit_schema.get("cells").append(new_node_config)
     db.session.add(target_flow)
     db.session.commit()
 
@@ -777,29 +1072,26 @@ def init_start_node(new_node):
         "properties": {
             "UserInput": {
                 "type": "string",
+                "typeName": "string",
                 "description": "用户问题"
             },
             "SessionAttachmentList": {
                 "type": "array",
+                "typeName": "file-list",
                 "description": "会话附件",
                 "items": {
                     "properties": {
-                        "format": {
-                            "ref": "",
-                            "showSubArea": False,
-                            "type": "string",
-                            "value": "",
-                            "description": "文件格式"
-                        },
                         "id": {
                             "showSubArea": False,
-                            "type": "number",
+                            "type": "integer",
+                            "typeName": "integer",
                             "description": "附件id"
                         },
                         "name": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "string",
+                            "typeName": "string",
                             "value": "",
                             "description": "附件名称"
                         },
@@ -807,35 +1099,50 @@ def init_start_node(new_node):
                             "ref": "",
                             "showSubArea": False,
                             "type": "number",
+                            "typeName": "number",
                             "value": "",
                             "description": "附件大小"
-                        }
+                        },
+                        "format": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "string",
+                            "typeName": "string",
+                            "value": "",
+                            "description": "文件格式"
+                        },
+                        "icon": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "string",
+                            "typeName": "string",
+                            "value": "",
+                            "description": "文件图标"
+                        },
                     },
                     "type": "object",
-                    "ncOrders": ["id", "name", "format", "size"]
+                    "typeName": "file",
+                    "ncOrders": ['id', 'name', 'size', 'format', 'icon']
                 },
                 "showSubArea": True,
             },
             "MessageAttachmentList": {
+                "type": "array",
+                "typeName": "file-list",
                 "description": "消息附件",
                 "items": {
                     "properties": {
-                        "format": {
-                            "ref": "",
-                            "showSubArea": False,
-                            "type": "string",
-                            "value": "",
-                            "description": "文件格式"
-                        },
                         "id": {
                             "showSubArea": False,
-                            "type": "number",
+                            "type": "integer",
+                            "typeName": "integer",
                             "description": "附件id"
                         },
                         "name": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "string",
+                            "typeName": "string",
                             "value": "",
                             "description": "附件名称"
                         },
@@ -843,22 +1150,41 @@ def init_start_node(new_node):
                             "ref": "",
                             "showSubArea": False,
                             "type": "number",
+                            "typeName": "number",
                             "value": "",
                             "description": "附件大小"
-                        }
+                        },
+                        "format": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "string",
+                            "typeName": "string",
+                            "value": "",
+                            "description": "文件格式"
+                        },
+                        "icon": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "string",
+                            "typeName": "string",
+                            "value": "",
+                            "description": "文件图标"
+                        },
                     },
                     "type": "object",
-                    "ncOrders": ["id", "name", "format", "size"]
+                    "typeName": "file",
+                    "ncOrders": ['id', 'name', 'size', 'format', 'icon']
                 },
                 "showSubArea": True,
-                "type": "array"
             },
             "SessionId": {
                 "type": "number",
+                "typeName": "number",
                 "description": "会话id"
             },
             "CurrentTime": {
                 "type": "string",
+                "typeName": "string",
                 "description": "当前时间"
             }
         },
@@ -876,11 +1202,13 @@ def init_llm_node(new_node):
         "properties": {
             "content": {
                 "type": "string",
+                "typeName": "string",
                 "description": "输出消息",
                 "attrFixed": True
             },
             "reasoning_content": {
                 "type": "string",
+                "typeName": "string",
                 "description": "推理消息",
                 "attrFixed": True,
                 "typeFixed": True
@@ -908,12 +1236,14 @@ def init_rag_node(new_node):
                                 "source": {
                                     "showSubArea": False,
                                     "type": "number",
+                                    "typeName": "number",
                                     "description": "数据源ID",
                                 },
                                 "source_type": {
                                     "ref": "",
                                     "showSubArea": False,
                                     "type": "string",
+                                    "typeName": "string",
                                     "value": "",
                                     "description": "数据源类型",
                                 }
@@ -921,6 +1251,7 @@ def init_rag_node(new_node):
                             "ref": "",
                             "showSubArea": True,
                             "type": "object",
+                            "typeName": "object",
                             "value": "",
                             "ncOrders": ["source", "source_type"],
                             "description": "元信息"
@@ -929,28 +1260,33 @@ def init_rag_node(new_node):
                             "ref": "",
                             "showSubArea": False,
                             "type": "number",
+                            "typeName": "number",
                             "value": "",
                             "description": "召回分数"
                         },
                         "rerank_score": {
                             "showSubArea": False,
                             "type": "number",
+                            "typeName": "number",
                             "description": "重排序分数",
                         },
                         "text": {
                             "ref": "",
                             "showSubArea": True,
                             "type": "string",
+                            "typeName": "string",
                             "value": "",
                             "description": "召回文本"
                         }
                     },
                     "type": "object",
+                    "typeName": "object",
                     "ncOrders": ["meta", "text", "recall_score", "rerank_score"]
                 },
                 "ref": "",
                 "showSubArea": True,
                 "type": "array",
+                "typeName": "array",
                 "value": "",
                 "description": "RAG召回结果列表",
             },
@@ -961,11 +1297,13 @@ def init_rag_node(new_node):
                 "ref": "",
                 "showSubArea": True,
                 "type": "array",
+                "typeName": "array",
                 "value": "",
                 "description": "参考文本列表",
             },
         },
         "type": "object",
+        "typeName": "object",
         "ncOrders": ["details", "reference_texts"]
     }
     new_node.node_rag_resources = [
@@ -983,8 +1321,8 @@ def init_rag_node(new_node):
         },
     ]
     new_node.node_rag_recall_config = {
-        "recall_similarity": "cosine",
-        "recall_threshold": 0.3,
+        "recall_similarity": "ip",
+        "recall_threshold": 0.6,
         "recall_k": 30,
     }
     new_node.node_rag_rerank_config = {
@@ -1019,69 +1357,318 @@ def init_file_reader_node(new_node):
                 "items": {
                     "ncOrders": [
                         "id",
+                        "name",
+                        "format",
+                        "size",
                         "content",
                         "url",
-                        "format"
                     ],
                     "properties": {
-                        "content": {
+                        "id": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "integer",
+                            "typeName": "integer",
+                            "description": "文件ID",
+                            "value": ""
+                        },
+                        "name": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "string",
+                            "typeName": "string",
+                            "description": "文件名称",
                             "value": ""
                         },
                         "format": {
                             "ref": "",
-                            "showSubArea": True,
+                            "showSubArea": False,
                             "type": "string",
+                            "typeName": "string",
+                            "description": "文件名称",
                             "value": ""
                         },
-                        "id": {
+                        "size": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "number",
+                            "typeName": "number",
+                            "description": "文件大小",
                             "value": ""
                         },
-                        "tmpAttr": {
+                        "content": {
+                            "ref": "",
                             "showSubArea": False,
-                            "type": "string"
+                            "type": "string",
+                            "typeName": "string",
+                            "value": "",
+                            "description": "文件内容",
                         },
                         "url": {
                             "ref": "",
                             "showSubArea": False,
                             "type": "string",
+                            "typeName": "string",
+                            "description": "文件URL",
                             "value": ""
                         }
                     },
-                    "type": "object"
+                    "type": "object",
+                    "typeName": "file",
                 },
                 "ref": "",
                 "showSubArea": True,
                 "type": "array",
-                "value": ""
+                "typeName": "file-list",
+                "description": "输出资源列表",
+                "value": "",
             }
         },
-        "type": "object"
+        "type": "object",
     }
     new_node.node_input_params_json_schema = {
         "ncOrders": [
-            "input_resources"
+            "input_resources",
+            "begin_page",
+            "end_page"
         ],
         "properties": {
             "input_resources": {
                 "items": {
-                    "type": "number",
+                    "type": "object",
+                    "typeName": "file",
                     "typeFixed": True,
+                    "attrFixed": True,
+                    "valueFixed": True,
+                    "ncOrders": [
+                        "id",
+                        "name",
+                        "format",
+                        "size",
+                        "icon"
+                    ],
+                    "properties": {
+                        "id": {
+                            "showSubArea": False,
+                            "type": "integer",
+                            "typeName": "integer",
+                            "description": "文件ID",
+                            "value": "",
+                            "ref": "",
+                            "attrFixed": True,
+                            "typeFixed": True,
+                            "valueFixed": True,
+                        },
+                        "name": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "string",
+                            "typeName": "string",
+                            "value": "",
+                            "description": "文件名称",
+                            "attrFixed": True,
+                            "typeFixed": True,
+                            "valueFixed": True,
+                        },
+                        "format": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "string",
+                            "typeName": "string",
+                            "value": "",
+                            "description": "文件格式",
+                            "attrFixed": True,
+                            "typeFixed": True,
+                            "valueFixed": True,
+                        },
+                        "size": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "integer",
+                            "typeName": "integer",
+                            "value": "",
+                            "description": "文件大小",
+                            "attrFixed": True,
+                            "typeFixed": True,
+                            "valueFixed": True,
+                        },
+                        "icon": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": 'string',
+                            'typeName': 'string',
+                            'value': '',
+                            'description': '文件图标',
+                            "attrFixed": True,
+                            "typeFixed": True,
+                            "valueFixed": True,
+                        }
+                    }
                 },
                 "ref": "",
                 "showSubArea": True,
                 "type": "array",
+                "typeName": "file-list",
+                "description": "输入资源列表",
                 "value": "",
+                "attrFixed": True,
+                "typeFixed": True,
+            },
+            "begin_page": {
+                "ref": 1,
+                "showSubArea": False,
+                "type": "integer",
+                "typeName": "integer",
+                "description": "开始页码",
+                "attrFixed": True,
+                "typeFixed": True
+            },
+            "end_page": {
+                "ref": -1,
+                "showSubArea": False,
+                "type": "integer",
+                "typeName": "integer",
+                "description": "结束页码",
                 "attrFixed": True,
                 "typeFixed": True
             }
         }
 
+    }
+    new_node.node_file_reader_config = {
+        "mode": "list",
+        "src_format": "pdf",
+        "engine": "PyMuPDF",
+        "tgt_format": "markdown",
+    }
+
+
+def init_file_splitter_node(new_node):
+    new_node.node_result_format = 'json'
+    new_node.node_input_params_json_schema = {
+        "ncOrders": [
+            "content"
+        ],
+        "properties": {
+            "content": {
+                "ref": "",
+                "type": "string",
+                "typeName": "string",
+                "description": "文本",
+                "value": "",
+                "attrFixed": True,
+                "typeFixed": True
+            }
+        }
+    }
+    new_node.node_result_params_json_schema = {
+        "ncOrders": [
+            "content_chunks"
+        ],
+        "properties": {
+            "content_chunks": {
+                "items": {
+                    "ncOrders": [
+                        "id",
+                        "chunk_content",
+                    ],
+                    "properties": {
+                        "id": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "integer",
+                            "typeName": "integer",
+                            "description": "分段ID",
+                            "value": "",
+                            "attrFixed": True,
+                            "typeFixed": True
+                        },
+                        "chunk_content": {
+                            "ref": "",
+                            "showSubArea": False,
+                            "type": "string",
+                            "typeName": "string",
+                            "value": "",
+                            "description": "分段内容",
+                            "attrFixed": True,
+                            "typeFixed": True
+                        },
+                    },
+                    "type": "object",
+                    "typeName": "object",
+                    "attrFixed": True,
+                    "typeFixed": True,
+                    "valueFixed": True,
+                },
+                "ref": "",
+                "showSubArea": True,
+                "type": "array",
+                "typeName": "array",
+                "description": "输出分段列表",
+                "value": "",
+                "attrFixed": True,
+                "typeFixed": True,
+                "valueFixed": True,
+            }
+        },
+        "type": "object",
+        "attrFixed": True,
+        "typeFixed": True,
+        "valueFixed": True,
+    }
+    new_node.node_file_splitter_config = {
+        "method": "length",
+        "chunk_size": 2000,
+        "length_config": {
+            "chunk_overlap": 500,
+        },
+        "symbol_config": {
+            "separators": "---",
+            "keep_separator": True,
+            "merge_chunks": False,
+        },
+        "layout_config": {
+            "merge_chunks": False,
+            "preserve_structures": ["code", "table"]
+        }
+    }
+
+
+def init_workflow_node(new_node):
+    """
+    初始化工作流节点
+    :param new_node:
+    :return:
+    """
+    new_node.node_result_format = 'json'
+    new_node.node_sub_workflow_config = {
+        "target_workflow_code": "",
+
+    }
+    new_node.node_input_params_json_schema = {
+        "ncOrders": [],
+        "properties": {
+
+        },
+        "attrFixed": True,
+        "typeFixed": True,
+        "valueFixed": True,
+    }
+
+
+def init_end_node(new_node):
+    """
+    初始化结束节点
+    :param new_node:
+    :return:
+    """
+    new_node.node_result_format = 'json'
+    new_node.node_result_params_json_schema = {
+        "type": "object",
+        "properties": {
+            
+        },
+        "ncOrders": []
     }
 
 
@@ -1142,6 +1729,8 @@ def update_app_flow_node(params):
     node_message_schema = params.get("node_message_schema")
     node_rag_ref_show = params.get("node_rag_ref_show")
     node_file_reader_config = params.get("node_file_reader_config")
+    node_file_splitter_config = params.get("node_file_splitter_config")
+    node_sub_workflow_config = params.get("node_sub_workflow_config")
     target_node = WorkflowNodeInfo.query.filter(
         WorkflowNodeInfo.node_code == node_code,
         WorkflowNodeInfo.node_status == "正常",
@@ -1239,6 +1828,10 @@ def update_app_flow_node(params):
         target_node.node_rag_ref_show = node_rag_ref_show
     if node_file_reader_config is not None:
         target_node.node_file_reader_config = node_file_reader_config
+    if node_file_splitter_config is not None:
+        target_node.node_file_splitter_config = node_file_splitter_config
+    if node_sub_workflow_config is not None:
+        target_node.node_sub_workflow_config = node_sub_workflow_config
     db.session.add(target_node)
     db.session.commit()
     return next_console_response(result=target_node.to_dict())
@@ -1272,11 +1865,9 @@ def delete_app_flow_node(params):
         return next_console_response(error_status=True, error_message="工作流不存在！", error_code=1002)
     # 修改工作流的schema
     for target_workflow in target_workflows:
-        new_workflow_schem = json.loads(target_workflow.workflow_edit_schema)
-        new_workflow_schem.get("cells").remove(
-            next(filter(lambda x: x.get("id") in nodes, new_workflow_schem.get("cells")), None)
+        target_workflow.workflow_edit_schema.get("cells").remove(
+            next(filter(lambda x: x.get("id") in nodes, target_workflow.workflow_edit_schema.get("cells")), None)
         )
-        target_workflow.workflow_edit_schema = json.dumps(new_workflow_schem)
         db.session.add(target_workflow)
         db.session.commit()
     for target_node in target_nodes:

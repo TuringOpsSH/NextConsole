@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import 'highlight.js/styles/vs2015.min.css';
+import 'highlight.js/styles/stackoverflow-light.min.css';
 import {ref, watch} from 'vue';
 import {onBeforeMount} from 'vue-demi';
 import {appDetail, initAppSession} from '@/api/app-center';
@@ -8,9 +8,9 @@ import MessageFlowV2 from './MessageFlowV2.vue';
 import {consoleInputRef} from './console_input';
 import {msgFlowRef} from './message_flow';
 import {useSessionStore} from '@/stores/sessionStore';
-
 import {initSocket, socket} from '@/components/global/web_socket/web_socket';
-
+import SessionParams from "./SessionParams.vue";
+import router from "@/router";
 const props = defineProps({
   appCode: {
     type: String,
@@ -24,7 +24,6 @@ const props = defineProps({
   }
 });
 const agentAppRef = ref(null);
-const consoleInputHeight = ref(180);
 const currentSession = ref({
   session_code: '',
   session_source: '',
@@ -36,23 +35,30 @@ const isResizing = ref(false);
 const startX = ref(0);
 const startWidth = ref(0);
 const streaming = ref(true);
-async function initSession(newVal, keepSession = false) {
-  if (!newVal) {
-    return;
+async function initSession(appCode:string, newSessionCode:string) {
+  if (!appCode) {
+    return ;
+  }
+  if (currentSession.value?.session_code == newSessionCode) {
+    return ;
   }
   const params = {
-    app_code: newVal,
-    session_code: null
+    app_code: appCode,
+    session_code: newSessionCode,
   };
-  if (keepSession) {
-    params.session_code = currentSession.value.session_code;
-  }
   const data = await initAppSession(params);
   if (!data.error_status) {
     if (currentSession.value?.session_code != data.result?.session_code) {
       currentSession.value = data.result;
-    } else {
-      msgFlowRef.value?.refreshMsgFlow();
+      router.replace(
+        {
+          params: {
+            appCode: currentSession.value.session_source,
+            sessionCode: currentSession.value.session_code
+          }
+        }
+      )
+
     }
     if (store.getLatestSessionListRef) {
       await store.getLatestSessionListRef();
@@ -83,17 +89,9 @@ watch(
 watch(
   () => props.sessionCode,
   async newVal => {
-    if (currentSession.value?.session_code == newVal) {
-      msgFlowRef.value?.refreshMsgFlow();
-    } else {
-      currentSession.value.session_code = newVal;
+    if (newVal != currentSession.value.session_code) {
+      await initSession(props.appCode, newVal);
     }
-    const res = await initSession(props.appCode, true);
-    if (res) {
-      currentSession.value = res;
-
-    }
-
   },
   { immediate: true }
 )
@@ -110,19 +108,24 @@ defineExpose({
     ref="agentAppRef"
     class="agent-app-box"
   >
+    <SessionParams
+        ref="sessionParamsRef"
+        v-if="currentSession?.session_task_params_schema?.ncOrders?.length"
+        :session="currentSession"
+        :title="currentApp.app_config?.params?.title"
+        style="width: 100%"
+    />
     <MessageFlowV2
-      ref="msgFlowRef"
-      :session-code="currentSession.session_code"
-      :height="'calc(100% - ' + consoleInputHeight + 'px)'"
-      style="width: 100%"
-      :streaming="streaming"
-      :welcome-config="currentApp?.app_config?.welcome"
-      @click-recommend-question="data => consoleInputRef?.clickRecommendQuestion(data)"
+        ref="msgFlowRef"
+        :session-code="currentSession.session_code"
+        style="width: 100%"
+        :streaming="streaming"
+        :welcome-config="currentApp?.app_config?.welcome"
+        @click-recommend-question="data => consoleInputRef?.clickRecommendQuestion(data)"
     />
     <ConsoleInput
       ref="consoleInputRef"
       :session="currentSession"
-      :height="consoleInputHeight.toString() + 'px'"
       style="width: 100%"
       :streaming="streaming"
       :socket="socket"
@@ -130,7 +133,6 @@ defineExpose({
       @update-answer="newMsg => msgFlowRef.updateAnswer(newMsg)"
       @finish-answer="args => msgFlowRef?.finishAnswer(args)"
       @stop-answer="args => msgFlowRef?.stopAnswer(args)"
-      @height-change="args => (consoleInputHeight = args.newHeight)"
     />
   </div>
 </template>
@@ -158,7 +160,7 @@ defineExpose({
   height: calc(100vh - 24px);
   background: white;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   flex-direction: column;
   gap: 12px;

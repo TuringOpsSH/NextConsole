@@ -173,6 +173,19 @@ def get_ai_app_flow_detail():
     return get_app_flow_detail(data)
 
 
+@app.route('/next_console_admin/app_center/app_manage/workflow/search',  methods=['POST'])
+@roles_required(["admin", "super_admin", "next_console_admin"])
+@jwt_required()
+def search_ai_app_flow_detail():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    data["user_id"] = user_id
+    app_code = data.get("app_code")
+    if not app_code:
+        return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
+    return search_app_flow(data)
+
+
 @app.route('/next_console_admin/app_center/app_manage/workflow/restore',  methods=['POST'])
 @roles_required(["admin", "super_admin", "next_console_admin"])
 @jwt_required()

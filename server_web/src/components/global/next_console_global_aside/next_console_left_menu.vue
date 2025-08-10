@@ -18,6 +18,7 @@ import {
   user_button_data
 } from '@/components/global/next_console_global_aside/menu_data';
 import {addNewSession} from '@/components/next_console/messages_flow/sessions';
+import { domainGet } from "@/api/base";
 const route = useRoute();
 const showButtonPop = ref();
 const noticeWidth = ref('390px');
@@ -45,6 +46,16 @@ async function chooseMenuItem(item) {
 
 async function callUserButton(item) {
   if (item.new_window) {
+    if (item?.url) {
+      window.open(item.url, '_blank');
+      return
+    }
+    if (item?.name == 'admin_app') {
+      const res = await domainGet()
+      const admin_domain = res.result.admin_domain;
+      window.open(admin_domain, '_blank');
+      return
+    }
     window.open(router.resolve({ name: item.name }).href, '_blank');
   } else {
     await router.push({ name: item.name });

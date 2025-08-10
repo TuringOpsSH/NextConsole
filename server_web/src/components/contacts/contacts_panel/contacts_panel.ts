@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-export const panel_width = ref(window.innerWidth < 768 ? window.innerWidth - 60 + 'px' :'400px')
+export const panel_width = ref(window.innerWidth < 768 ? window.innerWidth - 60 + 'px' :'200px')
 export function switch_panel(){
     if (window.innerWidth < 768){
         if (panel_width.value === '0px'){
@@ -9,7 +9,7 @@ export function switch_panel(){
         }
         return
     }
-    panel_width.value = panel_width.value === '400px' ? '0px' : '400px'
+    panel_width.value = panel_width.value === '200px' ? '0px' : '200px'
 }
 import {Company} from '@/types/contacts'
 import {get_company_info, get_friend_request_cnt} from "@/api/contacts";

@@ -41,19 +41,27 @@ interface IResourceUploadItem {
 }
 const props = defineProps({
   currentSession: {
-    type: Object,
+    type: Object || Number,
     required: false,
     default: () => ({})
   },
   fileList: {
     type: Array as () => UploadUserFile[],
     required: true
+  },
+  source: {
+    type: String,
+    required: false,
+    default: 'files'
   }
 });
 const emit = defineEmits([
   'upload-success',
+  'upload-finished',
 ]);
-const localCurrentSession = ref();
+const localCurrentSession = ref({
+  id: null
+});
 const uploadFileList = ref([]);
 const showUploadManageBox = ref(false);
 const uploadFileTaskList = ref<IResourceUploadItem[]>([]);
@@ -62,6 +70,7 @@ const uploadSize = ref(1);
 const finishTimeSizeMap = ref({});
 const showCloseConfirmFlag = ref(false);
 const showUploadFileDetail = ref(true);
+const localSource = ref('files');
 function cleanUploadManager() {
   uploadFileList.value = [];
   // 更新后端上传任务状态
@@ -397,10 +406,6 @@ async function continueUploadTask(item: IResourceUploadItem) {
   await updateUploadTask(params);
   // 继续上传任务,修改任务状态为uploading，然后继续上传
   item.task_status = 'uploading';
-  // // console.log(
-  //     '触发继续上传任务',
-  //     item.content_finish_idx, item.content_max_idx
-  // )
   uploadFileContent(<UploadRequestOptions>{
     file: item.raw_file,
     data: {},
@@ -599,7 +604,7 @@ async function uploadFileSuccess(response: any, uploadFile: UploadFile, uploadFi
   let params = {
     session_id: localCurrentSession.value.id,
     resource_id: resourceId,
-    attachment_source: 'files'
+    attachment_source: localSource.value,
   };
   attachmentAddIntoSession(params);
   // 判断是否全部任务完成，完成则关闭上传管理框
@@ -621,6 +626,7 @@ async function uploadFileSuccess(response: any, uploadFile: UploadFile, uploadFi
   });
   if (finishFlag) {
     closeUploadManager();
+    emit('upload-finished');
   }
 }
 watch(
@@ -635,7 +641,14 @@ watch(
 watch(
   () => props.currentSession,
   newSession => {
-    localCurrentSession.value = newSession;
+    localCurrentSession.value.id = newSession?.id;
+  },
+  { immediate: true , deep: true}
+);
+watch(
+  () => props.source,
+  newSource => {
+    localSource.value = newSource;
   },
   { immediate: true }
 );
@@ -718,7 +731,7 @@ defineExpose({
             </div>
             <div class="upload-task-meta">
               <div class="upload-task-name">
-                <el-text truncated>{{ item?.resource_name }}</el-text>
+                <el-text truncated style="max-width: 300px">{{ item?.resource_name }}</el-text>
               </div>
               <div class="upload-task-progress-box">
                 <el-text class="upload-task-progress-text">

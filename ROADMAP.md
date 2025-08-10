@@ -1,30 +1,48 @@
-# Project Roadmap
+# NextConsole Roadmap
 
-> This roadmap outlines future plans and may adjust based on community feedback.  
-> Last updated: 2025-07-24
+> Updated: 2025-08-10 | Current Version: v0.2.4 (First Production-Ready Release)  
+> *Timeline may adjust based on community feedback*
 
-## 2025 Q3
-✅ **Completed**  
-- [x] Project initialization & core scaffolding  
-- [x] Core API v0.1 implementation  
+## 2025-08
+✅ **Completed**
+- Core API v0.2.4 release
+- Production deployment validation
+- Basic monitoring system
 
-🔧 **In Progress**  
-- [ ] Developer documentation  
-- [ ] CI/CD pipeline integration  
+🔧 **In Progress**
+- Developer documentation (60%)
+- GitHub Actions CI pipeline
 
-## 2025 Q4
-🛠 **Planned**  
-- [ ] Plugin system support (PoC phase)  
-- [ ] First stable release v1.0.0  
+## 2025-09
+🛠 **Planned**
+- v0.3.0 release (target: Sep 25)
+- Admin dashboard redesign
+- API performance benchmarking
+- First community case study
 
-## 2026+
-💡 **Long-term Goals**  
-- Multi-language localization  
-- Cloud-native deployment solutions  
+## 2025-10
+🔮 **Upcoming**
+- Plugin system architecture design
+- Enterprise auth integration (SAML/OAuth)
+- Documentation localization (EN/CN)
+
+## 2025-11
+✨ **Milestone**
+- v1.0.0 RC release
+- Plugin marketplace MVP
+- Kubernetes deployment guide
+
+## 2025-12 & Beyond
+🚀 **Future Vision**
+- Multi-tenant support
+- App Store for AI agents
+- Vector DB integration options
 
 ---
 
-## Get Involved
-1. Claim tasks: Check Issues with `roadmap` label  
-2. Propose ideas: Start a [Discussion](https://github.com/your-repo/discussions)  
-3. Sponsor: Support via [Open Collective](https://opencollective.com/your-repo)
+## How to Engage
+```mermaid
+graph LR
+    A[GitHub Issues] -->|Label: roadmap| B(Claim Tasks)
+    C[Discussions] -->|"RFC:" prefix| D(Propose Features)
+    E[Open Collective] --> F(Sponsor Development)

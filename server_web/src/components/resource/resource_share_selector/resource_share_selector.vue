@@ -42,7 +42,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <el-dialog title="分享资源" v-model="share_selector_vis_flag"  :width="dialog_width" draggable top="60px">
+  <el-dialog title="分享资源" v-model="share_selector_vis_flag"  :fullscreen="true">
       <div id="share_selector_main">
         <el-scrollbar>
           <div id="resource_share_selector">
@@ -148,31 +148,31 @@ onMounted(() => {
             </div>
 
             <div id="selector_middle" v-if="current_model=='tree'">
-              <el-button :icon="ArrowUp" type="primary" @click="remove_get_access_object()"
+              <el-button :icon="ArrowLeft" type="primary" @click="remove_get_access_object()"
                          :disabled="!right_cnt" v-if="!phone_view"
               />
-              <el-button :icon="ArrowUp" type="primary" @click="remove_get_access_object()"
+              <el-button :icon="ArrowLeft" type="primary" @click="remove_get_access_object()"
                          :disabled="!right_cnt" v-else
               />
 
-              <el-button :icon="ArrowDown"  type="primary" @click="add_get_access_object()"
+              <el-button :icon="ArrowRight"  type="primary" @click="add_get_access_object()"
                          :disabled="!left_cnt" v-if="!phone_view" style="margin: 0"
               />
-              <el-button :icon="ArrowDown"  type="primary" @click="add_get_access_object()"
+              <el-button :icon="ArrowRight"  type="primary" @click="add_get_access_object()"
                          :disabled="!left_cnt" v-else style="margin: 0"
               />
             </div>
             <div id="selector_middle" v-else-if="current_model=='search'">
-              <el-button :icon="ArrowUp" type="primary" @click="remove_get_access_object()"
+              <el-button :icon="ArrowLeft" type="primary" @click="remove_get_access_object()"
                          :disabled="!right_cnt" v-if="!phone_view"
               />
-              <el-button :icon="ArrowUp" type="primary" @click="remove_get_access_object()"
+              <el-button :icon="ArrowLeft" type="primary" @click="remove_get_access_object()"
                          :disabled="!right_cnt" v-else
               />
-              <el-button :icon="ArrowDown"  type="primary" @click="add_get_access_object_by_search()"
+              <el-button :icon="ArrowRight"  type="primary" @click="add_get_access_object_by_search()"
                          :disabled="!left_search_cnt" v-if="!phone_view" style="margin: 0"
               />
-              <el-button :icon="ArrowDown"  type="primary" @click="add_get_access_object_by_search()"
+              <el-button :icon="ArrowRight"  type="primary" @click="add_get_access_object_by_search()"
                          :disabled="!left_search_cnt" v-else style="margin: 0"
               />
             </div>
@@ -316,13 +316,14 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: 100%;
 }
 #resource_share_selector{
 
   border-radius: 5px;
 
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: flex-end;
   width: calc(100% - 4px);
@@ -334,7 +335,7 @@ onMounted(() => {
 }
 #selector_left{
   width:calc(100% - 26px);
-  height: calc(30vh - 24px);
+  height: calc(80vh - 24px);
   display: flex;
   flex-direction: column;
   border-radius: 5px;
@@ -344,7 +345,7 @@ onMounted(() => {
 #selector_middle{
   width: 60px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
@@ -353,7 +354,7 @@ onMounted(() => {
 }
 #selector_right{
   width:calc(100% - 26px);
-  height: calc(30vh - 24px);
+  height: calc(80vh - 24px);
   display: flex;
   flex-direction: column;
   padding: 12px;

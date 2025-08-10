@@ -35,7 +35,6 @@ export const menu_data = reactive([
 ]);
 
 export const user_button_data = reactive([
-
     {
         icon: 'user_center.svg',
         active_icon: 'console_blue.svg',
@@ -43,6 +42,24 @@ export const user_button_data = reactive([
         is_active: false,
         name: 'next_console_user_info',
         new_window: false
+    },
+    {
+        icon: 'logo.svg',
+        active_icon: 'logo.svg',
+        text: '管理端',
+        is_active: false,
+        url: '',
+        name: 'admin_app',
+        new_window: true
+    },
+    {
+        icon: 'book-open.svg',
+        active_icon: 'logo.svg',
+        text: '使用文档',
+        is_active: false,
+        url: 'https://docs.nextconsole.cn',
+        name: 'contract',
+        new_window: true
     },
     {
         icon: 'privacy.svg',

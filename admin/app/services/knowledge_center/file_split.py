@@ -160,7 +160,7 @@ def layout_split(params):
         return []
     from markdown_it import MarkdownIt
     from mdformat.renderer import MDRenderer
-    md = MarkdownIt("commonmark")
+    md = MarkdownIt("zero")
     env = {}
     tokens = md.parse(content, env)
 

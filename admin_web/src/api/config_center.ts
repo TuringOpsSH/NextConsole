@@ -12,7 +12,7 @@ export const api = {
   llm_icon_upload: envUrl + '/next_console_admin/config_center/llm_instance/icon/upload',
   llm_instance_del: envUrl + '/next_console_admin/config_center/llm_instance/del',
   llm_instance_get: envUrl + '/next_console_admin/config_center/llm_instance/get',
-    llm_instance_update: envUrl + '/next_console_admin/config_center/llm_instance/update',
+  llm_instance_update: envUrl + '/next_console_admin/config_center/llm_instance/update',
 };
 
 export async function user_config_get(params: object): Promise<ServerResponse> {

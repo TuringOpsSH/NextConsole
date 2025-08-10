@@ -205,6 +205,7 @@ async function newFlowFormSubmit() {
       workflow_name: res.result.workflow_name,
       workflow_icon: res.result.workflow_icon
     });
+    defaultFlow.workflow_desc = '';
   }
 }
 async function beginUpdateWorkFlow(workflow: IWorkflowMetaInfo) {
@@ -405,7 +406,6 @@ async function updateCurrentApp() {
 }
 async function openSubPage(page: ISubPage) {
   // 加入到已打开的子页面列表
-  console.log('openSubPage:', page);
   let findFlag = false;
   openedSubPage.value.forEach(item => {
     if (item.pageCode === page.pageCode) {
@@ -427,11 +427,10 @@ async function openSubPage(page: ISubPage) {
   if (currentPage.value?.pageSource == 'workflow') {
     const graphData = graphWrapper.value?.toJSON();
     if (graphData) {
-      const jsonData = JSON.stringify(graphData, null, 2);
       workflowUpdate({
         app_code: currentApp.app_code,
         workflow_code: CurrentEditFlow.value.workflow_code,
-        workflow_edit_schema: jsonData
+        workflow_edit_schema: graphData
       });
     }
   }
@@ -464,11 +463,10 @@ async function closeSubPage(page: ISubPage) {
   if (currentPage.value?.pageSource == 'workflow' && currentPage.value?.pageCode == page.pageCode) {
     const graphData = graphWrapper.value?.toJSON();
     if (graphData) {
-      const jsonData = JSON.stringify(graphData, null, 2);
       workflowUpdate({
         app_code: currentApp.app_code,
         workflow_code: CurrentEditFlow.value.workflow_code,
-        workflow_edit_schema: jsonData
+        workflow_edit_schema: graphWrapper.value?.toJSON()
       });
     }
     CurrentEditFlow.value.workflow_code = '';
@@ -653,7 +651,7 @@ onMounted(async () => {
             <el-image :src="currentApp.app_icon" class="icon-button" />
           </div>
           <div>
-            <el-text style="font-size: 20px; max-width: 300px; min-width: 200px" truncated>
+            <el-text style="font-size: 20px; max-width: 300px" truncated>
               {{ currentApp?.app_name }}
             </el-text>
           </div>
@@ -663,8 +661,8 @@ onMounted(async () => {
         </div>
         <div id="app-head-middle">
           <el-radio-group v-model="currentAppMode">
-            <el-radio-button label="logic" value="logic">业务逻辑</el-radio-button>
-            <el-radio-button label="logic" value="ui" disabled>前端组件</el-radio-button>
+            <el-radio-button value="logic">业务逻辑</el-radio-button>
+            <el-radio-button value="ui" disabled>前端组件</el-radio-button>
           </el-radio-group>
         </div>
         <div id="app-head-right">
@@ -690,7 +688,7 @@ onMounted(async () => {
     </el-header>
     <el-main style="padding: 0">
       <el-container>
-        <el-aside v-if="showSetPanel">
+        <el-aside v-if="showSetPanel" width="200px">
           <div id="panel-box">
             <div id="panel-head">
               <div>
@@ -737,24 +735,30 @@ onMounted(async () => {
                         :class="workflow.workflow_code === currentPage?.pageCode ? 'agent-box-active' : ''"
                         @click="openWorkFlowEdit(workflow)"
                     >
-                      <div class="agent-box-left">
-                        <div>
-                          <el-image :src="workflow.workflow_icon" class="agent-icon" />
-                        </div>
-                        <el-tooltip :content="'创建时间: ' + workflow.create_time">
-                          <div>
-                            <el-text> {{ workflow.workflow_name }} </el-text>
+                      <el-badge :hidden="!workflow?.workflow_is_main"
+                                :offset="[-160, 0]" is-dot
+                      >
+                        <div class="agent-box-left">
+                          <div class="std-middle-box">
+                            <el-image :src="workflow.workflow_icon" class="agent-icon" />
                           </div>
-                        </el-tooltip>
-                        <div v-show="workflow?.workflow_is_main">
-                          <el-tag type="success" size="small">主流程</el-tag>
+                          <el-tooltip :content="workflow.workflow_desc" :show-after="1000" placement="top">
+                            <div class="std-middle-box">
+                              <el-text truncated style="width: 130px" size="small">
+                                {{ workflow.workflow_name }}
+                              </el-text>
+                            </div>
+                          </el-tooltip>
                         </div>
-                      </div>
-                      <div @click.stop>
+                      </el-badge>
+
+                      <div @click.stop class="std-middle-box">
                         <el-dropdown trigger="click">
-                          <el-icon style="cursor: pointer">
-                            <MoreFilled />
-                          </el-icon>
+                          <div class="std-middle-box">
+                            <el-icon style="cursor: pointer">
+                              <MoreFilled />
+                            </el-icon>
+                          </div>
                           <template #dropdown>
                             <el-dropdown-menu>
                               <el-dropdown-item @click="beginUpdateWorkFlow(workflow)"> 修改 </el-dropdown-item>
@@ -772,32 +776,6 @@ onMounted(async () => {
                     <el-empty description="暂无主流程，赶快创建一个吧！" />
                   </div>
                 </div>
-<!--                <div class="panel-item">-->
-<!--                  <div class="panel-item-head">-->
-<!--                    <div class="panel-item-head-left" @click="currentResourceListDetail = !currentResourceListDetail">-->
-<!--                      <div class="std-middle-box">-->
-<!--                        <el-icon v-if="currentResourceListDetail" text class="panel-icon">-->
-<!--                          <ArrowDown />-->
-<!--                        </el-icon>-->
-<!--                        <el-icon v-else text class="panel-icon">-->
-<!--                          <ArrowRight />-->
-<!--                        </el-icon>-->
-<!--                      </div>-->
-<!--                      <div>-->
-<!--                        <el-text class="panel-label"> 资源库 </el-text>-->
-<!--                      </div>-->
-<!--                    </div>-->
-
-<!--                    <div class="panel-item-head-right">-->
-<!--                      <el-button text :icon="Plus" />-->
-<!--                    </div>-->
-<!--                  </div>-->
-<!--                  <div v-show="currentResourceListDetail" class="panel-item-body">-->
-<!--                    <div v-for="agent in currentResourceList" :key="agent.id">-->
-<!--                      <el-text> {{ agent.flow_name }} </el-text>-->
-<!--                    </div>-->
-<!--                  </div>-->
-<!--                </div>-->
                 <div class="panel-item">
                   <div class="panel-item-head">
                     <div class="panel-item-head-left" @click="currentAppConfigFlag = !currentAppConfigFlag">
@@ -921,7 +899,7 @@ onMounted(async () => {
           </div>
         </el-aside>
         <el-main style="padding: 0">
-          <el-header style="padding: 0">
+          <el-header style="padding: 0" height="51px">
             <div id="page-router-area">
               <div v-if="!showSetPanel" class="page-router">
                 <el-button text :icon="Fold" class="icon-button" @click="openPanel" />
@@ -947,6 +925,36 @@ onMounted(async () => {
               </div>
             </div>
           </el-header>
+          <div v-if="router.currentRoute.value.name == 'appDetail'" class="welcome-area">
+            <div class="welcome-container">
+              <!-- 图标 -->
+              <div class="icon">
+                <i class="fa-solid fa-robot"></i>
+              </div>
+              <!-- 标题 -->
+              <h1 class="title">欢迎使用 AI Agent 工作流</h1>
+              <!-- 说明 -->
+              <p class="description">
+                AI Agent 工作流可以帮助您自动化完成各种任务，提高工作效率。立即开始体验吧！
+              </p>
+              <el-button
+                  type="primary"
+                  class="new-flow-button"
+                  @click="beginInitWorkFlow"
+              >
+                <el-icon><Plus /></el-icon>
+                新建工作流
+              </el-button>
+              <el-button
+                  type="primary"
+                  class="new-flow-button"
+                  @click="showNewWorkFlowUploadForm = true"
+              >
+                <el-icon><Plus /></el-icon>
+                导入工作流
+              </el-button>
+            </div>
+          </div>
           <router-view />
         </el-main>
       </el-container>
@@ -1168,6 +1176,7 @@ onMounted(async () => {
 .icon-button {
   width: 24px;
   height: 24px;
+  border-radius: 6px;
 }
 #panel-box {
   display: flex;
@@ -1186,8 +1195,8 @@ onMounted(async () => {
 #panel-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 12px;
+  gap: 6px;
+  padding: 6px;
   max-height: calc(100vh - 240px);
 }
 .panel-item-head {
@@ -1215,17 +1224,17 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px 16px;
 }
 .agent-box {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: 6px;
+  padding: 6px 8px;
   background-color: #f9fafb;
-  width: 100%;
+  width: calc(100% - 16px);
   cursor: pointer;
   border-radius: 6px;
+  align-items: center;
 }
 .agent-box-active {
   background-color: #e6f7ff; /* 浅蓝色背景 */
@@ -1252,9 +1261,10 @@ onMounted(async () => {
   display: flex;
   flex-direction: row;
   gap: 4px;
-  padding: 6px;
+  padding: 4px;
   background-color: #f9fafb;
   min-height: 40px;
+  border-bottom: 1px solid #dcdfe6;
 }
 .page-router {
   display: flex;
@@ -1339,4 +1349,36 @@ onMounted(async () => {
     outline: none;
   }
 }
+.welcome-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100%  - 200px);
+}
+.welcome-container {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.icon {
+  font-size: 80px;
+  color: #007BFF;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.description {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
 </style>

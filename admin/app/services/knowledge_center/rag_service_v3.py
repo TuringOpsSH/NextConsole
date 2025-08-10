@@ -94,41 +94,10 @@ def file_reader(params):
         db.session.add(target_rag_ref)
         db.session.commit()
         return next_console_response(error_status=True, error_message=new_resource_meta)
-    target_new_name = target_resource.resource_name + f".{new_resource_meta['format']}"
-    target_new_path = new_resource_meta['path']
-    from app.services.resource_center.resource_object_service import set_resource_icon, generate_download_url
-    new_resource = ResourceObjectMeta(
-        resource_parent_id=target_resource.id,
-        user_id=target_resource.user_id,
-        resource_name=target_new_name,
-        resource_path=target_new_path,
-        resource_type="text",
-        resource_icon=set_resource_icon({
-            "resource_type": "document",
-            "resource_format": new_resource_meta['format']
-        }),
-        resource_format=new_resource_meta['format'],
-        resource_size_in_MB=round(os.path.getsize(target_new_path) / (1024 * 1024), 2),
-        resource_source="app_center",
-        resource_download_url=generate_download_url(
-            'app_center', target_new_path, suffix=new_resource_meta['format']
-        ).json.get("result", ""),
-    )
-    db.session.add(new_resource)
-    db.session.flush()
-    with open(target_new_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    res = {
-        "id": new_resource.id,
-        "format": new_resource.resource_format,
-        "url": new_resource.resource_download_url,
-        "content": content,
-        'status': 'success',
-    }
     target_rag_ref.ref_status = "解析完成"
     db.session.add(target_rag_ref)
     db.session.commit()
-    return res
+    return new_resource_meta
 
 
 def file_split(params):
@@ -406,7 +375,7 @@ def rag_query_v3(params):
         query_log["time_usage"]["web_search_time"] = time.time() - web_search_time
     # Rag-嵌入查询向量
     query_begin_time = time.time()
-    query_embedding = embedding_call({
+    query_embedding_result = embedding_call({
         "content": query,
         "config": {
             "api": app.config.get("EMBEDDING_ENDPOINT", ""),
@@ -414,7 +383,10 @@ def rag_query_v3(params):
             "model": app.config.get("EMBEDDING_MODEL", ""),
             "encoding_format": "float",
         }
-    })[1]
+    })
+    if not query_embedding_result:
+        return next_console_response(error_status=True, error_message="查询嵌入异常", result=result)
+    query_embedding = query_embedding_result[1]
     query_log["time_usage"]["query_embedding_time"] = time.time() - query_begin_time
     if not query_embedding:
         query_log["status"] = "异常"
@@ -519,7 +491,8 @@ def recall_ref_chunks(ref_ids, query_embedding, inner_config):
             ResourceChunkInfo,
             RagRefInfo.id == ResourceChunkInfo.ref_id
         ).filter(
-            ResourceChunkInfo.chunk_embedding.cosine_distance(query_embedding) >= recall_threshold
+            ResourceChunkInfo.status == "正常",
+            (1 - ResourceChunkInfo.chunk_embedding.cosine_distance(query_embedding)) >= recall_threshold
         ).order_by(
             ResourceChunkInfo.chunk_embedding.cosine_distance(query_embedding).desc()
         ).with_entities(

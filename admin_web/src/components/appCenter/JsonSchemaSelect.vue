@@ -17,6 +17,7 @@ const localSchema = ref({
   properties: {}
 });
 const localSchemaCode = ref<string | null>(null);
+const localParentAttr = ref<string>(null);
 onMounted(() => {
   localSchema.value = props.jsonSchema;
   if (!localSchema.value) {
@@ -45,7 +46,8 @@ watch(
           properties: {}
         };
       }
-    }
+    },
+    { immediate: true }
 );
 watch(
     () => props.schemaCode,
@@ -61,40 +63,42 @@ function selectAttr(key) {
   // node-icon,node-name,attr-name,attr-type, attr-key-path
   emits('click:attr', {
     attrName: key,
-    attrNameCursor: key,
+    attrNameCursor: localSchemaCode.value,
     attrType: localSchema.value?.properties[key]?.type,
+    attrTypeName: localSchema.value?.properties[key]?.typeName,
     attrKeyPath: key,
     schemaCode: localSchemaCode.value
   });
+  console.log({
+    attrName: key,
+    attrNameCursor: localSchemaCode.value,
+    attrType: localSchema.value?.properties[key]?.type,
+    attrTypeName: localSchema.value?.properties[key]?.typeName,
+    attrKeyPath: key,
+    schemaCode: localSchemaCode.value
+  })
 }
 function handleClickAttr(selectAttr) {
   // 更新attrKeyPath: 添加父节点的属性名称
-  for (const key in localSchema.value.properties) {
-    if (localSchema.value.properties[key].type === 'object') {
-      for (const subKey in localSchema.value.properties[key].properties) {
-        if (subKey === selectAttr.attrNameCursor && key == selectAttr.schemaCode) {
-          const newSelectAttr = {
-            attrName: selectAttr.attrName,
-            attrType: selectAttr.attrType,
-            attrKeyPath: `${key}.${selectAttr.attrKeyPath}`,
-            attrNameCursor: key
-          };
-          emits('click:attr', newSelectAttr);
-        }
-      }
-    } else if (localSchema.value.properties[key].type === 'array') {
-      for (const subKey in localSchema.value.properties[key].items.properties) {
-        if (subKey === selectAttr.attrNameCursor && key == selectAttr.schemaCode) {
-          const newSelectAttr = {
-            attrName: selectAttr.attrName,
-            attrType: 'array[' + selectAttr.attrType + ']',
-            attrKeyPath: `${key}.${selectAttr.attrKeyPath}`,
-            attrNameCursor: key
-          };
-          emits('click:attr', newSelectAttr);
-        }
-      }
+  const cursorItem = localSchema.value.properties?.[selectAttr.attrNameCursor];
+  if (cursorItem) {
+    const newSelectAttr = {
+      attrName: selectAttr.attrName,
+      attrType: selectAttr.attrType,
+      attrTypeName: selectAttr.attrTypeName,
+      attrKeyPath: `${selectAttr.attrNameCursor}.${selectAttr.attrKeyPath}`,
+      attrNameCursor: localSchemaCode.value,
+    };
+    // 如果当前属性是对象或数组，则需要更新attrKeyPath
+    if (cursorItem.type === 'array') {
+      newSelectAttr.attrType = 'array';
+      newSelectAttr.attrTypeName = 'array[' + selectAttr.attrType + ']';
     }
+    console.log(
+      'handleClickAttr',
+      newSelectAttr
+    )
+    emits('click:attr', newSelectAttr);
   }
 }
 </script>
@@ -115,14 +119,16 @@ function handleClickAttr(selectAttr) {
             <ArrowRight />
           </el-icon>
         </div>
-        <div class="form-item" @click="selectAttr(key, )">
-          <div class="attr-name">
-            <el-text>{{ key }}</el-text>
+        <el-tooltip :content="localSchema.properties[key].description" placement="top">
+          <div class="form-item" @click="selectAttr(key, )">
+            <div class="attr-name">
+              <el-text>{{ key }}</el-text>
+            </div>
+            <div class="attr-type">
+              <el-tag type="primary">{{ localSchema.properties[key].typeName }}</el-tag>
+            </div>
           </div>
-          <div class="attr-type">
-            <el-tag type="primary">{{ localSchema.properties[key].type }}</el-tag>
-          </div>
-        </div>
+        </el-tooltip>
         <div
             v-if="localSchema.properties[key]?.type == 'object'"
             v-show="localSchema.properties[key].showSubArea"

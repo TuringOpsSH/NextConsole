@@ -25,6 +25,7 @@ class LLMClient(ABC):
         self.llm_code = config.get('llm_code')
         self.llm_config = None
         self.is_std_openai = False
+        self.is_nc = config.get('is_nc', False)
 
     @abstractmethod
     def chat(self, config):
@@ -44,10 +45,20 @@ class NextConsoleLLMClient(LLMClient):
             LLMInstance.llm_code == self.llm_code,
         ).first()
         if not llm_config:
-            return False
+            llm_config = LLMInstance.query.filter(
+                or_(
+                    LLMInstance.user_id == self.user_id,
+                    LLMInstance.llm_is_public == True,
+                ),
+                LLMInstance.llm_status == '正常',
+            ).order_by(
+                LLMInstance.create_time.desc()
+            ).first()
         self.llm_config = llm_config
         self.llm_name = llm_config.llm_name
-        if llm_config.is_std_openai:
+        if self.is_nc:
+            self.init_nc_instance()
+        elif llm_config.is_std_openai:
             self.init_openai_instance()
         else:
             return None
@@ -76,8 +87,18 @@ class NextConsoleLLMClient(LLMClient):
         """
         pass
 
+    def init_nc_instance(self):
+        """
+        初始化NextConsole自研模型实例
+        :return:
+        """
+        self.llm_client = OpenAI(
+            api_key="self.llm_config.llm_api_secret_key",
+            base_url=f"""{app.config.get("domain")}/next_console/app_center/app_run/v2"""
+        )
+
     def chat(self, config):
-        if self.is_std_openai:
+        if self.is_std_openai or self.is_nc:
             if config.get("stream") is True:
                 if not config.get("use_default"):
                     return self.llm_client.chat.completions.create(
@@ -92,7 +113,8 @@ class NextConsoleLLMClient(LLMClient):
                         temperature=config.get("temperature", 1),
                         top_p=config.get("top_p", 1),
                         stop=config.get("stop"),
-                        extra_body=config.get("extra_body", {})
+                        extra_body=config.get("extra_body", {}),
+                        extra_headers=config.get("extra_headers", {})
                     )
                 else:
                     return self.llm_client.chat.completions.create(
@@ -102,7 +124,8 @@ class NextConsoleLLMClient(LLMClient):
                         stream_options={"include_usage": True} if config.get("stream") else None,
                         response_format=config.get("response_format"),
                         stop=config.get("stop"),
-                        extra_body=config.get("extra_body", {})
+                        extra_body=config.get("extra_body", {}),
+                        extra_headers=config.get("extra_headers", {})
                     )
             else:
                 if not config.get("use_default"):
@@ -117,7 +140,8 @@ class NextConsoleLLMClient(LLMClient):
                         temperature=config.get("temperature", 1),
                         top_p=config.get("top_p", 1),
                         stop=config.get("stop"),
-                        extra_body=config.get("extra_body", {})
+                        extra_body=config.get("extra_body", {}),
+                        extra_headers=config.get("extra_headers", {})
                     )
                 else:
                     return self.llm_client.chat.completions.create(
@@ -126,7 +150,8 @@ class NextConsoleLLMClient(LLMClient):
                         stream=config.get("stream"),
                         response_format=config.get("response_format"),
                         stop=config.get("stop"),
-                        extra_body=config.get("extra_body", {})
+                        extra_body=config.get("extra_body", {}),
+                        extra_headers=config.get("extra_headers", {})
                     )
         elif self.llm_name.startswith("ERNIE-"):
             return self.llm_client.chat.completions.create

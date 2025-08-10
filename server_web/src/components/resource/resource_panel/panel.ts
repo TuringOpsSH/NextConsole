@@ -44,7 +44,7 @@ import {show_upload_folder_dialog} from '@/components/resource/resource_tree/res
 import {v4 as uuidv4} from 'uuid';
 import {sortResourceList, sortShareResourceList} from '@/utils/common';
 
-export const panel_width = ref(window.innerWidth < 768 ? '0px' : '400px');
+export const panel_width = ref(window.innerWidth < 768 ? '0px' : '200px');
 export const current_resource_usage = ref(0);
 export const current_resource_usage_percent = ref(0);
 export const panel_show_recent_area = ref(false);
@@ -136,7 +136,7 @@ export async function switch_panel(status: string = null) {
     }
     return;
   }
-  panel_width.value = panel_width.value === '400px' ? '0px' : '400px';
+  panel_width.value = panel_width.value === '200px' ? '0px' : '200px';
   if (panel_width.value == '0px') {
     router.replace({
       query: {
@@ -817,7 +817,7 @@ export async function router_to_recycle_bin() {
 
 // 搜索资源
 export const resource_keyword = ref('');
-export const rag_enhance = ref(false);
+export const rag_enhance = ref(true);
 export async function router_to_search_page() {
   if (window.innerWidth < 768) {
     switch_panel();

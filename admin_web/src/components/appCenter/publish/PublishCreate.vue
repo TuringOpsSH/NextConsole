@@ -184,14 +184,14 @@ async function createNewPublish() {
 
 <template>
   <el-container>
-    <el-header style="padding: 0">
+    <el-header style="padding: 0" height="56px">
       <div class="publish-head">
         <div class="publish-head-left">
           <div><el-button text :icon="Back" @click="$router.back()" /></div>
-          <div><h3>新的发布</h3></div>
+          <div><el-text style="font-size: 20px">新的发布</el-text></div>
         </div>
         <div class="publish-head-right">
-          <el-popconfirm title="确认发布至该渠道？生产环境版本将会自动替换！" @confirm="createNewPublish">
+          <el-popconfirm title="确认发布至该渠道？生产环境版本将会自动替换！" @confirm="createNewPublish" width="180">
             <template #reference>
               <el-button type="primary" size="large"> 确认发布 </el-button>
             </template>
@@ -255,18 +255,17 @@ async function createNewPublish() {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
   border-bottom: 1px solid #f0f0f0;
+  height: 100%;
 }
 .publish-head-left {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
 }
 .publish-form-area {
-  height: calc(100vh - 200px);
+  height: 100%;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -277,6 +276,7 @@ async function createNewPublish() {
   max-width: 600px;
   width: 100%;
   margin-top: 40px;
+  height: 100%;
 }
 .connectors-area {
   display: flex;
@@ -304,6 +304,10 @@ async function createNewPublish() {
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
-  width: 250px;
+  width: 460px;
+}
+.publish-head-right {
+  padding: 0 20px;
+
 }
 </style>

@@ -13,7 +13,7 @@ import { useSessionStore } from '@/stores/sessionStore';
 const sessionStore = useSessionStore();
 const showSidebar = ref(true);
 const appAreaExpand = ref(true);
-const panelWidth = ref('400px');
+const panelWidth = ref('200px');
 const currentSessionTopicInputRef = ref();
 const sessionButtonsRef = ref(null);
 const defaultApp = {
@@ -31,6 +31,7 @@ const currentSession = ref<session_item>({
   session_source: 'next_search'
 });
 const newSessionLoading = ref(false);
+
 async function toAllSession() {
   await router.push({
     name: 'session_history',
@@ -49,7 +50,7 @@ function switchPanel() {
       // 手机端
       panelWidth.value = window.innerWidth - 60 + 'px';
     } else {
-      panelWidth.value = '400px';
+      panelWidth.value = '200px';
     }
     router.replace({ query: { ...router.currentRoute.value.query, show_panel: 'true' } });
   } else {
@@ -187,7 +188,7 @@ async function toAppArea(app: any) {
 }
 async function refreshAppList() {
   const res = await appSearch({
-    page_size : 5
+    page_size : 50
   })
   if (!res.error_status) {
     currentAppList.value = res.result.data;
@@ -240,11 +241,14 @@ onBeforeMount(() => {
     panelWidth.value = '0px';
   } else {
     showSidebar.value = true;
-    panelWidth.value = '400px';
+    panelWidth.value = '200px';
   }
   if (router.currentRoute.value.params?.appCode) {
     // @ts-ignore
     currentApp.value.app_code = router.currentRoute.value.params.appCode;
+  }
+  if (router.currentRoute.value.params?.session_code) {
+    currentSession.value.session_code = router.currentRoute.value.params.session_code;
   }
 
 
@@ -265,90 +269,96 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div id="console_panel_box" v-show="showSidebar">
-    <div id="panel-head">
-      <div>
-        <el-text style="font-size: 16px; line-height: 24px; font-weight: 600; color: #101828; cursor: default">
-          AI 工作台
-        </el-text>
-      </div>
-      <div id="layout_button" @click="switchPanel">
-        <el-tooltip effect="light" :content="$t('closeSidebar')">
-          <el-image src="images/layout_alt_grey.svg" style="width: 16px; height: 16px" />
-        </el-tooltip>
-      </div>
-    </div>
-    <div id="app-area">
-      <div id="app-area-head">
-        <div id="app-area-head-left">
-          <div class="app-type-button">
-            <el-text class="panel-sub-title">个人应用</el-text>
-          </div>
-          <el-divider direction="vertical" />
-          <div class="app-type-button">
-            <el-text class="panel-sub-title">团队应用</el-text>
-          </div>
-        </div>
-        <div class="app-type-button">
-          <el-icon v-if="appAreaExpand" @click="switchAppArea" >
-            <ArrowUp />
-          </el-icon>
-          <el-icon v-else @click="switchAppArea" >
-            <ArrowDown />
-          </el-icon>
-        </div>
-      </div>
-      <div id="app-area-body" v-show="appAreaExpand">
-        <div class="app-button"
-              :class="currentApp?.app_code === defaultApp.app_code ? 'app-button-pick' : ''"
-             @click="toAppArea(defaultApp)">
-          <div class="std-middle-box">
-            <el-image :src="defaultApp.app_icon" style="width: 24px; height: 24px" />
-          </div>
-          <div>
-            <el-text style="color: #101828">{{ defaultApp.app_name }}</el-text>
-          </div>
-        </div>
-        <div v-for="app in currentAppList" :key="app.app_code" class="app-button"
-             :class="currentApp?.app_code === app?.app_code ? 'app-button-pick' : ''"
-             @click="toAppArea(app)">
-          <div class="std-middle-box">
-            <el-image :src="app.app_icon" style="width: 24px; height: 24px" />
-          </div>
-          <div>
-            <el-text style="color: #101828">{{ app.app_name }}</el-text>
-          </div>
-        </div>
-      </div>
-      <div id="app-area-foot" v-show="appAreaExpand">
-        <el-text style="font-size: 12px; cursor: not-allowed">查看全部应用</el-text>
-      </div>
-    </div>
-    <div id="foot-area">
-      <div id="add-session-button" @click="addNewSession()">
-        <div class="std-middle-box">
-          <el-image src="images/plus_circle_white.svg" id="add-session-button-icon" />
-        </div>
+  <el-scrollbar>
+    <div id="console_panel_box" v-show="showSidebar">
+      <div id="panel-head">
         <div>
-          <el-text id="add-session-button-text">新建会话</el-text>
+          <el-text style="font-size: 16px; line-height: 24px; font-weight: 600; color: #101828; cursor: default">
+            AI 工作台
+          </el-text>
+        </div>
+        <div id="layout_button" @click="switchPanel">
+          <el-tooltip effect="light" :content="$t('closeSidebar')">
+            <el-image src="images/layout_alt_grey.svg" style="width: 16px; height: 16px" />
+          </el-tooltip>
         </div>
       </div>
-    </div>
-
-      <div id="panel-body">
-        <div id="session-history-area">
-          <div id="session-history-title">
-            <div>
-              <el-text class="panel-sub-title">会话历史</el-text>
+      <div id="app-area">
+        <div id="app-area-head">
+          <div id="app-area-head-left">
+            <div class="app-type-button">
+              <el-text class="panel-sub-title">个人应用</el-text>
+            </div>
+            <el-divider direction="vertical" />
+            <div class="app-type-button">
+              <el-text class="panel-sub-title">团队应用</el-text>
             </div>
           </div>
-          <el-scrollbar>
-            <div class="session-history-list">
-              <div
+          <div class="app-type-button">
+            <el-icon v-if="appAreaExpand" @click="switchAppArea" >
+              <ArrowUp />
+            </el-icon>
+            <el-icon v-else @click="switchAppArea" >
+              <ArrowDown />
+            </el-icon>
+          </div>
+        </div>
+        <el-scrollbar>
+          <div id="app-area-body" v-show="appAreaExpand">
+            <div class="app-button"
+                 :class="currentApp?.app_code === defaultApp.app_code ? 'app-button-pick' : ''"
+                 @click="toAppArea(defaultApp)">
+              <div class="std-middle-box">
+                <el-image :src="defaultApp.app_icon"  class="app-icon" />
+              </div>
+              <div>
+                <el-text style="color: #101828" truncated size="small">{{ defaultApp.app_name }}</el-text>
+              </div>
+            </div>
+            <div v-for="app in currentAppList" :key="app.app_code" class="app-button"
+                 :class="currentApp?.app_code === app?.app_code ? 'app-button-pick' : ''"
+                 @click="toAppArea(app)">
+              <div class="std-middle-box">
+                <el-image :src="app.app_icon" class="app-icon"/>
+              </div>
+              <div>
+                <el-text style="color: #101828; width: 120px" truncated size="small">
+                  {{ app.app_name }}
+                </el-text>
+              </div>
+            </div>
+          </div>
+        </el-scrollbar>
+        <div id="app-area-foot" v-show="appAreaExpand">
+          <el-text style="font-size: 12px; cursor: not-allowed">查看全部应用</el-text>
+        </div>
+      </div>
+      <div id="foot-area">
+        <div id="add-session-button" @click="addNewSession()">
+          <div class="std-middle-box">
+            <el-image src="images/plus_circle_white.svg" id="add-session-button-icon" />
+          </div>
+          <div>
+            <el-text id="add-session-button-text">新建会话</el-text>
+          </div>
+        </div>
+      </div>
+      <div id="panel-body">
+        <div id="session-history-area">
+            <div id="session-history-title">
+              <div>
+                <el-text class="panel-sub-title">会话历史</el-text>
+              </div>
+            </div>
+            <el-scrollbar>
+              <div class="session-history-list"
+                   :style="{'max-height': appAreaExpand ? 'calc(100vh - 500px)' : 'calc(100vh - 230px)'}">
+                <div
                   v-for="item in session_history_top5"
                   :key="item.id"
                   class="session-item-box"
-                  :class="{ 'session-item-box-active': currentSession?.session_code == item.session_code && currentSession?.session_code }"
+                  :class="{ 'session-item-box-active': currentSession?.session_code == item.session_code
+                  && currentSession?.session_code }"
                   @click="changeCurrentSession(item, $event)"
               >
                 <div v-if="item?.is_edit" style="z-index: 999">
@@ -361,9 +371,10 @@ onMounted(async () => {
                 </div>
                 <div v-else class="session-topic-box">
                   <el-text
-                    truncated
-                    class="session-topic-text"
-                    :class="{ 'session-topic-text-active': currentSession?.session_code == item.session_code && currentSession?.session_code }"
+                      truncated
+                      class="session-topic-text"
+                      :class="{ 'session-topic-text-active': currentSession?.session_code == item.session_code
+                      && currentSession?.session_code }"
                   >
                     {{ item?.session_topic }}
                   </el-text>
@@ -401,23 +412,24 @@ onMounted(async () => {
                   </el-popover>
                 </div>
               </div>
+              </div>
+            </el-scrollbar>
+            <div
+                v-if="session_history_top5?.length"
+                id="more-session-button"
+                class="session-item-box"
+                @click="toAllSession()"
+            >
+              <el-text style="font-size: 12px"> 查看全部记录...</el-text>
             </div>
-          </el-scrollbar>
-          <div
-              v-if="session_history_top5?.length"
-              id="more-session-button"
-              class="session-item-box"
-              @click="toAllSession()"
-          >
-            <el-text style="font-size: 12px"> 查看全部记录...</el-text>
+            <div v-if="!session_history_top5?.length">
+              <el-empty description="暂无会话记录" />
+            </div>
           </div>
-          <div v-if="!session_history_top5?.length">
-            <el-empty description="暂无会话记录" />
-          </div>
-        </div>
       </div>
+    </div>
+  </el-scrollbar>
 
-  </div>
 </template>
 
 <style scoped>
@@ -458,6 +470,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
+  height: 100%;
 }
 
 #more-session-button {
@@ -538,21 +551,21 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: calc(100% - 32px);
-  padding: 0 16px;
+  width: calc(100% - 16px);
+  padding: 0 8px;
   justify-content: space-between;
+  height: 100%;
 }
 
 .session-item-box {
   display: flex;
   flex-direction: row;
   gap: 8px;
-  padding: 4px 8px;
+  padding: 4px;
   justify-content: space-between;
   align-items: center;
   border-radius: 8px;
   cursor: pointer;
-  width: calc(100% - 16px);
 }
 
 .session-item-box:hover {
@@ -573,12 +586,12 @@ onMounted(async () => {
   flex-direction: row;
   gap: 8px;
   align-items: center;
-  width: calc(100% - 20px);
+  width: calc(100% - 4px);
 }
 
 .session-topic-text {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   font-weight: 500;
   color: #101828;
 }
@@ -629,16 +642,16 @@ onMounted(async () => {
 #app-area-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   padding: 8px;
 }
 
 .app-button {
   display: inline-flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   height: 36px;
   padding: 0 16px;
   border: 1px solid #d1d5db;
@@ -669,7 +682,11 @@ onMounted(async () => {
   background-color: #dbeafe;
   border-color: #2563eb;
 }
-
+.app-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
 .panel-sub-title {
   font-size: 12px;
   cursor: not-allowed;
@@ -691,17 +708,17 @@ onMounted(async () => {
   display: flex;
   flex-direction: row;
   gap: 8px;
-  width: calc(100% - 32px);
+  width: calc(100% - 16px);
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 8px 8px;
   border-top: 1px solid #d0d5dd;
 }
 .session-history-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 60vh;
-  padding: 0 12px;
+  height: 100%;
+
 }
 </style>

@@ -55,24 +55,7 @@ def search_reference(params):
     ).with_entities(
         ResourceChunkInfo.id,
         ResourceChunkInfo.chunk_raw_content,
-        ResourceChunkInfo.resource_id
-    ).all()
-    chunk_info_map = {chunk.id: chunk for chunk in all_chunks}
-    md_resource_ids = {chunk.resource_id for chunk in all_chunks if chunk.resource_id}
-    md_raw_resources_ids = ResourceObjectMeta.query.filter(
-        ResourceObjectMeta.id.in_(md_resource_ids),
-        ResourceObjectMeta.resource_status == '正常'
-    ).with_entities(
-        ResourceObjectMeta.id,
-        ResourceObjectMeta.resource_parent_id
-    ).all()
-    md_raw_resources_maps = {res.id: res.resource_parent_id for res in md_raw_resources_ids if res.resource_parent_id}
-    raw_reference_ids = {res.resource_parent_id for res in md_raw_resources_ids if res.resource_parent_id}
-    raw_reference = ResourceObjectMeta.query.filter(
-        ResourceObjectMeta.id.in_(raw_reference_ids),
-        ResourceObjectMeta.resource_status == '正常'
-    ).with_entities(
-        ResourceObjectMeta.id,
+        ResourceChunkInfo.resource_id,
         ResourceObjectMeta.resource_type,
         ResourceObjectMeta.resource_icon,
         ResourceObjectMeta.resource_name,
@@ -80,7 +63,7 @@ def search_reference(params):
         ResourceObjectMeta.resource_source_url,
         ResourceObjectMeta.resource_download_url
     ).all()
-    raw_reference_map = {res.id: res for res in raw_reference}
+    chunk_info_map = {chunk.id: chunk for chunk in all_chunks}
     for msg_id, result in msg_reference_results:
         if msg_id not in msg_reference_rel_all:
             msg_reference_rel_all[msg_id] = []
@@ -98,18 +81,17 @@ def search_reference(params):
             chunk_info = chunk_info_map.get(chunk)
             if not chunk_info:
                 continue
-            raw_resources = raw_reference_map.get(md_raw_resources_maps.get(chunk_info.resource_id))
             msg_reference_rel_all[msg_id].append({
                 "ref_text": chunk_info.chunk_raw_content,
                 "recall_score": recall_score,
                 "rerank_score": rerank_score,
-                "source_type": raw_resources.resource_type,
-                "resource_id": raw_resources.id,
-                "resource_icon": raw_resources.resource_icon,
-                "resource_name": raw_resources.resource_name,
-                "resource_title": raw_resources.resource_title or raw_resources.resource_name,
-                "resource_source_url": raw_resources.resource_source_url or "",
-                "resource_download_url": raw_resources.resource_download_url
+                "source_type": chunk_info.resource_type,
+                "resource_id": chunk_info.resource_id,
+                "resource_icon": chunk_info.resource_icon,
+                "resource_name": chunk_info.resource_name,
+                "resource_title": chunk_info.resource_title or chunk_info.resource_name,
+                "resource_source_url": chunk_info.resource_source_url or "",
+                "resource_download_url": chunk_info.resource_download_url
             })
     return next_console_response(result=msg_reference_rel_all)
 

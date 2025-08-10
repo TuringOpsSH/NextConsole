@@ -8,6 +8,7 @@ let env_url = ''
 
 export const api = {
     version_get: env_url + '/next_console_admin/version',
+    domain_get: env_url + '/next_console_admin/domain',
 
 
 }
@@ -20,3 +21,12 @@ export async function version_get(): Promise<ServerResponse> {
 
     })
 }
+
+export async function domainGet(): Promise<ServerResponse> {
+    // @ts-ignore
+    return request({
+        url: api.domain_get,
+        noAuth: true
+    })
+}
+

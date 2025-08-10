@@ -27,7 +27,7 @@ services:
       - app_network
 
   server:
-    image: nextconsole/nc:2.2.3
+    image: nextconsole/nc:0.2.4
     command:  ["sh", "-c", "cd /app/server && /app/server/entrypoint.sh"]
     volumes:
       - ./config/server/config_private.py:/app/server/app/config/config_private.py
@@ -47,7 +47,7 @@ services:
       - app_network
 
   server-worker:
-    image: nextconsole/nc:2.2.3
+    image: nextconsole/nc:0.2.4
     command: ["sh", "-c", "cd /app/server && celery -A app.celery worker -l INFO -P gevent --concurrency=80 -Q nc_server_queue"]
     volumes:
       - ./config/server/config_private.py:/app/server/app/config/config_private.py
@@ -62,7 +62,7 @@ services:
 
 
   admin:
-    image: nextconsole/nc:2.2.3
+    image: nextconsole/nc:0.2.4
     command: ["sh", "-c", "cd /app/admin && /app/admin/entrypoint.sh"]
     volumes:
       - ./config/admin/config_private.py:/app/admin/app/config/config_private.py
@@ -78,7 +78,7 @@ services:
       - app_network
 
   admin-worker:
-    image: nextconsole/nc:2.2.3
+    image: nextconsole/nc:0.2.4
     command: ["python", "/app/admin/run_admin_celery_worker.py"]
     volumes:
       - ./config/server/config_private.py:/app/server/app/config/config_private.py
@@ -92,7 +92,7 @@ services:
       - app_network
 
   web:
-    image: nextconsole/nc-web:2.2.3
+    image: nextconsole/nc-web:0.2.4
     ports:
       - "8080:6668"
       - "8082:6669"

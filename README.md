@@ -137,3 +137,14 @@ The AI Application Factory enables visual construction and management of large -
 | ---- | ---- |
 | Visual Construction | Uses a graphical interface to drag and drop components without complex coding. A business department can build an intelligent customer - service workflow, for example. |
 | Release Management | Supports version control, performance monitoring, etc., and allows for on - demand optimization. A development team can regularly optimize agents. |
+
+### Official Resources
+
+Visit [NextConsole Official Documentation](https://docs.nextconsole.cn) to access:
+- Latest version documentation  
+- API reference  
+- Advanced development guides  
+- Best practice cases  
+- Frequently asked questions  
+
+Our documentation center is continuously updated. We recommend bookmarking this address for the latest materials 📚

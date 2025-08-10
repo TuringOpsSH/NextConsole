@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, onBeforeUnmount, onMounted, ref} from "vue";
-import 'highlight.js/styles/vs2015.min.css';
+import 'highlight.js/styles/stackoverflow-light.min.css';
 import AgentAppConsole from "@/components/app_center/AgentAppConsole.vue";
 import {Picture as IconPicture} from '@element-plus/icons-vue'
 import {
