@@ -1,5 +1,5 @@
 # 使用多阶段构建
-FROM node:18-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:18-bullseye AS builder
 
 # 第一阶段：构建 server_web
 WORKDIR /app/server_web

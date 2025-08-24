@@ -1,5 +1,40 @@
-# 使用官方 Python 运行时作为父镜像
-FROM python:3.11-slim
+FROM ubuntu:22.04
+
+# 设置环境变量（避免交互式安装提示）
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=Asia/Shanghai \
+    PYTHONUNBUFFERED=1
+
+# 安装最小化Python环境和必要系统依赖
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3-pip \
+    python3.11-venv \
+    # Playwright依赖
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    # 中文字体
+    fonts-wqy-zenhei \
+    fonts-wqy-microhei \
+    libreoffice \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建虚拟环境（更干净的依赖管理）
+RUN python3.11 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 
 # 设置工作目录
 WORKDIR /app
