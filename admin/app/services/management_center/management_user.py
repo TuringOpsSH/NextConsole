@@ -240,44 +240,33 @@ def check_df_data_corp(df):
         return next_console_response(error_status=True, error_code=1004, error_message="文件内容为空！")
     else:
         # 检查是否改过表头 邮箱、昵称、手机号、密码、性别、部门、角色
-        if df.columns[0] != "邮箱":
-            return next_console_response(error_status=True, error_code=1004, error_message="第一列应为'邮箱'！")
-        elif df.columns[1] != "昵称":
-            return next_console_response(error_status=True, error_code=1004, error_message="第二列应为'昵称'！")
-        elif df.columns[2] != "手机号":
-            return next_console_response(error_status=True, error_code=1004, error_message="第三列应为'手机号'！")
-        elif df.columns[3] != "密码":
-            return next_console_response(error_status=True, error_code=1004, error_message="第四列应为'密码'！")
-        elif df.columns[4] != "性别":
-            return next_console_response(error_status=True, error_code=1004, error_message="第五列应为'性别'！")
-        elif df.columns[5] != "部门":
-            return next_console_response(error_status=True, error_code=1004, error_message="第六列应为'部门'！")
-        elif df.columns[6] != "角色":
-            return next_console_response(error_status=True, error_code=1004, error_message="第七列应为'角色'！")
+        # 如果df是空的或仅有表头
+        if df.empty:
+            return next_console_response(error_status=True, error_code=1004, error_message="文件内容为空！")
         else:
-            # 检查邮箱不为空且唯一且符合邮箱格式，如果邮箱为空、重复、格式错误，返回错误信息
-            if df["邮箱"].isnull().sum() > 0:
-                return next_console_response(error_status=True, error_code=1004, error_message="邮箱不能为空！")
-            elif df["邮箱"].duplicated().sum() > 0:
-                return next_console_response(error_status=True, error_code=1004, error_message="存在邮箱重复情况！")
-            elif not df["邮箱"].str.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').all():
-                return next_console_response(error_status=True, error_code=1004, error_message="存在邮箱格式错误数据！")
-            # 检查昵称不为空
-            if df["昵称"].isnull().sum() > 0:
-                return next_console_response(error_status=True, error_code=1004, error_message="昵称不能为空！")
-            # 检查部门不能为空
-            if df["部门"].isnull().sum() > 0:
-                return next_console_response(error_status=True, error_code=1004, error_message="部门不能为空！")
-            # 检查手机号不为空且唯一
-            if df["手机号"].isnull().sum() > 0:
-                return next_console_response(error_status=True, error_code=1004, error_message="手机号不能为空！")
-            # 检查角色不为空且仅有 普通用户、系统管理员、游客
-            if df["角色"].isnull().sum() > 0:
-                return next_console_response(error_status=True, error_code=1004, error_message="角色不能为空！")
-            elif not df["角色"].isin(["普通用户", "系统管理员", "游客"]).all():
-                return next_console_response(error_status=True, error_code=1004, error_message="角色应在'普通用户、系统管理员、游客'范围内！")
-            
-            return True
+            # 检查是否改过表头
+            if df.columns[0] != "用户名称（必填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第一列异常")
+            elif df.columns[1] != "密码（选填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第二列异常")
+            elif df.columns[2] != "用户昵称（选填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第三列异常")
+            elif df.columns[3] != "邮箱（选填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第四列异常")
+            elif df.columns[4] != "手机号（选填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第五列异常")
+            elif df.columns[5] != "性别（选填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第六列异常")
+            elif df.columns[6] != "年龄（选填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第七列异常")
+            elif df.columns[7] != "职位（选填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第八列异常")
+            elif df.columns[8] != "部门ID（选填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第九列异常")
+            elif df.columns[9] != "资源库空间上限，以mb为单位（选填）":
+                return next_console_response(error_status=True, error_code=1004, error_message="第十列异常")
+            else:
+                return True
 
 
 def check_df_data_twadmin(df):

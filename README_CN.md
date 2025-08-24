@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="docs/logo_text.svg" width="200" alt="NextConsole Logo">
+  <img src="docs/logo_text.svg" width="600" alt="NextConsole Logo">
   <p align="center">释放大语言模型赋能企业的无限潜力💪</p>
   <p align="center">
     <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python Version">
@@ -54,7 +54,8 @@ NextConsole 为企业提供了一个强大的开源平台，它将大语言模�
 ##### 1. 进入项目目录
 打开终端，使用 `cd` 命令进入 NextConsole 的 Docker 目录：
 ```bash
-cd next_console/docker
+git clone https://github.com/TuringOpsSH/NextConsole.git
+cd NextConsole/docker
 ```
 
 ##### 2. 配置服务
@@ -66,11 +67,25 @@ vi config/server/config_private.py
 
 **域名配置**：
 设置应用的域名，这里以本地地址为例：
+
 ```python
-app.config["domain"] = "http://127.0.0.1:8080"
-app.config["admin_domain"] = "http://127.0.0.1:8082"
+app.config["domain"] = "http://<your_server_ip>:8080"
+app.config["admin_domain"] = "http://<your_server_ip>:8082"
 ```
 
+使用 `vi` 编辑器打开配置文件 `config/admin/config_private.py`：
+```bash
+vi config/admin/config_private.py
+```
+在配置文件中，您需要进行以下配置：
+
+**域名配置**：
+设置应用的域名，这里以本地地址为例：
+
+```python
+app.config["domain"] = "http://<your_server_ip>:8080"
+app.config["admin_domain"] = "http://<your_server_ip>:8082"
+```
 **RAG（检索增强生成）配置**：
 推荐使用 Siliconflow 免费的嵌入（embed）和重排（rerank）模型，具体配置如下：
 ```python
@@ -137,12 +152,18 @@ vi docker/docker-compose.yml # 修改配置文件
 docker compose up -f docker/docker-compose.yml -d
 ```
 
-
-
 ### 核心功能特性说明
 
 #### 1、AI 资源库 📚
 AI 资源库是数据管理的好帮手，为 RAG 提供基础数据。
+
+
+<p align="center">
+<img src="docs/ai_resources.png" width="3840" alt="NextConsole Logo">
+</p>
+
+
+
 
 |功能|描述|
 | ---- | ---- |
@@ -154,6 +175,11 @@ AI 资源库是数据管理的好帮手，为 RAG 提供基础数据。
 #### 2、AI 工作台 🛠️
 AI 工作台集成了 AI 搜索和 AI - agent 应用功能，一站式交互体验。
 
+<p align="center">
+<img src="docs/ai_home.png" width="3840" alt="NextConsole Logo">
+</p>
+
+
 |功能|描述|
 | ---- | ---- |
 |AI 搜索|支持关键词和语义搜索，排序展示结果，如搜索提升产品竞争力的方法能获全面回答。|
@@ -162,11 +188,25 @@ AI 工作台集成了 AI 搜索和 AI - agent 应用功能，一站式交互体�
 #### 3、AI 应用工厂 🏭
 AI 应用工厂可可视化构建大模型智能体并管理发布。
 
+
+
+<p align="center">
+<img src="docs/ai_agents.png" width="3840" alt="NextConsole Logo">
+</p>
+
+
+
+
 |功能|描述|
 | ---- | ---- |
 |可视化构建|图形界面拖放组件，无需复杂代码，如业务部门构建智能客服流程。|
 |发布管理|支持版本控制、性能监控等，可按需优化调整，如开发团队定期优化智能体。|
 
+### 加入社区
+我们致力于构建一个开放、友好的开发者社区，欢迎所有对 AI Agent 开发感兴趣的开发者加入我们！
+<p align="center">
+<img src="docs/qywx.png" width="300" alt="NextConsole Logo">
+</p>
 
 ### 官方资源
 
@@ -178,5 +218,11 @@ AI 应用工厂可可视化构建大模型智能体并管理发布。
 - 常见问题解答
 
 我们的文档中心会持续更新，建议收藏该地址以便随时查阅最新资料 📚
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=TuringOpsSH/NextConsole&type=Date)](https://www.star-history.com/#TuringOpsSH/NextConsole&Date)
+
 
 

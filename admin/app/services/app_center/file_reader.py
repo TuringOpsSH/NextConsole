@@ -49,7 +49,11 @@ def file_reader_node_execute(task_params, task_record, global_params):
             if transform_engine == "PyMuPDF":
                 for k in config:
                     task_params[k] = config[k]
-                output_resources.append(pymupdf_reader(resource, task_params))
+                res = pymupdf_reader(resource, task_params)
+                if isinstance(res, list):
+                    output_resources.extend(res)
+                else:
+                    output_resources.append(res)
         elif src_format in ("docx", "doc") and resource.resource_format in ("docx", "doc"):
             if transform_engine == "python-docx":
                 pass
@@ -66,10 +70,9 @@ def file_reader_node_execute(task_params, task_record, global_params):
                 output_resources.append(html2text_reader(resource, config))
         elif src_format == "未知":
             output_resources.append(text_reader(resource, config))
-    if mode == 'list':
+    if mode == 'list' or (src_format == 'pdf'
+                          and transform_engine == 'PyMuPDF' and tgt_format in ('jpg', 'png', 'webp')):
         node_results = {"output_resources": [resource for resource in output_resources]}
-    elif src_format == 'pdf' and transform_engine == 'PyMuPDF' and tgt_format in ('jpg', 'png', 'webp'):
-        node_results = {"output_resources": [resource for resource in output_resources[0]]}
     else:
         node_results = {"output_resource": output_resources[0] if output_resources else {}}
     task_record.task_result = json.dumps(node_results)

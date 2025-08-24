@@ -50,13 +50,6 @@ def pandoc_reader(resource, task_params):
         '--to', to_format,
         f'--extract-media={media_dir}',
     ]
-    # for key, value in task_params.items():
-    #     if key == 'to_format':
-    #         continue
-    #     if value is True:
-    #         cmd_args.append(f'--{key}')
-    #     elif value:
-    #         cmd_args.extend([f'--{key}', str(value)])
     try:
         subprocess.run(cmd_args, check=True, capture_output=True,  text=True)
     except subprocess.CalledProcessError as e:
@@ -280,8 +273,13 @@ def html2text_reader(resource, task_params):
 
 
 def openpyxl_reader(resource, task_params):
-
-    target_new_path = resource.resource_path + ".markdown"
+    tgt_format = task_params.get("tgt_format", "markdown")
+    tgt_format = {
+        "text": "txt",
+        "txt": "txt",
+        "markdown": "markdown",
+    }.get(tgt_format, "markdown")
+    target_new_path = resource.resource_path + "." + tgt_format
     target_new_media_path = target_new_path + ".media"
     if not os.path.exists(target_new_media_path):
         os.makedirs(target_new_media_path, exist_ok=True)
@@ -292,7 +290,6 @@ def openpyxl_reader(resource, task_params):
         for sheet_name in wb.sheetnames:
             sheet = wb[sheet_name]
             media_references[sheet_name] = []
-            # 处理工作表中的图片
             # 处理工作表中的图片
             for idx, image in enumerate(sheet._images):
                 if isinstance(image, OpenpyxlImage):
@@ -330,13 +327,15 @@ def openpyxl_reader(resource, task_params):
                         print(f"无法保存图片 {image_filename}: {str(e)}")
                         continue
             content = []
-            # 获取表头
+            # 处理表头
             headers = []
             for cell in sheet[1]:
-                headers.append(str(cell.value) if cell.value is not None else ' ')
-
-            content.append("\t".join(headers))
-
+                headers.append(str(cell.value) if cell.value is not None else '未知列')
+            if tgt_format == 'markdown':
+                content.append("| " + " | ".join(headers) + " |")
+                content.append("|" + " --- |" * len(headers))
+            else:  # txt
+                content.append("\t".join(headers))
             # 获取数据行
             for row in sheet.iter_rows(min_row=2):
                 row_values = []
@@ -348,7 +347,12 @@ def openpyxl_reader(resource, task_params):
                     if hyperlink:
                         value = f"[{value}]({hyperlink})"
                     row_values.append(value)
-                content.append("\t".join(row_values))
+                if tgt_format == 'markdown':
+                    if len(row_values) < len(headers):
+                        row_values.extend([''] * (len(headers) - len(row_values)))
+                    content.append("| " + " | ".join(row_values) + " |")
+                else:  # txt
+                    content.append("\t".join(row_values))
             # 添加媒体引用标记
             if media_references[sheet_name]:
                 content.append("\n\n## 媒体内容")
@@ -362,15 +366,24 @@ def openpyxl_reader(resource, task_params):
             content = []
             # 处理表头
             headers = [str(sheet.cell_value(0, col)) for col in range(sheet.ncols)]
-            content.append("\t".join(headers))
-
-            # 处理数据行
+            if tgt_format == 'markdown':
+                content.append("| " + " | ".join(headers) + " |")
+                content.append("|" + " --- |" * len(headers))
+            else:  # txt
+                content.append("\t".join(headers))
+            # 处理数据行 - 从第二行开始
             for row in range(1, sheet.nrows):
                 row_values = []
                 for col in range(sheet.ncols):
                     value = sheet.cell_value(row, col)
                     row_values.append(str(value) if value != '' else ' ')
-                content.append("\t".join(row_values))
+                if tgt_format == 'markdown':
+                    # 确保每行单元格数与表头一致
+                    if len(row_values) < len(headers):
+                        row_values.extend([''] * (len(headers) - len(row_values)))
+                    content.append("| " + " | ".join(row_values) + " |")
+                else:  # txt
+                    content.append("\t".join(row_values))
             result[sheet.name] = "\n".join(content)
     content = ''
     for sheet_name, sheet_content in result.items():
@@ -384,7 +397,7 @@ def openpyxl_reader(resource, task_params):
     if not os.path.exists(target_new_path):
         return f"转换后的文件不存在: {target_new_path}"
     return save_new_resource_meta(
-        'markdown', target_new_path, target_new_media_path, resource,
+        tgt_format, target_new_path, target_new_media_path, resource,
         resource_source=task_params.get('resource_source', 'knowledge_center')
     )
 
@@ -442,7 +455,7 @@ def text_reader(resource, task_params):
         输入任务参数，包含目标格式等信息
         返回文本内容
     """
-    target_new_path = resource.resource_path + ".markdown"
+    target_new_path = resource.resource_path + ".txt"
     try:
         with open(resource.resource_path, 'r', encoding='utf-8') as file:
             content = file.read()
@@ -454,7 +467,7 @@ def text_reader(resource, task_params):
     if not os.path.exists(target_new_path):
         return f"转换后的文件不存在: {target_new_path}"
     return save_new_resource_meta(
-        'markdown', target_new_path, '', resource,
+        'txt', target_new_path, '', resource,
         resource_source=task_params.get('resource_source', 'knowledge_center')
     )
 
@@ -473,7 +486,7 @@ def save_new_resource_meta(tgt_format, target_new_path, target_new_media_path, r
     new_resource = ResourceObjectMeta(
         resource_parent_id=resource.id,
         user_id=resource.user_id,
-        resource_name=resource.resource_name + ".markdown",
+        resource_name=resource.resource_name + f".{tgt_format}",
         resource_path=target_new_path,
         resource_type="document",
         resource_icon=set_resource_icon({

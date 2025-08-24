@@ -5,10 +5,11 @@ import {viteCommonjs} from '@originjs/vite-plugin-commonjs'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons';
 import path from "path";
 // 获取环境变量
-const isLocalhost = process.env.NODE_ENV === 'localhost2';
+const isLocalhost = process.env.NODE_ENV === 'localhost2' || process.env.NODE_ENV === 'private';
 
 // 根据环境变量设置代理目标地址
 const proxyTarget = isLocalhost ? 'http://127.0.0.1:5011' : 'https://dev-admin.turingops.com.cn';
+
 export default defineConfig({
   plugins: [
     vue(),viteCommonjs(),

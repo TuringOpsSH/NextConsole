@@ -35,8 +35,8 @@ onMounted(async () => {
 
   let user_info = await getInfo()
   try{
-    if (user_info["user_role"].includes("next_console_admin")
-        || user_info["user_role"].includes("next_console_reader_admin")){
+    if (user_info?.["user_role"].includes("next_console_admin")
+        || user_info?.["user_role"].includes("next_console_reader_admin")){
       user_is_next_console_admin.value = true
       await search_all_company_option()
     }

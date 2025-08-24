@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="docs/logo_text.svg" width="200" alt="NextConsole Logo">
+  <img src="docs/logo_text.svg" width="600" alt="NextConsole Logo">
   <p align="center">Unleashing the Power of LLM for Enterprises💪</p>
   <p align="center">
     <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python Version">
@@ -55,7 +55,8 @@ Before starting to use NextConsole, please ensure that your environment meets th
 ##### 1. Navigate to the Project Directory
 Open the terminal and use the `cd` command to enter the Docker directory of NextConsole:
 ```bash
-cd next_console/docker
+git clone https://github.com/TuringOpsSH/NextConsole.git
+cd NextConsole/docker
 ```
 
 ##### 2. Configure the Service
@@ -69,7 +70,22 @@ In the configuration file, you need to make the following configurations:
 Set the domain name of the application. Here is an example using the local address:
 ```python
 app.config["domain"] = "http://127.0.0.1:8080"
+app.config["admin_domain"] = "http://<your_server_ip>:8082"
 ```
+
+Use the `vi` editor to open the configuration file `config/admin/config_private.py`:
+```bash
+vi config/admin/config_private.py
+```
+In the configuration file, you need to make the following configurations:
+
+**Domain Configuration**:
+Set the domain name of the application. Here is an example using the local address:
+```python
+app.config["domain"] = "http://127.0.0.1:8080"
+app.config["admin_domain"] = "http://<your_server_ip>:8082"
+```
+
 
 **RAG (Retrieval Augmented Generation) Configuration**:
 It is recommended to use the free embedding and reranking models provided by Siliconflow. The specific configurations are as follows:
@@ -141,6 +157,13 @@ docker-compose -f ./docker/docker-compose.yml up -d
 #### 1. AI Resource Library 📚
 The AI Resource Library serves as a reliable data management assistant, providing fundamental data for Retrieval Augmented Generation (RAG).
 
+
+<p align="center">
+<img src="docs/ai_resources.png" width="3840" alt="NextConsole Logo">
+</p>
+
+
+
 | Function | Description |
 | ---- | ---- |
 | File Management | Allows users to upload, download, delete, and rename files. It also supports creating folders for organized storage. For example, a company's R & D department can categorize technical documents. |
@@ -151,6 +174,12 @@ The AI Resource Library serves as a reliable data management assistant, providin
 #### 2. AI Workbench 🛠️
 The AI Workbench integrates AI search and AI - agent application functions, offering a one - stop interactive experience.
 
+
+<p align="center">
+<img src="docs/ai_home.png" width="3840" alt="NextConsole Logo">
+</p>
+
+
 | Function | Description |
 | ---- | ---- |
 | AI Search | Supports both keyword - based and semantic searches, presenting sorted results. Searching for ways to enhance product competitiveness can yield comprehensive answers. |
@@ -159,10 +188,23 @@ The AI Workbench integrates AI search and AI - agent application functions, offe
 #### 3. AI Application Factory 🏭
 The AI Application Factory enables visual construction and management of large - model agents.
 
+
+<p align="center">
+<img src="docs/ai_agents.png" width="3840" alt="NextConsole Logo">
+</p>
+
+
 | Function | Description |
 | ---- | ---- |
 | Visual Construction | Uses a graphical interface to drag and drop components without complex coding. A business department can build an intelligent customer - service workflow, for example. |
 | Release Management | Supports version control, performance monitoring, etc., and allows for on - demand optimization. A development team can regularly optimize agents. |
+
+### Join Our Community
+
+We are committed to building an open and friendly developer community. All developers interested in AI Agent development are welcome to join us!
+<p align="center">
+<img src="docs/qywx.png" width="300" alt="NextConsole Logo">
+</p>
 
 ### Official Resources
 
@@ -174,3 +216,11 @@ Visit [NextConsole Official Documentation](https://docs.nextconsole.cn) to acces
 - Frequently asked questions  
 
 Our documentation center is continuously updated. We recommend bookmarking this address for the latest materials 📚
+
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=TuringOpsSH/NextConsole&type=Date)](https://www.star-history.com/#TuringOpsSH/NextConsole&Date)
+
+

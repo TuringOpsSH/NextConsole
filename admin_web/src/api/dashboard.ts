@@ -6,6 +6,7 @@ const envUrl = '/next_console_admin';
 export const api = {
   get_dashboard_index: envUrl + '/dashboard/index',
   get_all_company: envUrl + '/management_center/management/user/all_company/search',
+  lookupbyadmin: `${envUrl}/management_center/management/user/department/lookupbyadmin`,
   lookupbytwadmin: `${envUrl}/management_center/management/user/department/lookupbytwadmin`,
   updateuseraccounttypeadmin: `${envUrl}/management_center/management/user/updateuseraccounttypeadmin`,
   getCompanyList: `${envUrl}/management_center/management/user/company/lookupbytwadmin`,

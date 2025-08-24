@@ -78,7 +78,7 @@ def load_task_result(task_record):
                 validate(exec_result, task_record.workflow_node_rpjs)
         except Exception as e:
             print(e)
-            task_record.task_trace_log = str(e)
+            task_record.task_trace_log = f"{exec_result}, 验证失败: {str(e)}"
             db.session.add(task_record)
             db.session.commit()
             return
@@ -224,15 +224,15 @@ def load_properties(properties, global_params, isStart=False):
             if properties.get(k).get("value"):
                 data[k] = properties.get(k).get("value")
                 continue
-            elif ref:
+            elif ref != '' and ref is not None:
                 # 固定值
                 if isinstance(ref, (str, int)):
                     if required and ref == '':
                         raise ValueError(f"Required field '{k}' is missing in global parameters.")
                     if properties.get(k).get("type") == "boolean":
-                        if ref == 'false':
+                        if ref == 'false' or ref is False:
                             ref = False
-                        elif ref == 'true':
+                        elif ref == 'true' or ref is True:
                             ref = True
                         else:
                             ref = None

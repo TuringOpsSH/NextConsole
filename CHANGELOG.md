@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.  
 Format adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
+Here's the English version of the changelog with professional formatting:
+
+---
+
+## [0.2.5] - 2025-08-24
+
+### Fixes
+
+- [x] Optimized runtime logs for agent nodes  
+- [x] Fixed Excel parsing exceptions  
+- [x] Fixed text parsing exceptions  
+- [x] Fixed PDF-to-PNG conversion failures  
+- [x] Fixed rendering for custom message formats  
+- [x] Replaced image recognition format with base64 in concurrent agent mode  
+- [x] Fixed DOCX icon display  
+- [x] Fixed boolean parameter passing exceptions  
+- [x] Fixed real-time error streaming notifications  
+- [x] Fixed file-list parameter upload and switching issues  
+- [x] Fixed table styling abnormalities  
+- [x] Fixed inference area rendering styles  
+- [x] Fixed code block line numbering  
+- [x] Adjusted AI workbench panel height  
+- [x] Fixed keyboard file copy exception during XiaoYi assistant session initialization  
+- [x] Optimized shared resource styling  
+- [x] Improved slow response for batch user imports  
+- [x] Fixed enterprise admin user import exceptions  
+- [x] Fixed browser caching issues in management console  
+ 
+
 ## [0.2.4] - 2025-08-10
 
 ### Added

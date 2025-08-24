@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 import hashlib
 import os.path
@@ -1385,96 +1386,124 @@ def add_user_by_excel(df, params):
     """
     res_logs = []
     err_cnt = 0
-    new_user_list = []
+    user_id = params.get("user_id")
+    request_user = UserInfo.query.filter(
+        UserInfo.user_id == user_id,
+        UserInfo.user_status == 1,
+    ).first()
+    if not request_user:
+        return next_console_response(error_status=True, error_message="用户不存在！", error_code=1003)
+    step1_user = []
     for index, row in df.iterrows():
         row = row.to_dict()
-        user_name = row.get("用户名称（必填）", "测试用户")
-        user_password = row.get("密码（选填）", str(uuid.uuid4()))
-        user_password = hashlib.sha256(user_password.encode()).hexdigest()
-        user_password = generate_password_hash(user_password)
-        user_nick_name = row.get("昵称（选填）", user_name)
-        user_nick_name_py = get_initial_py(user_nick_name)
-        user_email = row.get("邮箱（选填）", "")
-        user_phone = row.get("手机号（选填）", "")
-        user_gender = row.get("性别（选填）", "其他")
+        user_name = str(row.get("用户名称（必填）", "测试用户"))
+        user_password = str(row.get("密码（选填）", str(uuid.uuid4())))
+        user_password = hashlib.sha256(str(user_password).encode()).hexdigest()
+        user_password = generate_password_hash(user_password, method='pbkdf2:sha256:100000')
+        user_nick_name = str(row.get("昵称（选填）", user_name))
+        user_nick_name_py = get_initial_py(str(user_nick_name))
+        user_email = str(row.get("邮箱（选填）", ""))
+        user_phone = str(row.get("手机号（选填）", ""))
+        user_gender = str(row.get("性别（选填）", "其他"))
         user_age = row.get("年龄（选填）")
-        if not user_age:
-            user_age = 18
+        try:
+            user_age = int(user_age)
+        except Exception as e:
+            user_age = 26
         user_company = row.get("公司（选填）", "")
         user_department = row.get("部门（选填）", "")
         user_position = row.get("职位（选填）", "")
         user_company_id = row.get("公司ID（选填）", '')
         user_department_id = row.get("部门ID（选填）", '')
         user_resource_limit = row.get("资源库空间上限，以mb为单位（选填）")
-        if not user_resource_limit:
+
+        try:
+            user_resource_limit = int(user_resource_limit)
+        except Exception as e:
             user_resource_limit = 2048
         user_account_type = "个人账号"
         if user_email:
-            exist_user = UserInfo.query.filter(UserInfo.user_email == user_email).first()
+            exist_user = UserInfo.query.filter(
+                UserInfo.user_email == user_email
+            ).first()
             if exist_user:
                 res_logs.append({"error": "邮箱已被占用！", "row": index + 1})
                 err_cnt += 1
                 continue
         if user_phone:
-            exist_user = UserInfo.query.filter(UserInfo.user_phone == user_phone).first()
+            exist_user = UserInfo.query.filter(
+                UserInfo.user_phone == user_phone
+            ).first()
             if exist_user:
                 res_logs.append({"error": "手机号已被占用！", "row": index + 1})
                 err_cnt += 1
                 continue
+        if params["admin_type"] != 'twadmin':
+            user_company_id = request_user.user_company_id
+            user_department_id = request_user.user_department_id
         if user_company_id:
-            target_company = CompanyInfo.query.filter(CompanyInfo.company_code == user_company_id).first()
+            target_company = CompanyInfo.query.filter(
+                CompanyInfo.id == user_company_id
+            ).first()
             if not target_company:
                 res_logs.append({"error": "公司不存在！", "row": index + 1})
                 err_cnt += 1
                 continue
             user_company_id = target_company.id
-            target_department = DepartmentInfo.query.filter(DepartmentInfo.department_code == user_department_id).first()
+            target_department = DepartmentInfo.query.filter(
+                DepartmentInfo.id == user_department_id
+            ).first()
             if not target_department:
                 res_logs.append({"error": "部门不存在！", "row": index + 1})
                 err_cnt += 1
                 continue
             user_department_id = target_department.id
             user_account_type = "企业账号"
-        try:
-            if not user_company_id:
-                user_company_id = None
-            if not user_department_id:
-                user_department_id = None
-            new_user = UserInfo(
-                user_name=user_name,
-                user_password=user_password,
-                user_nick_name=user_nick_name,
-                user_nick_name_py=user_nick_name_py,
-                user_email=user_email,
-                user_phone=user_phone,
-                user_gender=user_gender,
-                user_age=user_age,
-                user_company=user_company,
-                user_department=user_department,
-                user_position=user_position,
-                user_resource_limit=user_resource_limit,
-                user_status=1,
-                user_account_type=user_account_type,
-                user_company_id=user_company_id,
-                user_department_id=user_department_id,
-                user_source='admin',
-                user_code=str(uuid.uuid4()),
-            )
-            db.session.add(new_user)
-            db.session.commit()
-        except Exception as e:
-            app.logger.error(e)
-            err_cnt += 1
-            res_logs.append({"error": "用户创建失败", "row": index + 1})
-            continue
-        init_res = init_user(new_user, False, False)
+        if not user_company_id:
+            user_company_id = None
+        if not user_department_id:
+            user_department_id = None
+        new_user = UserInfo(
+            user_name=user_name,
+            user_password=user_password,
+            user_nick_name=user_nick_name,
+            user_nick_name_py=user_nick_name_py,
+            user_email=user_email,
+            user_phone=user_phone,
+            user_gender=user_gender,
+            user_age=user_age,
+            user_company=user_company,
+            user_department=user_department,
+            user_position=user_position,
+            user_resource_limit=user_resource_limit,
+            user_status=1,
+            user_account_type=user_account_type,
+            user_company_id=user_company_id,
+            user_department_id=user_department_id,
+            user_source='admin',
+            user_code=str(uuid.uuid4()),
+        )
+        db.session.add(new_user)
+        step1_user.append(new_user)
+    try:
+        db.session.commit()
+    except Exception as e:
+        app.logger.error(e)
+        db.session.rollback()
+        res_logs.append({"error": "用户创建失败", "trace": e})
+        resp = {
+            "total_cnt": len(df),
+            "finished_cnt": 0,
+            "error_cnt": len(step1_user),
+            "trace": res_logs
+        }
+        return next_console_response(result=resp)
+    init_res = batch_init_user(step1_user)
+    if not init_res:
+        res_logs.append({"error": "用户初始化错误"})
+        return next_console_response(error_status=True, error_message="用户初始化失败！", error_code=1005)
 
-        if not init_res:
-            res_logs.append({"error": "用户初始化错误", "row": index + 1})
-            continue
-        res_logs.append({"error": "", "row": index + 1})
-        if new_user.user_email:
-            new_user_list.append(new_user.to_dict())
+    new_user_list = [user.to_dict() for user in step1_user if user.user_status == 1]
     admin_notice_new_user.delay(new_user_list)
     if not len(res_logs):
         res_logs.append("成功完成{}条数据的导入！".format(len(df)))
@@ -1486,3 +1515,79 @@ def add_user_by_excel(df, params):
         "trace": res_logs
     }
     return next_console_response(result=resp)
+
+
+def batch_init_user(users):
+    """
+    批量初始化用户，主要是为了给用户分配角色和权限
+    :return:
+    """
+    # 设置用户角色
+    role = RoleInfo.query.filter(RoleInfo.role_name == "user").first()
+    if role is None:
+        return next_console_response(error_status=True, error_code=1004, error_message='角色设置错误')
+    for user in users:
+        new_user_role = UserRoleInfo(
+            user_id=user.user_id,
+            role_id=role.role_id,
+            rel_status=1
+        )
+        db.session.add(new_user_role)
+    # 设置用户对助手的权限(向所有官方助手增加可用权限，为内置助手新增服务关系)
+    # 获取所有官方助手，id < 0
+    all_office_assistants = Assistant.query.filter(Assistant.id < 0).all()
+    for user in users:
+        for assistant in all_office_assistants:
+            new_user_assistant_rel = UserAssistantRelation(
+                user_id=user.user_id,
+                assistant_id=assistant.id,
+                rel_type="权限",
+                rel_value=1,
+                rel_status="正常"
+            )
+            db.session.add(new_user_assistant_rel)
+    # 创建账号信息
+    from app.services.user_center.account_service import generate_account_id
+    for user in users:
+        exist_point_account = UserAccountInfo(
+            user_id=user.user_id,
+            account_id=generate_account_id(),
+            account_type="point",
+            balance=0,
+        )
+        db.session.add(exist_point_account)
+    # 初始化应用配置
+    from app.models.configure_center.user_config import UserConfig
+    for user in users:
+        user_config = UserConfig(
+            user_id=user.user_id,
+            open_query_agent=0,
+            config_status='正常',
+            resource_shortcut_types=[]
+        )
+        db.session.add(user_config)
+    # 初始化用户资源地址
+    for user in users:
+        user.user_resource_base_path = generate_new_path(
+            "resource_center", user_id=user.user_id, file_type="dir").json.get("result")
+        db.session.add(user)
+    # 初始化用户资源库
+    for user in users:
+        user_resource = ResourceObjectMeta(
+            user_id=user.user_id,
+            resource_name="我的资源",
+            resource_type="folder",
+            resource_desc="用户资源库",
+            resource_status="正常",
+            resource_path=user.user_resource_base_path,
+            resource_icon="folder.svg",
+        )
+        db.session.add(user_resource)
+    try:
+        db.session.commit()
+    except Exception as e:
+        app.logger.error(e)
+        db.session.rollback()
+        return next_console_response(error_status=True, error_code=1004, error_message='初始化错误')
+    return True
+

@@ -1385,7 +1385,7 @@ def init_file_reader_node(new_node):
                             "showSubArea": False,
                             "type": "string",
                             "typeName": "string",
-                            "description": "文件名称",
+                            "description": "文件格式",
                             "value": ""
                         },
                         "size": {

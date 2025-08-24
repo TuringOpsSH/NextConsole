@@ -32,8 +32,19 @@ import {
 import {ArrowLeft, ArrowRight, Search, ArrowUp, ArrowDown} from "@element-plus/icons-vue";
 import {user_info} from "@/components/user_center/user";
 import {ref, onMounted} from "vue";
-const phone_view = ref(window.innerWidth < 768)
-const dialog_width = ref(window.innerWidth < 768 ? '90%' : '60%')
+const phone_view = ref(window.innerWidth < 768);
+const dialog_width = ref(window.innerWidth < 768 ? '90%' : '60%');
+function fixResourceIcon(iconPath: string) {
+  if (!iconPath) {
+    return 'images/default_resource_icon.svg';
+  }
+  if (iconPath.startsWith('http')) {
+    return iconPath;
+  }
+  return `images/${iconPath}`;
+
+
+}
 onMounted(() => {
   if (window.innerWidth >= 768 && window.innerWidth * 0.6 < 800){
     dialog_width.value = '800px'
@@ -44,7 +55,6 @@ onMounted(() => {
 <template>
   <el-dialog title="分享资源" v-model="share_selector_vis_flag"  :fullscreen="true">
       <div id="share_selector_main">
-        <el-scrollbar>
           <div id="resource_share_selector">
 
             <div id="selector_left">
@@ -177,8 +187,24 @@ onMounted(() => {
               />
             </div>
 
-
             <div id="selector_right">
+              <div id="selector_resource_area">
+                <div class="resource-header">
+                  <el-text size="large">
+                    选中资源
+                  </el-text>
+                </div>
+                <div class="resource-area">
+                  <div class="resource-area-box">
+                    <div class="resource-icon-box">
+                      <el-image :src="fixResourceIcon(current_share_resource?.resource_icon)" class="resource-icon"/>
+                    </div>
+                    <div class="resource-name-box">
+                      <el-text>{{current_share_resource?.resource_name}}</el-text>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div id="selector_right_head">
                 <div class="std-middle-box">
                   <el-text>
@@ -208,7 +234,6 @@ onMounted(() => {
                     </el-select>
                   </div>
                 </div>
-
               </div>
               <el-scrollbar>
                 <div id="selector_right_body" v-loading="access_loading" element-loading-text="权限加载中...">
@@ -281,12 +306,9 @@ onMounted(() => {
 
                 </div>
               </el-scrollbar>
-
-
             </div>
-
           </div>
-        </el-scrollbar>
+
 
         <div id="resource_share_selector_button">
           <el-button @click="turn_off_share_selector()" style="width: 100% ;max-width: 200px">
@@ -330,7 +352,7 @@ onMounted(() => {
   gap: 12px;
 }
 #company_search{
-  height: calc(30vh - 48px);
+  height: calc(80vh - 48px);
   width: calc(100% - 24px);
 }
 #selector_left{
@@ -397,13 +419,16 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  max-height: calc(100vh - 360px);
 }
 .access-object-area{
   display: flex;
   flex-direction: row;
   align-items: center;
-  border-radius: 4px;
+  border-radius: 6px;
+  padding: 12px;
   justify-content: space-between;
+  background-color: #F9FAFB;
 }
 .access-object-area-left{
   display: flex;
@@ -411,7 +436,38 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
 }
-
+#selector_resource_area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 6px;
+  background-color: #F9FAFB;
+  margin-bottom: 4px;
+}
+.resource-area {
+  display: flex;
+  flex-direction: row;
+  padding: 12px;
+  width: calc(100% - 24px);
+}
+.resource-area-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 6px;
+  background-color: white;
+  width: calc(100% - 12px);
+  border-radius: 6px;
+}
+.resource-icon {
+  width: 24px;
+  height: 24px;
+}
 @media (width< 768px) {
   #resource_share_selector{
 

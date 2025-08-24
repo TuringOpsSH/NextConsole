@@ -57,7 +57,7 @@ function getFileIcon(format:string) {
   let icon_format_map = {
     // 文档类型
     doc: 'doc.svg',
-    docx: 'doc.svg',
+    docx: 'docx.svg',
     xls: 'xls.svg',
     xlsx: 'xlsx.svg',
     csv: 'csv.svg',

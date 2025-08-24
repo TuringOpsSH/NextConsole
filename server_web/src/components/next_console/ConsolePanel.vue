@@ -269,166 +269,166 @@ onMounted(async () => {
 </script>
 
 <template>
-  <el-scrollbar>
-    <div id="console_panel_box" v-show="showSidebar">
-      <div id="panel-head">
-        <div>
-          <el-text style="font-size: 16px; line-height: 24px; font-weight: 600; color: #101828; cursor: default">
-            AI 工作台
-          </el-text>
-        </div>
-        <div id="layout_button" @click="switchPanel">
-          <el-tooltip effect="light" :content="$t('closeSidebar')">
-            <el-image src="images/layout_alt_grey.svg" style="width: 16px; height: 16px" />
-          </el-tooltip>
-        </div>
-      </div>
-      <div id="app-area">
-        <div id="app-area-head">
-          <div id="app-area-head-left">
-            <div class="app-type-button">
-              <el-text class="panel-sub-title">个人应用</el-text>
-            </div>
-            <el-divider direction="vertical" />
-            <div class="app-type-button">
-              <el-text class="panel-sub-title">团队应用</el-text>
-            </div>
-          </div>
-          <div class="app-type-button">
-            <el-icon v-if="appAreaExpand" @click="switchAppArea" >
-              <ArrowUp />
-            </el-icon>
-            <el-icon v-else @click="switchAppArea" >
-              <ArrowDown />
-            </el-icon>
-          </div>
-        </div>
-        <el-scrollbar>
-          <div id="app-area-body" v-show="appAreaExpand">
-            <div class="app-button"
-                 :class="currentApp?.app_code === defaultApp.app_code ? 'app-button-pick' : ''"
-                 @click="toAppArea(defaultApp)">
-              <div class="std-middle-box">
-                <el-image :src="defaultApp.app_icon"  class="app-icon" />
-              </div>
-              <div>
-                <el-text style="color: #101828" truncated size="small">{{ defaultApp.app_name }}</el-text>
-              </div>
-            </div>
-            <div v-for="app in currentAppList" :key="app.app_code" class="app-button"
-                 :class="currentApp?.app_code === app?.app_code ? 'app-button-pick' : ''"
-                 @click="toAppArea(app)">
-              <div class="std-middle-box">
-                <el-image :src="app.app_icon" class="app-icon"/>
-              </div>
-              <div>
-                <el-text style="color: #101828; width: 120px" truncated size="small">
-                  {{ app.app_name }}
-                </el-text>
-              </div>
-            </div>
-          </div>
-        </el-scrollbar>
-        <div id="app-area-foot" v-show="appAreaExpand">
-          <el-text style="font-size: 12px; cursor: not-allowed">查看全部应用</el-text>
-        </div>
-      </div>
-      <div id="foot-area">
-        <div id="add-session-button" @click="addNewSession()">
-          <div class="std-middle-box">
-            <el-image src="images/plus_circle_white.svg" id="add-session-button-icon" />
-          </div>
-          <div>
-            <el-text id="add-session-button-text">新建会话</el-text>
-          </div>
-        </div>
-      </div>
-      <div id="panel-body">
-        <div id="session-history-area">
-            <div id="session-history-title">
-              <div>
-                <el-text class="panel-sub-title">会话历史</el-text>
-              </div>
-            </div>
-            <el-scrollbar>
-              <div class="session-history-list"
-                   :style="{'max-height': appAreaExpand ? 'calc(100vh - 500px)' : 'calc(100vh - 230px)'}">
-                <div
-                  v-for="item in session_history_top5"
-                  :key="item.id"
-                  class="session-item-box"
-                  :class="{ 'session-item-box-active': currentSession?.session_code == item.session_code
-                  && currentSession?.session_code }"
-                  @click="changeCurrentSession(item, $event)"
-              >
-                <div v-if="item?.is_edit" style="z-index: 999">
-                  <el-input
-                      ref="currentSessionTopicInputRef"
-                      v-model="item.session_topic"
-                      placeholder="请输入会话名称"
-                      @change="panelRewriteSessionTopic(item)"
-                  />
-                </div>
-                <div v-else class="session-topic-box">
-                  <el-text
-                      truncated
-                      class="session-topic-text"
-                      :class="{ 'session-topic-text-active': currentSession?.session_code == item.session_code
-                      && currentSession?.session_code }"
-                  >
-                    {{ item?.session_topic }}
-                  </el-text>
-                </div>
 
-                <div
-                    v-show="currentSession?.session_code == item.session_code && currentSession?.session_code"
-                    class="std-middle-box session-more-button"
-                >
-                  <el-popover trigger="click" ref="sessionButtonsRef">
-                    <template #reference>
-                      <div class="std-middle-box">
-                        <el-image src="images/dot_list_grey.svg" />
-                      </div>
-                    </template>
-                    <div id="session-manage-box">
-                      <div class="session-manage-button" @click="focusSessionTopicInput(item)">
-                        <div class="std-middle-box">
-                          <el-image src="images/edit_03_grey.svg" class="session-manage-button-icon" />
-                        </div>
-                        <div class="std-middle-box">
-                          <el-text class="session-manage-button-text"> 重命名 </el-text>
-                        </div>
-                      </div>
-                      <el-divider style="margin: 8px 0" />
-                      <div class="session-manage-button" @click="panelDeleteSession(item)">
-                        <div class="std-middle-box">
-                          <el-image src="images/delete_red.svg" class="session-manage-button-icon" />
-                        </div>
-                        <div class="std-middle-box">
-                          <el-text class="session-manage-button-text" style="color: red"> 删除 </el-text>
-                        </div>
-                      </div>
-                    </div>
-                  </el-popover>
-                </div>
-              </div>
-              </div>
-            </el-scrollbar>
-            <div
-                v-if="session_history_top5?.length"
-                id="more-session-button"
-                class="session-item-box"
-                @click="toAllSession()"
-            >
-              <el-text style="font-size: 12px"> 查看全部记录...</el-text>
-            </div>
-            <div v-if="!session_history_top5?.length">
-              <el-empty description="暂无会话记录" />
-            </div>
-          </div>
+  <div id="console_panel_box" v-show="showSidebar">
+    <div id="panel-head">
+      <div>
+        <el-text style="font-size: 16px; line-height: 24px; font-weight: 600; color: #101828; cursor: default">
+          AI 工作台
+        </el-text>
+      </div>
+      <div id="layout_button" @click="switchPanel">
+        <el-tooltip effect="light" :content="$t('closeSidebar')">
+          <el-image src="images/layout_alt_grey.svg" style="width: 16px; height: 16px" />
+        </el-tooltip>
       </div>
     </div>
-  </el-scrollbar>
+    <div id="app-area">
+      <div id="app-area-head">
+        <div id="app-area-head-left">
+          <div class="app-type-button">
+            <el-text class="panel-sub-title">个人应用</el-text>
+          </div>
+          <el-divider direction="vertical" />
+          <div class="app-type-button">
+            <el-text class="panel-sub-title">团队应用</el-text>
+          </div>
+        </div>
+        <div class="app-type-button">
+          <el-icon v-if="appAreaExpand" @click="switchAppArea" >
+            <ArrowUp />
+          </el-icon>
+          <el-icon v-else @click="switchAppArea" >
+            <ArrowDown />
+          </el-icon>
+        </div>
+      </div>
+      <el-scrollbar>
+        <div id="app-area-body" v-show="appAreaExpand">
+          <div class="app-button"
+               :class="currentApp?.app_code === defaultApp.app_code ? 'app-button-pick' : ''"
+               @click="toAppArea(defaultApp)">
+            <div class="std-middle-box">
+              <el-image :src="defaultApp.app_icon"  class="app-icon" />
+            </div>
+            <div>
+              <el-text style="color: #101828" truncated size="small">{{ defaultApp.app_name }}</el-text>
+            </div>
+          </div>
+          <div v-for="app in currentAppList" :key="app.app_code" class="app-button"
+               :class="currentApp?.app_code === app?.app_code ? 'app-button-pick' : ''"
+               @click="toAppArea(app)">
+            <div class="std-middle-box">
+              <el-image :src="app.app_icon" class="app-icon"/>
+            </div>
+            <div>
+              <el-text style="color: #101828; width: 120px" truncated size="small">
+                {{ app.app_name }}
+              </el-text>
+            </div>
+          </div>
+        </div>
+      </el-scrollbar>
+      <div id="app-area-foot" v-show="appAreaExpand">
+        <el-text style="font-size: 12px; cursor: not-allowed">查看全部应用</el-text>
+      </div>
+    </div>
+    <div id="foot-area">
+      <div id="add-session-button" @click="addNewSession()">
+        <div class="std-middle-box">
+          <el-image src="images/plus_circle_white.svg" id="add-session-button-icon" />
+        </div>
+        <div>
+          <el-text id="add-session-button-text">新建会话</el-text>
+        </div>
+      </div>
+    </div>
+    <div id="panel-body">
+      <div id="session-history-area">
+          <div id="session-history-title">
+            <div>
+              <el-text class="panel-sub-title">会话历史</el-text>
+            </div>
+          </div>
+          <el-scrollbar>
+            <div class="session-history-list"
+                 :style="{'max-height': appAreaExpand ? 'calc(100vh - 510px)' : 'calc(100vh - 230px)'}">
+              <div
+                v-for="item in session_history_top5"
+                :key="item.id"
+                class="session-item-box"
+                :class="{ 'session-item-box-active': currentSession?.session_code == item.session_code
+                && currentSession?.session_code }"
+                @click="changeCurrentSession(item, $event)"
+            >
+              <div v-if="item?.is_edit" style="z-index: 999">
+                <el-input
+                    ref="currentSessionTopicInputRef"
+                    v-model="item.session_topic"
+                    placeholder="请输入会话名称"
+                    @change="panelRewriteSessionTopic(item)"
+                />
+              </div>
+              <div v-else class="session-topic-box">
+                <el-text
+                    truncated
+                    class="session-topic-text"
+                    :class="{ 'session-topic-text-active': currentSession?.session_code == item.session_code
+                    && currentSession?.session_code }"
+                >
+                  {{ item?.session_topic }}
+                </el-text>
+              </div>
+
+              <div
+                  v-show="currentSession?.session_code == item.session_code && currentSession?.session_code"
+                  class="std-middle-box session-more-button"
+              >
+                <el-popover trigger="click" ref="sessionButtonsRef">
+                  <template #reference>
+                    <div class="std-middle-box">
+                      <el-image src="images/dot_list_grey.svg" />
+                    </div>
+                  </template>
+                  <div id="session-manage-box">
+                    <div class="session-manage-button" @click="focusSessionTopicInput(item)">
+                      <div class="std-middle-box">
+                        <el-image src="images/edit_03_grey.svg" class="session-manage-button-icon" />
+                      </div>
+                      <div class="std-middle-box">
+                        <el-text class="session-manage-button-text"> 重命名 </el-text>
+                      </div>
+                    </div>
+                    <el-divider style="margin: 8px 0" />
+                    <div class="session-manage-button" @click="panelDeleteSession(item)">
+                      <div class="std-middle-box">
+                        <el-image src="images/delete_red.svg" class="session-manage-button-icon" />
+                      </div>
+                      <div class="std-middle-box">
+                        <el-text class="session-manage-button-text" style="color: red"> 删除 </el-text>
+                      </div>
+                    </div>
+                  </div>
+                </el-popover>
+              </div>
+            </div>
+            </div>
+          </el-scrollbar>
+          <div
+              v-if="session_history_top5?.length"
+              id="more-session-button"
+              class="session-item-box"
+              @click="toAllSession()"
+          >
+            <el-text style="font-size: 12px"> 查看全部记录...</el-text>
+          </div>
+          <div v-if="!session_history_top5?.length">
+            <el-empty description="暂无会话记录" />
+          </div>
+        </div>
+    </div>
+  </div>
+
 
 </template>
 
@@ -517,7 +517,6 @@ onMounted(async () => {
   flex-direction: column;
   gap: 4px;
   padding: 8px 0;
-  max-height: 30vh;
 }
 
 #app-area-head {
@@ -644,6 +643,7 @@ onMounted(async () => {
   flex-direction: column;
   gap: 6px;
   padding: 8px;
+  max-height: 200px;
 }
 
 .app-button {
@@ -653,7 +653,7 @@ onMounted(async () => {
   align-items: center;
   gap: 6px;
   height: 36px;
-  padding: 0 16px;
+  padding: 8px 16px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   background-color: #ffffff;

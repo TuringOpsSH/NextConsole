@@ -14,7 +14,7 @@ app.config['LOG_FILE'] = 'next_console.log'
 app.config['LOG_LEVEL'] = "INFO"
 app.config['LOG_MAX_BYTES'] = 10*1024*1024
 app.config['LOG_BACKUP_COUNT'] = 10
-app.config['SECRET_KEY'] = '146c827-a8ac-4a28-8fd5-c13e5df11529'
+app.config['SECRET_KEY'] = '1e5df11529'
 app.config['download_cool_time'] = 7200
 app.config['download_max_count'] = 100
 

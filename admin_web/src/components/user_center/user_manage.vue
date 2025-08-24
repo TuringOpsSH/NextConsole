@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Search } from '@element-plus/icons-vue';
 import { onMounted, ref, watch, reactive } from 'vue';
+
 import { get_all_company as getAllCompany, sendRequest, TRequestParams } from '@/api/dashboard';
 import {
   adminChangeRoleConfirm,
@@ -16,11 +17,8 @@ import {
   handleUserRoleChange,
   handleUserSizeChange,
   registerTimeRangeShortCuts,
-  showAddUserDialog,
-  showAddUserDialogFlag,
   target_archive,
   targetUser,
-  triggerUpdateRole,
   user_account_type,
   user_account_type_list,
   user_company,
@@ -39,7 +37,7 @@ import UserUploadExcel from '@/components/user_center/user_upload_excel.vue';
 import { ElMessage } from 'element-plus';
 import {create_user} from '@/api/user_manage';
 import {user_info} from "@/components/user_center/user";
-
+const showAddUserDialogFlag = ref(false);
 const showUpgradeDialog = ref(false);
 const companyInfo = ref<{ companyName: string; companyId: string }>();
 const departInfo = ref();
@@ -144,12 +142,17 @@ function buildDepartTree(data: any[]): IDepartTree[] {
 
 async function getDepartInfo() {
   const params: TRequestParams = {
-    url: 'lookupbytwadmin',
+    url: 'lookupbyadmin',
     company_id: ''
   };
+  if (user_info.value?.user_role_list?.includes('next_console_admin')) {
+    params.url = 'lookupbytwadmin';
+  }
+
   const res = await sendRequest(params);
   if (!res.error_status) {
     departList.value = res.result?.data ?? [];
+    departTree.value = buildDepartTree(departList.value);
   }
 }
 
@@ -197,10 +200,13 @@ function clearCompanyInfo() {
 }
 
 async function showAddUserFormFunc() {
-  await getCompanyInfo();
+  if (user_info.value?.user_role_list?.includes('next_console_admin')) {
+    await getCompanyInfo();
+
+  }
   showAddUserForm.value = true;
   newUserForm.user_company_id = user_info.value?.user_company_id;
-  getDepartInfo();
+  await getDepartInfo();
 }
 async function changeNewUserCompany(newVal) {
   departInfo.value = undefined;
@@ -238,15 +244,18 @@ function checkRoleChangeAvailable(row) {
   if (row.user_account_type === '个人账号') {
     return true;
   }
-  if (!user_info.value.user_role.includes('next_console_admin') &&
-      !user_info.value.user_role.includes('super_admin') ) {
+  if (!user_info.value?.user_role?.includes('next_console_admin') &&
+      !user_info.value?.user_role?.includes('super_admin') ) {
     return true;
   }
   if ((row.user_role_list?.includes('平台管理员') || row.user_role_list?.includes('超级管理员')) &&
-      (!user_info.value.user_role?.includes('next_console_admin'))) {
+      (!user_info.value?.user_role?.includes('next_console_admin'))) {
     return true;
   }
   return false;
+}
+async function showAddUserDialog() {
+  showAddUserDialogFlag.value = true;
 }
 </script>
 
@@ -503,9 +512,7 @@ function checkRoleChangeAvailable(row) {
           </div>
         </el-scrollbar>
       </div>
-      <el-dialog v-model="showAddUserDialogFlag" title="添加用户">
-        <UserUploadExcel />
-      </el-dialog>
+      <UserUploadExcel v-model="showAddUserDialogFlag"/>
       <el-dialog v-model="showAddUserForm" title="添加用户">
         <el-form ref="newUserFormRef" :model="newUserForm" :rules="newUserRules"
                  label-position="right" label-width="140px" v-loading="createLoading" element-loading-text="创建中..."
@@ -544,6 +551,7 @@ function checkRoleChangeAvailable(row) {
               value-key="id"
               placeholder="请选择用户所属公司"
               clearable
+              :disabled="!user_info?.role_info?.includes('next_console_admin')"
               @change="changeNewUserCompany"
             >
               <el-option

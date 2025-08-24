@@ -35,7 +35,7 @@ def parallel_llm_node_execute(params, task_record, global_params):
     for item in params[parallel_attr]:
         new_sub_params = {k: params[k] for k in params if k not in params[parallel_attr]}
         new_sub_params[parallel_attr] = [item]
-        workflow_node_llm_params = load_llm_prams(new_sub_params, task_record, global_params)
+        workflow_node_llm_params = load_llm_prams(new_sub_params, task_record, global_params, imgUrl='base64')
         future = global_params["executor"].submit(single_llm_sub_node_execute,
                                                   llm_client, workflow_node_llm_params,
                                                   task_record.to_dict(), global_params)
@@ -119,7 +119,7 @@ def single_llm_sub_node_execute(llm_client, workflow_node_llm_params, task_recor
             except GeneratorExit:
                 pass
             except Exception as e3:
-                app.logger.error(f"调用基模型异常：{str(e3)}")
+                app.logger.error(f"调用基模型异常：{str(e3)}, {workflow_node_llm_params}")
                 msg_content += "\n\n **对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~**"
                 if task_record.get("workflow_node_enable_message") and global_params["stream"]:
                     if task_record.get("workflow_node_message_schema_type") == "messageFlow":

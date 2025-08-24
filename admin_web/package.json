@@ -1,11 +1,12 @@
 {
-  "name": "next_console_frontend",
-  "version": "0.2.4",
+  "name": "next_console_admin_frontend",
+  "version": "0.2.5",
   "private": true,
   "scripts": {
     "all_local": "set NODE_ENV=localhost2&&vite --mode devLocal && node version.js",
     "local": "set NODE_ENV=local&&vite && node version.js",
     "dev": "set NODE_ENV=development&&vite && node version.js",
+    "private": "set NODE_ENV=private&&set VITE_APP_NODE_ENV=private&&vite && node version.js",
     "build": "vite build",
     "build:dev": "env-cmd -f .env.development vite build && node version.js",
     "build:test": "env-cmd -f .env.test vite build",
@@ -49,6 +50,7 @@
     "fingerprintjs2": "^2.1.4",
     "gsap": "^3.12.5",
     "highlight.js": "^11.10.0",
+    "highlightjs-line-numbers.js": "^2.9.0",
     "html-to-image": "^1.11.11",
     "install": "^0.13.0",
     "js-cookie": "^3.0.5",

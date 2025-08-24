@@ -1,12 +1,13 @@
 {
   "name": "next_console_frontend",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": true,
   "scripts": {
     "all_local": "set NODE_ENV=localhost2&&vite --mode devLocal && node version.js",
     "local": "set NODE_ENV=localhost&&vite --mode devLocal && node version.js",
     "dev": "set NODE_ENV=development&&vite && node version.js",
     "prod": "set NODE_ENV=production&&vite --mode production && node version.js",
+    "private": "set NODE_ENV=private&&set VITE_APP_NODE_ENV=private&&vite && node version.js",
     "build": "vite build && node version.js",
     "build:poc": "env-cmd -f .env.poc vite build && node version.js",
     "build:dev": "env-cmd -f .env.development vite build && node version.js",
@@ -33,6 +34,7 @@
     "file-saver": "^2.0.5",
     "gsap": "^3.13.0",
     "highlight.js": "^11.10.0",
+    "highlightjs-line-numbers.js": "^2.9.0",
     "html-to-image": "^1.11.11",
     "html2canvas": "^1.4.1",
     "js-cookie": "^3.0.5",

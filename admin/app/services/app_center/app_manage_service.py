@@ -56,7 +56,7 @@ def search_all_apps(params):
     if not check_has_role(admin_user.user_id, "next_console_admin"):
         # 非平台管理员
         target_apps = target_apps.filter(
-            UserInfo.user_company_id == admin_user.user_company_id
+            UserInfo.user_company_id == admin_user.user_company_id,
         )
     target_apps = target_apps.order_by(
         AppMetaInfo.create_time.desc()
@@ -152,7 +152,11 @@ def delete_app(data):
     """
     app_code = data.get("app_code")
     user_id = int(data.get("user_id"))
-    app_info = AppMetaInfo.query.filter_by(app_code=app_code).first()
+    app_info = AppMetaInfo.query.filter(
+        AppMetaInfo.app_code == app_code,
+        AppMetaInfo.environment == '开发',
+        AppMetaInfo.app_status != '已删除'
+    ).first()
     if not app_info:
         return next_console_response(error_status=True, error_message="应用不存在！", error_code=1002)
     if app_info.app_type != '个人应用':
