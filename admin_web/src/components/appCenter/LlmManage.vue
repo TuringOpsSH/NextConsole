@@ -59,7 +59,7 @@ const newLLMForm = reactive({
   llm_type: '',
   llm_api_secret_key : '',
   llm_api_access_key : '',
-  llm_icon: '',
+  llm_icon: 'images/llm_qwen.svg',
   llm_desc: '',
   llm_tags: [],
   llm_base_url: '',

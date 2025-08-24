@@ -21,7 +21,7 @@ const filteredComponents = ref([
       name: 'enterpriseManagement'
     },
     disable: false,
-    role_require: ['admin', 'super_admin', 'next_console_admin', 'next_console_reader_admin']
+    role_require: ['next_console_admin', 'next_console_reader_admin']
   },
   {
     name: 'user_notification_list',
@@ -37,7 +37,7 @@ onMounted(async () => {
   user_info.value = await getInfo(true);
   // 检查用户权限, 禁用不符合权限的组件
   for (let component of filteredComponents.value) {
-    if (!user_info.value.user_role.some(role => component.role_require.includes(role))) {
+    if (!user_info.value?.user_role.some(role => component.role_require.includes(role))) {
       component.disable = true;
     }
   }

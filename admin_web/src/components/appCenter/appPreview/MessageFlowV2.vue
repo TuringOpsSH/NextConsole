@@ -9,6 +9,7 @@ import MarkdownIt from 'markdown-it';
 import markdownItMermaid from 'markdown-it-mermaid-plugin';
 import mermaid from 'mermaid';
 import MarkdownTasks from 'markdown-it-task-lists';
+
 import {nextTick, onMounted, reactive, ref, watch} from 'vue';
 import {getDebugInfo} from '@/api/appCenterApi';
 import {
@@ -108,7 +109,7 @@ let mdAnswer = new MarkdownIt({
             '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
             'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
             header +
-            '<code class="hljs-code" >' +
+            '<code class="hljs-code hljs-line-numbers" >' +
             '<br>' +
             hljs.highlight(str, { language: language, ignoreIllegals: true }).value +
             '<br>' +
@@ -118,10 +119,10 @@ let mdAnswer = new MarkdownIt({
     }
 
     return (
-        '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
+        '<pre class="hljs " style="white-space: pre-wrap; overflow: auto ; position: relative;' +
         'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
         header +
-        '<code class="hljs-code" >' +
+        '<code class="hljs-code hljs-line-numbers" >' +
         '<br>' +
         hljs.highlight(str, { language: 'plaintext', ignoreIllegals: true }).value +
         '<br>' +
@@ -167,6 +168,7 @@ mdAnswer.renderer.rules.blockquote_open = function (tokens, idx, options, env, s
 };
 // 任务列表
 mdAnswer.use(MarkdownTasks);
+
 const showReferenceDrawer = ref(false);
 const referenceDrawerData = ref<IReferenceItem[]>([]);
 const msgRecommendQuestion = ref<IRecommendQuestionMap>({});
@@ -561,9 +563,9 @@ function splitMarkdown(item: IMsgQueueItem) {
         task_status: 'finished'
       });
       continue;
-    } else if (item.qa_value.answer[msgParentId]?.[i]?.msg_format == 'recommendQ') {
+    }
+    else if (item.qa_value.answer[msgParentId]?.[i]?.msg_format == 'recommendQ') {
       msgContent = JSON.parse(msgContent);
-      // console.log('recommendQ', msgContent);
       const recommendQuestionList = [];
       try {
         for (let q of msgContent?.questions) {
@@ -577,6 +579,17 @@ function splitMarkdown(item: IMsgQueueItem) {
       }
       updateRecommendQuestion(recommendQuestionList);
       continue;
+    }
+    else if (item.qa_value.answer[msgParentId]?.[i]?.msg_format == 'customize') {
+      // 用json代码块包裹
+      try {
+        msgContent = JSON.parse(msgContent);
+      } catch (e) {
+        console.error('JSON parse error:', e);
+      }
+      delete msgContent['msg_format'];
+      msgContent = JSON.stringify(msgContent, null, 2);
+      msgContent = '```json\n' + msgContent + '\n```';
     }
     let tokens = mdAnswer.parse(msgContent, {});
     let finishQueue = [];
@@ -710,7 +723,7 @@ function openReference(data: IReferenceItem | null) {
     window.open(route.href, '_blank');
   }
 }
-function addCopyButtonEvent() {
+async function addCopyButtonEvent() {
   let copyButtonList = document.getElementsByClassName('answer-code-copy');
   for (let i = 0; i < copyButtonList.length; i++) {
     let button = copyButtonList[i] as HTMLElement;
@@ -728,6 +741,15 @@ function addCopyButtonEvent() {
     });
     button.dataset.clickListener = 'true';
   }
+  // @ts-ignore
+  hljs.highlightAll()
+  // 2. 将 hljs 绑定到 window 对象
+  window.hljs = hljs
+  await import('highlightjs-line-numbers.js');
+  await import ('highlightjs-line-numbers.js/dist/highlightjs-line-numbers.min.js')
+  document.querySelectorAll('code.hljs-line-numbers').forEach((block) => {
+    hljs?.lineNumbersBlock(block);
+  });
 }
 function addReferenceHoverEvent() {
   try {
@@ -1094,6 +1116,21 @@ function generateNewMsg(jsonData) {
       shop_assistant_id: null
     };
   }
+  else if (msgFormat == 'customize') {
+    newMsgItem = <IMsgItem>{
+      msg_content: JSON.stringify(jsonData?.choices[0].delta),
+      msg_format: 'customize',
+      msg_role: 'assistant',
+      msg_parent_id: jsonData?.msg_parent_id,
+      create_time: jsonData?.create_time,
+      msg_remark: 0,
+      msg_version: 0,
+      msg_id: jsonData?.msg_id,
+      msg_del: 0,
+      assistant_id: -12345,
+      shop_assistant_id: null
+    };
+  }
   else {
     newMsgItem = <IMsgItem>{
       msg_content: msgContent,
@@ -1380,6 +1417,7 @@ async function showFullTaskResult(item, col='task_result') {
 }
 onMounted(async () => {
   userInfo.value = await getInfo();
+
 });
 const emit = defineEmits(['update:text', 'click-recommend-question', 'select-msg', 'add-quote', 'ready']);
 defineExpose({
@@ -1410,7 +1448,6 @@ watch(
 watch(
     () => props.welcomeConfig,
     async newVal => {
-      // console.log(newVal);
       if (newVal) {
         localWelComeConfig.value = newVal;
       }
@@ -1652,7 +1689,9 @@ watch(
                           :workflow-task="qaWorkflowMap?.[item.qa_id]"
                       />
                       <div class="msg-flow-answer-inner" :class="{ 'msg-flow-answer-inner-short': item?.short_answer }">
-                        <div v-for="(sub_finish_msg, idx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]">
+                        <div v-for="(sub_finish_msg, idx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]"
+                             style="width: 100%"
+                        >
                           <div v-show="sub_finish_msg?.msg_reason_content_finish_html?.length" class="reason-container">
                             <div class="reason-header">
                               <el-button v-if="!sub_finish_msg?.msg_reason_content_hide"
@@ -1671,7 +1710,7 @@ watch(
                               </el-button>
 
                             </div>
-                            <transition name="fade">
+                            <transition name="slide">
                               <div v-show="!sub_finish_msg?.msg_reason_content_hide"  class="reason-box">
                                 <div
                                     v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_reason_content_finish_html"
@@ -2593,6 +2632,7 @@ sup {
 }
 .reason-box {
   /* 盒子的内边距，上下 20px，左右 30px */
+  width: calc(100% - 30px);
   padding: 6px 12px;
   /* 盒子的边框样式，1px 宽的浅灰色实线 */
   border: 1px solid #e0e0e0;
@@ -2709,26 +2749,68 @@ sup {
 .fade-leave-to {
   opacity: 0;
 }
-
-:deep(table) {
+/* 定义 slide 过渡的入场动画 */
+.slide-enter-active {
+  animation: slide-down 0.3s ease-out;
+}
+/* 定义 slide 过渡的出场动画 */
+.slide-leave-active {
+  animation: slide-up 0.3s ease-in;
+}
+/* 定义向下滑动的动画 */
+@keyframes slide-down {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 500px; /* 根据实际内容调整最大高度 */
+    opacity: 1;
+  }
+}
+/* 定义向上滑动的动画 */
+@keyframes slide-up {
+  from {
+    max-height: 500px; /* 根据实际内容调整最大高度 */
+    opacity: 1;
+  }
+  to {
+    max-height: 0;
+    opacity: 0;
+  }
+}
+:deep(.msg-flow-answer-inner table) {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1rem;
   margin-top: 1rem;
 }
-:deep(th) {
+:deep(.msg-flow-answer-inner th) {
   border: 1px solid #D0D5DD;
   padding: 8px;
   text-align: left;
 }
-:deep(td) {
-  border: 1px solid #D0D5DD;
-  padding: 8px;
-  text-align: left;
+:deep(.msg-flow-answer-inner ) {
+
+  .hljs-code {
+    td {
+      border: none;
+      padding: 0 0 0 8px;
+      width: calc(100% - 8px);
+    }
+
+  }
+  td {
+    border: 1px solid #D0D5DD;
+    padding: 8px;
+    text-align: left;
+  }
 }
-:deep(th) {
+:deep(.msg-flow-answer-inner th) {
   background-color: #f2f2f2;
 }
+
+
 
 @media (width<768px) {
   #message-flow-box {

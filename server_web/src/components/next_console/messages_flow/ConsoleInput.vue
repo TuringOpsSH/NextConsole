@@ -372,6 +372,7 @@ async function handleUserPaste(event: any) {
       fileList.push(items[i].getAsFile());
     }
   }
+  console.log(imagesList,fileList);
   if (imagesList.length > 0) {
     await switchOnImgSearch();
     for (let j = 0; j < imagesList.length; j++) {
@@ -380,14 +381,9 @@ async function handleUserPaste(event: any) {
         file.uid = genFileId();
         uploadImgRef.value?.handleStart(file);
         uploadImgList.value.push(file);
-        if (!currentSession?.id) {
-          prepareUploadImage(file);
-        }
       }
     }
-    if (currentSession?.id) {
-      uploadImgRef.value?.submit();
-    }
+    uploadImgRef.value?.submit();
   }
   if (fileList.length > 0) {
     await switchOnFileSearch();
@@ -397,14 +393,9 @@ async function handleUserPaste(event: any) {
         file.uid = genFileId();
         uploadFileRef.value?.handleStart(file);
         uploadFileList.value.push(file);
-        if (!currentSession?.id) {
-          prepareUploadFile(file);
-        }
       }
     }
-    if (currentSession?.id) {
-      uploadFileRef.value?.submit();
-    }
+    uploadFileRef.value?.submit();
   }
 }
 function handleDragOver(event) {
@@ -2490,24 +2481,6 @@ defineExpose({
         </el-popover>
         <el-text class="msg-tips-text"> 生成，仅供参考 </el-text>
       </div>
-      <div v-if="false" class="std-middle-box">
-        <el-divider direction="vertical" />
-      </div>
-      <el-tooltip content="基于问答记录直接发起帮助工单，有金牌运维技术团队在线为您排忧解难" :auto-close="1000" v-if="false">
-        <div
-            v-if="currentSession.id"
-            class="std-middle-box"
-            style="gap: 4px"
-            @click="emit('turn-on-msg-choose-model', {})"
-        >
-          <div class="std-middle-box">
-            <el-text class="msg-tips-text"> 发起工单 </el-text>
-          </div>
-          <div class="std-middle-box">
-            <el-image src="images/arrow_right.svg" class="model-select-icon" />
-          </div>
-        </div>
-      </el-tooltip>
     </div>
   </div>
   <div id="upload-box">

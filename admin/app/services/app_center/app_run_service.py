@@ -1316,11 +1316,10 @@ def transform_to_message(task_record, global_params):
                 result = message_item
             # 保存消息
             answer_msg.msg_content = json.dumps(message_item)
-            answer_msg.msg_format = "workflow"
+            answer_msg.msg_format = "customize"
             db.session.add(answer_msg)
             db.session.commit()
             global_params["message_queue"].put(result)
-
         else:
             continue
 

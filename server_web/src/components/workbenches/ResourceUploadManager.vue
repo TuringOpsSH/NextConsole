@@ -57,6 +57,7 @@ const props = defineProps({
 });
 const emit = defineEmits([
   'upload-success',
+  'upload-finished',
 ]);
 const localCurrentSession = ref({
   id: null
@@ -405,10 +406,6 @@ async function continueUploadTask(item: IResourceUploadItem) {
   await updateUploadTask(params);
   // 继续上传任务,修改任务状态为uploading，然后继续上传
   item.task_status = 'uploading';
-  // // console.log(
-  //     '触发继续上传任务',
-  //     item.content_finish_idx, item.content_max_idx
-  // )
   uploadFileContent(<UploadRequestOptions>{
     file: item.raw_file,
     data: {},
@@ -597,13 +594,11 @@ async function prepareUploadFile(uploadFile: UploadRawFile) {
 }
 async function uploadFileSuccess(response: any, uploadFile: UploadFile, uploadFiles: UploadFiles) {
   // 上传成功后，添加附件与会话消息
-  console.log(response);
   let resourceId = response.result?.resource_id;
   if (!resourceId) {
     return;
   }
   if (!localCurrentSession.value?.id) {
-    console.log(localCurrentSession.value)
     return;
   }
   let params = {
@@ -631,6 +626,7 @@ async function uploadFileSuccess(response: any, uploadFile: UploadFile, uploadFi
   });
   if (finishFlag) {
     closeUploadManager();
+    emit('upload-finished');
   }
 }
 watch(

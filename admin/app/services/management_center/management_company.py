@@ -234,9 +234,6 @@ def update_company_twadmin(params):
         return next_console_response(error_status=True, error_message=f"更新公司信息失败！{e}")
 
 
-
-
-
 def delete_company_twadmin(params):
     """
     todo 平台管理员删除公司信息,需注意子公司的迁移，企业用户的清理，企业部门的清理
@@ -299,6 +296,47 @@ def lookup_department_twadmin(params):
         "data": [department.to_dict() for department in all_departments]
     })
 
+
+def lookup_department_admin(params):
+    """
+    平台管理员查询公司部门信息
+    :param params:
+    :return:
+    """
+    user_id = int(params.get("user_id"))
+    search_text = params.get("search_text")
+    department_status = params.get("department_status")
+    page_num = params.get("page_num", 1)
+    page_size = params.get("page_size", 100)
+    request_user = UserInfo.query.filter(
+        UserInfo.user_id == user_id,
+        UserInfo.user_status == 1,
+    ).first()
+    if not request_user:
+        return next_console_response(error_status=True, error_message="当前请求账号异常！")
+    # 搜索条件构造
+    all_conditions = [
+        DepartmentInfo.company_id == request_user.user_company_id
+    ]
+    if search_text:
+        all_conditions.append(or_(
+            DepartmentInfo.id == search_text,
+            DepartmentInfo.department_code.like(f"%{search_text}%"),
+            DepartmentInfo.department_name.like(f"%{search_text}%"),
+            DepartmentInfo.department_desc.like(f"%{search_text}%")
+        ))
+    if department_status:
+        all_conditions.append(DepartmentInfo.department_status == department_status)
+    # 查询数据
+    all_departments = DepartmentInfo.query.filter(
+        *all_conditions
+    )
+    total = all_departments.count()
+    all_departments = all_departments.paginate(page=page_num, per_page=page_size, error_out=False)
+    return next_console_response(result={
+        "total": total,
+        "data": [department.to_dict() for department in all_departments]
+    })
 
 
 def add_department_twadmin(params):

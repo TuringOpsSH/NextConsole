@@ -55,6 +55,7 @@ async function handleSingleFileUpdate(file, item) {
   schemaReady.value = !!validRes;
 }
 async function handleMultipleFileUpdate(fileList, item) {
+  console.log(fileList, item);
   if (fileList && fileList.length > 0) {
     localParams.value[item] = fileList.map(file => ({
       id: file.resource_id,

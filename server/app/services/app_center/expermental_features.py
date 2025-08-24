@@ -35,7 +35,7 @@ def parallel_llm_node_execute(params, task_record, global_params):
     for item in params[parallel_attr]:
         new_sub_params = {k: params[k] for k in params if k not in params[parallel_attr]}
         new_sub_params[parallel_attr] = [item]
-        workflow_node_llm_params = load_llm_prams(new_sub_params, task_record, global_params)
+        workflow_node_llm_params = load_llm_prams(new_sub_params, task_record, global_params, imgUrl='base64')
         future = global_params["executor"].submit(single_llm_sub_node_execute,
                                                   llm_client, workflow_node_llm_params,
                                                   task_record.to_dict(), global_params)

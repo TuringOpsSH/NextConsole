@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-
+import base64
 from openai import OpenAI
 from app.models.next_console.next_console_model import NextConsoleMessage
 from app.services.next_console.llm import NextConsoleLLMClient, LLMInstance
@@ -43,6 +43,8 @@ def llm_node_execute(params, task_record, global_params):
     msg_reasoning_content = ""
     msg_token_used = 0
     answer_msg = None
+    task_status = '执行中'
+    task_trace_log = ''
     if workflow_node_llm_params.get("stream", False):
         all_message_format = [msg_schema.get("schema_type") for msg_schema in task_record.workflow_node_message_schema]
         output_flag = task_record.workflow_node_enable_message and global_params["stream"] and 'messageFlow' in all_message_format
@@ -101,30 +103,33 @@ def llm_node_execute(params, task_record, global_params):
             pass
         except Exception as e3:
             app.logger.error(f"调用基模型异常：{str(e3)}")
+            task_status = "异常"
+            task_trace_log = str(e3)
             msg_content += "\n\n **对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~**"
-            if task_record.workflow_node_enable_message and global_params["stream"]:
-                if task_record.workflow_node_message_schema_type == "messageFlow":
-                    except_result = {
-                        "id": "",
-                        "session_id": task_record.session_id,
-                        "qa_id": task_record.qa_id,
-                        "msg_parent_id": task_record.msg_id,
-                        "created": 0,
-                        "model": '',
-                        "object": "chat.completion",
-                        "choices": [
-                            {
-                                "finish_reason": "error",
-                                "index": 0,
-                                "delta": {
-                                    "content": msg_content,
-                                    "role": "assistant"
-                                },
+            if task_record.workflow_node_enable_message and global_params["stream"]and output_flag:
+                except_result = {
+                    "id": "",
+                    "session_id": task_record.session_id,
+                    "qa_id": task_record.qa_id,
+                    "msg_parent_id": task_record.msg_id,
+                    'msg_id': answer_msg.msg_id,
+                    "created": 0,
+                    "model": '',
+                    "object": "chat.completion",
+                    "choices": [
+                        {
+                            "finish_reason": "error",
+                            "index": 0,
+                            "delta": {
+                                "reasoning_content": "",
+                                "content": msg_content,
+                                "role": "assistant"
+                            },
 
-                            }
-                        ]
-                    }
-                    global_params["message_queue"].put(except_result)
+                        }
+                    ]
+                }
+                global_params["message_queue"].put(except_result)
         finally:
             # 更新llm节点记录
             # 如果有RAG引用，则添加到消息中
@@ -155,7 +160,10 @@ def llm_node_execute(params, task_record, global_params):
                 "reasoning_content": msg_reasoning_content,
             })
             task_record.end_time = datetime.now()
-            task_record.task_status = "已完成"
+            if task_status == '执行中':
+                task_status = "已完成"
+            task_record.task_status = task_status
+            task_record.task_trace_log = task_trace_log
             task_record.task_token_used = msg_token_used
             db.session.add(task_record)
             db.session.commit()
@@ -195,7 +203,7 @@ def llm_node_execute(params, task_record, global_params):
         return True
 
 
-def load_llm_prams(task_params, task_record, global_params):
+def load_llm_prams(task_params, task_record, global_params, imgUrl='url'):
     """
     载入大模型的所有参数
     """
@@ -243,10 +251,21 @@ def load_llm_prams(task_params, task_record, global_params):
             ).all()
             for resource in target_attachments:
                 if resource.resource_type in ("image", "media") and resource.resource_download_url:
+                    url = app.config.get(
+                        "domain") + "/next_console/knowledge_center/resource_images?resource_id={}".format(resource.id)
+                    if imgUrl == 'base64':
+                        # 如果是base64编码的图片
+                        try:
+                            with open(resource.resource_path, "rb") as image_file:
+                                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                            url = "data:image/png;base64,{}".format(encoded_string)
+                        except Exception as e:
+                            app.logger.error(f"读取图片文件失败：{e}")
+                            continue
                     image_list.append({
                         "type": "image_url",
                         "image_url": {
-                            "url": app.config.get("domain") + "/next_console/knowledge_center/resource_images?resource_id={}".format(resource.id),
+                            "url": url,
                             "detail": "auto"
                         }
                     })

@@ -36,7 +36,7 @@ const props = defineProps({
   }
 })
 const login_type = ref('code')
-
+const nodeEnv = import.meta.env.VITE_APP_NODE_ENV;
 // 账号登录表单
 
 function change_login_type(type: string){
@@ -56,7 +56,9 @@ onMounted(
       script.src = 'https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js';
       script.onload = () => initWxLogin(); // 确保脚本加载完毕后再初始化微信登录
       document.body.appendChild(script);
-
+      if (nodeEnv == 'private') {
+        login_type.value = 'password'
+      }
     }
 )
 
@@ -82,7 +84,9 @@ onMounted(
                 </el-text>
               </div>
               <div class="login-type-area" @click="change_login_type('qr_code')"
-                   :class="{'login-type-area-active': login_type === 'qr_code'}">
+                   :class="{'login-type-area-active': login_type === 'qr_code'}"
+                   v-show="nodeEnv != 'private'"
+              >
                 <el-text class="login-type-text"
                          :class="{'login-type-text-active': login_type === 'qr_code'}">
                   扫码登录

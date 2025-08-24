@@ -380,6 +380,7 @@ def twadmin_lookup_company():
     params["user_id"] = user_id
     return lookup_company_twadmin(params)
 
+
 @app.route('/next_console_admin/management_center/management/user/company/addbytwadmin', methods=["POST"])
 @roles_required(["next_console_admin"])
 @jwt_required()
@@ -413,6 +414,19 @@ def twadmin_update_company():
     if not company_id:
         return next_console_response(error_status=True, error_code=1004, error_message="公司ID不能为空！")
     return update_company_twadmin(params)
+
+
+@app.route('/next_console_admin/management_center/management/user/department/lookupbyadmin', methods=["POST"])
+@roles_required(["admin", "super_admin"])
+@jwt_required()
+def admin_lookup_department():
+    """
+    平台管理员查询部门详情列表
+    """
+    params = request.json
+    user_id = get_jwt_identity()
+    params["user_id"] = user_id
+    return lookup_department_admin(params)
 
 
 @app.route('/next_console_admin/management_center/management/user/department/lookupbytwadmin', methods=["POST"])

@@ -227,7 +227,7 @@ async function searchNewAccessUser() {
   };
   searchNewUserLoading.value = true;
   let res = null;
-  if (userInfo.value.user_role?.includes('next_console_admin')) {
+  if (userInfo.value?.user_role?.includes('next_console_admin')) {
     res = await twadmin_search_user(params);
   } else {
     res = await admin_search_user(params);

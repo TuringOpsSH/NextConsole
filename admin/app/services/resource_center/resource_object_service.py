@@ -482,7 +482,7 @@ def guess_resource_type(resource_name):
         "dmg": "dmg.svg", "msi": "msi.svg", "bin": "bin.svg", "iso": "iso.svg",
     }
     document_format_map = {
-        "doc": "doc.svg", "docx": "doc.svg",
+        "doc": "doc.svg", "docx": "docx.svg",
         "xls": "xls.svg", "xlsx": "xls.svg", "csv": "csv.svg",
         "ppt": "ppt.svg", "pptx": "pptx.svg",
         "pdf": "pdf.svg",
@@ -521,7 +521,7 @@ def set_task_icon(resource_type, resource_format):
     icon_url = 'file.svg'
     icon_format_map = {
         # 文档类型
-        "doc": "doc.svg", "docx": "doc.svg",
+        "doc": "doc.svg", "docx": "docx.svg",
         "xls": "xls.svg", "xlsx": "xlsx.svg", "csv": "csv.svg",
         "ppt": "ppt.svg", "pptx": "pptx.svg",
         "pdf": "pdf.svg",

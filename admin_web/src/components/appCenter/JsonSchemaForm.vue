@@ -86,8 +86,8 @@ function changeAttrName() {
 }
 function changeAttrType(typeName: string, key: string, isItem=false) {
   const target = isItem
-      ? localSchema.value?.properties?.[key].items || localSchema.value?.items
-      : localSchema.value.properties[key];
+      ? localSchema.value?.properties?.[key]?.items || localSchema.value?.items
+      : localSchema.value?.properties[key];
   target.type = typeName;
   if (typeName === 'array') {
     handleChangeToArray(key, isItem);
@@ -115,6 +115,7 @@ function handleChangeToArray(key: string, isItem: boolean) {
     typeName: 'string',
     description: '',
   };
+  delete target.properties;
   delete target.ncOrders;
   delete target.enum;
   delete target.required;
@@ -134,6 +135,8 @@ function handleChangeToObject(key: string, isItem: boolean) {
     showSubArea: false,
     description: '',
   };
+  target.ncOrders = [newKey];
+  target.ref = null;
   target.properties = newSubItem;
   target.ncOrders = [newKey];
   target.attrFixed = false;
@@ -205,12 +208,12 @@ function handleChangeToFile(key: string, isItem: boolean) {
   target.ncOrders = ['id', 'name', 'size', 'format', 'icon'];
   delete target.enum;
   delete target.required;
+  delete target.items;
 }
 function handleChangeToFileList(key:string, isItem: boolean) {
   const target = isItem
       ? localSchema.value?.properties?.[key].items || localSchema.value?.items
       : localSchema.value.properties[key];
-
   target.type = 'array';
   target.items = {
     type: 'object',
@@ -271,6 +274,10 @@ function handleChangeToFileList(key:string, isItem: boolean) {
     typeFixed: true,
     attrFixed: true,
   };
+  target.ncOrders = [];
+  delete target.properties;
+  delete target.enum;
+  delete target.required;
 }
 function handleChangeToBoolean(key:string, isItem: boolean) {
   const target = isItem
@@ -373,19 +380,56 @@ function updateRef(key: string, newRef) {
 
   if (localSchema.value.properties[key]) {
     // 检验数据类型
-    console.log(key, newRef);
     const newType = newRef?.refAttrType || newRef?.refAttrTypeName || 'string';
     // 更新数据类型
+    if (newType == 'string') {
+      // 进行类型转换
+      if (localSchema.value.properties[key].type == 'integer' && typeof newRef === 'string') {
+        try {
+          localSchema.value.properties[key].ref = parseInt(newRef);
+        } catch (e) {
+          ElMessage.info('请检查输入的数字格式');
+          return
+        }
+        updateSchema();
+        return;
+      }
+      else if (localSchema.value.properties[key].type == 'number' && typeof newRef === 'string') {
+        try {
+          localSchema.value.properties[key].ref = parseFloat(newRef);
+        } catch (e) {
+          ElMessage.info('请检查输入的数字格式');
+          return
+        }
+        updateSchema();
+        return;
+      }
+      else if (localSchema.value.properties[key].type == 'boolean' && typeof newRef === 'string') {
+        if (newRef == 'true' ) {
+          localSchema.value.properties[key].ref = true;
+        } else if (newRef == 'false' ) {
+          localSchema.value.properties[key].ref = false;
+        } else {
+          ElMessage.info('请检查输入的格式,必须为true或false');
+          return
+        }
+        updateSchema();
+        return;
+      }
+    }
     if (!localSchema.value.properties[key].typeFixed) {
       localSchema.value.properties[key].type = newType;
       localSchema.value.properties[key].typeName = newRef?.refAttrTypeName || newRef?.refAttrType || 'string';
     }
+    
     if ( newRef?.value) {
       localSchema.value.properties[key].value = newRef?.value
     } else {
       localSchema.value.properties[key].ref = newRef;
       delete localSchema.value.properties[key].value;
-      localSchema.value.properties[key].typeFixed = true;
+      if (typeof newRef == 'object') {
+        localSchema.value.properties[key].typeFixed = true;
+      }
     }
   }
   updateSchema();
@@ -414,7 +458,7 @@ watch(
         localSchema.value.properties[key].showSubArea = false;
         newKeys.value[key] = key;
       }
-      if (!localSchema.value.required) {
+      if (!localSchema.value.required && typeof localSchema.value === 'object') {
         localSchema.value.required = [];
       }
     },{
@@ -498,7 +542,8 @@ watch(
         </el-col>
         <el-col :span="3">
           <div class="attr-desc">
-            <el-input v-model="localSchema.properties[key].description"
+            <el-input v-if="localSchema.properties?.[key]"
+                v-model="localSchema.properties[key].description"
                 :disabled="localReadOnly || localSchema?.properties?.[key]?.attrFixed"
                 @change="updateSchema"
             />
@@ -506,7 +551,7 @@ watch(
         </el-col>
         <el-col :span="localRequireDefile ? 5: 7">
           <div class="attr-type">
-            <el-select
+            <el-select v-if="localSchema.properties?.[key]"
                 v-model="localSchema.properties[key].typeName"
                 :disabled="localReadOnly || localSchema?.properties?.[key]?.typeFixed"
                 @change="(newTypeName: string) =>changeAttrType(newTypeName, key)"
@@ -540,14 +585,14 @@ watch(
               </template>
               <el-form-item>
                 <el-input-tag v-model="localSchema.properties[key].enum"
-                              v-if="localSchema.properties[key].type == 'string'
-                              || localSchema.properties[key].type == 'number'
-                              || localSchema.properties[key].type == 'integer'"
+                              v-if="localSchema.properties?.[key].type == 'string'
+                              || localSchema.properties?.[key].type == 'number'
+                              || localSchema.properties?.[key].type == 'integer'"
                               placeholder="请输入枚举值,enter键分隔" clearable
                               size="large" tag-type="primary" tag-effect="light"
                               @change="changeEnum(key)"
                 />
-                <el-select v-else-if="localSchema.properties[key].type == 'boolean'"
+                <el-select v-else-if="localSchema.properties?.[key].type == 'boolean'"
                           v-model="localSchema.properties[key].enum"
                           placeholder="请选择枚举值" clearable multiple
                           size="large"
@@ -597,7 +642,7 @@ watch(
               </el-icon>
             </el-tooltip>
             <el-tooltip content="移除变量" placement="top" effect="light">
-              <el-icon v-show="!localSchema?.properties?.[key].attrFixed"  @click="minusParams(key)"
+              <el-icon v-show="!localSchema?.properties?.[key]?.attrFixed"  @click="minusParams(key)"
                        class="icon-button">
                 <Minus />
               </el-icon>

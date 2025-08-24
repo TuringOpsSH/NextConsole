@@ -67,16 +67,6 @@ export const user_is_next_console_admin = ref(false);
 export const user_is_next_console_reader_admin = ref(false);
 export const adminChangeRoleConfirm = ref(false);
 export const targetUser = ref<Users>();
-export const showAddUserDialogFlag = ref(false);
-export const uploadRef = ref<UploadInstance>();
-export const user_excel_file_progress = ref(0);
-export const user_excel_file_name = ref('待上传');
-export const user_excel_file_size = ref('');
-export const user_excel_file_flag = ref(false);
-export const user_excel_file_status = ref('');
-export const user_excel_file_result = ref('');
-export const user_excel_file = ref<UploadUserFile[]>();
-export const user_excel_file_result_str = ref('');
 export const loading = ref(false);
 export const target_archive = ref(false);
 export async function adminSearchUser() {
@@ -107,9 +97,9 @@ export async function adminSearchUser() {
   loading.value = true;
   const res = await admin_search_user(params);
   if (!res.error_status) {
-    user_table_data.value = res.result.data;
+    user_table_data.value = res.result?.data;
     user_department_list.value = [];
-    for (let i = 0; i < res.result.user_departments.length; i++) {
+    for (let i = 0; i < res.result?.user_departments.length; i++) {
       if (res.result.user_departments[i]) {
         user_department_list.value.push(res.result.user_departments[i]);
       }
@@ -214,19 +204,16 @@ export async function handleUserCurrentChange(val: number) {
 export async function checkUserPermission(): Promise<boolean> {
   // 检查用户是否有NextConsole管理员权限
   user_info.value = await getInfo(true);
-  if (user_info.value.user_role.includes('next_console_admin')) {
+  if (user_info.value?.user_role?.includes('next_console_admin')) {
     user_is_next_console_admin.value = true;
     return true;
   }
-  if (user_info.value.user_role.includes('next_console_reader_admin')) {
+  if (user_info.value?.user_role?.includes('next_console_reader_admin')) {
     user_is_next_console_reader_admin.value = true;
     return true;
   }
 
   return false;
-}
-export async function showAddUserDialog() {
-  showAddUserDialogFlag.value = true;
 }
 export function get_user_avatar(avatar: string) {
   // user_avatar 不存在，就使用user_name的首字母作为头像
@@ -276,77 +263,8 @@ export async function handleUserArchiveChange() {
     await adminSearchUser();
   }
 }
-export async function downloadUserTemplate() {
-  if (user_is_next_console_admin.value) {
-    await createUserByExcelTW({ file_name: '天问用户导入模板.xlsx' }, 'get');
-    return;
-  }
-  await createUserByExcel({ file_name: '用户导入模板.xlsx' }, 'get');
-}
 
-export function get_upload_headers() {
-  return {
-    Authorization: 'Bearer ' + getToken()
-  };
-}
 
-export function handleExcelExceed(files: UploadProps['onExceed']) {
-  uploadRef.value.clearFiles();
-  const file = files[0] as UploadRawFile;
-  file.uid = genFileId();
-  uploadRef.value!.handleStart(file);
-}
-export async function updateUserResult(response, file, fileList) {
-  // 在这里处理服务器返回的结果
-
-  user_excel_file_name.value = '';
-  user_excel_file_size.value = '';
-  user_excel_file_flag.value = false;
-  user_excel_file_progress.value = (response.result.finished_cnt / response.result.total_cnt) * 100;
-  if (user_excel_file_progress.value == 100) {
-    user_excel_file_status.value = 'success';
-  }
-  if (user_excel_file_progress.value < 60 && user_excel_file_progress.value >= 30) {
-    user_excel_file_status.value = 'warning';
-  }
-  if (user_excel_file_progress.value < 30) {
-    user_excel_file_status.value = 'exception';
-  }
-  uploadRef.value.clearFiles();
-  if (response.error_status) {
-    user_excel_file_result.value = response.error_message;
-  } else {
-    user_excel_file_result.value =
-      '总共导入' +
-      response.result.total_cnt +
-      '条数据，成功导入' +
-      response.result.finished_cnt +
-      '条数据，失败' +
-      response.result.error_cnt +
-      '条数据';
-    for (let i = 0; i < response.result.trace.length; i++) {
-      if (response.result.trace[i]?.error)
-        user_excel_file_result.value +=
-          '\n错误原因：' + response.result.trace[i]?.error + '，行号：' + response.result.trace[i]?.row_num;
-    }
-  }
-
-  await adminSearchUser();
-}
-export function getFileInfo(file) {
-  user_excel_file_name.value = file.name;
-  user_excel_file_size.value = (file.size / 1024).toFixed(2) + 'KB';
-  user_excel_file_flag.value = true;
-}
-
-export function uploadUserExcelFile() {
-  if (typeof user_excel_file.value === 'undefined') {
-    ElMessage.warning('请上传文件！');
-    return false;
-  }
-  uploadRef.value!.submit();
-  // uploadRef.value.clearFiles()
-}
 export async function get_all_role_options() {
   const params = {
     page_size: 100,
