@@ -221,6 +221,8 @@ def get_wx_config_service(data):
         SystemConfig.config_key == "connectors",
         SystemConfig.config_status == 1
     ).first()
+    if not system_connectors_config:
+        return next_console_response(error_message="未配置微信登录！", error_code=1001)
     config = None
     for wx in system_connectors_config.config_value.get("weixin"):
         if wx.get("domain") == domain:
