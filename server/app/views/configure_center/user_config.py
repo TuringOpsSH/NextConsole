@@ -12,9 +12,7 @@ def user_config_get():
     获取用户配置
     :return:
     """
-
     user_id = get_jwt_identity()
-
     return get_user_config(user_id)
 
 

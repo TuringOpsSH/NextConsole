@@ -1,0 +1,15 @@
+*.log
+**/__pycache__
+app/data/*
+!app/data/.gitkeep
+tmp/*
+!tmp/.gitkeep
+.idea
+venv
+app/logs/*
+.idea/*
+celerybeat-schedule.dat
+celerybeat-schedule.bak
+celerybeat-schedule.dir
+app/libs/*
+

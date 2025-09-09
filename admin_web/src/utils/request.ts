@@ -1,8 +1,12 @@
 import axios from 'axios';
 import { ElNotification } from 'element-plus';
-import { getToken, logout } from '@/utils/auth';
+import { useUserInfoStore } from '@/stores/userInfoStore';
 import router from '../router';
-
+function logOut() {
+  const userInfoStore = useUserInfoStore();
+  userInfoStore.$reset();
+  router.push({ name: 'login' });
+}
 const request = axios.create({
   baseURL: '',
   method: 'post' // 项目默认请求数据方式为post
@@ -12,7 +16,6 @@ const request = axios.create({
 const errorHandler = error => {
   if (error.response) {
     const data = error.response.data;
-    const token = getToken();
     if (error.response.error_code === 403) {
       ElNotification({
         title: '请求异常',
@@ -29,12 +32,28 @@ const errorHandler = error => {
         type: 'error',
         duration: 2500
       });
-      if (token) {
-        router.push('/login');
+      const userInfoStore = useUserInfoStore();
+      if (userInfoStore.token) {
+        // 保存当前路由信息
+        sessionStorage.setItem('redirectRoute', JSON.stringify(router.currentRoute.value));
+        router.push({
+          name: 'login',
+          query: {
+            invite_view_id: router.currentRoute.value.query?.invite_view_id
+          }
+        });
       }
     }
     if (error.response.status === 401 || error.response.status === 422) {
-      logout();
+      logOut();
+      // 保存当前路由信息
+      sessionStorage.setItem('redirectRoute', JSON.stringify(router.currentRoute.value));
+      router.push({
+        name: 'login',
+        query: {
+          invite_view_id: router.currentRoute.value.query?.invite_view_id
+        }
+      });
     }
   }
   return Promise.reject(error);
@@ -47,16 +66,17 @@ request.interceptors.request.use(config => {
     // 直接返回配置，不做token处理
     return config;
   }
-  const token = getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const userInfoStore = useUserInfoStore();
+  if (userInfoStore.token) {
+    config.headers.Authorization = `Bearer ${userInfoStore.token}`;
   } else {
     ElNotification.warning({
       title: '系统通知',
       message: '登录状态失效，请重新登录',
       duration: 3666
     });
-    // console.log('登录状态失效，请重新登录' ,config)
+    // 保存当前路由信息
+    sessionStorage.setItem('redirectRoute', JSON.stringify(router.currentRoute.value));
     router.push('/login');
     return Promise.reject('登录状态失效，请重新登录');
   }
@@ -80,40 +100,19 @@ request.interceptors.response.use(response => {
     });
     // token失效处理
     if (response.data.error_code === 401) {
-      logout();
+      logOut();
     }
 
     if (response.data.msg && response.data.msg === 'Token has expired') {
-      logout();
+      logOut();
+      // 保存当前路由信息
+      sessionStorage.setItem('redirectRoute', JSON.stringify(router.currentRoute.value));
+      router.push({
+        name: 'login'
+      });
     }
   }
   return response.data;
 }, errorHandler);
 //
 export default request;
-
-export const download_request = axios.create({
-  baseURL: '',
-  method: 'post' // 项目默认请求数据方式为post
-});
-// 下载请求拦截
-download_request.interceptors.request.use(config => {
-  const token = getToken();
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  } else {
-    ElNotification.warning({
-      title: '系统通知',
-      message: '登录状态失效，请重新登录',
-      duration: 3666
-    });
-    router.push('/login');
-  }
-
-  config.params = {
-    ...config.params
-    // t: new Date().getTime() // 加上随机参数t，避免缓存请求
-  };
-  return config;
-}, errorHandler);

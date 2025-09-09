@@ -47,7 +47,9 @@ def llm_node_execute(params, task_record, global_params):
     task_trace_log = ''
     if workflow_node_llm_params.get("stream", False):
         all_message_format = [msg_schema.get("schema_type") for msg_schema in task_record.workflow_node_message_schema]
-        output_flag = task_record.workflow_node_enable_message and global_params["stream"] and 'messageFlow' in all_message_format
+        output_flag = (task_record.workflow_node_enable_message
+                       and ('messageFlow' in all_message_format or 'customize' in all_message_format)
+                       )
         if output_flag:
             answer_msg = NextConsoleMessage(
                 user_id=task_record.user_id,
@@ -106,7 +108,7 @@ def llm_node_execute(params, task_record, global_params):
             task_status = "异常"
             task_trace_log = str(e3)
             msg_content += "\n\n **对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~**"
-            if task_record.workflow_node_enable_message and global_params["stream"]and output_flag:
+            if task_record.workflow_node_enable_message and global_params["stream"] and output_flag:
                 except_result = {
                     "id": "",
                     "session_id": task_record.session_id,
@@ -138,7 +140,7 @@ def llm_node_execute(params, task_record, global_params):
                 try:
                     reference_md = add_reference_md(task_record, global_params)
                 except Exception as e:
-                    print('llm_node_execute', e)
+                    app.logger.error(f"添加参考文献异常：{e}")
             global_params["message_queue"].put({
                 "session_id": task_record.session_id,
                 "qa_id": task_record.qa_id,
@@ -186,9 +188,10 @@ def llm_node_execute(params, task_record, global_params):
             task_record.task_token_used = msg_token_used
         except Exception as e:
             task_record.task_status = "异常"
+            task_record.task_trace_log = str(e)
             app.logger.error(f"workflow_chat error: {e}")
             msg_content = '对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~'
-            task_record.task_trace_log = str(e)
+
         if task_record.workflow_node_rag_ref_show:
             reference_md = add_reference_md(task_record, global_params)
             msg_content += reference_md
@@ -196,7 +199,6 @@ def llm_node_execute(params, task_record, global_params):
                 "content": msg_content,
                 "reasoning_content": msg_reasoning_content,
             })
-        task_record.task_status = "已完成"
         task_record.end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         db.session.add(task_record)
         db.session.commit()
@@ -244,6 +246,7 @@ def load_llm_prams(task_params, task_record, global_params, imgUrl='url'):
         }).get("images", [])
         if attachment_list:
             attachment_id_list = [attachment.get("id") for attachment in attachment_list]
+            app.logger.warning(f"visual_schema: {visual_schema.get('properties')}, task_params: {task_params}, attachment_id_list: {attachment_id_list}")
             image_list = []
             target_attachments = ResourceObjectMeta.query.filter(
                 ResourceObjectMeta.id.in_(attachment_id_list),
@@ -251,8 +254,7 @@ def load_llm_prams(task_params, task_record, global_params, imgUrl='url'):
             ).all()
             for resource in target_attachments:
                 if resource.resource_type in ("image", "media") and resource.resource_download_url:
-                    url = app.config.get(
-                        "domain") + "/next_console/knowledge_center/resource_images?resource_id={}".format(resource.id)
+                    url = app.config.get("domain") + "/next_console/knowledge_center/resource_images?resource_id={}".format(resource.id)
                     if imgUrl == 'base64':
                         # 如果是base64编码的图片
                         try:
@@ -376,3 +378,4 @@ def add_reference_md(task_record, global_params):
                     md_content += f"\n\n[{index}]: {source_resource.resource_download_url}"
                 index += 1
     return md_content
+

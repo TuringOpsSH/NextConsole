@@ -61,7 +61,10 @@ def load_task_result(task_record):
             exec_result = json.loads(exec_result)
         except Exception as e:
             print(e)
-            task_record.task_trace_log = str(e)
+            if task_record.task_trace_log:
+                task_record.task_trace_log += f"; 结果解析失败: {str(e)}"
+            else:
+                task_record.task_trace_log = f"; 结果解析失败: {str(e)}"
             db.session.add(task_record)
             db.session.commit()
             return
@@ -79,7 +82,10 @@ def load_task_result(task_record):
                 validate(exec_result, task_record.workflow_node_rpjs)
         except Exception as e:
             print(e)
-            task_record.task_trace_log = f"{exec_result}, 验证失败: {str(e)}"
+            if task_record.task_trace_log:
+                task_record.task_trace_log += f"{exec_result}, 验证失败: {str(e)}"
+            else:
+                task_record.task_trace_log = f"{exec_result}, 验证失败: {str(e)}"
             db.session.add(task_record)
             db.session.commit()
             return

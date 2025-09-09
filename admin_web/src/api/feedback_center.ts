@@ -29,7 +29,7 @@ export async function searchSessionSourceAPI(params: object): Promise<ServerResp
   });
 }
 
-export async function get_session_history_msg(params: object): Promise<ServerResponse> {
+export async function getSessionHistoryMsg(params: object): Promise<ServerResponse> {
   return request({
     url: api.get_session_history_msg,
     method: 'post',
@@ -37,40 +37,9 @@ export async function get_session_history_msg(params: object): Promise<ServerRes
   });
 }
 
-export async function admin_add_like(params: object): Promise<ServerResponse> {
-  return request({
-    url: api.admin_add_like,
-    method: 'post',
-    data: params
-  });
-}
-export async function admin_favorite(params: object): Promise<ServerResponse> {
+export async function adminFavorite(params: object): Promise<ServerResponse> {
   return request({
     url: api.admin_favorite,
-    method: 'post',
-    data: params
-  });
-}
-
-export async function admin_add_tag(params: object): Promise<ServerResponse> {
-  return request({
-    url: api.admin_add_tag,
-    method: 'post',
-    data: params
-  });
-}
-
-export async function get_msg_rag_trace(params: object): Promise<ServerResponse> {
-  return request({
-    url: api.msg_rag_trace,
-    method: 'post',
-    data: params
-  });
-}
-
-export async function get_msg_workflow_trace(params: object): Promise<ServerResponse> {
-  return request({
-    url: api.msg_workflow_trace,
     method: 'post',
     data: params
   });

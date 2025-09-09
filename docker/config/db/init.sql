@@ -2213,12 +2213,10 @@ EXECUTE FUNCTION update_update_time();
 CREATE TABLE "next_console"."system_config_info"
 (
  "id" SERIAL PRIMARY KEY,
- "module_name" varchar(255) NOT NULL ,
- "component_name" varchar(255) NOT NULL ,
- "config_name" varchar(255) NOT NULL ,
+ "config_key" varchar(255) NOT NULL ,
  "config_desc" varchar(255) NOT NULL ,
- "config_default_value" varchar(1024) NOT NULL ,
- "config_value" varchar(1024) NOT NULL ,
+ "config_default_value" json NOT NULL ,
+ "config_value" json NOT NULL ,
  "create_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
  "update_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
  "config_status" integer NOT NULL
@@ -2229,9 +2227,6 @@ WITH (
 )
 ;
 COMMENT ON COLUMN "next_console"."system_config_info"."id" IS '参数id';
-COMMENT ON COLUMN "next_console"."system_config_info"."module_name" IS '模块名称';
-COMMENT ON COLUMN "next_console"."system_config_info"."component_name" IS '组件名称';
-COMMENT ON COLUMN "next_console"."system_config_info"."config_name" IS '配置名称';
 COMMENT ON COLUMN "next_console"."system_config_info"."config_desc" IS '配置描述';
 COMMENT ON COLUMN "next_console"."system_config_info"."config_default_value" IS '配置默认值';
 COMMENT ON COLUMN "next_console"."system_config_info"."config_value" IS '配置值';
@@ -2287,12 +2282,8 @@ CREATE TABLE "next_console"."user_config_info"
  "config_status" varchar(255) NOT NULL ,
  "create_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
  "update_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
- "open_query_agent" integer ,
- "resource_shortcut_types" json ,
- "resource_table_show_fields" json ,
- "resource_auto_rag" boolean ,
- "search_engine_language_type" json ,
- "search_engine_resource_type" varchar(255) DEFAULT 'search'::character varying
+ "config_key" varchar(255) ,
+ "config_value" json
 )
 WITH (
     FILLFACTOR = 100,
@@ -2304,12 +2295,8 @@ COMMENT ON COLUMN "next_console"."user_config_info"."user_id" IS '用户id';
 COMMENT ON COLUMN "next_console"."user_config_info"."config_status" IS '配置状态';
 COMMENT ON COLUMN "next_console"."user_config_info"."create_time" IS '配置创建时间';
 COMMENT ON COLUMN "next_console"."user_config_info"."update_time" IS '配置更新时间';
-COMMENT ON COLUMN "next_console"."user_config_info"."open_query_agent" IS '是否启用query-agent';
-COMMENT ON COLUMN "next_console"."user_config_info"."resource_shortcut_types" IS '我的资源种类快捷方式';
-COMMENT ON COLUMN "next_console"."user_config_info"."resource_table_show_fields" IS '资源表格展示字段';
-COMMENT ON COLUMN "next_console"."user_config_info"."resource_auto_rag" IS '上传资源是否自动构建为知识索引';
-COMMENT ON COLUMN "next_console"."user_config_info"."search_engine_language_type" IS '搜索引擎语言种类';
-COMMENT ON COLUMN "next_console"."user_config_info"."search_engine_resource_type" IS '搜索引擎资源类型';
+COMMENT ON COLUMN "next_console"."user_config_info"."config_key" IS '配置键名';
+COMMENT ON COLUMN "next_console"."user_config_info"."config_value" IS '配置值(JSON格式)';
 COMMENT ON TABLE "next_console"."user_config_info" IS '用户配置表';
 CREATE TRIGGER update_user_config_info_trigger BEFORE UPDATE ON "next_console"."user_config_info" FOR EACH ROW
 EXECUTE FUNCTION update_update_time();
@@ -3084,7 +3071,6 @@ INSERT INTO "next_console"."role_info" ("role_id","role_name","role_desc","creat
 INSERT INTO "next_console"."role_info" ("role_id","role_name","role_desc","create_time","update_time","status") VALUES ('6','next_console_reader_admin','NextConsole只读管理员','2025-07-17 16:47:55.854884+08','2025-07-17 16:47:55.854884+08',1);
 INSERT INTO "next_console"."user_info" ("user_id","user_name","user_nick_name","user_nick_name_py","user_password","user_email","user_phone","user_gender","user_age","user_avatar","user_department","create_time","update_time","last_login_time","user_status","user_source","user_code","user_wx_nickname","user_wx_avatar","user_wx_openid","user_wx_union_id","user_position","user_company","user_account_type","user_name_py","user_expire_time","user_area","user_resource_base_path","user_company_id","user_department_id","user_resource_limit","user_accept_contact","user_invite_code") VALUES ('1','next_console','管理员','GLY','0cc5042d06a578e5eb453084a75aa2659aaf8564b87b26acec8cd3d0fd5c15ce','admin@nextconsole.cn','','男',28,'','产品研发部','2023-12-12 17:06:28+08','2025-04-20 09:36:34+08','2025-04-20 09:36:34+08',1,'admin',null,null,null,null,null,null,null,'个人账号','GLY',null,null,'',null,null,2048000,null,null);
 INSERT INTO "next_console"."user_role_info" ("rel_id","user_id","role_id","create_time","update_time","rel_status") VALUES ('1',1,5,'2025-07-17 16:37:15.221156+08','2025-07-17 16:37:15.221156+08',1);
-INSERT INTO "next_console"."user_config_info" ("id","user_id","config_status","create_time","update_time","open_query_agent","resource_shortcut_types","resource_table_show_fields","resource_auto_rag","search_engine_language_type","search_engine_resource_type") VALUES ('1',1,'正常','2024-04-29 23:06:09+08','2025-01-30 14:58:00+08',0,null,null,'t',null,'search');
 INSERT INTO "next_console"."assistant_info" ("id","assistant_name","assistant_desc","assistant_tags","assistant_status","assistant_role_prompt","assistant_avatar","assistant_language","assistant_voice","assistant_model_name","assistant_model_temperature","create_time","update_time","assistant_memory_size","rag_miss","rag_miss_answer","rag_factor","rag_relevant_threshold","workflow","workflow_flag","assistant_model_code","assistant_title","assistant_avatar_source","assistant_prologue","assistant_preset_question") VALUES ('-12345','官方增强助手','根据给定的会话上文以及用户当前问题，构建问答任务，评审问答结果，提升问答质量与性能，优化用户体验','["\u9700\u6c42\u641c\u96c6", "\u5de5\u5355\u5904\u7406", "\u8fd0\u7ef4\u670d\u52a1\u652f\u6301"]','发布','你是一个由图灵天问公司提供的基于生成式模型的智能助手。
 
 你是全能专家，你会专业高效地回答用户各类问题。
@@ -3129,7 +3115,7 @@ INSERT INTO "next_console"."assistant_info" ("id","assistant_name","assistant_de
 
 
 
-','images/logo.svg','中文','','deepseek-chat','1','2024-03-18 19:51:28+08','2025-03-19 19:03:27+08',6,null,null,null,null,null,'f','ddea5407-39-43-83e',null,null,null,null);
+','/images/logo.svg','中文','','deepseek-chat','1','2024-03-18 19:51:28+08','2025-03-19 19:03:27+08',6,null,null,null,null,null,'f','ddea5407-39-43-83e',null,null,null,null);
 INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruction_name","instruction_desc","instruction_system_prompt_template","instruction_status","instruction_user_prompt_params_json_schema","instruction_result_json_schema","create_time","update_time","instruction_type","instruction_user_prompt_template","instruction_result_template","user_id","instruction_result_extract_format","instruction_result_extract_separator","instruction_result_extract_quote","instruction_system_prompt_params_json_schema","instruction_result_extract_columns","instruction_history_length","instruction_temperature","instruction_max_tokens") VALUES ('5',-12345,'QueryUnderstand','查询理解','你是一个由图灵天问公司提供的基于生成式模型的智能助手。
 你是IT运维专家，你会专业高效地理解用户各类运维问题。
 
@@ -3582,7 +3568,7 @@ INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruc
 请直接给出回答：',null,1,'text','\n',null,null,'[]',3,'0',30);
 INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruction_name","instruction_desc","instruction_system_prompt_template","instruction_status","instruction_user_prompt_params_json_schema","instruction_result_json_schema","create_time","update_time","instruction_type","instruction_user_prompt_template","instruction_result_template","user_id","instruction_result_extract_format","instruction_result_extract_separator","instruction_result_extract_quote","instruction_system_prompt_params_json_schema","instruction_result_extract_columns","instruction_history_length","instruction_temperature","instruction_max_tokens") VALUES ('21',-12345,'WebPageFetch','网页解析',null,'正常',null,null,'2024-11-14 09:38:39+08','2024-11-14 09:38:39+08','code',null,null,1,'text','\n',null,null,'[]',0,'0',0);
 
-INSERT INTO "next_console"."llm_instance_info" ("id","llm_code","llm_name","user_id","llm_api_secret_key","llm_api_access_key","llm_type","llm_desc","llm_tags","llm_company","llm_status","create_time","update_time","llm_is_proxy","llm_base_url","llm_proxy_url","llm_source","llm_is_public","frequency_penalty","max_tokens","n","presence_penalty","response_format","stop","stream","temperature","top_p","llm_icon","is_std_openai","support_vis","support_file") VALUES ('1','ddea5407-39-43-83e','',1,'','','','','[]','','正常','2025-06-17 15:12:41+08','2025-06-17 15:12:41+08','f','','','admin','t','0',8192,1,'0','{"type": "text"}','[]','t','1','1','images/logo.svg','t','f','f');
+INSERT INTO "next_console"."llm_instance_info" ("id","llm_code","llm_name","user_id","llm_api_secret_key","llm_api_access_key","llm_type","llm_desc","llm_tags","llm_company","llm_status","create_time","update_time","llm_is_proxy","llm_base_url","llm_proxy_url","llm_source","llm_is_public","frequency_penalty","max_tokens","n","presence_penalty","response_format","stop","stream","temperature","top_p","llm_icon","is_std_openai","support_vis","support_file") VALUES ('1','ddea5407-39-43-83e','',1,'','','','','[]','','正常','2025-06-17 15:12:41+08','2025-06-17 15:12:41+08','f','','','admin','t','0',8192,1,'0','{"type": "text"}','[]','t','1','1','/images/logo.svg','t','f','f');
 
 ALTER SEQUENCE "next_console"."role_info_role_id_seq"  RESTART WITH 7;
 ALTER SEQUENCE "next_console"."user_info_user_id_seq"  RESTART WITH 2;
@@ -3591,4 +3577,373 @@ ALTER SEQUENCE "next_console"."user_config_info_id_seq"  RESTART WITH 2;
 ALTER SEQUENCE "next_console"."assistant_info_id_seq"  RESTART WITH 14;
 ALTER SEQUENCE "next_console"."llm_instance_info_id_seq"  RESTART WITH 2;
 
+
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','直辖市','北京市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','直辖市','天津市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','直辖市','上海市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','直辖市','重庆市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','台湾省','台北市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','台湾省','新北市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','台湾省','台中市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','台湾省','台南市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','台湾省','高雄市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','台湾省','桃园市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','广州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','深圳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','珠海市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','汕头市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','佛山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','韶关市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','湛江市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','肇庆市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','江门市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','茂名市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','惠州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','梅州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','汕尾市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','河源市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','阳江市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','清远市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','东莞市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','中山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','潮州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','揭阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广东省','云浮市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','南宁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','柳州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','桂林市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','梧州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','北海市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','防城港市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','钦州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','贵港市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','玉林市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','百色市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','贺州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','河池市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','来宾市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','广西壮族自治区','崇左市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','特别行政区','香港','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','特别行政区','澳门','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','呼和浩特市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','包头市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','乌海市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','赤峰市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','通辽市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','鄂尔多斯市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','呼伦贝尔市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','巴彦淖尔市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','乌兰察布市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','兴安盟','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','锡林郭勒盟','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','阿拉善盟','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','鄂伦春自治旗','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','鄂温克族自治旗','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','内蒙古自治区','莫力达瓦达斡尔族自治旗','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','西藏自治区','拉萨市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','西藏自治区','日喀则市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','西藏自治区','昌都市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','西藏自治区','林芝市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','西藏自治区','山南市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','西藏自治区','那曲市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','西藏自治区','阿里地区','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','宁夏回族自治区','银川市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','宁夏回族自治区','石嘴山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','宁夏回族自治区','吴忠市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','宁夏回族自治区','固原市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','宁夏回族自治区','中卫市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','乌鲁木齐市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','克拉玛依市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','吐鲁番市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','哈密市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','昌吉回族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','博尔塔拉蒙古自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','巴音郭楞蒙古自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','克孜勒苏柯尔克孜自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','伊犁哈萨克自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','喀什地区','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','和田地区','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','阿克苏地区','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','塔城地区','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','新疆维吾尔自治区','阿勒泰地区','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','石家庄市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','唐山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','秦皇岛市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','邯郸市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','邢台市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','保定市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','张家口市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','承德市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','沧州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','廊坊市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河北省','衡水市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','太原市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','大同市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','阳泉市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','长治市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','晋城市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','朔州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','晋中市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','运城市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','忻州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','临汾市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山西省','吕梁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','沈阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','大连市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','鞍山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','抚顺市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','本溪市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','丹东市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','锦州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','营口市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','阜新市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','辽阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','盘锦市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','铁岭市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','朝阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','辽宁省','葫芦岛市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','吉林省','长春市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','吉林省','吉林市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','吉林省','四平市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','吉林省','辽源市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','吉林省','通化市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','吉林省','白山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','吉林省','松原市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','吉林省','白城市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','吉林省','延边朝鲜族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','哈尔滨市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','齐齐哈尔市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','鸡西市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','鹤岗市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','双鸭山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','大庆市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','伊春市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','佳木斯市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','七台河市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','牡丹江市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','黑河市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','绥化市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','黑龙江省','大兴安岭地区','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','南京市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','无锡市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','徐州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','常州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','苏州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','南通市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','连云港市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','淮安市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','盐城市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','扬州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','镇江市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','泰州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江苏省','宿迁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','杭州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','宁波市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','温州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','嘉兴市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','湖州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','绍兴市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','金华市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','衢州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','舟山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','台州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','浙江省','丽水市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','合肥市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','芜湖市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','蚌埠市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','淮南市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','马鞍山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','淮北市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','铜陵市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','安庆市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','黄山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','滁州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','阜阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','宿州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','六安市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','亳州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','池州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','安徽省','宣城市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','福建省','福州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','福建省','厦门市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','福建省','莆田市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','福建省','三明市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','福建省','泉州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','福建省','漳州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','福建省','南平市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','福建省','龙岩市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','福建省','宁德市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','南昌市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','景德镇市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','萍乡市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','九江市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','新余市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','鹰潭市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','赣州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','吉安市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','宜春市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','抚州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','江西省','上饶市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','济南市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','青岛市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','淄博市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','枣庄市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','东营市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','烟台市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','潍坊市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','济宁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','泰安市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','威海市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','日照市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','临沂市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','德州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','聊城市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','滨州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','山东省','菏泽市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','郑州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','开封市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','洛阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','平顶山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','安阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','鹤壁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','新乡市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','焦作市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','濮阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','许昌市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','漯河市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','三门峡市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','南阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','商丘市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','信阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','周口市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','驻马店市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','河南省','济源市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','武汉市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','黄石市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','十堰市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','宜昌市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','襄阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','鄂州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','荆门市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','孝感市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','荆州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','黄冈市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','咸宁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','随州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','恩施土家族苗族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','仙桃市、潜江市、天门市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖北省','神农架林区','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','长沙市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','株洲市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','湘潭市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','衡阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','邵阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','岳阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','常德市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','张家界市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','益阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','郴州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','永州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','怀化市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','娄底市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','湖南省','湘西土家族苗族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','海口市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','三亚市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','三沙市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','儋州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','五指山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','琼海市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','文昌市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','万宁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','东方市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','定安县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','屯昌县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','澄迈县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','临高县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','白沙黎族自治县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','昌江黎族自治县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','乐东黎族自治县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','陵水黎族自治县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','保亭黎族苗族自治县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','海南省','琼中黎族苗族自治县','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','成都市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','自贡市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','攀枝花市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','泸州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','德阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','绵阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','广元市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','遂宁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','内江市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','乐山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','南充市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','眉山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','宜宾市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','广安市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','达州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','雅安市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','巴中市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','资阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','阿坝藏族羌族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','甘孜藏族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','四川省','凉山彝族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','贵州省','贵阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','贵州省','六盘水市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','贵州省','遵义市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','贵州省','安顺市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','贵州省','毕节市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','贵州省','铜仁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','贵州省','黔西南布依族苗族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','贵州省','黔东南苗族侗族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','贵州省','黔南布依族苗族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','昆明市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','曲靖市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','玉溪市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','保山市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','昭通市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','丽江市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','普洱市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','临沧市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','楚雄彝族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','红河哈尼族彝族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','文山壮族苗族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','西双版纳傣族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','大理白族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','德宏傣族景颇族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','怒江傈僳族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','云南省','迪庆藏族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','西安市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','铜川市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','宝鸡市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','咸阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','渭南市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','延安市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','汉中市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','榆林市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','安康市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','商洛市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','杨凌示范区','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','陕西省','韩城市、华阴市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','兰州市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','嘉峪关市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','金昌市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','白银市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','天水市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','武威市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','张掖市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','平凉市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','酒泉市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','庆阳市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','定西市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','陇南市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','临夏回族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','甘肃省','甘南藏族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','西宁市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','海东市','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','海北藏族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','黄南藏族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','海南藏族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','果洛藏族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','玉树藏族自治州','正常');
+INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','海西蒙古族藏族自治州','正常');
 

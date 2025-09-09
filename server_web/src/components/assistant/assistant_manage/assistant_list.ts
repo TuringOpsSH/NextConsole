@@ -1,4 +1,4 @@
-import {assistant_delete, assistant_search, assistant_update} from "@/api/assistant_center";
+import {assistant_delete, assistant_search, assistant_update} from "@/api/assistant-center";
 import {ElMessage} from "element-plus";
 import {nextTick, ref} from "vue";
 import {assistant} from "@/types/assistant";
@@ -26,14 +26,14 @@ export const assistant_deleted = ref<assistant>(
         assistant_status: '创建',
         assistant_tags: [],
         assistant_role_prompt: '',
-        assistant_avatar: 'images/logo.svg',
+        assistant_avatar: '/images/logo.svg',
         assistant_language: '中文',
         assistant_voice: '',
         assistant_memory_size: 4,
         assistant_model_name: 'deepseek-chat',
         assistant_model_type: 'chat',
         assistant_model_temperature: 1,
-        assistant_model_icon: 'images/openai.svg',
+        assistant_model_icon: '/images/openai.svg',
         create_time: '',
         update_time: '',
         assistant_knowledge_base: [],

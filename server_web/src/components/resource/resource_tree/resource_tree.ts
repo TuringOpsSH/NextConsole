@@ -1,8 +1,8 @@
 import { reactive, ref } from 'vue';
-import { ResourceItem } from '@/types/resource_type';
+import { ResourceItem } from '@/types/resource-type';
 import { get_init_resource } from '@/components/resource/resource_list/resource_list';
 import type Node from 'element-plus/es/components/tree/src/model/node';
-import { add_resource_object, move_resources, search_resource_object } from '@/api/resource_api';
+import { add_resource_object, move_resources, search_resource_object } from '@/api/resource-api';
 import { ElMessage, ElNotification } from 'element-plus';
 import {
   close_upload_manager,

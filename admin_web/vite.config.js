@@ -8,7 +8,11 @@ import path from "path";
 const isLocalhost = process.env.NODE_ENV === 'localhost2' || process.env.NODE_ENV === 'private';
 
 // 根据环境变量设置代理目标地址
-const proxyTarget = isLocalhost ? 'http://127.0.0.1:5011' : 'https://dev-admin.turingops.com.cn';
+let proxyTarget = isLocalhost ? 'http://127.0.0.1:5011' : 'https://dev-admin.turingops.com.cn';
+
+if (process.env.NODE_ENV === 'production') {
+  proxyTarget = 'https://admin.turingops.com.cn';
+}
 
 export default defineConfig({
   plugins: [
@@ -45,11 +49,38 @@ export default defineConfig({
     },
   },
   base: process.env.VITE_APP_PUBLIC_PATH,
-  configureWebpack: {
-    optimization: {
-      splitChunks: {
-        chunks: 'all'
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+
+    // Rollup 配置（替代 configureWebpack）
+    rollupOptions: {
+      output: {
+        // 代码分割优化
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+
+        // 手动代码分割
+        manualChunks: {
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          'pdf-utils': ['pdfjs-dist'],
+          // 根据实际依赖添加
+        }
+      }
+    },
+
+    // 构建大小警告
+    chunkSizeWarningLimit: 1000,
+
+    // 压缩配置
+    minify: true,
+    terserOptions:  {
+      compress: {
+        drop_console: true, // 生产环境移除 console
+        drop_debugger: true
       }
     }
-  }
+  },
 })

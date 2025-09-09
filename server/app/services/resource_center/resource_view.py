@@ -61,12 +61,21 @@ def get_resource_view_meta(params):
         db.session.commit()
     res = resource_view.show_info()
     # todo 根据用户配置和系统配置生成
+    from app.models.configure_center.system_config import SystemConfig
+    system_tools_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "tools",
+        SystemConfig.config_status == 1
+    ).first()
     view_config = {
         "support": True,
         "engine": "wps",
         "wps_config": {
             "wps_app_id": app.config.get("wps_app_id", "")
         }
+    }
+    edit_config = {
+        "support": False,
+        "engine": ""
     }
     if resource_view.resource_type in ("image", 'video', 'audio', 'media'):
 
@@ -115,6 +124,12 @@ def get_resource_view_meta(params):
             view_config["engine"] = "excel"
             # 尝试转换为PDF
             res["resource_show_url"] = get_resource_html_view_url(resource_view)
+        if system_tools_config.config_value.get("wps", {}).get("enabled"):
+            edit_config["support"] = True
+            edit_config["engine"] = "wps"
+            edit_config["wps_config"] = {
+                "wps_app_id": system_tools_config.config_value.get("wps", {}).get("app_id")
+            }
     # 尝试作为文本返回
     else:
         try:
@@ -127,6 +142,7 @@ def get_resource_view_meta(params):
             view_config["support"] = False
     # 补充查看配置
     res["view_config"] = view_config
+    res["edit_config"] = edit_config
     return next_console_response(result=res)
 
 

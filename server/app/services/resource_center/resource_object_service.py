@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import or_, distinct
 
 from app.app import app
-from app.models.configure_center.user_config import UserConfig
+from app.services.configure_center.user_config import get_user_config
 from app.models.knowledge_center.rag_ref_model import *
 from app.models.resource_center.resource_model import *
 from app.models.resource_center.share_resource_model import ResourceDownloadCoolingRecord
@@ -524,7 +524,7 @@ def set_task_icon(resource_type, resource_format):
     :param resource_format:
     :return:
     """
-    icon_base_url = "images/"
+    icon_base_url = "/images/"
     icon_url = 'file.svg'
     icon_format_map = {
         # 文档类型
@@ -740,8 +740,8 @@ def upload_resource_object(params, chunk_content):
         except Exception as e:
             return next_console_response(error_status=True, error_message=f"更新任务异常：{e.args}")
         # 满足条件后，提交自动构建任务
-        user_config = UserConfig.query.filter_by(user_id=user_id).first()
-        if user_config and user_config.resource_auto_rag:
+        user_config = get_user_config(user_id).json.get("result")
+        if user_config and user_config["resources"]["auto_rag"]:
             # 判断类型是否支持构建
             if check_rag_is_support(new_resource_meta):
                 build_params = {
@@ -2660,3 +2660,50 @@ def create_new_document(params):
         return next_console_response(error_status=True, error_message="新建模板文件异常")
     return next_console_response(result=new_resource.show_info())
 
+
+def simple_upload_resource(params, data):
+    """
+    简单上传资源
+    Parameters
+    ----------
+    params
+
+    Returns
+    -------
+
+    """
+    user_id = int(params.get("user_id"))
+    filename = data.filename
+    resource_type, resource_format = guess_resource_type(filename)
+    new_resource_path = generate_new_path(
+        module_name='resource_center',
+        user_id=user_id,
+        suffix=resource_format
+    ).json.get("result")
+    with open(new_resource_path, "wb") as f:
+        f.write(data.read())
+    # # 生成下载链接
+    resource_show_url = generate_download_url(
+        module_name="resource_center",
+        file_path=new_resource_path,
+        suffix=resource_format,
+    ).json.get("result")
+    new_resource = ResourceObjectMeta(
+        user_id=user_id,
+        resource_name=filename,
+        resource_type=resource_type,
+        resource_format=resource_format,
+        resource_size_in_MB=os.path.getsize(new_resource_path) / 1024 / 1024,
+        resource_path=new_resource_path,
+        resource_source_url=resource_show_url,
+        resource_show_url=resource_show_url,
+        resource_status="正常",
+        resource_source='resource_center'
+    )
+    db.session.add(new_resource)
+    db.session.commit()
+    return next_console_response(result={
+        "id": new_resource.id,
+        "name": new_resource.resource_name,
+        "url": new_resource.resource_show_url
+    })

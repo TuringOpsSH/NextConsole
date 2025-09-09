@@ -27,7 +27,7 @@ import Resource_view_tree from "@/components/resource/resource_tree/resource_vie
     <div id="upload_header">
       <div id="upload_header_left">
         <div id="upload_status_icon">
-          <el-image src="images/upload_blue.svg" style="width: 20px;height: 20px;"/>
+          <el-image src="/images/upload_blue.svg" style="width: 20px;height: 20px;"/>
         </div>
         <div id="upload_status_text" v-show="upload_manager_status == 'uploading'">
           <el-text>上传中 {{get_success_upload_task()}}/{{upload_file_task_list.length}}</el-text>
@@ -44,13 +44,13 @@ import Resource_view_tree from "@/components/resource/resource_tree/resource_vie
       </div>
       <div id="upload_header_right">
         <div class="upload_button" @click="show_upload_file_detail = !show_upload_file_detail">
-          <el-image src="images/triangle_down_blue.svg" style="width: 20px;height: 20px;"
+          <el-image src="/images/triangle_down_blue.svg" style="width: 20px;height: 20px;"
                     v-show="show_upload_file_detail"/>
-          <el-image src="images/triangle_right_grey.svg" style="width: 20px;height: 20px;"
+          <el-image src="/images/triangle_right_grey.svg" style="width: 20px;height: 20px;"
                     v-show="!show_upload_file_detail"/>
         </div>
         <div  class="upload_button" @click="close_upload_manager()">
-          <el-image src="images/close_grey.svg" style="width: 20px;height: 20px;"/>
+          <el-image src="/images/close_grey.svg" style="width: 20px;height: 20px;"/>
         </div>
       </div>
     </div>
@@ -106,26 +106,26 @@ import Resource_view_tree from "@/components/resource/resource_tree/resource_vie
               <div v-show="item.task_status == 'uploading'" class="upload-task-right-button-area">
                 <el-progress :percentage="get_upload_task_progress(item, 'progress')" type="circle" :width="40"/>
                 <div class="upload-button" @click="pause_upload_task(item)">
-                  <el-image src="images/pause_blue.svg" class="upload-button-icon"/>
+                  <el-image src="/images/pause_blue.svg" class="upload-button-icon"/>
                 </div>
               </div>
 
               <div v-show="item.task_status == 'success'" class="upload-task-right-button-area">
-                <el-image src="images/success_grey.svg" class="upload-button-icon"/>
+                <el-image src="/images/success_grey.svg" class="upload-button-icon"/>
               </div>
               <div v-show="item.task_status != 'uploading' && item.task_status != 'success'"
                    class="upload-task-right-button-area">
                 <el-tooltip v-if="item.task_status == 'error'" content="文件为空，无法上传">
-                  <el-image src="images/notice_error_small.svg"  class="upload-button-icon"></el-image>
+                  <el-image src="/images/notice_error_small.svg"  class="upload-button-icon"></el-image>
                 </el-tooltip>
                 <div class="upload-button" v-show="item.task_status != 'success'" @click="remove_upload_task(item)">
-                  <el-image src="images/close_grey.svg" class="upload-button-icon"/>
+                  <el-image src="/images/close_grey.svg" class="upload-button-icon"/>
                 </div>
                 <div class="upload-button" v-show="item.task_status == 'error'" @click="retry_upload_task(item)">
-                  <el-image src="images/retry_grey.svg" class="upload-button-icon"/>
+                  <el-image src="/images/retry_grey.svg" class="upload-button-icon"/>
                 </div>
                 <div class="upload-button" v-show="item.task_status == 'pause'" @click="continue_upload_task(item)">
-                  <el-image src="images/continue.svg" class="upload-button-icon"/>
+                  <el-image src="/images/continue.svg" class="upload-button-icon"/>
                 </div>
 
               </div>

@@ -18,11 +18,15 @@ def notice_user_by_email(data_list):
     """
     with app.app_context():
         # 发送邮件配置
-        smtp_server = app.config['smtp_server']
-        smtp_port = app.config['smtp_port']
-        smtp_user = app.config['smtp_user']
-        smtp_password = app.config['smtp_password']
-        notice_email = app.config['notice_email']
+        from app.models.configure_center.system_config import SystemConfig
+        system_tool_config = SystemConfig.query.filter(
+            SystemConfig.config_key == "tools",
+            SystemConfig.config_status == 1
+        ).first()
+        smtp_server = system_tool_config.config_value.get("email", {}).get("smtp_server")
+        smtp_port = system_tool_config.config_value.get("email", {}).get("smtp_port")
+        smtp_user = system_tool_config.config_value.get("email", {}).get("smtp_user")
+        smtp_password = system_tool_config.config_value.get("email", {}).get("smtp_password")
         server = smtplib.SMTP_SSL(smtp_server, smtp_port)
         server.login(smtp_user, smtp_password)
         for data in data_list:
@@ -50,9 +54,9 @@ def notice_user_by_email(data_list):
             try:
                 msg = MIMEText(content, 'html', 'utf-8')
                 msg['Subject'] = subject
-                msg['From'] = notice_email
+                msg['From'] = smtp_user
                 msg['To'] = user_email
-                server.sendmail(notice_email, user_email, msg.as_string())
+                server.sendmail(smtp_user, user_email, msg.as_string())
                 task_instance.notice_status = "已通知"
             except Exception as e:
                 app.logger.error("邮件发送失败: %s" % str(e))
@@ -148,11 +152,15 @@ def admin_notice_new_user(user_list):
     """
     with app.app_context():
         # 发送邮件配置
-        smtp_server = app.config['smtp_server']
-        smtp_port = app.config['smtp_port']
-        smtp_user = app.config['smtp_user']
-        smtp_password = app.config['smtp_password']
-        notice_email = app.config['notice_email']
+        from app.models.configure_center.system_config import SystemConfig
+        system_tool_config = SystemConfig.query.filter(
+            SystemConfig.config_key == "tools",
+            SystemConfig.config_status == 1
+        ).first()
+        smtp_server = system_tool_config.config_value.get("email", {}).get("smtp_server")
+        smtp_port = system_tool_config.config_value.get("email", {}).get("smtp_port")
+        smtp_user = system_tool_config.config_value.get("email", {}).get("smtp_user")
+        smtp_password = system_tool_config.config_value.get("email", {}).get("smtp_password")
         subject = '欢迎使用【NextConsole智能体服务平台】'
         server = smtplib.SMTP_SSL(smtp_server, smtp_port)
         server.login(smtp_user, smtp_password)
@@ -166,11 +174,11 @@ def admin_notice_new_user(user_list):
             # 创建 MIMEText 对象，并设置邮件主题、发件人、收件人
             msg = MIMEText(info_html, 'html', 'utf-8')
             msg['Subject'] = subject
-            msg['From'] = notice_email
+            msg['From'] = smtp_user
             msg['To'] = new_user.get("user_email")
             # 连接 SMTP 服务器并发送邮件
             try:
-                server.sendmail(notice_email, [new_user.get("user_email")], msg.as_string())
+                server.sendmail(smtp_user, [new_user.get("user_email")], msg.as_string())
             except Exception as e:
                 app.logger.error("邮件发送失败: %s" % str(e))
                 time.sleep(30)

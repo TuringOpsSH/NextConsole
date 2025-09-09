@@ -1,5 +1,5 @@
 import {UploadRawFile} from "element-plus";
-import {Users} from "@/types/users";
+import {UserCenter} from "@/types/user-center";
 import {Colleague, Company, Department, Friend} from "@/types/contacts";
 
 export interface ResourceItem{
@@ -38,7 +38,7 @@ export interface ResourceItem{
     ref_text?: string | null;
     rerank_score?: number | null;
     resource_tags?: ResourceTag[] | null;
-    author_info?: Users | null;
+    author_info?: UserCenter | null;
     access_list?: string[];
     [property: string]: any;
 }

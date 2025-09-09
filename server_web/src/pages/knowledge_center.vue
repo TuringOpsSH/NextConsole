@@ -36,7 +36,7 @@
                        :ellipsis="false"
               >
                 <!--            <el-menu-item index="1">-->
-                <!--              <el-image src="images/notice.svg" style="display: flex;align-items: center;width: 20px;height: 20px"/>-->
+                <!--              <el-image src="/images/notice.svg" style="display: flex;align-items: center;width: 20px;height: 20px"/>-->
                 <!--            </el-menu-item>-->
 
               </el-menu>
@@ -62,7 +62,7 @@
 import {onMounted, onUnmounted, ref} from "vue";
 import router from "@/router";
 import {useRoute} from "vue-router";
-import {show_flag_by_window_width} from "@/components/next_console/console/console";
+import {show_flag_by_window_width} from "@/components/next-console/console/console";
 const window_width = ref(window.innerWidth);
 
 function updateWidth() {

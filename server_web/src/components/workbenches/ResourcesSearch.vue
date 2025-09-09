@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ElMessage } from 'element-plus';
 import { nextTick, onMounted, ref, watch } from 'vue';
-import { attachment_get_all_resource_formats, attachment_search_resources } from '@/api/next_console';
-import { ResourceItem } from '@/types/resource_type';
-import { Users } from '@/types/users';
-import { getInfo } from '@/utils/auth';
+import { attachment_get_all_resource_formats, attachment_search_resources } from '@/api/next-console';
+import { ResourceItem } from '@/types/resource-type';
+import { IUsers } from '@/types/user-center';
+
 
 const props = defineProps({
   model: {
@@ -19,7 +19,7 @@ const props = defineProps({
   }
 });
 const emit = defineEmits(['commit', 'close']);
-const userInfo = ref<Users>({
+const userInfo = ref<IUsers>({
   user_resource_limit: 0,
   user_id: null,
   user_code: null,
@@ -128,13 +128,13 @@ function getResourceIcon(resource: ResourceItem) {
     if (
       resource.resource_icon.includes('http') ||
       resource.resource_icon.includes('data:image') ||
-      resource.resource_icon.includes('images/')
+      resource.resource_icon.includes('/images/')
     ) {
       return resource.resource_icon;
     }
-    return 'images/' + resource.resource_icon;
+    return '/images/' + resource.resource_icon;
   } else {
-    return 'images/' + 'html.svg';
+    return '/images/' + 'html.svg';
   }
 }
 function sortResourceSize(a, b) {
@@ -339,7 +339,6 @@ async function updateSelectedRow() {
   }
 }
 onMounted(async () => {
-  userInfo.value = await getInfo();
   changeRecentSearchType({
     search_type: 'all',
     search_type_name: '全部',
@@ -410,7 +409,7 @@ defineExpose({
         >
           <template #prefix>
             <el-image
-              src="images/search.svg"
+              src="/images/search.svg"
               style="width: 20px; height: 20px; cursor: pointer"
               @click="searchResourceKeyword"
             />
@@ -423,7 +422,7 @@ defineExpose({
               @change="searchResourceKeyword(false)"
             />
             <el-tooltip placement="top" effect="dark">
-              <el-image src="images/tooltip.svg" style="width: 20px; height: 20px" />
+              <el-image src="/images/tooltip.svg" style="width: 20px; height: 20px" />
               <template #content> 基于内容理解的深度搜索，提供更精准的搜索结果 </template>
             </el-tooltip>
           </template>

@@ -2,8 +2,7 @@ import {nextTick, reactive, ref} from "vue";
 import {assistant, model_instance} from "@/types/assistant";
 import {ElInput, ElMessage, genFileId, UploadFile, UploadFiles, UploadInstance, UploadRawFile} from "element-plus";
 import {KGMeta} from "@/types/kg";
-import {search_kg_list} from "@/api/kg_center";
-import {getToken} from "@/utils/auth";
+import {search_kg_list} from "@/api/kg-center";
 import Clipboard from "clipboard";
 
 
@@ -20,7 +19,7 @@ export const assistant_choose = reactive<assistant>(
         assistant_status: '创建',
         assistant_tags: [],
         assistant_role_prompt: '',
-        assistant_avatar: 'images/logo.svg',
+        assistant_avatar: '/images/logo.svg',
         assistant_avatar_url: '',
         assistant_language: '中文',
         assistant_voice: '',
@@ -28,7 +27,7 @@ export const assistant_choose = reactive<assistant>(
         assistant_model_name: 'deepseek-chat',
         assistant_model_type: 'chat',
         assistant_model_temperature: 1,
-        assistant_model_icon: 'images/deep_seek_logo.png',
+        assistant_model_icon: '/images/deep_seek_logo.png',
         create_time: '',
         update_time: '',
         assistant_knowledge_base: [],
@@ -99,7 +98,7 @@ export const marks = reactive({
 })
 
 export const assistant_avatar_upload_header = {
-    Authorization: 'Bearer ' + getToken(),
+    Authorization: 'Bearer '  ,
 }
 export const assistant_avatar_upload_data = ref(
     {

@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import 'highlight.js/styles/stackoverflow-light.min.css';
-import {Picture as IconPicture} from '@element-plus/icons-vue';
+import { Picture as IconPicture } from '@element-plus/icons-vue';
+import { ArrowUp, ArrowDown } from '@element-plus/icons-vue';
 import markdownItKatex from '@vscode/markdown-it-katex';
 import Clipboard from 'clipboard';
-import {ElMessage} from 'element-plus';
+import { ElMessage } from 'element-plus';
 import hljs from 'highlight.js';
 import MarkdownIt from 'markdown-it';
 import markdownItMermaid from 'markdown-it-mermaid-plugin';
+import MarkdownTasks from 'markdown-it-task-lists';
 import mermaid from 'mermaid';
-import {nextTick, onMounted, reactive, ref, watch} from 'vue';
+import { nextTick, reactive, ref, watch } from 'vue';
 import {
   attachment_get_detail as attachmentGetDetail,
   search_messages as searchMessages,
@@ -16,31 +18,28 @@ import {
   search_reference as searchReference,
   search_session as searchSession,
   update_messages as updateMessages
-} from '@/api/next_console';
-import {download_resource_object as downloadResourceObject} from '@/api/resource_api';
-import SimpleProgress from './SimpleProgress.vue';
+} from '@/api/next-console';
+import { download_resource_object as downloadResourceObject } from '@/api/resource-api';
 import WorkFlowArea from './WorkFlowArea.vue';
 import router from '@/router';
-import {ArrowUp, ArrowDown} from '@element-plus/icons-vue';
 import {
   msg_item as IMsgItem,
   msg_queue_item as IMsgQueueItem,
   qa_item as IQaItem,
   recommend_question_item as IRecommendQuestionItem,
   recommend_question_map as IRecommendQuestionMap,
-  reference_item as IReferenceItem,
+  IReferenceItem,
   reference_map as IReferenceMap,
   session_item as ISessionItem,
   SessionAttachment,
   workflow_task_item as IWorkflowTaskItem,
   workflow_task_map as IWorkflowTaskMap
-} from '@/types/next_console';
-import {ResourceItem} from '@/types/resource_type';
-import {Users} from '@/types/users';
-import {getInfo} from '@/utils/auth';
+} from '@/types/next-console';
+import { ResourceItem } from '@/types/resource-type';
+import SimpleProgress from './SimpleProgress.vue';
 import '@/styles/katex.min.css';
-import WelComeArea from "./WelComeArea.vue";
-import MarkdownTasks from 'markdown-it-task-lists';
+import { useUserInfoStore } from '@/stores/userInfoStore';
+import WelComeArea from './WelComeArea.vue';
 const props = defineProps({
   sessionCode: {
     type: String,
@@ -87,48 +86,48 @@ let mdAnswer = new MarkdownIt({
     let language = lang ? lang : 'plaintext';
     let languageText = '<span style="">' + language + '</span>';
     let copyButton =
-        '<img src="images/copy.svg" alt="复制" class="answer-code-copy" style="width: 20px;height: 20px;cursor: pointer"/>';
+      '<img src="/images/copy.svg" alt="复制" class="answer-code-copy" style="width: 20px;height: 20px;cursor: pointer"/>';
     let header =
-        '<div style="display: flex;justify-content: space-between;border-bottom: 1px solid #D0D5DD;padding: 8px">' +
-        languageText +
-        copyButton +
-        '</div>';
+      '<div style="display: flex;justify-content: space-between;border-bottom: 1px solid #D0D5DD;padding: 8px">' +
+      languageText +
+      copyButton +
+      '</div>';
 
     if (hljs.getLanguage(language)) {
       try {
         return (
-            '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
-            'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
-            header +
-            '<code class="hljs-code hljs-line-numbers" >' +
-            '<br>' +
-            hljs.highlight(str, { language: language, ignoreIllegals: true }).value +
-            '<br>' +
-            '</code></pre>'
+          '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
+          'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
+          header +
+          '<code class="hljs-code hljs-line-numbers" >' +
+          '<br>' +
+          hljs.highlight(str, { language: language, ignoreIllegals: true }).value +
+          '<br>' +
+          '</code></pre>'
         );
       } catch (__) {}
     }
 
     return (
-        '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
-        'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
-        header +
-        '<code class="hljs-code hljs-line-numbers" >' +
-        '<br>' +
-        hljs.highlight(str, { language: 'plaintext', ignoreIllegals: true }).value +
-        '<br>' +
-        '</code></pre>'
+      '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
+      'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
+      header +
+      '<code class="hljs-code hljs-line-numbers" >' +
+      '<br>' +
+      hljs.highlight(str, { language: 'plaintext', ignoreIllegals: true }).value +
+      '<br>' +
+      '</code></pre>'
     );
   }
 });
 
 mdAnswer.use(markdownItKatex, {
   throwOnError: false,
-  errorColor: ' #cc0000',
-  strict: false // 允许非标准语法
+  errorColor: '#cc0000',
+  strict: false
 });
 mdAnswer.use(markdownItMermaid);
-mdAnswer.renderer.rules.image = function (tokens, idx, options, env, self) {
+mdAnswer.renderer.rules.image = function (tokens, idx, options, env) {
   const token = tokens[idx];
   const src = token.attrGet('src');
   const alt = token.content;
@@ -167,37 +166,8 @@ const qaWorkflowMap = ref<IWorkflowTaskMap>({});
 const userStopScroll = ref(false);
 const scrollTimer = ref();
 const questionRunningCnt = ref(0);
-const userInfo = ref<Users>({
-  user_resource_limit: 0,
-  user_id: null,
-  user_code: null,
-  user_name: null,
-  user_nick_name: null,
-  user_nick_name_py: 'null',
-  user_email: null,
-  user_phone: null,
-  user_gender: null,
-  user_age: null,
-  user_avatar: null,
-  user_department: null,
-  user_company: null,
-  user_account_type: null,
-  create_time: null,
-  update_time: null,
-  user_expire_time: null,
-  last_login_time: null,
-  user_role: null,
-  user_status: null,
-  user_source: null,
-  user_wx_nickname: null,
-  user_wx_avatar: null,
-  user_wx_openid: null,
-  user_wx_union_id: null,
-  user_position: null,
-  user_department_id: null,
-  user_company_id: null
-});
-const referenceDrawerWidth = ref(window.innerWidth < 768 ? '60vw' : '35vw');
+const userInfoStore = useUserInfoStore();
+const referenceDrawerWidth = ref(window.innerWidth < 768 ? '60%' : '35%');
 const chooseModel = ref(false);
 const chooseMsgCnt = ref(0);
 const chooseMsgAll = ref(false);
@@ -324,30 +294,26 @@ async function showSupDetailFn(item: IMsgQueueItem, event) {
     if (referenceList?.length) {
       currentSupDetail.value = null;
       // 获取目标链接值
-      const targetLink = isSupLink ? target.getAttribute('href') :
-          target.querySelector('a')?.getAttribute('href');
-      const targetIndex =  event.target.textContent;
+      const targetLink = isSupLink ? target.getAttribute('href') : target.querySelector('a')?.getAttribute('href');
+      const targetIndex = event.target.textContent;
       let targetIndexNumber = -1;
       // 使用正则表达式匹配 [数字] 格式
       const match = targetIndex.match(/\[(\d+)\]/);
       if (match) {
         // 如果匹配成功，提取第一个捕获组并转为整数
         targetIndexNumber = parseInt(match[1], 10);
-      }
-      else {
+      } else {
         // 如果不是 [数字] 格式，尝试直接转为整数
-        try  {
+        try {
           targetIndexNumber = parseInt(targetIndex, 10);
-        } catch (e) {
-
-        }
+        } catch (e) {}
       }
       for (let i = 0; i <= referenceList.length; i++) {
         if (
-            (referenceList[i]?.resource_source_url == targetLink && targetLink)
-            || (referenceList[i]?.resource_download_url == targetLink && targetLink)
-            || targetLink?.includes('next_console/resources/resource_viewer/' + referenceList[i]?.resource_id)
-            || (i === targetIndexNumber)
+          (referenceList[i]?.resource_source_url == targetLink && targetLink) ||
+          (referenceList[i]?.resource_download_url == targetLink && targetLink) ||
+          targetLink?.includes('next_console/resources/resource_viewer/' + referenceList[i]?.resource_id) ||
+          i === targetIndexNumber
         ) {
           currentSupDetail.value = referenceList[i];
           break;
@@ -408,15 +374,22 @@ function copyAnswer(item: IMsgQueueItem) {
     // @ts-ignore
     return;
   }
-  let content = item?.qa_value?.answer?.[msgParentId]?.[0]?.msg_content;
-  if (!content) {
-    return;
+  let finalData = '';
+  for (let subMsg of item?.qa_value?.answer?.[msgParentId]) {
+    if (!subMsg?.msg_content) {
+      continue;
+    }
+    console.log(subMsg);
+    if (subMsg?.msg_format == 'workflow') {
+      continue;
+    }
+    finalData += subMsg?.msg_content;
   }
-  // 去除 <sup> 标签及其内容
-  const cleanedData = content.replace(/<sup>.*?<\/sup>/g, '');
 
-  // 去除参考索引，如 [1]: https://www.turingops.com.cn/dev/
-  const finalData = cleanedData.replace(/\[.*?]:\s*\S+/g, '');
+  // 去除 <sup> 标签及其内容
+  // const cleanedData = content.replace(/<sup>.*?<\/sup>/g, '');
+  //
+  // const finalData = cleanedData.replace(/\[.*?]:\s*\S+/g, '');
   Clipboard.copy(finalData.trim());
   ElMessage({
     message: '复制成功',
@@ -518,8 +491,8 @@ function splitReasonMarkdown(item: IMsgQueueItem) {
     // 如果完成的html比存量html多，截取，可能原因是搜索时，搜索到的内容比原有的内容多
     if (finishQueue.length < item.qa_value.answer[msgParentId][i].msg_reason_content_finish_html.length) {
       item.qa_value.answer[msgParentId][i].msg_reason_content_finish_html = item.qa_value.answer[msgParentId][
-          i
-          ].msg_reason_content_finish_html.slice(0, finishQueue.length);
+        i
+      ].msg_reason_content_finish_html.slice(0, finishQueue.length);
     }
     //如果还剩下没有匹配上的，直接推入
     if (queue.length) {
@@ -550,8 +523,7 @@ function splitMarkdown(item: IMsgQueueItem) {
         task_status: 'finished'
       });
       continue;
-    }
-    else if (item.qa_value.answer[msgParentId]?.[i]?.msg_format == 'recommendQ') {
+    } else if (item.qa_value.answer[msgParentId]?.[i]?.msg_format == 'recommendQ') {
       msgContent = JSON.parse(msgContent);
       console.log('recommendQ', msgContent);
       const recommendQuestionList = [];
@@ -567,8 +539,7 @@ function splitMarkdown(item: IMsgQueueItem) {
       }
       updateRecommendQuestion(recommendQuestionList);
       continue;
-    }
-    else if (item.qa_value.answer[msgParentId]?.[i]?.msg_format == 'customize') {
+    } else if (item.qa_value.answer[msgParentId]?.[i]?.msg_format == 'customize') {
       // 用json代码块包裹
       try {
         msgContent = JSON.parse(msgContent);
@@ -619,8 +590,8 @@ function splitMarkdown(item: IMsgQueueItem) {
     // 如果完成的html比存量html多，截取，可能原因是搜索时，搜索到的内容比原有的内容多
     if (finishQueue.length < item.qa_value.answer[msgParentId][i].msg_content_finish_html.length) {
       item.qa_value.answer[msgParentId][i].msg_content_finish_html = item.qa_value.answer[msgParentId][
-          i
-          ].msg_content_finish_html.slice(0, finishQueue.length);
+        i
+      ].msg_content_finish_html.slice(0, finishQueue.length);
     }
     //如果还剩下没有匹配上的，直接推入
     if (queue.length) {
@@ -730,12 +701,12 @@ async function addCopyButtonEvent() {
     button.dataset.clickListener = 'true';
   }
   // @ts-ignore
-  hljs.highlightAll()
+  hljs.highlightAll();
   // 2. 将 hljs 绑定到 window 对象
-  window.hljs = hljs
+  window.hljs = hljs;
   await import('highlightjs-line-numbers.js');
-  await import ('highlightjs-line-numbers.js/dist/highlightjs-line-numbers.min.js')
-  document.querySelectorAll('code.hljs-line-numbers').forEach((block) => {
+  await import('highlightjs-line-numbers.js/dist/highlightjs-line-numbers.min.js');
+  document.querySelectorAll('code.hljs-line-numbers').forEach(block => {
     hljs?.lineNumbersBlock(block);
   });
 }
@@ -989,7 +960,7 @@ async function beginAnswer(data) {
     const res = await attachmentGetDetail(params);
     if (!res.error_status) {
       newQaItem.qa_value.question[0].attachment_list = res.result.filter(subAttachment =>
-          data?.attachments.includes(subAttachment.id)
+        data?.attachments.includes(subAttachment.id)
       );
     }
   }
@@ -1040,7 +1011,7 @@ async function updateAnswer(data) {
               }
               if (msgReasonContent !== undefined && msgReasonContent) {
                 msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].reasoning_content +=
-                    msgReasonContent;
+                  msgReasonContent;
               }
               break;
             }
@@ -1088,8 +1059,7 @@ function generateNewMsg(jsonData) {
       assistant_id: -12345,
       shop_assistant_id: null
     };
-  }
-  else if (msgFormat == 'recommendQ') {
+  } else if (msgFormat == 'recommendQ') {
     newMsgItem = <IMsgItem>{
       msg_content: JSON.stringify(jsonData?.choices[0].delta),
       msg_format: 'recommendQ',
@@ -1103,8 +1073,7 @@ function generateNewMsg(jsonData) {
       assistant_id: -12345,
       shop_assistant_id: null
     };
-  }
-  else if (msgFormat == 'customize') {
+  } else if (msgFormat == 'customize') {
     newMsgItem = <IMsgItem>{
       msg_content: JSON.stringify(jsonData?.choices[0].delta),
       msg_format: 'customize',
@@ -1118,8 +1087,7 @@ function generateNewMsg(jsonData) {
       assistant_id: -12345,
       shop_assistant_id: null
     };
-  }
-  else {
+  } else {
     newMsgItem = <IMsgItem>{
       msg_content: msgContent,
       reasoning_content: msgReasonContent,
@@ -1230,7 +1198,6 @@ function updateWorkflowItemStatus(data: IWorkflowTaskItem) {
   }
 }
 function updateRecommendQuestion(data: IRecommendQuestionItem[]) {
-
   for (const recommendQuestion of data) {
     if (!msgRecommendQuestion.value?.[recommendQuestion.msg_id]) {
       msgRecommendQuestion.value[recommendQuestion.msg_id] = [recommendQuestion];
@@ -1267,15 +1234,15 @@ function getResourceIcon(resource: ResourceItem) {
   // 获取资源图标
   if (resource.resource_icon) {
     if (
-        resource.resource_icon.includes('http') ||
-        resource.resource_icon.includes('data:image') ||
-        resource.resource_icon.includes('images/')
+      resource.resource_icon.includes('http') ||
+      resource.resource_icon.includes('data:image') ||
+      resource.resource_icon.includes('/images/')
     ) {
       return resource.resource_icon;
     }
-    return 'images/' + resource.resource_icon;
+    return '/images/' + resource.resource_icon;
   } else {
-    return 'images/html.svg';
+    return '/images/html.svg';
   }
 }
 async function downloadAttachment(attachment) {
@@ -1373,9 +1340,6 @@ function isJson(result: string) {
   }
   return true;
 }
-onMounted(async () => {
-  userInfo.value = await getInfo();
-});
 // onBeforeRouteLeave((to, from, next) => {
 //   closeUploadManager();
 //   next();
@@ -1394,38 +1358,38 @@ defineExpose({
   turnOnMsgChooseModel,
   turnOffMsgChooseModel,
   refreshMsgFlow,
-  scrollToBottom,
+  scrollToBottom
 });
 watch(
-    () => props.sessionCode,
-    async newVal => {
-      if (newVal && newVal !== currentSessionCode.value) {
-        currentSessionCode.value = newVal;
-        await refreshMsgFlow();
-      }
-    },
-    { immediate: true }
+  () => props.sessionCode,
+  async newVal => {
+    if (newVal && newVal !== currentSessionCode.value) {
+      currentSessionCode.value = newVal;
+      await refreshMsgFlow();
+    }
+  },
+  { immediate: true }
 );
 watch(
-    () => props.welcomeConfig,
-    async newVal => {
-      if (newVal) {
-        localWelComeConfig.value = newVal;
-      }
-    },
-    { immediate: true }
+  () => props.welcomeConfig,
+  async newVal => {
+    if (newVal) {
+      localWelComeConfig.value = newVal;
+    }
+  },
+  { immediate: true }
 );
 </script>
 
 <template>
   <el-scrollbar
-      ref="msgFlowScrollbarRef"
-      v-loading="loadingMessages"
-      element-loading-text="记忆加载中..."
-      wrap-style="width: 100%;"
-      view-style="width: 100%;height: 100%;"
-      @scroll="handleScroll"
-      @wheel="handleWheel"
+    ref="msgFlowScrollbarRef"
+    v-loading="loadingMessages"
+    element-loading-text="记忆加载中..."
+    wrap-style="width: 100%;"
+    view-style="width: 100%;height: 100%;"
+    @scroll="handleScroll"
+    @wheel="handleWheel"
   >
     <el-container>
       <el-main class="msg-main" @dragover.prevent="handleDragOver">
@@ -1434,15 +1398,15 @@ watch(
           <el-col :span="20" :xs="22">
             <div id="message-flow-box" ref="msgFlowBoxRef">
               <WelComeArea
-                  v-show="(!msgFlow?.length && !loadingMessages) || localWelComeConfig?.keep"
-                  :welcome-config="localWelComeConfig"
-                  @prefix-question-click="args => emit('click-recommend-question', { question: args })"
+                v-show="(!msgFlow?.length && !loadingMessages) || localWelComeConfig?.keep"
+                :welcome-config="localWelComeConfig"
+                @prefix-question-click="args => emit('click-recommend-question', { question: args })"
               />
               <div
-                  v-for="(item, idx) in msgFlow"
-                  :key="idx"
-                  class="msg-flow-qa-box"
-                  @mouseleave="
+                v-for="(item, idx) in msgFlow"
+                :key="idx"
+                class="msg-flow-qa-box"
+                @mouseleave="
                   item.show_button_question_area = false;
                   item.show_button_answer_area = false;
                 "
@@ -1450,8 +1414,8 @@ watch(
                 <div class="msg-flow-question-box" @mouseenter="item.show_button_question_area = true">
                   <div v-if="item?.qa_value?.question?.[0] && chooseModel" class="msg-check-box">
                     <el-checkbox
-                        v-model="item.qa_value.question[0].msg_is_selected"
-                        @change="checkSelectMsgMiddleStatus"
+                      v-model="item.qa_value.question[0].msg_is_selected"
+                      @change="checkSelectMsgMiddleStatus"
                     />
                   </div>
                   <div class="msg-flow-question-content">
@@ -1465,15 +1429,15 @@ watch(
                         <div class="quote-right-container">
                           <el-tooltip content="引用" placement="top">
                             <SvgIcon
-                                name="quote-right"
-                                :width="16"
-                                :height="16"
-                                @click="addQuote(item.qa_value.question[0]?.attachment_list)"
+                              name="quote-right"
+                              :width="16"
+                              :height="16"
+                              @click="addQuote(item.qa_value.question[0]?.attachment_list)"
                             />
                           </el-tooltip>
                         </div>
                         <div class="question-button" @click="copyQuestion(item)">
-                          <el-image class="question-button-icon" src="images/copy.svg" />
+                          <el-image class="question-button-icon" src="/images/copy.svg" />
                         </div>
                       </div>
                     </div>
@@ -1481,26 +1445,26 @@ watch(
                       <div v-for="(attachment, idx2) in item.qa_value.question[0]?.attachment_list" :key="idx2">
                         <div v-if="attachment.resource_type == 'image'" class="attachment-item">
                           <el-image
-                              :zoom-rate="1.2"
-                              :max-scale="7"
-                              :min-scale="0.2"
-                              fit="cover"
-                              :src="attachment.resource_download_url || attachment.resource_show_url"
-                              :preview-src-list="[attachment.resource_download_url || attachment.resource_show_url]"
-                              class="attachment-item-img"
+                            :zoom-rate="1.2"
+                            :max-scale="7"
+                            :min-scale="0.2"
+                            fit="cover"
+                            :src="attachment.resource_download_url || attachment.resource_show_url"
+                            :preview-src-list="[attachment.resource_download_url || attachment.resource_show_url]"
+                            class="attachment-item-img"
                           />
                         </div>
                         <template v-else-if="attachment.resource_type == 'document'">
                           <slot
-                              v-if="$slots['document-attachment']"
-                              name="document-attachment"
-                              :attachment="attachment"
-                          ></slot>
+                            v-if="$slots['document-attachment']"
+                            name="document-attachment"
+                            :attachment="attachment"
+                          />
                           <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
                             <div class="std-middle-box">
                               <el-image
-                                  :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
-                                  class="attachment-item-img"
+                                :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
+                                class="attachment-item-img"
                               />
                             </div>
                             <div class="attachment-item-right">
@@ -1517,15 +1481,15 @@ watch(
                         </template>
                         <template v-else-if="attachment.resource_type == 'code'">
                           <slot
-                              v-if="$slots['document-attachment']"
-                              name="document-attachment"
-                              :attachment="attachment"
-                          ></slot>
+                            v-if="$slots['document-attachment']"
+                            name="document-attachment"
+                            :attachment="attachment"
+                          />
                           <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
                             <div class="std-middle-box">
                               <el-image
-                                  :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
-                                  class="attachment-item-img"
+                                :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
+                                class="attachment-item-img"
                               />
                             </div>
                             <div class="attachment-item-right">
@@ -1543,16 +1507,16 @@ watch(
                         <div v-else-if="attachment.resource_type == 'video'" class="attachment-item">
                           <video controls style="height: 120px; width: 160px">
                             <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="video/mp4"
+                              :src="attachment.resource_download_url || attachment.resource_show_url"
+                              type="video/mp4"
                             />
                             <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="video/webm"
+                              :src="attachment.resource_download_url || attachment.resource_show_url"
+                              type="video/webm"
                             />
                             <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="video/ogg"
+                              :src="attachment.resource_download_url || attachment.resource_show_url"
+                              type="video/ogg"
                             />
                             Your browser does not support the video tag.
                           </video>
@@ -1560,31 +1524,31 @@ watch(
                         <div v-else-if="attachment.resource_type == 'audio'" class="attachment-item">
                           <audio controls>
                             <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/mpeg"
+                              :src="attachment.resource_download_url || attachment.resource_show_url"
+                              type="audio/mpeg"
                             />
                             <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/ogg"
+                              :src="attachment.resource_download_url || attachment.resource_show_url"
+                              type="audio/ogg"
                             />
                             <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/wav"
+                              :src="attachment.resource_download_url || attachment.resource_show_url"
+                              type="audio/wav"
                             />
                             <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/mp4"
+                              :src="attachment.resource_download_url || attachment.resource_show_url"
+                              type="audio/mp4"
                             />
                             <source
-                                :src="attachment.resource_download_url || attachment.resource_show_url"
-                                type="audio/x-m4a"
+                              :src="attachment.resource_download_url || attachment.resource_show_url"
+                              type="audio/x-m4a"
                             />
                             Your browser does not support the audio tag.
                           </audio>
                         </div>
                         <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
                           <div class="std-middle-box">
-                            <el-image src="images/file.svg" class="attachment-item-img" />
+                            <el-image src="/images/file.svg" class="attachment-item-img" />
                           </div>
                           <div class="attachment-item-right">
                             <el-text style="width: 120px" truncated>
@@ -1607,83 +1571,83 @@ watch(
                   </div>
                   <div class="msg-flow-question-avatar">
                     <el-avatar
-                        v-if="userInfo?.user_avatar"
-                        :src="userInfo?.user_avatar"
-                        style="background-color: white"
+                      v-if="userInfoStore.userInfo?.user_avatar"
+                      :src="userInfoStore.userInfo?.user_avatar"
+                      style="background-color: white"
                     />
                     <el-avatar v-else style="background: #d1e9ff; cursor: pointer">
                       <el-text style="font-weight: 600; color: #1570ef">
-                        {{ userInfo?.user_nick_name_py }}
+                        {{ userInfoStore.userInfo?.user_nick_name_py }}
                       </el-text>
                     </el-avatar>
                   </div>
                 </div>
                 <div class="msg-flow-answer-box" @mouseenter="item.show_button_answer_area = true">
                   <div
-                      v-if="item.qa_value.answer[item.qa_value.question[0]?.msg_id]?.[0] && chooseModel"
-                      class="msg-check-box"
+                    v-if="item.qa_value.answer[item.qa_value.question[0]?.msg_id]?.[0] && chooseModel"
+                    class="msg-check-box"
                   >
                     <el-checkbox
-                        v-model="item.qa_value.answer[item.qa_value.question[0].msg_id][0].msg_is_selected"
-                        @change="checkSelectMsgMiddleStatus"
+                      v-model="item.qa_value.answer[item.qa_value.question[0].msg_id][0].msg_is_selected"
+                      @change="checkSelectMsgMiddleStatus"
                     />
                   </div>
                   <div class="msg-flow-answer-avatar">
                     <el-image
-                        :src="currentSession?.app_icon || currentSession?.session_assistant_avatar"
-                        style="background-color: white"
-                        shape="square"
-                        class="answer-avatar"
-                        :style="'margin-top: ' + (qaWorkflowMap?.[item.qa_id]?.length ? '0' : '20px')"
+                      :src="currentSession?.app_icon || currentSession?.session_assistant_avatar"
+                      style="background-color: white"
+                      shape="square"
+                      class="answer-avatar"
+                      :style="'margin-top: ' + (qaWorkflowMap?.[item.qa_id]?.length ? '0' : '20px')"
                     />
                   </div>
                   <div class="msg-flow-answer-content">
                     <WorkFlowArea
-                        :qa-finished="item.qa_finished"
-                        :qa-workflow-open="item.qa_workflow_open"
-                        :workflow-task="qaWorkflowMap?.[item.qa_id]"
+                      :qa-finished="item.qa_finished"
+                      :qa-workflow-open="item.qa_workflow_open"
+                      :workflow-task="qaWorkflowMap?.[item.qa_id]"
                     />
                     <div class="msg-flow-answer-inner" :class="{ 'msg-flow-answer-inner-short': item?.short_answer }">
-                      <div v-for="(sub_finish_msg, idx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]"
-                           style="width: 100%"
+                      <div
+                        v-for="(sub_finish_msg, idx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]"
+                        style="width: 100%"
                       >
                         <div v-show="sub_finish_msg?.msg_reason_content_finish_html?.length" class="reason-container">
                           <div class="reason-header">
-                              <el-button v-if="!sub_finish_msg?.msg_reason_content_hide"
-                                    @click="sub_finish_msg.msg_reason_content_hide = true"
-
-                                         :icon="ArrowUp"
-                              >
-
-                                 收起推理过程
-                              </el-button>
-                              <el-button v-if="sub_finish_msg?.msg_reason_content_hide"
-                                    @click="sub_finish_msg.msg_reason_content_hide = false"
-                                         :icon="ArrowDown"
-
+                            <el-button
+                              v-if="!sub_finish_msg?.msg_reason_content_hide"
+                              :icon="ArrowUp"
+                              @click="sub_finish_msg.msg_reason_content_hide = true"
+                            >
+                              收起推理过程
+                            </el-button>
+                            <el-button
+                              v-if="sub_finish_msg?.msg_reason_content_hide"
+                              :icon="ArrowDown"
+                              @click="sub_finish_msg.msg_reason_content_hide = false"
+                            >
                               > 展开推理过程
                             </el-button>
-
                           </div>
-                          <transition name="slide">
-                          <div v-show="!sub_finish_msg?.msg_reason_content_hide"  class="reason-box">
-                            <div
+                          <Transition name="slide">
+                            <div v-show="!sub_finish_msg?.msg_reason_content_hide" class="reason-box">
+                              <div
                                 v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_reason_content_finish_html"
                                 :key="idx"
                                 style="width: 100%"
                                 @mouseover="showSupDetailFn(item, $event)"
                                 v-html="sub_finish_msg_content"
-                            ></div>
-                          </div>
-                          </transition>
+                              />
+                            </div>
+                          </Transition>
                         </div>
                         <div
-                            v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_content_finish_html"
-                            :key="idx"
-                            style="width: 100%"
-                            @mouseover="showSupDetailFn(item, $event)"
-                            v-html="sub_finish_msg_content"
-                        ></div>
+                          v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_content_finish_html"
+                          :key="idx"
+                          style="width: 100%"
+                          @mouseover="showSupDetailFn(item, $event)"
+                          v-html="sub_finish_msg_content"
+                        />
                       </div>
                       <SimpleProgress v-if="item?.qa_finished == false && !item?.qa_workflow_open" />
                       <div v-if="item?.qa_is_cut_off">
@@ -1692,14 +1656,14 @@ watch(
                     </div>
                   </div>
                   <div
-                      v-if="showScrollbarButton"
-                      v-show="item.show_button_answer_area == true || item?.short_answer"
-                      class="msg-answer-right-button-area"
+                    v-if="showScrollbarButton"
+                    v-show="item.show_button_answer_area == true || item?.short_answer"
+                    class="msg-answer-right-button-area"
                   >
                     <div class="answer-button-box">
                       <div class="answer-button" @click="switchAnswerLength(item)">
-                        <el-image v-if="item?.short_answer" src="images/arrow_down_grey.svg" />
-                        <el-image v-else class="answer-button-icon" src="images/arrow_up_grey.svg" />
+                        <el-image v-if="item?.short_answer" src="/images/arrow_down_grey.svg" />
+                        <el-image v-else class="answer-button-icon" src="/images/arrow_up_grey.svg" />
                       </div>
                     </div>
                   </div>
@@ -1708,8 +1672,8 @@ watch(
                   <div class="msg-flow-answer-button-area">
                     <div class="msg-flow-answer-button-area-left">
                       <div
-                          v-show="msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]"
-                          @click="showReferenceDrawerFn(msgFlowReference?.[item.qa_value.question?.[0]?.msg_id])"
+                        v-show="msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]"
+                        @click="showReferenceDrawerFn(msgFlowReference?.[item.qa_value.question?.[0]?.msg_id])"
                       >
                         <el-text class="reference-link-text"> 参考来源 </el-text>
                       </div>
@@ -1719,8 +1683,8 @@ watch(
                         </el-text>
                       </div>
                       <el-divider
-                          v-show="msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]"
-                          direction="vertical"
+                        v-show="msgFlowReference?.[item.qa_value.question?.[0]?.msg_id]"
+                        direction="vertical"
                       />
                       <div class="answer-create-time-box">
                         <el-text class="msg-tips-text">
@@ -1731,45 +1695,45 @@ watch(
                     <div class="msg-flow-answer-button-area-right">
                       <div class="msg-flow-answer-button" @click="copyAnswer(item)">
                         <div class="msg-flow-answer-button-icon-box">
-                          <el-image class="msg-flow-answer-button-icon" src="images/copy.svg" />
+                          <el-image class="msg-flow-answer-button-icon" src="/images/copy.svg" />
                         </div>
                       </div>
                       <div class="msg-flow-answer-button" @click="addLike(item)">
                         <div class="msg-flow-answer-button-icon-box">
                           <el-image
-                              v-if="item?.qa_value?.answer?.[item?.qa_value?.question?.[0]?.msg_id]?.[0]?.msg_remark == 1"
-                              class="msg-flow-answer-button-icon"
-                              src="images/thumbs_up_green.svg"
+                            v-if="item?.qa_value?.answer?.[item?.qa_value?.question?.[0]?.msg_id]?.[0]?.msg_remark == 1"
+                            class="msg-flow-answer-button-icon"
+                            src="/images/thumbs_up_green.svg"
                           />
-                          <el-image v-else class="msg-flow-answer-button-icon" src="images/thumbs_up_grey.svg" />
+                          <el-image v-else class="msg-flow-answer-button-icon" src="/images/thumbs_up_grey.svg" />
                         </div>
                       </div>
                       <div class="msg-flow-answer-button" @click="addDislike(item)">
                         <div class="msg-flow-answer-button-icon-box">
                           <el-image
-                              v-if="
+                            v-if="
                               item?.qa_value?.answer?.[item?.qa_value?.question?.[0]?.msg_id]?.[0]?.msg_remark == -1
                             "
-                              class="msg-flow-answer-button-icon"
-                              src="images/thumbs_down_red.svg"
+                            class="msg-flow-answer-button-icon"
+                            src="/images/thumbs_down_red.svg"
                           />
-                          <el-image v-else class="msg-flow-answer-button-icon" src="images/thumbs_down_grey.svg" />
+                          <el-image v-else class="msg-flow-answer-button-icon" src="/images/thumbs_down_grey.svg" />
                         </div>
                       </div>
                     </div>
                   </div>
                   <div class="msg-flow-recommend-area">
                     <div
-                        v-for="(sub_question, index) in msgRecommendQuestion?.[item?.qa_value.question?.[0]?.msg_id]"
-                        :key="index"
-                        class="msg-flow-recommend-box"
-                        @click="clickRecommendQuestion(sub_question)"
+                      v-for="(sub_question, index) in msgRecommendQuestion?.[item?.qa_value.question?.[0]?.msg_id]"
+                      :key="index"
+                      class="msg-flow-recommend-box"
+                      @click="clickRecommendQuestion(sub_question)"
                     >
                       <el-text>
                         {{ sub_question.recommend_question }}
                       </el-text>
                       <div class="relate-question-button">
-                        <el-image src="images/arrow_right_grey.svg" style="width: 12px; height: 12px" />
+                        <el-image src="/images/arrow_right_grey.svg" style="width: 12px; height: 12px" />
                       </div>
                     </div>
                   </div>
@@ -1780,34 +1744,34 @@ watch(
           <el-col :span="2" :xs="1" />
         </el-row>
         <div
-            v-show="scrollToFlag && showScrollbarButton"
-            class="to-bottom-box"
-            @click="scrollToTargetQa(1)"
-            @dblclick="scrollToBottom()"
+          v-show="scrollToFlag && showScrollbarButton"
+          class="to-bottom-box"
+          @click="scrollToTargetQa(1)"
+          @dblclick="scrollToBottom()"
         >
           <el-button class="to-top-button">
-            <el-image src="images/to_bottom.svg" class="to-top-button-icon" />
+            <el-image src="/images/to_bottom.svg" class="to-top-button-icon" />
           </el-button>
         </div>
         <div
-            v-show="scrollToFlag && showScrollbarButton"
-            class="to-top-box"
-            @click="scrollToTargetQa(-1)"
-            @dblclick="scrollToTop()"
+          v-show="scrollToFlag && showScrollbarButton"
+          class="to-top-box"
+          @click="scrollToTargetQa(-1)"
+          @dblclick="scrollToTop()"
         >
           <el-button class="to-top-button">
-            <el-image src="images/to_top.svg" class="to-top-button-icon" />
+            <el-image src="/images/to_top.svg" class="to-top-button-icon" />
           </el-button>
         </div>
         <div v-if="showSupDetail" id="sup_detail_box" :style="tooltipStyle" @mouseleave="showSupDetail = false">
           <div class="reference-title">
             <div class="std-middle-box">
               <el-image
-                  v-if="currentSupDetail?.resource_icon"
-                  :id="currentSupDetail?.resource_icon"
-                  :src="getResourceIcon(currentSupDetail)"
-                  class="reference-img"
-                  @error="retryGetIcon(currentSupDetail)"
+                v-if="currentSupDetail?.resource_icon"
+                :id="currentSupDetail?.resource_icon"
+                :src="getResourceIcon(currentSupDetail)"
+                class="reference-img"
+                @error="retryGetIcon(currentSupDetail)"
               >
                 <template #error>
                   <div class="image-slot">
@@ -1836,19 +1800,15 @@ watch(
         <el-drawer v-model="showReferenceDrawer" title="参考来源" :size="referenceDrawerWidth">
           <el-scrollbar>
             <div id="reference_drawer_body">
-              <div
-                  v-for="(item, idx) in referenceDrawerData"
-                  :key="idx"
-                  class="reference-item"
-              >
+              <div v-for="(item, idx) in referenceDrawerData" :key="idx" class="reference-item">
                 <div class="reference-title">
                   <div class="std-middle-box">
                     <el-image
-                        v-if="item?.resource_icon"
-                        :id="item?.resource_icon"
-                        :src="getResourceIcon(item)"
-                        class="reference-img"
-                        @error="retryGetIcon(item)"
+                      v-if="item?.resource_icon"
+                      :id="item?.resource_icon"
+                      :src="getResourceIcon(item)"
+                      class="reference-img"
+                      @error="retryGetIcon(item)"
                     >
                       <template #error>
                         <div class="image-slot">
@@ -1869,13 +1829,20 @@ watch(
                   </el-text>
                 </div>
                 <div class="reference-text-box">
-                  <div  v-show="item?.showAll" v-html="mdAnswer.render(item?.ref_text)"
-                        style="cursor: pointer"
-                        @click="item.showAll=false"/>
-                  <el-text v-show="!item?.showAll" truncated class="reference-text"
-                           style="cursor: pointer"
-                           @click="item.showAll=true">
-                    {{item?.ref_text}}
+                  <div
+                    v-show="item?.showAll"
+                    style="cursor: pointer"
+                    @click="item.showAll = false"
+                    v-html="mdAnswer.render(item?.ref_text)"
+                  />
+                  <el-text
+                    v-show="!item?.showAll"
+                    truncated
+                    class="reference-text"
+                    style="cursor: pointer"
+                    @click="item.showAll = true"
+                  >
+                    {{ item?.ref_text }}
                   </el-text>
                 </div>
               </div>
@@ -1953,17 +1920,17 @@ watch(
       </el-main>
     </el-container>
     <div
-        v-show="questionRunningCnt"
-        class="scroll-box"
-        :style="{ left: '50%' }"
-        :class="{ 'glowing-border': !userStopScroll }"
-        @click="
-            userStopScroll = !userStopScroll;
-            scrollToBottom();
-          "
+      v-show="questionRunningCnt"
+      class="scroll-box"
+      :style="{ left: '50%' }"
+      :class="{ 'glowing-border': !userStopScroll }"
+      @click="
+        userStopScroll = !userStopScroll;
+        scrollToBottom();
+      "
     >
       <el-button class="to-top-button">
-        <el-image src="images/to_bottom.svg" class="to-top-button-icon" />
+        <el-image src="/images/to_bottom.svg" class="to-top-button-icon" />
       </el-button>
     </div>
   </el-scrollbar>
@@ -2037,31 +2004,31 @@ watch(
 @keyframes glowing {
   0% {
     box-shadow:
-        0 0 5px #00aaff,
-        0 0 10px #00aaff,
-        0 0 20px #00aaff;
+      0 0 5px #00aaff,
+      0 0 10px #00aaff,
+      0 0 20px #00aaff;
     border-color: #00aaff;
   }
   50% {
     box-shadow:
-        0 0 20px #00aaff,
-        0 0 40px #00aaff,
-        0 0 60px #00aaff;
+      0 0 20px #00aaff,
+      0 0 40px #00aaff,
+      0 0 60px #00aaff;
     border-color: #00aaff;
   }
   100% {
     box-shadow:
-        0 0 5px #00aaff,
-        0 0 10px #00aaff,
-        0 0 20px #00aaff;
+      0 0 5px #00aaff,
+      0 0 10px #00aaff,
+      0 0 20px #00aaff;
     border-color: #00aaff;
   }
 }
 .glowing-border {
   box-shadow:
-      0 0 10px #00aaff,
-      0 0 20px #00aaff,
-      0 0 30px #00aaff; /* 绿色发光效果 */
+    0 0 10px #00aaff,
+    0 0 20px #00aaff,
+    0 0 30px #00aaff; /* 绿色发光效果 */
   border: 2px solid #00aaff; /* 发光边框 */
   animation: glowing 1.5s infinite; /* 1.5秒循环动画 */
 }
@@ -2394,9 +2361,9 @@ sup {
   width: 100%;
   padding: 16px; /* 添加内边距 */
   margin: 16px 0; /* 添加外边距 */
-  border: 1px solid #E5E7EB; /* 添加边框 */
+  border: 1px solid #e5e7eb; /* 添加边框 */
   border-radius: 8px; /* 圆角边框 */
-  background-color: #F9FAFB; /* 背景颜色 */
+  background-color: #f9fafb; /* 背景颜色 */
   box-sizing: border-box; /* 确保内边距和边框不影响宽度 */
 }
 .reference-text {
@@ -2404,7 +2371,7 @@ sup {
   font-weight: 400;
   font-size: 14px;
   line-height: 22px; /* 增加行高，提高可读性 */
-  color: #4B5563; /* 调整文字颜色 */
+  color: #4b5563; /* 调整文字颜色 */
   width: 100%; /* 确保文本宽度一致 */
   overflow: hidden; /* 隐藏溢出内容 */
   text-overflow: ellipsis; /* 添加省略号 */
@@ -2655,15 +2622,12 @@ sup {
   gap: 6px;
 }
 .reason-header {
-
   /* 增大圆角半径，使盒子更圆润 */
 
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-
 }
-
 
 /* 定义淡入淡出动画 */
 .fade-enter-active,
@@ -2682,22 +2646,20 @@ sup {
   margin-top: 1rem;
 }
 :deep(.msg-flow-answer-inner th) {
-  border: 1px solid #D0D5DD;
+  border: 1px solid #d0d5dd;
   padding: 8px;
   text-align: left;
 }
-:deep(.msg-flow-answer-inner ) {
-
+:deep(.msg-flow-answer-inner) {
   .hljs-code {
     td {
       border: none;
       padding: 0 0 0 8px;
       width: calc(100% - 8px);
     }
-
   }
   td {
-    border: 1px solid #D0D5DD;
+    border: 1px solid #d0d5dd;
     padding: 8px;
     text-align: left;
   }
@@ -2705,7 +2667,6 @@ sup {
 :deep(.msg-flow-answer-inner th) {
   background-color: #f2f2f2;
 }
-
 
 /* 定义 slide 过渡的入场动画 */
 .slide-enter-active {
@@ -2737,7 +2698,6 @@ sup {
     opacity: 0;
   }
 }
-
 
 @media (width<768px) {
   #message-flow-box {

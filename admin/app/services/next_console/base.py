@@ -6,7 +6,7 @@ from sqlalchemy import desc, asc, or_
 from app.models.next_console.next_console_model import *
 from app.models.assistant_center.assistant import Assistant
 from app.services.configure_center.response_utils import next_console_response
-from app.models.configure_center.user_config import UserConfig
+from app.services.configure_center.user_config import get_user_config
 from app.app import app
 from app.models.user_center.user_info import UserInfo
 from app.models.app_center.app_info_model import AppMetaInfo
@@ -40,16 +40,11 @@ def add_session(params):
     # 使用 SHA-256 生成哈希值，保证唯一性和长度一致
     hash_object = hashlib.sha256(unique_id.encode('utf-8'))
     session_code = hash_object.hexdigest()[:18]
-    target_user_config = UserConfig.query.filter(
-        UserConfig.user_id == user_id
-    ).first()
-    if not target_user_config:
-        app.logger.error(f"用户配置不存在:{user_id}")
-        return next_console_response(error_status=True, error_code=1001, error_message="用户配置不存在", result=params)
+    target_user_config = get_user_config(user_id).json.get("result")
     if session_search_engine_resource_type is None:
-        session_search_engine_resource_type = target_user_config.search_engine_resource_type
+        session_search_engine_resource_type = target_user_config["workbench"].get("search_engine_resource", "search")
     if session_search_engine_language_type is None:
-        session_search_engine_language_type = target_user_config.search_engine_language_type
+        session_search_engine_language_type = target_user_config["workbench"].get("search_engine_language", "en")
     if session_search_engine_switch is None:
         session_search_engine_switch = False
     target_session_assistant = Assistant.query.filter_by(

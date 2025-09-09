@@ -1,6 +1,6 @@
-import {search_resource_object} from "@/api/resource_api";
+import {search_resource_object} from "@/api/resource-api";
 import {ElMessage, ElNotification} from "element-plus";
-import {ResourceItem} from "@/types/resource_type";
+import {ResourceItem} from "@/types/resource-type";
 import {ref} from "vue";
 export const resource_clipboard = ref(null)
 export const current_resource_clipboard = ref<ResourceItem[]>([])

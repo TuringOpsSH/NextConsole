@@ -9,7 +9,7 @@ import {
   switch_resource_layout as switchResourceLayout
 } from '@/components/resource/share_resources/resource_head/resource_head';
 import { show_share_resources as showShareResources } from '@/components/resource/share_resources/share_resources';
-import { TResourceListStatus } from '@/types/resource_type';
+import { TResourceListStatus } from '@/types/resource-type';
 const phoneView = ref(window.innerWidth < 768);
 const hidePermission = useSessionStorage('hideShareResourcePermission', false);
 const keyword = inject<Ref<string>>('keyword');
@@ -77,8 +77,8 @@ const handleMouseEnter = (event, index) => {
           @click="shareListStatus = 'list'"
         >
           <el-tooltip content="列表模式" effect="light">
-            <el-image v-if="!showCardList" src="images/list_layout_active.svg" class="resource-head-button-icon" />
-            <el-image v-else src="images/list_layout.svg" class="resource-head-button-icon" />
+            <el-image v-if="!showCardList" src="/images/list_layout_active.svg" class="resource-head-button-icon" />
+            <el-image v-else src="/images/list_layout.svg" class="resource-head-button-icon" />
           </el-tooltip>
         </div>
         <div
@@ -89,8 +89,8 @@ const handleMouseEnter = (event, index) => {
           @click="shareListStatus = 'card'"
         >
           <el-tooltip content="卡片模式" effect="light">
-            <el-image v-if="showCardList" src="images/card_layout_active.svg" class="resource-head-button-icon" />
-            <el-image v-else src="images/card_layout.svg" class="resource-head-button-icon" />
+            <el-image v-if="showCardList" src="/images/card_layout_active.svg" class="resource-head-button-icon" />
+            <el-image v-else src="/images/card_layout.svg" class="resource-head-button-icon" />
           </el-tooltip>
         </div>
       </div>
@@ -122,14 +122,14 @@ const handleMouseEnter = (event, index) => {
           <el-tooltip effect="light" :content="$t('resourceDetails')" placement="bottom">
             <el-image
               v-show="showDirMetaFlag"
-              src="images/switch_resource_detail_active.svg"
+              src="/images/switch_resource_detail_active.svg"
               class="resource-head-button-icon"
             />
           </el-tooltip>
           <el-tooltip effect="light" :content="$t('resourceDetails')" placement="bottom">
             <el-image
               v-show="!showDirMetaFlag"
-              src="images/switch_resource_detail.svg"
+              src="/images/switch_resource_detail.svg"
               class="resource-head-button-icon"
             />
           </el-tooltip>

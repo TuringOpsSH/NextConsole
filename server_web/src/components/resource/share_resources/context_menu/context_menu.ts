@@ -1,6 +1,6 @@
 import {reactive, ref} from 'vue';
-import {download_resource_object} from '@/api/resource_api';
-import {ResourceItem} from '@/types/resource_type';
+import {download_resource_object} from '@/api/resource-api';
+import {ResourceItem} from '@/types/resource-type';
 import {ElMessage} from 'element-plus';
 import {turn_on_resource_meta} from '@/components/resource/resource_meta/resource_meta';
 import router from '@/router';

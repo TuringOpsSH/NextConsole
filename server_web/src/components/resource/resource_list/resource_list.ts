@@ -1,5 +1,5 @@
 import router from '@/router';
-import {ResourceItem} from '@/types/resource_type';
+import {ResourceItem} from '@/types/resource-type';
 import {reactive, ref} from 'vue';
 import {
   add_resource_object,
@@ -12,7 +12,7 @@ import {
   get_resource_object_path,
   move_resources,
   search_resource_object
-} from '@/api/resource_api';
+} from '@/api/resource-api';
 import {
   add_dir_dialog_flag,
   add_document_flag,
@@ -27,10 +27,9 @@ import {turn_on_resource_meta} from '@/components/resource/resource_meta/resourc
 import {init_my_resource_tree, refresh_panel_count} from '@/components/resource/resource_panel/panel';
 import {check_resource_rag_support} from '@/components/resource/resource_main';
 import {turn_on_share_selector} from '@/components/resource/resource_share_selector/resource_share_selector';
-import {user_info} from '@/components/user_center/user';
 import {show_share_resources} from '@/components/resource/share_resources/share_resources';
 import {sortResourceList} from '@/utils/common';
-
+import { useUserInfoStore } from '@/stores/userInfoStore';
 export const resource_list_Ref = ref(null);
 export const resource_view_model = ref('list');
 export const current_resource = reactive<ResourceItem>(
@@ -160,8 +159,8 @@ export async function show_resource_list(item: ResourceItem | null = null) {
   current_page_num.value = 1;
   current_page_size.value = 50;
   current_total.value = 0;
-  console.log(item);
-  if (item.user_id == user_info.value.user_id) {
+  const userInfoStore = useUserInfoStore();
+  if (item.user_id == userInfoStore.userInfo.user_id) {
     if (item.resource_type == 'folder') {
       router.push({
         name: 'resource_list',
@@ -490,13 +489,13 @@ export function get_resource_icon(resource: ResourceItem) {
     if (
       resource.resource_icon.includes('http') ||
       resource.resource_icon.includes('data:image') ||
-      resource.resource_icon.includes('images/')
+      resource.resource_icon.includes('/images/')
     ) {
       return resource.resource_icon;
     }
-    return 'images/' + resource.resource_icon;
+    return '/images/' + resource.resource_icon;
   } else {
-    return 'images/' + 'html.svg';
+    return '/images/' + 'html.svg';
   }
 }
 

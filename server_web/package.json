@@ -1,6 +1,6 @@
 {
   "name": "next_console_frontend",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "scripts": {
     "all_local": "set NODE_ENV=localhost2&&vite --mode devLocal && node version.js",
@@ -18,7 +18,29 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@fingerprintjs/fingerprintjs": "^4.6.1",
+    "@hocuspocus/provider": "^3.2.3",
     "@originjs/vite-plugin-commonjs": "^1.0.3",
+    "@tinymce/tinymce-vue": "^6.3.0",
+    "@tiptap/extension-blockquote": "^3.4.1",
+    "@tiptap/extension-collaboration": "^3.4.1",
+    "@tiptap/extension-color": "^3.4.1",
+    "@tiptap/extension-highlight": "^3.4.1",
+    "@tiptap/extension-image": "^3.4.1",
+    "@tiptap/extension-link": "^3.4.1",
+    "@tiptap/extension-subscript": "^3.4.1",
+    "@tiptap/extension-superscript": "^3.4.1",
+    "@tiptap/extension-table": "^3.4.1",
+    "@tiptap/extension-table-cell": "^3.4.1",
+    "@tiptap/extension-table-header": "^3.4.1",
+    "@tiptap/extension-table-row": "^3.4.1",
+    "@tiptap/extension-text-align": "^3.4.1",
+    "@tiptap/extension-text-style": "^3.4.1",
+    "@tiptap/extension-typography": "^3.4.1",
+    "@tiptap/extension-underline": "^3.4.1",
+    "@tiptap/pm": "^3.4.1",
+    "@tiptap/starter-kit": "^3.4.1",
+    "@tiptap/vue-3": "^3.4.1",
+    "@types/katex": "^0.16.7",
     "@vscode/markdown-it-katex": "^1.1.1",
     "@vueuse/core": "^13.0.0",
     "@wecom/jssdk": "^1.4.5",
@@ -30,7 +52,8 @@
     "echarts": "^5.4.3",
     "element-plus": "^2.4.1",
     "env-cmd": "^10.1.0",
-    "eslint": "^8.52.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
     "file-saver": "^2.0.5",
     "gsap": "^3.13.0",
     "highlight.js": "^11.10.0",
@@ -41,7 +64,7 @@
     "json-editor-vue3": "^1.1.1",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
-    "katex": "0.16.21",
+    "katex": "^0.16.21",
     "mammoth": "^1.7.1",
     "markdown-it": "^14.1.0",
     "markdown-it-image-size": "^14.1.1",
@@ -62,6 +85,7 @@
     "segmentit": "^2.0.3",
     "socket": "^0.14.62",
     "socket.io-client": "^4.8.1",
+    "tinymce": "^8.0.2",
     "uuid": "^11.1.0",
     "vditor": "^3.9.8",
     "vue": "^3.3.4",
@@ -74,21 +98,26 @@
     "vue-router": "^4.0.13",
     "vue-word-highlighter": "^1.2.5",
     "vuepress": "^2.0.0-beta.67",
-    "vuex": "^4.1.0"
+    "vuex": "^4.1.0",
+    "yjs": "^13.6.27"
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
     "@types/pdfobject": "^2.2.5",
-    "@typescript-eslint/eslint-plugin": "^6.18.1",
-    "@typescript-eslint/parser": "^6.18.1",
+    "@types/qrcode": "^1.5.5",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-vue": "^4.4.0",
     "babel-eslint": "^10.1.0",
     "babel-plugin-import": "^1.13.8",
-    "eslint-plugin-vue": "^9.20.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-vue": "^9.33.0",
     "typescript": "^5.3.3",
-    "vite": "5.2.6"
+    "vite": "5.2.6",
+    "vue-eslint-parser": "^10.2.0"
   },
   "optionalDependencies": {
-    "@esbuild/linux-x64": "^0.25.5"
+    "@esbuild/linux-x64": "^0.25.5",
+    "@rollup/rollup-linux-x64-gnu": "^4.9.6"
   }
 }

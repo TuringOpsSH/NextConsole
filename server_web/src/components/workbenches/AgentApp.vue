@@ -8,7 +8,7 @@ import MessageFlowV2 from './MessageFlowV2.vue';
 import {consoleInputRef} from './console_input';
 import {msgFlowRef} from './message_flow';
 import {useSessionStore} from '@/stores/sessionStore';
-import {initSocket, socket} from '@/components/global/web_socket/web_socket';
+import {initSocket, socket} from '@/components/global/web_socket';
 import SessionParams from "./SessionParams.vue";
 import router from "@/router";
 const props = defineProps({
@@ -30,6 +30,7 @@ const currentSession = ref({
   id: null
 });
 const currentApp = ref();
+const sessionParamsRef = ref(null);
 const store = useSessionStore();
 const isResizing = ref(false);
 const startX = ref(0);
@@ -67,7 +68,12 @@ async function initSession(appCode:string, newSessionCode:string) {
   return data.result;
 }
 
+async function handleBeginAnswer(data) {
 
+  msgFlowRef.value?.beginAnswer(data);
+  sessionParamsRef.value?.close();
+
+}
 onBeforeMount(async () => {
   initSocket();
 });
@@ -129,7 +135,8 @@ defineExpose({
       style="width: 100%"
       :streaming="streaming"
       :socket="socket"
-      @begin-answer="data => msgFlowRef.beginAnswer(data)"
+      :disable="sessionParamsRef && !sessionParamsRef?.schemaReady"
+      @begin-answer="data => handleBeginAnswer(data)"
       @update-answer="newMsg => msgFlowRef.updateAnswer(newMsg)"
       @finish-answer="args => msgFlowRef?.finishAnswer(args)"
       @stop-answer="args => msgFlowRef?.stopAnswer(args)"

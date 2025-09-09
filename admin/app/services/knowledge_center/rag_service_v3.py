@@ -11,6 +11,7 @@ from app.models.next_console.next_console_model import SessionAttachmentRelation
 from app.services.knowledge_center.file_chunk_embedding import embedding_call, rerank_call
 from app.services.knowledge_center.webpage_fetch import get_url_format
 from app.models.knowledge_center.rag_ref_model import RagQueryLog
+from app.models.configure_center.system_config import SystemConfig
 
 
 def stop_ref_task(params):
@@ -65,22 +66,34 @@ def file_reader(params):
     db.session.commit()
     if config["engine"] == "pandoc":
         from app.services.knowledge_center.file_reader import pandoc_reader
-        new_resource_meta = pandoc_reader(target_resource, config.get("pandoc_config"))
+        pandoc_config = config.get("pandoc_config", {})
+        pandoc_config["resource_source"] = target_rag_ref.ref_code
+        new_resource_meta = pandoc_reader(target_resource, pandoc_config)
     elif config["engine"] == "pymupdf":
         from app.services.knowledge_center.file_reader import pymupdf_reader
-        new_resource_meta = pymupdf_reader(target_resource, config.get("pymupdf_config", {}))
+        pymupdf_config = config.get("pymupdf_config", {})
+        pymupdf_config["resource_source"] = target_rag_ref.ref_code
+        new_resource_meta = pymupdf_reader(target_resource, pymupdf_config)
     elif config["engine"] == "html2text":
         from app.services.knowledge_center.file_reader import html2text_reader
-        new_resource_meta = html2text_reader(target_resource, config.get("html2text_config", {}))
+        html2text_config = config.get("html2text_config", {})
+        html2text_config["resource_source"] = target_rag_ref.ref_code
+        new_resource_meta = html2text_reader(target_resource, html2text_config)
     elif config["engine"] == "openpyxl":
         from app.services.knowledge_center.file_reader import openpyxl_reader
-        new_resource_meta = openpyxl_reader(target_resource, config.get("openpyxl_config", {}))
+        openpyxl_config = config.get("openpyxl_config", {})
+        openpyxl_config["resource_source"] = target_rag_ref.ref_code
+        new_resource_meta = openpyxl_reader(target_resource, openpyxl_config)
     elif config["engine"] == "python-pptx":
         from app.services.knowledge_center.file_reader import pptx_reader
-        new_resource_meta = pptx_reader(target_resource, config.get("python_pptx_config", {}))
+        pptx_config = config.get("python_pptx_config", {})
+        pptx_config["resource_source"] = target_rag_ref.ref_code
+        new_resource_meta = pptx_reader(target_resource, pptx_config)
     elif config["engine"] == "text":
         from app.services.knowledge_center.file_reader import text_reader
-        new_resource_meta = text_reader(target_resource, config.get("text_config", {}))
+        text_config = config.get("text_config", {})
+        text_config["resource_source"] = target_rag_ref.ref_code
+        new_resource_meta = text_reader(target_resource, text_config)
     else:
         target_rag_ref.ref_status = "异常"
         target_rag_ref.task_trace_log = "不支持的解析引擎"
@@ -111,6 +124,7 @@ def file_split(params):
     """
     resource_id = params.get('resource_id')
     ref_id = params.get('ref_id')
+    content = params.get('content', '')
     target_resource = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.id == resource_id,
         ResourceObjectMeta.resource_status == '正常'
@@ -120,11 +134,6 @@ def file_split(params):
         return next_console_response(error_status=True, error_message="未找到对应的资源")
     if not target_rag_ref:
         return next_console_response(error_status=True, error_message="未找到对应的RAG索引记录")
-    try:
-        with open(target_resource.resource_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-    except FileNotFoundError:
-        return next_console_response(error_status=True, error_message="资源文件不存在或无法读取")
     if not content:
         return next_console_response(error_status=True, error_message="资源文件内容为空")
     config = target_rag_ref.file_split_config
@@ -217,6 +226,7 @@ def file_chunk_abstract(params):
     chunk_infos = ResourceChunkInfo.query.filter(
         ResourceChunkInfo.resource_id == target_resource.id,
         ResourceChunkInfo.ref_id == target_rag_ref.id,
+        ResourceChunkInfo.status == "正常",
     ).all()
     if not chunk_infos:
         return next_console_response(error_status=True, error_message="未找到对应的分块信息")
@@ -259,6 +269,7 @@ def file_chunk_embedding(params):
     chunk_infos = ResourceChunkInfo.query.filter(
         ResourceChunkInfo.resource_id == target_resource.id,
         ResourceChunkInfo.ref_id == target_rag_ref.id,
+        ResourceChunkInfo.status == "正常",
     ).all()
     if not chunk_infos:
         return next_console_response(error_status=True, error_message="未找到对应的分块信息")
@@ -314,6 +325,10 @@ def rag_query_v3(params):
         return next_console_response(error_status=True, error_message="查询内容过长，请控制在1000字符以内")
     ref_ids = params.get("ref_ids", [])
     config = params.get("config", )
+    system_tool_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "tools",
+        SystemConfig.config_status == 1
+    ).first()
     inner_config = {
         "recall_threshold": 0.3,
         "recall_k": 30,
@@ -325,8 +340,8 @@ def rag_query_v3(params):
         "rerank_k": 10,
         "search_engine_enhanced": True,
         "search_engine_config": {
-            "api": app.config.get("search_engine_endpoint", ""),
-            "key": app.config.get("search_engine_key", ""),
+            "api": system_tool_config.config_value.get("search_engine", {}).get("endpoint"),
+            "key": system_tool_config.config_value.get("search_engine", {}).get("key"),
             "gl": "cn",
             "hl": "zh-cn",
             "location": "China",
@@ -349,6 +364,11 @@ def rag_query_v3(params):
 
     if not ref_ids and not inner_config.get("search_engine_enhanced", False):
         return next_console_response(error_status=False, error_message="查询参考信息不能为空", result=result)
+
+    system_ai_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "ai",
+        SystemConfig.config_status == 1
+    ).first()
     query_log = {
         "user_id": user_id,
         "session_id": session_id,
@@ -378,9 +398,9 @@ def rag_query_v3(params):
     query_embedding_result = embedding_call({
         "content": query,
         "config": {
-            "api": app.config.get("EMBEDDING_ENDPOINT", ""),
-            'key': app.config.get("EMBEDDING_KEY", ""),
-            "model": app.config.get("EMBEDDING_MODEL", ""),
+            "api":  system_ai_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
+            'key': system_ai_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
+            "model": system_ai_config.config_value.get("embedding", {}).get("embedding_model", ""),
             "encoding_format": "float",
         }
     })
@@ -421,7 +441,8 @@ def rag_query_v3(params):
     all_result_chunk_ids = [chunk.get("id") for chunk in all_ref_chunks]
     db.session.query(ResourceChunkInfo).filter(
         ResourceChunkInfo.id.in_(all_result_chunk_ids),
-        ResourceChunkInfo.chunk_embedding.isnot(None)
+        ResourceChunkInfo.chunk_embedding.isnot(None),
+        ResourceChunkInfo.status == "正常",
     ).update(
         {"chunk_hit_counts": ResourceChunkInfo.chunk_hit_counts + 1},
         synchronize_session=False
@@ -431,7 +452,8 @@ def rag_query_v3(params):
     if web_search_result.get("new_webpage_ids"):
         new_webpage_ids = web_search_result.get("new_webpage_ids", [])
         new_webpage_chunks = ResourceChunkInfo.query.filter(
-            ResourceChunkInfo.resource_id.in_(new_webpage_ids)
+            ResourceChunkInfo.resource_id.in_(new_webpage_ids),
+            ResourceChunkInfo.status == "正常",
         ).all()
         for new_webpage_chunk in new_webpage_chunks:
             result['reference_texts'].append(new_webpage_chunk.chunk_raw_content)
@@ -549,13 +571,18 @@ def rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log):
     documents = [resource_chunk.get("chunk_embedding_content") for resource_chunk in all_ref_chunks]
     rerank_result = []
     rerank_begin_time = time.time()
+    from app.models.configure_center.system_config import SystemConfig
+    system_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "ai",
+        SystemConfig.config_status == 1
+    ).first()
     rerank_scores = rerank_call({
         "documents": documents,
         "query": query,
         "config": {
-            "api": app.config.get("RERANK_ENDPOINT", ""),
-            "key": app.config.get("RERANK_KEY", ""),
-            "model": app.config.get("RERANK_MODEL", ""),
+            "api":  system_config.config_value.get("rerank", {}).get("rerank_endpoint", ""),
+            'key': system_config.config_value.get("rerank", {}).get("rerank_api_key", ""),
+            "model": system_config.config_value.get("rerank", {}).get("rerank_model", ""),
             "max_chunks_per_doc": max_chunk_per_doc,
             "overlap_tokens": overlap_tokens,
         }
@@ -569,8 +596,8 @@ def rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log):
     # 按照阈值过滤
     index = 0
     for resource_chunk in all_ref_chunks:
-        if rerank_scores[index] >= rerank_threshold:
-            resource_chunk["rerank_score"] = rerank_scores[index]
+        if float(rerank_scores[index]) >= rerank_threshold:
+            resource_chunk["rerank_score"] = float(rerank_scores[index])
             rerank_result.append(resource_chunk)
         index += 1
     # 按照分数排序并限制数量
@@ -604,7 +631,7 @@ def get_web_search_result(params):
     }
     if not api or not key or not query:
         return result
-    if api == "https://google.serper.dev/search":
+    if api.startswith("https://google.serper.dev"):
         from app.services.knowledge_center.search_engine_utils import search_engine_serper
         pages, credits = search_engine_serper(
             {
@@ -751,3 +778,236 @@ def fetch_query_log(params):
     """
     获取结构化查询日志
     """
+
+
+def get_parse_resource_service(params):
+    """
+    获取解析资源服务
+        根据配置获取对应的解析服务
+        支持多种解析服务
+        返回解析服务对象
+    """
+    user_id = params.get("user_id")
+    resource_id = params.get("resource_id")
+    ref = RagRefInfo.query.filter(
+        RagRefInfo.resource_id == resource_id,
+        RagRefInfo.ref_status != "已删除",
+        RagRefInfo.user_id == user_id
+    ).order_by(
+        RagRefInfo.create_time.desc()
+    ).first()
+    if not ref:
+        return next_console_response(error_status=False, error_message="未找到对应的RAG索引记录")
+    parse_resource = ResourceObjectMeta.query.filter(
+        ResourceObjectMeta.resource_parent_id == resource_id,
+        ResourceObjectMeta.resource_status == '正常',
+        ResourceObjectMeta.user_id == user_id,
+        ResourceObjectMeta.resource_source == ref.ref_code,
+        ResourceObjectMeta.resource_format == 'markdown',
+        ResourceObjectMeta.resource_path != "",
+    ).order_by(
+        ResourceObjectMeta.create_time.desc()
+    ).first()
+    if not parse_resource:
+        return next_console_response(error_status=False, error_message="未找到对应的解析资源")
+    try:
+        with open(parse_resource.resource_path, 'r', encoding='utf-8') as f:
+            parse_content = f.read()
+    except Exception as e:
+        return next_console_response(error_status=True, error_message=f"读取解析资源失败: {str(e)}")
+    result = parse_resource.show_info()
+    result["resource_content"] = parse_content
+    return next_console_response(result=result)
+
+
+def get_parse_resource_chunks_service(params):
+    """
+    获取解析资源分块服务
+    """
+    user_id = params.get("user_id")
+    resource_id = params.get("resource_id")
+    ref = RagRefInfo.query.filter(
+        RagRefInfo.resource_id == resource_id,
+        RagRefInfo.ref_status != "已删除",
+        RagRefInfo.user_id == user_id
+    ).order_by(
+        RagRefInfo.create_time.desc()
+    ).first()
+    if not ref:
+        return next_console_response(error_status=False, error_message="未找到对应的RAG索引记录")
+    all_resource_chunks = ResourceChunkInfo.query.filter(
+        ResourceChunkInfo.ref_id == ref.id,
+        ResourceChunkInfo.status != "已删除"
+    ).order_by(
+        ResourceChunkInfo.create_time.asc()
+    ).all()
+    if not all_resource_chunks:
+        return next_console_response(error_status=False, error_message="未找到对应的资源分块")
+    result = [
+        {
+            "chunk_id": chunk.id,
+            "split_method": chunk.split_method,
+            "chunk_size": chunk.chunk_size,
+            "chunk_raw_content": chunk.chunk_raw_content,
+            "chunk_embedding_content": chunk.chunk_embedding_content,
+            "chunk_embedding_type": chunk.chunk_embedding_type,
+            "chunk_hit_counts": chunk.chunk_hit_counts,
+            "chunk_embedding": chunk.chunk_embedding.tolist() if chunk.chunk_embedding is not None and chunk.chunk_embedding.any() else None,
+            "chunk_embedding_length": len(chunk.chunk_embedding) if chunk.chunk_embedding is not None and chunk.chunk_embedding.any() is not None else 0,
+            "status": chunk.status
+        } for chunk in all_resource_chunks
+    ]
+    return next_console_response(result=result)
+
+
+def delete_parse_resource_chunks_service(params):
+    """
+    删除RAG索引记录
+        根据ref_id删除对应的RAG索引记录
+        删除对应的分块信息
+        删除对应的资源信息
+    """
+    user_id = params.get("user_id")
+    chunk_ids = params.get("chunk_ids")
+    target_chunks = ResourceChunkInfo.query.filter(
+        ResourceChunkInfo.id.in_(chunk_ids),
+        ResourceChunkInfo.status != "已删除"
+    ).join(
+        RagRefInfo,
+        RagRefInfo.id == ResourceChunkInfo.ref_id
+    ).filter(
+        RagRefInfo.user_id == user_id,
+        RagRefInfo.ref_status != "已删除"
+    ).with_entities(
+        ResourceChunkInfo
+    ).all()
+    if not target_chunks:
+        return next_console_response(error_status=False, error_message="未找到对应的资源分块")
+    for chunk in target_chunks:
+        chunk.status = "已删除"
+        db.session.add(chunk)
+    db.session.commit()
+    return next_console_response(error_status=False, error_message="删除成功")
+
+
+def update_parse_resource_chunks_service(params):
+    """
+    更新RAG索引记录
+    """
+    user_id = params.get("user_id")
+    chunk_id = params.get("chunk_id")
+    chunk_raw_content = params.get("chunk_raw_content")
+    chunk_embedding_content = params.get("chunk_embedding_content")
+    chunk_status = params.get("chunk_status")
+    chunk_embedding = params.get("chunk_embedding")
+    target_chunk = ResourceChunkInfo.query.filter(
+        ResourceChunkInfo.id == chunk_id,
+        ResourceChunkInfo.status != "已删除"
+    ).join(
+        RagRefInfo,
+        RagRefInfo.id == ResourceChunkInfo.ref_id
+    ).filter(
+        RagRefInfo.user_id == user_id,
+        RagRefInfo.ref_status != "已删除"
+    ).with_entities(
+        ResourceChunkInfo
+    ).first()
+    if not target_chunk:
+        return next_console_response(error_status=False, error_message="未找到对应的资源分块")
+    if chunk_raw_content:
+        target_chunk.chunk_raw_content = chunk_raw_content
+    if chunk_status:
+        target_chunk.status = chunk_status
+    if chunk_embedding_content:
+        target_chunk.chunk_embedding_content = chunk_embedding_content
+        # 重新计算chunk_embedding
+        from app.services.knowledge_center.file_chunk_embedding import embedding_call
+        from app.models.configure_center.system_config import SystemConfig
+        system_config = SystemConfig.query.filter(
+            SystemConfig.config_key == "ai",
+            SystemConfig.config_status == 1
+        ).first()
+        embedding_result = embedding_call({
+            "content": chunk_embedding_content,
+            "config": {
+                "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
+                'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
+                "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
+            }
+        })
+        if not embedding_result:
+            return next_console_response(error_status=True, error_message="向量化处理失败")
+        try:
+            target_chunk.chunk_embedding = embedding_result[1][0] if embedding_result else None
+            target_chunk.chunk_embedding_type = app.config.get("EMBEDDING_MODEL", "")
+        except Exception as e:
+            return next_console_response(error_status=True, error_message=f"向量化处理异常: {str(e)}")
+    if chunk_embedding:
+        try:
+            chunk_embedding_check = chunk_embedding.split(",")
+            chunk_embedding = [float(x) for x in chunk_embedding_check]
+            target_chunk.chunk_embedding = chunk_embedding
+            target_chunk.chunk_embedding_type = app.config.get("EMBEDDING_MODEL", "")
+        except Exception as e:
+            return next_console_response(error_status=True, error_message=f"向量化处理异常: {str(e)}")
+    try:
+        db.session.add(target_chunk)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return next_console_response(error_status=True, error_message=f"更新资源分块失败: {str(e)}")
+    return next_console_response(error_status=False, error_message="更新成功")
+
+
+def parse_resource_chunk_recall_service(params):
+    """
+
+    """
+    user_id = params.get("user_id")
+    chunk_id = params.get("chunk_id")
+    query_text = params.get("query_text", "")
+    target_chunk_embedding = ResourceChunkInfo.query.filter(
+        ResourceChunkInfo.id == chunk_id,
+        ResourceChunkInfo.status == "正常"
+    ).join(
+        RagRefInfo,
+        RagRefInfo.id == ResourceChunkInfo.ref_id
+    ).filter(
+        RagRefInfo.user_id == user_id,
+        RagRefInfo.ref_status == "成功"
+    ).with_entities(
+        ResourceChunkInfo.chunk_embedding
+    ).first()
+    if not target_chunk_embedding:
+        return next_console_response(error_status=True, error_message="未找到对应的资源分块")
+    from app.models.configure_center.system_config import SystemConfig
+    system_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "ai",
+        SystemConfig.config_status == 1
+    ).first()
+    query_embedding_result = embedding_call({
+        "content": query_text,
+        "config": {
+            "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
+            'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
+            "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
+            "encoding_format": "float",
+        }
+    })
+    if not query_embedding_result:
+        return next_console_response(error_status=True, error_message="查询嵌入异常")
+    query_embedding = query_embedding_result[1]
+    if not query_embedding:
+        return next_console_response(error_status=True, error_message="查询向量化处理失败")
+    query_embedding = query_embedding[0]
+    # 计算内积相似度
+    similarity_score = np.dot(target_chunk_embedding.chunk_embedding, query_embedding)
+    return next_console_response(
+        result={
+            "chunk_id": chunk_id,
+            "query_text": query_text,
+            "similarity_score": round(similarity_score, 3),
+        }
+    )
+
+

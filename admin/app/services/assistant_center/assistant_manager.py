@@ -143,7 +143,7 @@ def add_assistant(params):
     assistant_desc = params.get('assistant_desc', '')
     assistant_tags = params.get('assistant_tags', [])
     assistant_status = params.get('assistant_status', '创建')
-    assistant_avatar = params.get('assistant_avatar', 'images/menu_logo.png')
+    assistant_avatar = params.get('assistant_avatar', '/images/menu_logo.png')
     assistant_language = params.get('assistant_language', '中文')
     assistant_voice = params.get('assistant_voice', '小燕')
     assistant_memory_size = params.get('assistant_memory_size', 4)
@@ -378,7 +378,7 @@ def upload_avatar(assistant_id, assistant_author_id, avatar, avatar_name):
     params = {
         'id': assistant_id,
         'user_id': assistant_author_id,
-        'assistant_avatar': "images/{}".format(avatar_filename)
+        'assistant_avatar': "/images/{}".format(avatar_filename)
     }
     return update_assistant(params)
 

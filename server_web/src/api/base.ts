@@ -1,11 +1,12 @@
 import { ServerResponse } from '@/types/response';
 import request from '@/utils/request';
 
-let envUrl = '';
+const envUrl = '';
 
 export const api = {
   version_get: envUrl + '/next_console/version',
   domain_get: envUrl + '/next_console/domain',
+  latest_version_get: 'https://www.turingops.com.cn/next_console/version'
 };
 
 export async function versionGet(): Promise<ServerResponse> {
@@ -21,5 +22,13 @@ export async function domainGet(): Promise<ServerResponse> {
   return request({
     url: api.domain_get,
     noAuth: true
-  })
+  });
+}
+
+export async function latestVersionGet(): Promise<ServerResponse> {
+  // @ts-ignore
+  return request({
+    url: api.latest_version_get,
+    noAuth: true
+  });
 }

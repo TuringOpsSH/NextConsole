@@ -400,6 +400,7 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
     except GeneratorExit:
         msg_is_cut_off = True
     except Exception as e3:
+        msg_is_cut_off = True
         raw_log = str(e3).lower()
         trace_log = "\n\n **对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~**"
         trace_mark = False
@@ -412,7 +413,7 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
             "id": "",
             "session_id": session_id,
             "qa_id": qa_id,
-            "msg_parent_id": msg_id,
+            "msg_parent_id": msg_parent_id,
             "msg_id": msg_id,
             "created": 0,
             "model": '',
@@ -436,7 +437,6 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
         try:
             reference_md = add_reference_md(msg_parent_id)
         except Exception as e:
-            print(e)
             reference_md = ''
         data = {
             "session_id": session_id,
@@ -453,7 +453,19 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
                 },
             }]
         }
-        yield f'data: {json.dumps(data)}\n\n'
+        try:
+            if not msg_is_cut_off:
+                yield f'data: {json.dumps(data)}\n\n'
+            else:
+                target_qa = NextConsoleQa.query.filter(
+                    NextConsoleQa.qa_id == qa_id,
+                ).first()
+                if target_qa:
+                    target_qa.qa_is_cut_off = True
+                    db.session.add(target_qa)
+        except Exception as e:
+            pass
+
         msg_content += reference_md
         end_time = time.time()
         # 更新回答消息
@@ -478,7 +490,8 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
         target_session.update_time = func.now()
         db.session.add(target_session)
         db.session.commit()
-        yield 'data: [DONE]\n\n'
+        if not msg_is_cut_off:
+            yield 'data: [DONE]\n\n'
 
 
 def workflow_generate(user_id, new_task, llm_client, messages, stream, response_format,

@@ -32,8 +32,8 @@
             class="std-middle-box"
             @click="editResource"
           >
-            <el-image v-show="!isShowEdit" src="images/edit_label.svg" style="width: 20px; height: 20px" />
-            <el-image v-show="isShowEdit" src="images/edit_label_active.svg" style="width: 20px; height: 20px" />
+            <el-image v-show="!isShowEdit" src="/images/edit_label.svg" style="width: 20px; height: 20px" />
+            <el-image v-show="isShowEdit" src="/images/edit_label_active.svg" style="width: 20px; height: 20px" />
           </div>
         </div>
         <div id="resource-meta">
@@ -79,7 +79,7 @@
         <el-divider v-show="resourceDetail?.id">
           <div id="resource-meta-divider">
             <div class="std-middle-box">
-              <el-image src="images/ai_abstract_active.svg" style="width: 20px; height: 20px" />
+              <el-image src="/images/ai_abstract_active.svg" style="width: 20px; height: 20px" />
             </div>
             <div class="std-middle-box">
               <el-text style="font-size: 14px; line-height: 20px; font-weight: 600; color: #175cd3"> 摘要 </el-text>
@@ -113,7 +113,7 @@
               </el-text>
             </div>
           </div>
-          <div class="resource-static-item" v-show="resourceDetail?.resource_type == 'folder'">
+          <div v-show="resourceDetail?.resource_type == 'folder'" class="resource-static-item">
             <div class="resource-static-item-left">
               <el-text class="resource-static-label">资源统计</el-text>
             </div>
@@ -122,7 +122,7 @@
               <el-text class="resource-static-value"> 子文件：{{ resourceDetail?.sub_resource_file_cnt }} 个 </el-text>
             </div>
           </div>
-          <div class="resource-static-item" v-show="resourceDetail?.author_info">
+          <div v-show="resourceDetail?.author_info" class="resource-static-item">
             <div class="resource-static-item-left">
               <el-text class="resource-static-label">资源作者</el-text>
             </div>
@@ -138,7 +138,7 @@
               <el-text class="resource-static-label">资源权限</el-text>
             </div>
             <div class="resource-static-item-right">
-              <el-tag v-for="(access, idx) in resourceDetail?.access_list" type="success" :key="idx">
+              <el-tag v-for="(access, idx) in resourceDetail?.access_list" :key="idx" type="success">
                 {{ access }}
               </el-tag>
             </div>
@@ -161,13 +161,13 @@
               <el-text class="resource-static-value">{{ resourceDetail?.create_time }}</el-text>
             </div>
           </div>
-          <div class="resource-static-item" v-show="resourceDetail.resource_type != 'folder'">
+          <div v-show="resourceDetail.resource_type != 'folder'" class="resource-static-item">
             <div class="resource-static-item-left">
               <el-text class="resource-static-label">索引状态</el-text>
               <el-tooltip effect="light" placement="top">
                 <template #default>
                   <div class="std-middle-box">
-                    <el-image src="images/tooltip.svg" style="width: 16px; height: 16px" />
+                    <el-image src="/images/tooltip.svg" style="width: 16px; height: 16px" />
                   </div>
                 </template>
                 <template #content>
@@ -276,8 +276,8 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage, ElNotification } from 'element-plus';
 import { useSessionStorage } from '@vueuse/core';
+import { ElMessage, ElNotification } from 'element-plus';
 import { computed, onMounted, ref, watch, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -286,21 +286,21 @@ import {
   resource_share_get_meta as resourceShareGetMeta,
   search_resource_tags as searchAllResourceTags,
   update_resource_object as updateResourceObject
-} from '@/api/resource_api';
+} from '@/api/resource-api';
 import {
   format_resource_size as formatResourceSize,
   get_resource_icon as getResourceIcon,
   search_all_resource_object as searchAllResourceObject
 } from '@/components/resource/resource_list/resource_list';
-import { user_info as useInfo } from '@/components/user_center/user';
-import { ResourceTag } from '@/types/resource_type';
+import { useUserInfoStore } from '@/stores/userInfoStore';
+import { ResourceTag } from '@/types/resource-type';
 import {
   init_my_resource_tree as initMyResourceTree,
   refresh_panel_count as refreshPanelCount
 } from '../resource_panel/panel';
 import { search_resource_by_tags as searchResourceByTags } from '../resource_shortcut/resource_shortcut';
 import { search_all_resource_share_object as searchAllResourceShareObject } from '../share_resources/share_resources';
-
+const userInfoStore = useUserInfoStore();
 interface IResourceDetail {
   resource_name: string;
   resource_parent_id?: string;
@@ -308,6 +308,7 @@ interface IResourceDetail {
   resource_desc?: string;
   resource_language?: string;
   resource_type_cn?: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   resource_size_in_MB?: number;
   resource_type?: string;
   resource_icon?: string;
@@ -394,7 +395,10 @@ async function editResource() {
     return;
   }
   // 检查是否有编辑和修改权限
-  if (resourceDetail.value.user_id == useInfo.value.user_id || resourceDetail.value?.access_list?.includes('管理')) {
+  if (
+    resourceDetail.value.user_id == userInfoStore.userInfo.user_id ||
+    resourceDetail.value?.access_list?.includes('管理')
+  ) {
     isShowEdit.value = !isShowEdit.value;
     return;
   }
@@ -458,6 +462,7 @@ async function searchResourceTags(query: string) {
     resourceTags.value = res.result;
   }
   isLoadingTags.value = false;
+  return;
 }
 
 async function updateResource() {
@@ -502,7 +507,7 @@ function getRagStatus() {
 
 defineExpose({
   getResourceDetail,
-  nowResourceId,
+  nowResourceId
 });
 </script>
 

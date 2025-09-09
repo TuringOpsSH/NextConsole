@@ -35,7 +35,7 @@ defineOptions({
 <template>
   <div v-if="showNoSearchResult" id="show-info-box" style="gap: 16px">
     <div>
-      <el-image src="images/empty_company_logo.svg" style="height: 160px; width: 220px" />
+      <el-image src="/images/empty_company_logo.svg" style="height: 160px; width: 220px" />
     </div>
     <div class="std-middle-box">
       <el-text style="font-size: 16px; font-weight: 600; color: #101828; line-height: 24px"> 搜索结果为空 </el-text>
@@ -43,7 +43,7 @@ defineOptions({
   </div>
   <div v-else-if="router.currentRoute.value.name == 'resource_share'" id="show-info-box" style="gap: 16px">
     <div>
-      <el-image src="images/empty_company_logo.svg" style="height: 160px; width: 220px" />
+      <el-image src="/images/empty_company_logo.svg" style="height: 160px; width: 220px" />
     </div>
     <div class="std-middle-box">
       <el-text
@@ -83,7 +83,7 @@ defineOptions({
 
   <div v-else-if="router.currentRoute.value.name == 'resource_recycle_bin'" id="show-info-box" style="gap: 16px">
     <div>
-      <el-image src="images/empty_company_logo.svg" style="height: 160px; width: 220px" />
+      <el-image src="/images/empty_company_logo.svg" style="height: 160px; width: 220px" />
     </div>
     <div class="std-middle-box">
       <el-text style="font-size: 16px; font-weight: 600; color: #101828; line-height: 24px"> 回收站为空 </el-text>
@@ -91,7 +91,7 @@ defineOptions({
   </div>
   <div id="show-info-box" style="gap: 16px" v-else>
     <div>
-      <el-image src="images/empty_company_logo.svg" style="height: 160px; width: 220px" />
+      <el-image src="/images/empty_company_logo.svg" style="height: 160px; width: 220px" />
     </div>
     <div class="std-middle-box">
       <el-text
@@ -122,7 +122,7 @@ defineOptions({
               <template #content>
                 当前支持pdf、doc、docx、xls、xlsx、ppt、pptx、html、txt、md类型的文件构建知识库。
               </template>
-              <el-image src="images/tooltip.svg" style="height: 16px; width: 16px" />
+              <el-image src="/images/tooltip.svg" style="height: 16px; width: 16px" />
             </el-tooltip>
             ：上传的资源会自动进行向量化处理，构建高效的索引体系，确保快速检索与精准匹配。
           </el-text>

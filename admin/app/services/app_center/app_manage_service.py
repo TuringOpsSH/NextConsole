@@ -130,7 +130,7 @@ def add_app(data):
         app_config={
             "welcome": {
               "description": "这是一个配置示例",
-              "image": "images/welcome.svg",
+              "image": "/images/welcome.svg",
               "keep": False,
               "prefixQuestions": [],
               "title": "欢迎使用"
@@ -176,7 +176,7 @@ def get_app_detail(params):
         agent_code: '1',
         agent_name: 'agent1',
         agent_type: 'assistant',
-        agent_icon: 'images/assistant.svg',
+        agent_icon: '/images/assistant.svg',
         id: 1
     :param params:
     :return:

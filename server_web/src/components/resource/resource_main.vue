@@ -29,7 +29,7 @@ defineOptions({
       <router-view v-else />
       <div v-show="panel_width == '0px'" id="layout_button2" @click="switchPanel">
         <el-tooltip :content="$t('openSidebar')" effect="light">
-          <el-image id="layout_alt" src="images/layout_alt_blue.svg" />
+          <el-image id="layout_alt" src="/images/layout_alt_blue.svg" />
         </el-tooltip>
       </div>
     </el-main>

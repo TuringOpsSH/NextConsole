@@ -47,7 +47,9 @@ def llm_node_execute(params, task_record, global_params):
     task_trace_log = ''
     if workflow_node_llm_params.get("stream", False):
         all_message_format = [msg_schema.get("schema_type") for msg_schema in task_record.workflow_node_message_schema]
-        output_flag = task_record.workflow_node_enable_message and global_params["stream"] and 'messageFlow' in all_message_format
+        output_flag = (task_record.workflow_node_enable_message
+                       and ('messageFlow' in all_message_format or 'customize' in all_message_format)
+                       )
         if output_flag:
             answer_msg = NextConsoleMessage(
                 user_id=task_record.user_id,
@@ -138,7 +140,7 @@ def llm_node_execute(params, task_record, global_params):
                 try:
                     reference_md = add_reference_md(task_record, global_params)
                 except Exception as e:
-                    print('llm_node_execute', e)
+                    app.logger.error(f"添加参考文献异常：{e}")
             global_params["message_queue"].put({
                 "session_id": task_record.session_id,
                 "qa_id": task_record.qa_id,

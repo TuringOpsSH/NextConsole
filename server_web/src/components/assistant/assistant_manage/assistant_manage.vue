@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import {nextTick, onMounted} from 'vue'
 import {ElInput, ElMessage, ElScrollbar} from "element-plus";
-import NextConsole from "@/components/next_console/console/next_console.vue";
-import {api, assistant_get, models_search} from "@/api/assistant_center";
+import NextConsole from "@/components/next-console/console/next_console.vue";
+import {api, assistant_get, models_search} from "@/api/assistant-center";
 import {useRoute, useRouter} from 'vue-router';
 import {
   add_assistant_kg,
@@ -82,7 +82,7 @@ import {
 
 import {Search} from "@element-plus/icons-vue";
 import {assistant} from "@/types/assistant";
-import {current_assistant} from "@/components/next_console/console/assistant";
+import {current_assistant} from "@/components/next-console/console/assistant";
 
 const router = useRouter()
 const props = defineProps({
@@ -237,12 +237,12 @@ onMounted(async () => {
                      @click="change_assistant_view_model(0)"
                      :disabled = "assistant_view_model === 0"
           >
-            <el-image v-if="assistant_view_model !== 0" src="images/arrow_left_black.svg"
+            <el-image v-if="assistant_view_model !== 0" src="/images/arrow_left_black.svg"
                       style="width: 14px;height: 14px"/>
-            <el-image v-else src="images/arrow_left_grey.svg" style="width: 14px;height: 14px"/>
+            <el-image v-else src="/images/arrow_left_grey.svg" style="width: 14px;height: 14px"/>
           </el-button>
           <el-button class="step-button" style="height: 40px" disabled>
-            <el-image src="images/arrow_right_grey.svg" style="width: 14px;height: 14px"/>
+            <el-image src="/images/arrow_right_grey.svg" style="width: 14px;height: 14px"/>
           </el-button>
           <div v-if="assistant_view_model === 2" style="display: flex;align-items: center;padding: 0 12px">
             <el-text style="font-size: 16px;font-weight: 600;line-height: 24px; color: #101828">
@@ -273,7 +273,7 @@ onMounted(async () => {
         <div class="order-button" v-if="assistant_view_model === 0">
           <el-button :class="assistant_order === 'create_time' ? 'order-button-left' : 'order-button-default'"
                      @click="change_order('create_time')">
-            <el-image src="images/green_dot.svg"
+            <el-image src="/images/green_dot.svg"
                       v-if="assistant_order === 'create_time'"
                       style="display: flex;align-items: center;margin: 0 6px 0 6px;"
             />
@@ -281,7 +281,7 @@ onMounted(async () => {
           </el-button>
           <el-button :class="assistant_order === 'call_cnt' ? 'order-button-right' : 'order-button-default'"
                      @click="change_order('call_cnt')">
-            <el-image src="images/green_dot.svg"
+            <el-image src="/images/green_dot.svg"
                       v-if="assistant_order === 'call_cnt'"
                       style="display: flex;align-items: center;margin: 0 6px 0 6px;"
             />
@@ -324,7 +324,7 @@ onMounted(async () => {
         <div class="assistant-detail-info-button-box" v-if="assistant_view_model === 1">
           <el-button style="box-shadow: 0 1px 2px 0 #1018280D; background: #FFFFFF;
         height: 40px; border-radius: 8px; padding: 10px 16px 10px 16px;" @click="reset_current_assistant">
-            <el-image src="images/retry.svg"/>
+            <el-image src="/images/retry.svg"/>
             <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054;
           margin-left: 8px;
 ">重置</el-text>
@@ -338,7 +338,7 @@ onMounted(async () => {
               <el-button style="background: #1570ef;height: 40px; border-radius: 8px; padding: 10px 16px 10px 16px;
             box-shadow: 0 1px 2px 0 #1018280D; margin-left: 12px
 ">
-                <el-image src="images/refresh_white.svg"/>
+                <el-image src="/images/refresh_white.svg"/>
                 <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #FFFFFF;
           margin-left: 8px;
 ">更新</el-text>
@@ -361,7 +361,7 @@ onMounted(async () => {
           </el-select>
           <el-button type="primary" style="background: #1570EF;gap: 8px;border-radius: 8px;height: 40px"
                      @click="change_assistant_view_model(2)">
-            <el-image src="images/user_plus.svg"/>
+            <el-image src="/images/user_plus.svg"/>
             <el-text style="color: #FFFFFF;
                   font-size: 14px;
                   font-weight: 600;
@@ -374,7 +374,7 @@ onMounted(async () => {
         </div>
         <div class="assistant-edit-button-box" v-if="assistant_view_model === 2">
           <el-button style="width: 88px;height: 40px;border-radius: 8px;" @click="reset_new_assistant">
-            <el-image src="images/retry.svg" style="width: 20px;height: 20px;margin-right: 6px"/>
+            <el-image src="/images/retry.svg" style="width: 20px;height: 20px;margin-right: 6px"/>
             <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054;">重置</el-text>
           </el-button>
           <el-button style="margin-left: 12px;border-radius: 8px;
@@ -382,13 +382,13 @@ onMounted(async () => {
             height: 40px;box-shadow: 0 1px 2px 0 #1018280D;" @click="save_new_assistant"
                      v-if="assistant_choose.id"
           >
-            <el-image src="images/save_white.svg" style="width: 20px;height: 20px;margin-right: 6px"/>
+            <el-image src="/images/save_white.svg" style="width: 20px;height: 20px;margin-right: 6px"/>
             <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #FFFFFF;">保存</el-text>
           </el-button>
           <el-button style="margin-left: 12px;border-radius: 8px;
             background: #1570EF;border: 0;width: 88px;
             height: 40px;box-shadow: 0 1px 2px 0 #1018280D;" @click="add_new_assistant" v-else>
-            <el-image src="images/send.svg" style="width: 20px;height: 20px;margin-right: 6px"/>
+            <el-image src="/images/send.svg" style="width: 20px;height: 20px;margin-right: 6px"/>
             <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #FFFFFF;">创建</el-text>
           </el-button>
         </div>
@@ -408,7 +408,7 @@ onMounted(async () => {
                   <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054">示例</el-text>
                 </el-button>
                 <el-button style="margin-left: 16px;border-radius: 8px" @click="to_do_something">
-                  <el-image src="images/cpu.svg"/>
+                  <el-image src="/images/cpu.svg"/>
                   <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054;
                         margin-left: 8px;" >
                     AI优化
@@ -431,7 +431,7 @@ onMounted(async () => {
                                         width: 100%;
 
   ">
-                        <el-image src="images/copy.svg"></el-image>
+                        <el-image src="/images/copy.svg"></el-image>
                         <el-text style="
                               margin-left: 8px;
                               font-size: 16px;
@@ -484,13 +484,13 @@ onMounted(async () => {
                 <el-button style="border-radius: 8px;background: #EFF8FF;border: 1px solid #1570EF; gap: 8px;
                     display: flex;justify-content: space-between"
                            @click="assistant_model_detail_vis=true">
-                  <el-image src="images/deep_seek_logo.png" style="margin-right: 4px;width: 24px;height: 24px;
+                  <el-image src="/images/deep_seek_logo.png" style="margin-right: 4px;width: 24px;height: 24px;
                   background-color: #EFF8FF"/>
                   <el-text style="margin-right: 4px"> {{ assistant_choose.assistant_model_name }}</el-text>
                   <el-tag style="margin-right: 4px;border-radius: 16px;border: 1px solid #B2DDFF">
                     chat
                   </el-tag>
-                  <el-image src="images/parent_component.svg"/>
+                  <el-image src="/images/parent_component.svg"/>
                 </el-button>
                 <el-dialog v-model="assistant_model_detail_vis" :modal="false" width="500px">
                   <div class="model-detail-box">
@@ -520,13 +520,13 @@ onMounted(async () => {
                   <el-button @click="show_role_base_info = !show_role_base_info" v-if="show_role_base_info"
                              style="display: flex;align-items: center;width: 24px;height: 24px;background: #F9FAFB;
                            border: 0; " >
-                    <el-image src="images/arrow_down.svg"  style="width: 24px;height: 8px"/>
+                    <el-image src="/images/arrow_down.svg"  style="width: 24px;height: 8px"/>
                   </el-button>
                   <el-button @click="show_role_base_info = !show_role_base_info" v-else
                              style="display: flex;align-items: center;width: 24px;height: 24px"
                              text
                   >
-                    <el-image src="images/chevron-right.svg" style="width: 8px;height: 24px"/>
+                    <el-image src="/images/chevron-right.svg" style="width: 8px;height: 24px"/>
                   </el-button>
                   <el-text style="margin-left: 6px;font-weight: 500;line-height: 24px;color: #101828">基础信息</el-text>
                 </div>
@@ -641,18 +641,18 @@ onMounted(async () => {
                     <el-button @click="show_role_kg_info = !show_role_kg_info" v-if="show_role_kg_info"
                                style="display: flex;align-items: center;width: 24px;height: 24px;background: #F9FAFB;
                            border: 0; " >
-                      <el-image src="images/arrow_down.svg"  style="width: 24px;height: 8px"/>
+                      <el-image src="/images/arrow_down.svg"  style="width: 24px;height: 8px"/>
                     </el-button>
                     <el-button @click="show_role_kg_info = !show_role_kg_info" v-else
                                style="display: flex;align-items: center;width: 24px;height: 24px"
                                text
                     >
-                      <el-image src="images/chevron-right.svg" style="width: 8px;height: 24px"/>
+                      <el-image src="/images/chevron-right.svg" style="width: 8px;height: 24px"/>
                     </el-button>
                     <el-text style="margin-left: 6px;font-weight: 500;line-height: 24px;color: #101828">知识库</el-text>
                   </div>
                   <div style="display: flex;flex-direction: row;align-items: center;justify-content: space-between">
-                    <el-image src="images/settings_01_grey.svg" style="width: 20px;height: 20px;cursor: pointer"
+                    <el-image src="/images/settings_01_grey.svg" style="width: 20px;height: 20px;cursor: pointer"
                               @click="dia_assistant_kg_setting_vis = true"
                     />
                     <el-popover placement="bottom" :width="520" trigger="click">
@@ -679,7 +679,7 @@ onMounted(async () => {
                                 >
                         <el-table-column width="50" property="kg_icon" label="图标" >
                           <template #default="{row}">
-                            <el-avatar :src="row.kg_icon ? row.kg_icon: 'images/kg_default_icon.svg'"
+                            <el-avatar :src="row.kg_icon ? row.kg_icon: '/images/kg_default_icon.svg'"
                                        style="width: 24px;height: 24px"/>
                           </template>
                         </el-table-column>
@@ -701,7 +701,7 @@ onMounted(async () => {
                                      cancel-button-text="取消" @confirm="remove_assistant_kg(kg)">
                         <template #reference>
                           <el-button style="background: #F9FAFB;border: 0" >
-                            <el-image src="images/delete.svg"/>
+                            <el-image src="/images/delete.svg"/>
                           </el-button>
                         </template>
                       </el-popconfirm>
@@ -724,7 +724,7 @@ onMounted(async () => {
                   <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054">示例</el-text>
                 </el-button>
                 <el-button style="margin-left: 16px;border-radius: 8px">
-                  <el-image src="images/cpu.svg"/>
+                  <el-image src="/images/cpu.svg"/>
                   <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054;
                       margin-left: 8px;">
                     AI优化
@@ -821,7 +821,7 @@ onMounted(async () => {
                          @click="change_publish_way('NextConsole')"
                     >
                       <div>
-                        <el-avatar src="images/logo.svg"/>
+                        <el-avatar src="/images/logo.svg"/>
                       </div>
                       <div>
                         <div>
@@ -840,7 +840,7 @@ onMounted(async () => {
                          :class="current_publish_way == 'WEB' ? 'assistant-publish-way-box-activate':''"
                          @click="change_publish_way('WEB')">
                       <div>
-                        <el-avatar src="images/web_app_logo.svg"/>
+                        <el-avatar src="/images/web_app_logo.svg"/>
                       </div>
                       <div>
                         <div>
@@ -859,7 +859,7 @@ onMounted(async () => {
                          :class="current_publish_way == 'IFRAME' ? 'assistant-publish-way-box-activate':''"
                          @click="change_publish_way('IFRAME')">
                       <div>
-                        <el-avatar src="images/iframe_logo.svg"/>
+                        <el-avatar src="/images/iframe_logo.svg"/>
                       </div>
                       <div>
                         <div>
@@ -878,7 +878,7 @@ onMounted(async () => {
                          :class="current_publish_way == 'API' ? 'assistant-publish-way-box-activate':''"
                          @click="change_publish_way('API')">
                       <div>
-                        <el-avatar src="images/api_logo.svg"/>
+                        <el-avatar src="/images/api_logo.svg"/>
                       </div>
                       <div>
                         <div>
@@ -897,7 +897,7 @@ onMounted(async () => {
                          :class="current_publish_way == 'qy_wx' ? 'assistant-publish-way-box-activate':''"
                          @click="change_publish_way('qy_wx')">
                       <div>
-                        <el-avatar src="images/qy_wx_logo.svg"/>
+                        <el-avatar src="/images/qy_wx_logo.svg"/>
                       </div>
                       <div>
                         <div>
@@ -916,7 +916,7 @@ onMounted(async () => {
                          :class="current_publish_way == 'feishu' ? 'assistant-publish-way-box-activate':''"
                          @click="change_publish_way('feishu')">
                       <div>
-                        <el-avatar src="images/feishu_logo.svg"/>
+                        <el-avatar src="/images/feishu_logo.svg"/>
                       </div>
                       <div>
                         <div>
@@ -935,7 +935,7 @@ onMounted(async () => {
                          :class="current_publish_way == 'ding_ding' ? 'assistant-publish-way-box-activate':''"
                          @click="change_publish_way('ding_ding')">
                       <div>
-                        <el-avatar src="images/ding_ding_logo.svg"/>
+                        <el-avatar src="/images/ding_ding_logo.svg"/>
                       </div>
                       <div>
                         <div>
@@ -1020,7 +1020,7 @@ onMounted(async () => {
                         <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054">示例</el-text>
                       </el-button>
                       <el-button style="margin-left: 16px;border-radius: 8px">
-                        <el-image src="images/cpu.svg"/>
+                        <el-image src="/images/cpu.svg"/>
                         <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054;
                         margin-left: 8px;" @click="to_do_something">
                           AI优化
@@ -1043,7 +1043,7 @@ onMounted(async () => {
                                         width: 100%;
 
   ">
-                              <el-image src="images/copy.svg"></el-image>
+                              <el-image src="/images/copy.svg"></el-image>
                               <el-text style="
                               margin-left: 8px;
                               font-size: 16px;
@@ -1096,12 +1096,12 @@ onMounted(async () => {
                       <el-button style="border-radius: 8px;background: #EFF8FF;border: 1px solid #1570EF; gap: 8px;
                     display: flex;justify-content: space-between"
                                  @click="assistant_model_detail_vis=true">
-                        <el-image src="images/openai.svg" style="margin-right: 4px"/>
+                        <el-image src="/images/openai.svg" style="margin-right: 4px"/>
                         <el-text style="margin-right: 4px"> {{ assistant_choose.assistant_model_name }}</el-text>
                         <el-tag style="margin-right: 4px;border-radius: 16px;border: 1px solid #B2DDFF">
                           chat
                         </el-tag>
-                        <el-image src="images/parent_component.svg"/>
+                        <el-image src="/images/parent_component.svg"/>
                       </el-button>
                       <el-dialog v-model="assistant_model_detail_vis" :modal="false" width="500px">
                         <div class="model-detail-box">
@@ -1131,13 +1131,13 @@ onMounted(async () => {
                         <el-button @click="show_role_base_info = !show_role_base_info" v-if="show_role_base_info"
                                    style="display: flex;align-items: center;width: 24px;height: 24px;background: #F9FAFB;
                            border: 0; " >
-                          <el-image src="images/arrow_down.svg"  style="width: 24px;height: 8px"/>
+                          <el-image src="/images/arrow_down.svg"  style="width: 24px;height: 8px"/>
                         </el-button>
                         <el-button @click="show_role_base_info = !show_role_base_info" v-else
                                    style="display: flex;align-items: center;width: 24px;height: 24px"
                                    text
                         >
-                          <el-image src="images/chevron-right.svg" style="width: 8px;height: 24px"/>
+                          <el-image src="/images/chevron-right.svg" style="width: 8px;height: 24px"/>
                         </el-button>
                         <el-text style="margin-left: 6px;font-weight: 500;line-height: 24px;color: #101828">基础信息</el-text>
                       </div>
@@ -1252,18 +1252,18 @@ onMounted(async () => {
                           <el-button @click="show_role_kg_info = !show_role_kg_info" v-if="show_role_kg_info"
                                      style="display: flex;align-items: center;width: 24px;height: 24px;background: #F9FAFB;
                            border: 0; " >
-                            <el-image src="images/arrow_down.svg"  style="width: 24px;height: 8px"/>
+                            <el-image src="/images/arrow_down.svg"  style="width: 24px;height: 8px"/>
                           </el-button>
                           <el-button @click="show_role_kg_info = !show_role_kg_info" v-else
                                      style="display: flex;align-items: center;width: 24px;height: 24px"
                                      text
                           >
-                            <el-image src="images/chevron-right.svg" style="width: 8px;height: 24px"/>
+                            <el-image src="/images/chevron-right.svg" style="width: 8px;height: 24px"/>
                           </el-button>
                           <el-text style="margin-left: 6px;font-weight: 500;line-height: 24px;color: #101828">知识库</el-text>
                         </div>
                         <div style="display: flex;flex-direction: row;align-items: center;justify-content: space-between">
-                          <el-image src="images/settings_01_grey.svg" style="width: 20px;height: 20px;cursor: pointer"
+                          <el-image src="/images/settings_01_grey.svg" style="width: 20px;height: 20px;cursor: pointer"
                                     @click="dia_assistant_kg_setting_vis = true"
                           />
                           <el-popover placement="bottom" :width="520" trigger="click">
@@ -1290,7 +1290,7 @@ onMounted(async () => {
                             >
                               <el-table-column width="50" property="kg_icon" label="图标" >
                                 <template #default="{row}">
-                                  <el-avatar :src="row.kg_icon ? row.kg_icon: 'images/kg_default_icon.svg'"
+                                  <el-avatar :src="row.kg_icon ? row.kg_icon: '/images/kg_default_icon.svg'"
                                              style="width: 24px;height: 24px"/>
                                 </template>
                               </el-table-column>
@@ -1312,7 +1312,7 @@ onMounted(async () => {
                                            cancel-button-text="取消" @confirm="remove_assistant_kg(kg)">
                               <template #reference>
                                 <el-button style="background: #F9FAFB;border: 0" >
-                                  <el-image src="images/delete.svg"/>
+                                  <el-image src="/images/delete.svg"/>
                                 </el-button>
                               </template>
                             </el-popconfirm>
@@ -1335,7 +1335,7 @@ onMounted(async () => {
                         <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054">示例</el-text>
                       </el-button>
                       <el-button style="margin-left: 16px;border-radius: 8px">
-                        <el-image src="images/cpu.svg"/>
+                        <el-image src="/images/cpu.svg"/>
                         <el-text style="font-size: 14px;font-weight: 600;line-height: 20px;color: #344054;
                       margin-left: 8px;">
                           AI优化
@@ -1500,7 +1500,7 @@ onMounted(async () => {
       <div class="assistant-list-footer" v-if="!assistant_view_model">
         <div class="assistant-list-footer-box">
           <el-button class="assistant-footer-button" @click="change_page(-1)">
-            <el-image src="images/arrow_left_black.svg" style="margin-right: 8px"/>
+            <el-image src="/images/arrow_left_black.svg" style="margin-right: 8px"/>
             上一页
           </el-button>
           <el-pagination
@@ -1512,7 +1512,7 @@ onMounted(async () => {
           />
           <el-button class="assistant-footer-button" @click="change_page(1)">
             下一页
-            <el-image src="images/arrow_right_black.svg" style="margin-left: 8px"/>
+            <el-image src="/images/arrow_right_black.svg" style="margin-left: 8px"/>
           </el-button>
         </div>
       </div>

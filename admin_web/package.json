@@ -1,6 +1,6 @@
 {
   "name": "next_console_admin_frontend",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "scripts": {
     "all_local": "set NODE_ENV=localhost2&&vite --mode devLocal && node version.js",
@@ -52,6 +52,7 @@
     "highlight.js": "^11.10.0",
     "highlightjs-line-numbers.js": "^2.9.0",
     "html-to-image": "^1.11.11",
+    "html2canvas": "^1.4.1",
     "install": "^0.13.0",
     "js-cookie": "^3.0.5",
     "json-editor-vue3": "^1.1.1",
@@ -68,7 +69,10 @@
     "md5": "^2.3.0",
     "mermaid": "^11.6.0",
     "npm": "^11.2.0",
+    "pinia": "^3.0.3",
+    "pinia-plugin-persistedstate": "^4.5.0",
     "pinyin": "^4.0.0-alpha.0",
+    "qrcode": "^1.5.4",
     "sass": "^1.80.6",
     "segmentit": "^2.0.3",
     "socket.io-client": "^4.8.1",
@@ -113,5 +117,9 @@
     "prettier": "^3.5.3",
     "typescript": "^5.6.3",
     "vite": "5.2.6"
+  },
+  "optionalDependencies": {
+    "@esbuild/linux-x64": "^0.25.5",
+    "@rollup/rollup-linux-x64-gnu": "^4.9.6"
   }
 }

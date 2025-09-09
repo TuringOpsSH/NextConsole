@@ -9,5 +9,5 @@ else:
     output = 5
 
 bind = '0.0.0.0:5011'
-workers = 4
-timeout = 600
+workers = 8
+timeout = 6000

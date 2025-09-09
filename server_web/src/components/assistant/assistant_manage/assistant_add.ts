@@ -5,7 +5,7 @@ import {
     upload_avatar
 } from "@/components/assistant/assistant_manage/assistant_manage";
 import {ElMessage, ElNotification} from "element-plus";
-import {assistant_add, assistant_get, assistant_update} from "@/api/assistant_center";
+import {assistant_add, assistant_get, assistant_update} from "@/api/assistant-center";
 import router from "@/router";
 
 
@@ -21,7 +21,7 @@ export function reset_new_assistant(notice = true) {
     assistant_choose.assistant_status = '创建';
     assistant_choose.assistant_tags = [];
     assistant_choose.assistant_role_prompt = '';
-    assistant_choose.assistant_avatar = 'images/logo.svg';
+    assistant_choose.assistant_avatar = '/images/logo.svg';
     assistant_choose.assistant_avatar_url = '';
     assistant_choose.assistant_language = '中文';
     assistant_choose.assistant_voice= '';
@@ -29,7 +29,7 @@ export function reset_new_assistant(notice = true) {
     assistant_choose.assistant_model_name= 'deepseek-chat';
     assistant_choose.assistant_model_type= 'chat';
     assistant_choose.assistant_model_temperature= 1;
-    assistant_choose.assistant_model_icon= 'images/deep_seek_logo.png';
+    assistant_choose.assistant_model_icon= '/images/deep_seek_logo.png';
     assistant_choose.create_time= '';
     assistant_choose.update_time= '';
     assistant_choose.assistant_knowledge_base= [];

@@ -91,27 +91,51 @@ def file_splitter_node_execute(task_params, task_record, global_params):
     :return:
     """
     config = task_record.workflow_node_file_splitter_config
-    content = task_params.get("content", [])
-    config["content"] = content
-    method = config.get("method", "length")
-    if method == "length":
-        results = length_split(config)
-    elif method == "symbol":
-        results = symbol_split(config)
-    elif method == "layout":
-        results = layout_split(config)
+    if config.get("mode") == 'list':
+        content_list = task_params.get("contents", [])
+        node_results = {
+            "content_chunks": []
+        }
+        idx = 1
+        for content in content_list:
+            config["content"] = content
+            method = config.get("method", "length")
+            if method == "length":
+                results = length_split(config)
+            elif method == "symbol":
+                results = symbol_split(config)
+            elif method == "layout":
+                results = layout_split(config)
+            else:
+                raise ValueError('不支持的分块方法：{}'.format(method))
+            for chunk in results:
+                node_results["content_chunks"].append({
+                    "id": idx,
+                    "chunk_content": chunk.get("content")
+                })
+                idx += 1
     else:
-        raise ValueError('不支持的分块方法：{}'.format(method))
-    node_results = {
-        "content_chunks": []
-    }
-    idx = 1
-    for chunk in results:
-        node_results["content_chunks"].append({
-            "id": idx,
-            "chunk_content": chunk.get("content")
-        })
-        idx += 1
+        content = task_params.get("content", [])
+        config["content"] = content
+        method = config.get("method", "length")
+        if method == "length":
+            results = length_split(config)
+        elif method == "symbol":
+            results = symbol_split(config)
+        elif method == "layout":
+            results = layout_split(config)
+        else:
+            raise ValueError('不支持的分块方法：{}'.format(method))
+        node_results = {
+            "content_chunks": []
+        }
+        idx = 1
+        for chunk in results:
+            node_results["content_chunks"].append({
+                "id": idx,
+                "chunk_content": chunk.get("content")
+            })
+            idx += 1
     task_record.task_result = json.dumps(node_results)
     db.session.add(task_record)
     db.session.commit()

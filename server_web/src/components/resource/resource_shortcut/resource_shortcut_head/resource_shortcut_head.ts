@@ -7,13 +7,13 @@ import {
 } from '@/components/resource/resource_shortcut/resource_shortcut';
 import router from '@/router';
 import { ref } from 'vue';
-import { get_resource_recent_format_count, search_resource_tags } from '@/api/resource_api';
+import { get_resource_recent_format_count, search_resource_tags } from '@/api/resource-api';
 import {
   choose_resource_meta,
   show_meta_flag,
   turn_on_resource_meta
 } from '@/components/resource/resource_meta/resource_meta';
-import { ResourceTag } from '@/types/resource_type';
+import { ResourceTag } from '@/types/resource-type';
 import { ElMessage } from 'element-plus';
 import { useResourceListStore } from '@/stores/resourceListStore';
 
@@ -99,7 +99,7 @@ export async function switch_show_resource_meta() {
   // 如果没有选中资源，则显示最近上传的元信息
   choose_resource_meta.id = null;
   choose_resource_meta.resource_name = current_tag.value.tag_name;
-  choose_resource_meta.resource_icon = 'images/tag.svg';
+  choose_resource_meta.resource_icon = '/images/tag.svg';
   choose_resource_meta.resource_desc = current_tag.value.tag_desc;
   // console.log(choose_resource_meta, current_tag.value)
   show_meta_flag.value = true;

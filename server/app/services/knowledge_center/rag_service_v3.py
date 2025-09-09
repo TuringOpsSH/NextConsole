@@ -11,6 +11,7 @@ from app.models.next_console.next_console_model import SessionAttachmentRelation
 from app.services.knowledge_center.file_chunk_embedding import embedding_call, rerank_call
 from app.services.knowledge_center.webpage_fetch import get_url_format
 from app.models.knowledge_center.rag_ref_model import RagQueryLog
+from app.models.configure_center.system_config import SystemConfig
 
 
 def stop_ref_task(params):
@@ -324,6 +325,10 @@ def rag_query_v3(params):
         return next_console_response(error_status=True, error_message="查询内容过长，请控制在1000字符以内")
     ref_ids = params.get("ref_ids", [])
     config = params.get("config", )
+    system_tool_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "tools",
+        SystemConfig.config_status == 1
+    ).first()
     inner_config = {
         "recall_threshold": 0.3,
         "recall_k": 30,
@@ -335,8 +340,8 @@ def rag_query_v3(params):
         "rerank_k": 10,
         "search_engine_enhanced": True,
         "search_engine_config": {
-            "api": app.config.get("search_engine_endpoint", ""),
-            "key": app.config.get("search_engine_key", ""),
+            "api": system_tool_config.config_value.get("search_engine", {}).get("endpoint"),
+            "key": system_tool_config.config_value.get("search_engine", {}).get("key"),
             "gl": "cn",
             "hl": "zh-cn",
             "location": "China",
@@ -359,6 +364,11 @@ def rag_query_v3(params):
 
     if not ref_ids and not inner_config.get("search_engine_enhanced", False):
         return next_console_response(error_status=False, error_message="查询参考信息不能为空", result=result)
+
+    system_ai_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "ai",
+        SystemConfig.config_status == 1
+    ).first()
     query_log = {
         "user_id": user_id,
         "session_id": session_id,
@@ -388,9 +398,9 @@ def rag_query_v3(params):
     query_embedding_result = embedding_call({
         "content": query,
         "config": {
-            "api": app.config.get("EMBEDDING_ENDPOINT", ""),
-            'key': app.config.get("EMBEDDING_KEY", ""),
-            "model": app.config.get("EMBEDDING_MODEL", ""),
+            "api":  system_ai_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
+            'key': system_ai_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
+            "model": system_ai_config.config_value.get("embedding", {}).get("embedding_model", ""),
             "encoding_format": "float",
         }
     })
@@ -561,13 +571,18 @@ def rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log):
     documents = [resource_chunk.get("chunk_embedding_content") for resource_chunk in all_ref_chunks]
     rerank_result = []
     rerank_begin_time = time.time()
+    from app.models.configure_center.system_config import SystemConfig
+    system_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "ai",
+        SystemConfig.config_status == 1
+    ).first()
     rerank_scores = rerank_call({
         "documents": documents,
         "query": query,
         "config": {
-            "api": app.config.get("RERANK_ENDPOINT", ""),
-            "key": app.config.get("RERANK_KEY", ""),
-            "model": app.config.get("RERANK_MODEL", ""),
+            "api":  system_config.config_value.get("rerank", {}).get("rerank_endpoint", ""),
+            'key': system_config.config_value.get("rerank", {}).get("rerank_api_key", ""),
+            "model": system_config.config_value.get("rerank", {}).get("rerank_model", ""),
             "max_chunks_per_doc": max_chunk_per_doc,
             "overlap_tokens": overlap_tokens,
         }
@@ -581,8 +596,8 @@ def rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log):
     # 按照阈值过滤
     index = 0
     for resource_chunk in all_ref_chunks:
-        if rerank_scores[index] >= rerank_threshold:
-            resource_chunk["rerank_score"] = rerank_scores[index]
+        if float(rerank_scores[index]) >= rerank_threshold:
+            resource_chunk["rerank_score"] = float(rerank_scores[index])
             rerank_result.append(resource_chunk)
         index += 1
     # 按照分数排序并限制数量
@@ -616,7 +631,7 @@ def get_web_search_result(params):
     }
     if not api or not key or not query:
         return result
-    if api == "https://google.serper.dev/search":
+    if api.startswith("https://google.serper.dev"):
         from app.services.knowledge_center.search_engine_utils import search_engine_serper
         pages, credits = search_engine_serper(
             {
@@ -907,12 +922,17 @@ def update_parse_resource_chunks_service(params):
         target_chunk.chunk_embedding_content = chunk_embedding_content
         # 重新计算chunk_embedding
         from app.services.knowledge_center.file_chunk_embedding import embedding_call
+        from app.models.configure_center.system_config import SystemConfig
+        system_config = SystemConfig.query.filter(
+            SystemConfig.config_key == "ai",
+            SystemConfig.config_status == 1
+        ).first()
         embedding_result = embedding_call({
             "content": chunk_embedding_content,
             "config": {
-                "api": app.config.get("EMBEDDING_ENDPOINT", ""),
-                'key': app.config.get("EMBEDDING_KEY", ""),
-                "model": app.config.get("EMBEDDING_MODEL", ""),
+                "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
+                'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
+                "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
             }
         })
         if not embedding_result:
@@ -960,12 +980,17 @@ def parse_resource_chunk_recall_service(params):
     ).first()
     if not target_chunk_embedding:
         return next_console_response(error_status=True, error_message="未找到对应的资源分块")
+    from app.models.configure_center.system_config import SystemConfig
+    system_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "ai",
+        SystemConfig.config_status == 1
+    ).first()
     query_embedding_result = embedding_call({
         "content": query_text,
         "config": {
-            "api": app.config.get("EMBEDDING_ENDPOINT", ""),
-            'key': app.config.get("EMBEDDING_KEY", ""),
-            "model": app.config.get("EMBEDDING_MODEL", ""),
+            "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
+            'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
+            "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
             "encoding_format": "float",
         }
     })

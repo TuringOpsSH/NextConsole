@@ -7,7 +7,7 @@ from flask_jwt_extended import (
 
 from app.app import jwt
 from app.services.user_center.users import *
-from app.services.configure_center.system_config import get_support_area_data
+from app.services.configure_center.system_config_service import get_support_area_data
 
 
 @jwt.unauthorized_loader
@@ -248,3 +248,14 @@ def valid_new_phone():
         return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
     return valid_bind_new_phone(data)
 
+
+@app.route("/next_console_admin/user_center/refresh_token", methods=["POST"])
+@jwt_required()
+def refresh_token():
+    data = request.get_json()
+    user_id = get_jwt_identity()
+    data["user_id"] = user_id
+    expire_time = data.get("expire_time")
+    if not expire_time:
+        return next_console_response(error_status=True, error_message="参数错误！")
+    return refresh_token_service(data)

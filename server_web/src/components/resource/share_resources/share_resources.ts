@@ -1,12 +1,12 @@
 import router from '@/router';
-import {ISearchByKeywordParams, ResourceItem} from '@/types/resource_type';
+import {ISearchByKeywordParams, ResourceItem} from '@/types/resource-type';
 import {
   batch_download_resources,
   get_resource_object_path,
   resource_share_get_list,
   resource_share_get_meta,
   searchByKeywordInResource
-} from '@/api/resource_api';
+} from '@/api/resource-api';
 import {reactive, ref} from 'vue';
 import {current_path_tree} from '@/components/resource/share_resources/resource_head/resource_head';
 import {ElMessage} from 'element-plus';

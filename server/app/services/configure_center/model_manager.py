@@ -160,7 +160,7 @@ def model_instance_search(params):
     :return:
     """
     user_id = int(params.get("user_id"))
-    llm_code = params.get("llm_code")
+    llm_code = params.get("llm_code", [])
     llm_name = params.get("llm_name")
     llm_type = params.get("llm_type")
     llm_status = params.get("llm_status", ['正常'])
@@ -177,7 +177,7 @@ def model_instance_search(params):
         )
     ]
     if llm_code:
-        filter_list.append(LLMInstance.llm_code == llm_code)
+        filter_list.append(LLMInstance.llm_code.in_(llm_code))
     if llm_name:
         filter_list.append(LLMInstance.llm_name.like(f"%{llm_name}%"))
     if llm_type:
@@ -200,6 +200,10 @@ def model_instance_search(params):
             LLMInstance.llm_desc.desc()
         ).paginate(page=page_num, per_page=page_size)
     data = [llm_instance.show_info() for llm_instance in llm_instances]
+    if llm_code:
+        # 保持返回顺序和请求顺序一致
+        data_dict = {item['llm_code']: item for item in data}
+        data = [data_dict[code] for code in llm_code if code in data_dict]
     return next_console_response(result={
         "total": total,
         "data": data

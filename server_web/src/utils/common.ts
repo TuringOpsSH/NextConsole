@@ -1,5 +1,5 @@
 import { saveAs } from 'file-saver';
-import { ResourceItem, TAuthType } from '@/types/resource_type';
+import { ResourceItem, TAuthType } from '@/types/resource-type';
 import { AUTH_TYPE } from './constant';
 
 export function getAuthTypeText(value: TAuthType) {

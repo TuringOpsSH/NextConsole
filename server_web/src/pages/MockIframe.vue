@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import {onBeforeMount} from "vue-demi";
-import {onMounted, ref} from "vue";
-// const iframeUrl = ref('https://www.turingops.com.cn/#/app_center/agent_app/whzy')
-const iframeUrl = ref('http://localhost:5173/#/app_center/agent_app/whzy')
+import { onMounted, ref } from 'vue';
+import { onBeforeMount } from 'vue-demi';
+// const iframeUrl = ref('https://www.turingops.com.cn/app_center/agent_app/whzy')
+const iframeUrl = ref('http://localhost:8080/app_center/agent_app/whzy');
 onBeforeMount(() => {
-  console.log('mounted')
+  console.log('mounted');
   // const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0Njc1MjY4OSwianRpIjoiNTQzNmNmYmUtN2ZmNC00ZWQ4LWI4N2EtMWNjYTJjNWJiZjljIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjI1NiIsIm5iZiI6MTc0Njc1MjY4OSwiY3NyZiI6IjlkMWIwOGY4LTBiZjMtNDY1My04YTk5LTU2YWQ1ZWU3M2IyOSIsImV4cCI6MTc0OTM0NDY4OSwidXNlcl9pZCI6MjU2LCJyb2xlX25hbWUiOlsic3VwZXJfYWRtaW4iLCJhZG1pbiIsInVzZXIiLCJuZXh0X2NvbnNvbGVfYWRtaW4iLCJuZXh0X2NvbnNvbGVfcmVhZGVyX2FkbWluIl0sInVzZXJfY29kZSI6IjA1NjNiMTlmLWE1NDctNGU2Yy05M2ZlLTgwNGRkNGE1YjVmMiJ9.jHg8d4I3jEXVB2uKaMUEuQO5CzUL6VjsIdqOa-Q1YTY'
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0Njc1NDMwMSwianRpIjoiNmQ2OTY1MjctZjJkOC00ZDA5LWE3OWYtZTVhNjczZWZlYmIyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjE2NzgiLCJuYmYiOjE3NDY3NTQzMDEsImNzcmYiOiIwN2QwNTNjYy02ZDE5LTRiMWUtYTI2ZC02YzhmYmRjYjg0ODYiLCJleHAiOjE3NDkzNDYzMDEsInVzZXJfaWQiOjE2NzgsInJvbGVfbmFtZSI6WyJ1c2VyIl0sInVzZXJfY29kZSI6ImExNWM0NmE5LWIzMTgtNGE2Yi05ZDNiLTEyYzFmZDY4MDAwMyJ9.aaVmxNGuzEdC-EpL7xa41PONBWe4nz9Tvwuj32_5irc'
+  const token =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1NzQwNjg5MywianRpIjoiOGQwOGIyMjktOTZlZC00M2RhLWI2MTktNDAxZDg5M2UwMWQ1IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjE2NzgiLCJuYmYiOjE3NTc0MDY4OTMsImNzcmYiOiIwZWI4NTdkNC1iMzkxLTRkZjktODQ4My03ZGM0Y2UxMGExNjciLCJleHAiOjE3NTk5OTg4OTMsInVzZXJfaWQiOjE2NzgsInJvbGVfbmFtZSI6WyJ1c2VyIiwic3VwZXJfYWRtaW4iLCJuZXh0X2NvbnNvbGVfYWRtaW4iXSwidXNlcl9jb2RlIjoiYTE1YzQ2YTktYjMxOC00YTZiLTlkM2ItMTJjMWZkNjgwMDAzIn0.A5ae97JaFXmrHC86yG_ndsN_EbraC94XvvUsUyLpxiY';
   // const token = ''
-  const session_code = ''
-  if (session_code){
-    iframeUrl.value += '/' + session_code
+  const session_code = '';
+  if (session_code) {
+    iframeUrl.value += '/' + session_code;
   }
-  if (token){
-    iframeUrl.value += '?token=' + token
+  if (token) {
+    iframeUrl.value += '?token=' + token;
   }
-})
-
+});
 
 onMounted(() => {
-  console.log(iframeUrl.value)
+  console.log(iframeUrl.value);
   // 向主页面发送消息
   // 获取 iframe 元素
   const iframe = document.getElementById('next-console');
@@ -27,7 +27,7 @@ onMounted(() => {
   // 向 iframe 发送消息
 
   // 监听来自 iframe 的消息
-  window.addEventListener('message', (event) => {
+  window.addEventListener('message', event => {
     console.log('Received from iframe:', event.data);
   });
 
@@ -132,43 +132,45 @@ onMounted(() => {
             ]
           }
         }
-      }};
+      }
+    };
     iframe.contentWindow.postMessage(message, '*'); // '*' 表示不限制目标域名
   }
   iframe.onload = () => {
-    console.log('iframe loaded')
-    sendMessageToIframe()
-  }
+    console.log('iframe loaded');
+    sendMessageToIframe();
+  };
   setInterval(() => {
-    iframe.contentWindow.postMessage({
-      type: 'question',
-      data: [
-        {
-          content: '2022年10月31号到11月6号武汉市平均进货价黄鹤楼相关规格与上期对比情况，用柱状图对比表示'
-        }
-      ]
-    }, '*');
-  }, 50000)
-})
+    iframe.contentWindow.postMessage(
+      {
+        type: 'question',
+        data: [
+          {
+            content: '2022年10月31号到11月6号武汉市平均进货价黄鹤楼相关规格与上期对比情况，用柱状图对比表示'
+          }
+        ]
+      },
+      '*'
+    );
+  }, 50000);
+});
 </script>
 
 <template>
   <el-container style="background-color: #999999">
-    <el-aside width="30vw">
-    </el-aside>
+    <el-aside width="30vw" />
     <el-main>
-      <div style="height: 100vh; width: 60vw;">
-        <iframe :src="iframeUrl" id="next-console" style="width: 80%; height: calc(100vh - 40px);
-        background: transparent; border: none; "
-                allow="microphone"
-                allowtransparency="true" />
+      <div style="height: 100vh; width: 60vw">
+        <iframe
+          id="next-console"
+          :src="iframeUrl"
+          style="width: 80%; height: calc(100vh - 40px); background: transparent; border: none"
+          allow="microphone"
+          allowtransparency="true"
+        />
       </div>
     </el-main>
-
   </el-container>
-
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

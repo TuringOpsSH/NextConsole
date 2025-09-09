@@ -16,7 +16,7 @@ export const api = {
   updateDepartment: `${envUrl}/management_center/management/user/department/updatebytwadmin`
 };
 
-export async function get_dashboard_index(params: object): Promise<ServerResponse> {
+export async function getDashboardIndex(params: object): Promise<ServerResponse> {
   return request({
     url: api.get_dashboard_index,
     method: 'get',
@@ -24,7 +24,7 @@ export async function get_dashboard_index(params: object): Promise<ServerRespons
   });
 }
 
-export async function get_all_company(params: object): Promise<ServerResponse> {
+export async function getAllCompany(params: object): Promise<ServerResponse> {
   return request({
     url: api.get_all_company,
     data: params,

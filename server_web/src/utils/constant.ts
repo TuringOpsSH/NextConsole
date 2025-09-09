@@ -1,4 +1,4 @@
-import { IResourceFormat } from '@/types/resource_type';
+import { IResourceFormat } from '@/types/resource-type';
 
 export const AUTH_TYPE = [
   { value: 'read', text: '阅读' },

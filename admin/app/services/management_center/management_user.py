@@ -1,5 +1,7 @@
 from app.services.user_center.user_role import *
 from app.services.user_center.users import *
+from sqlalchemy import or_
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def is_valid_datetime_ts(datetime_str):
@@ -18,6 +20,7 @@ def lookup_user_details_twadmin(params):
     NextConsole管理员查询用户详细信息
     可根据params中的参数进行查询,增加账号类型，公司过滤条件
     """
+
     user_id = int(params.get("user_id"))
     page_num = params.get("page_num", 1)
     page_size = params.get("page_size", 20)

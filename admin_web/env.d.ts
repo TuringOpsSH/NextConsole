@@ -10,11 +10,12 @@ declare module '*.ts' {
 // vite-env.d.ts
 interface ImportMetaEnv {
   readonly NODE_ENV: string;
-    readonly VITE_APP_NODE_ENV: string;
+  readonly VITE_APP_NODE_ENV: string;
   readonly VITE_APP_PUBLIC_PATH: string;
   readonly VITE_APP_CORP_ID: string;
   readonly VITE_APP_AGENT_ID: string;
   readonly VITE_APP_NEXT_CONSOLE_PATH: string;
+  readonly VITE_APP_WEBSOCKET_URL: string;
   // 在此处添加更多的环境变量定义
   // readonly YOUR_ENV_VARIABLE: string;
 }

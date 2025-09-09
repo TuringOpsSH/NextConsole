@@ -110,6 +110,8 @@ def next_console_search_messages(params):
         msg_item["qa_value"]["question"] = valid_questions
         if not valid_questions:
             continue
+        # 新增qa_is_cut_off 字段，表示当前对话是否被截断
+        msg_item["qa_is_cut_off"] = all_qas[msg_item["qa_id"]].get("qa_is_cut_off", False)
         new_res_msgs.append(msg_item)
     # 增加附件搜索
     return next_console_response(result=new_res_msgs)

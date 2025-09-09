@@ -19,9 +19,15 @@ _global_user_audio = {}
 class XFWsClient(object):
     # 初始化
     def __init__(self, user_id):
-        self.APPID = app.config.get('XF_APP_ID')
-        self.APIKey = app.config.get('XF_API_KEY')
-        self.APISecret = app.config.get('XF_API_SECRET')
+        from app.models.configure_center.system_config import SystemConfig
+        system_ai_config = SystemConfig.query.filter(
+            SystemConfig.config_key == "ai",
+            SystemConfig.config_status == 1
+        ).first()
+        self.API = system_ai_config.config_value.get('stt', {}).get("xf_api")
+        self.APPID = system_ai_config.config_value.get('stt', {}).get("xf_api_id")
+        self.APIKey = system_ai_config.config_value.get('stt', {}).get("xf_api_key")
+        self.APISecret = system_ai_config.config_value.get('stt', {}).get("xf_api_secret")
         self.wsUrl = self.create_url()
         self.ws = None
         self.current_finish_idx = -1
@@ -70,14 +76,13 @@ class XFWsClient(object):
         """
         建立连接
         """
-        print("### websocket open ###")
         app.logger.info("### websocket open ###")
 
     def on_error(self, ws, error):
-        print("### websocket error ###")
+        print(f"### websocket error ###: {error}")
 
     def create_url(self):
-        url = app.config['XF_API']
+
         # 生成RFC1123格式的时间戳
         now = datetime.now()
         date = format_date_time(mktime(now.timetuple()))
@@ -101,7 +106,7 @@ class XFWsClient(object):
             "host": "ws-api.xfyun.cn"
         }
         # 拼接鉴权参数，生成url
-        url = url + '?' + urlencode(v)
+        url = self.API + '?' + urlencode(v)
         return url
 
     def init(self):
