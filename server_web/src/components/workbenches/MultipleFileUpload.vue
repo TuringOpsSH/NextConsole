@@ -4,7 +4,7 @@ import ResourceUploadManager from "./ResourceUploadManager.vue";
 import {genFileId, UploadRawFile, UploadUserFile ,   UploadFile,
   UploadFiles,} from "element-plus";
 import AttachmentPreview, {IAttachmentDetail} from "./AttachmentPreview.vue";
-import {attachment_remove_from_session as attachmentRemoveFromSession} from "@/api/next_console";
+import {attachment_remove_from_session as attachmentRemoveFromSession} from "@/api/next-console";
 import {UploadFilled} from "@element-plus/icons-vue";
 const props = defineProps({
   sessionId: {
@@ -57,7 +57,7 @@ function getFileIcon(format:string) {
   let icon_format_map = {
     // 文档类型
     doc: 'doc.svg',
-    docx: 'doc.svg',
+    docx: 'docx.svg',
     xls: 'xls.svg',
     xlsx: 'xlsx.svg',
     csv: 'csv.svg',
@@ -168,7 +168,7 @@ function getFileIcon(format:string) {
     iso: 'iso.svg'
   };
   const formatIcon = icon_format_map[format] || 'file_format_other.svg';
-  return 'images/' + formatIcon;
+  return '/images/' + formatIcon;
 }
 watch(
     () => props.fileList,

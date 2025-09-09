@@ -3,7 +3,7 @@ import {nextTick, onMounted, ref} from 'vue';
 import {ElInput, ElMessage, ElScrollbar} from "element-plus";
 import {useRoute, useRouter} from 'vue-router';
 import {shop_assistant} from "@/types/assistant";
-import {Users} from "@/types/users";
+import {IUsers} from "@/types/user-center";
 import {
   off_list_shop_assistants,
   shop_assistant_comment,
@@ -11,8 +11,7 @@ import {
   shop_assistant_search,
   shop_assistant_subscribe,
   shop_assistant_unsubscribe
-} from "@/api/assistant_center";
-import {getInfo} from "@/utils/auth";
+} from "@/api/assistant-center";
 import {Search} from "@element-plus/icons-vue";
 
 const router = useRouter()
@@ -21,7 +20,7 @@ const shop_assistant_choose = ref<shop_assistant>();
 const shopAssistantList = ref<Array<shop_assistant>>([])
 const shopAssistantsCnt = ref(0);
 const shop_assistant_order = ref('create_time');
-const userinfo = ref<Users>({
+const userinfo = ref<IUsers>({
   user_account_type: "",
   user_wx_avatar: "",
   user_wx_nickname: "",
@@ -267,7 +266,7 @@ onMounted(async () => {
   window.addEventListener('resize', handleResize);
   await handleResize()
   // 获取用户信息
-  userinfo.value = await getInfo()
+
   await get_shop_assistant_list()
 
   shop_assistant_view_model.value = props.view_model
@@ -308,11 +307,11 @@ onMounted(async () => {
         <el-button class="step-button" style="height: 40px"
                    :disabled="shop_assistant_view_model === 0"
                    @click="change_assistant_view_model(0)">
-          <el-image v-if="shop_assistant_view_model !== 0" src="images/arrow_left_black.svg" style="width: 14px;height: 14px"/>
-          <el-image v-else src="images/arrow_left_grey.svg" style="width: 14px;height: 14px"/>
+          <el-image v-if="shop_assistant_view_model !== 0" src="/images/arrow_left_black.svg" style="width: 14px;height: 14px"/>
+          <el-image v-else src="/images/arrow_left_grey.svg" style="width: 14px;height: 14px"/>
         </el-button>
         <el-button class="step-button" style="height: 40px" disabled>
-          <el-image src="images/arrow_right_grey.svg" style="width: 14px;height: 14px"/>
+          <el-image src="/images/arrow_right_grey.svg" style="width: 14px;height: 14px"/>
         </el-button>
 
 
@@ -327,7 +326,7 @@ onMounted(async () => {
       <div class="order-button" v-if="shop_assistant_view_model === 0">
         <el-button :class="shop_assistant_order === 'create_time' ? 'order-button-left' : 'order-button-default'"
                    @click="change_order('create_time')">
-          <el-image src="images/green_dot.svg"
+          <el-image src="/images/green_dot.svg"
                     v-if="shop_assistant_order === 'create_time'"
                     style="display: flex;align-items: center;margin: 0 6px 0 6px;"
           />
@@ -335,7 +334,7 @@ onMounted(async () => {
         </el-button>
         <el-button :class="shop_assistant_order === 'call_cnt' ? 'order-button-right' : 'order-button-default'"
                    @click="change_order('call_cnt')">
-          <el-image src="images/green_dot.svg"
+          <el-image src="/images/green_dot.svg"
                     v-if="shop_assistant_order === 'call_cnt'"
                     style="display: flex;align-items: center;margin: 0 6px 0 6px;"
           />
@@ -637,7 +636,7 @@ onMounted(async () => {
     <div class="shop-assistant-list-footer" v-if="shop_assistant_view_model === 0">
       <div class="shop-assistant-list-footer-box">
         <el-button class="shop-assistant-footer-button" @click="change_page(-1)">
-          <el-image src="images/arrow_left_black.svg" style="margin-right: 8px"/>
+          <el-image src="/images/arrow_left_black.svg" style="margin-right: 8px"/>
           上一页
         </el-button>
         <el-pagination
@@ -649,7 +648,7 @@ onMounted(async () => {
         />
         <el-button class="assistant-footer-button" @click="change_page(1)">
           下一页
-          <el-image src="images/arrow_right_black.svg" style="margin-left: 8px"/>
+          <el-image src="/images/arrow_right_black.svg" style="margin-left: 8px"/>
         </el-button>
       </div>
     </div>

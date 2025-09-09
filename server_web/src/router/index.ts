@@ -397,16 +397,6 @@ const router = createRouter({
   routes
 });
 router.beforeEach(async (to, from, next) => {
-  // 1. 检测是否带 `/#/` 前缀
-  if (to.fullPath.startsWith('/#/')) {
-    const normalizedPath = to.fullPath.replace('/#/', '/'); // 去掉 `/#/` 前缀
-    return next({
-      path: normalizedPath,
-      query: to.query,
-      hash: to.hash,
-      replace: true
-    });
-  }
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const isRemoved = to.matched.some(record => record.meta.isRemoved);
   const requiresAuthRole = to.matched.some(record => record.meta.requiresAuthRole);

@@ -4,7 +4,7 @@ import {
     assistant_update,
     list_shop_assistants,
     off_list_shop_assistants
-} from "@/api/assistant_center";
+} from "@/api/assistant-center";
 import {
     assistant_choose,
     upload_avatar

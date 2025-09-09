@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {onMounted, ref, watch, nextTick} from 'vue';
-import ResourceUploadManager from "./ResourceUploadManager.vue";
-import {genFileId, UploadRawFile, UploadUserFile} from "element-plus";
-import AttachmentPreview, {IAttachmentDetail} from "./AttachmentPreview.vue";
-import {attachment_remove_from_session as attachmentRemoveFromSession} from "@/api/next_console";
-import {UploadFilled} from "@element-plus/icons-vue";
+import { UploadFilled } from '@element-plus/icons-vue';
+import { genFileId, UploadRawFile, UploadUserFile } from 'element-plus';
+import { onMounted, ref, watch, nextTick } from 'vue';
+import { attachment_remove_from_session as attachmentRemoveFromSession } from '@/api/next-console';
+import AttachmentPreview, { IAttachmentDetail } from './AttachmentPreview.vue';
+import ResourceUploadManager from './ResourceUploadManager.vue';
 const props = defineProps({
   sessionId: {
     type: Number,
@@ -29,20 +29,19 @@ const localSessionId = ref(0);
 const currentFile = ref<IAttachmentDetail>({});
 const currentSession = ref({
   id: localSessionId.value
-})
+});
 const localAccept = ref('*');
 const localAcceptDesc = ref('所有');
 const localAcceptFormat = ref([]);
 const emits = defineEmits(['update:file']);
 async function handleExceed(files) {
   uploadFileRef.value.clearFiles();
-  const file = files[0] as UploadRawFile
-  file.uid = genFileId()
-  uploadFileRef.value!.handleStart(file)
-  uploadFileRef.value?.submit()
+  const file = files[0] as UploadRawFile;
+  file.uid = genFileId();
+  uploadFileRef.value!.handleStart(file);
+  uploadFileRef.value?.submit();
 }
 async function handleRemoveAttachment(uploadFile: UploadFile, uploadFiles: UploadFiles) {
-
   await attachmentRemoveFromSession({
     session_id: localSessionId.value,
     resource_list: [currentFile.value.resource_id]
@@ -55,11 +54,11 @@ async function handleUploadSuccess(data) {
   currentFile.value = data;
   emits('update:file', data);
 }
-function getFileIcon(format:string) {
+function getFileIcon(format: string) {
   let icon_format_map = {
     // 文档类型
     doc: 'doc.svg',
-    docx: 'doc.svg',
+    docx: 'docx.svg',
     xls: 'xls.svg',
     xlsx: 'xlsx.svg',
     csv: 'csv.svg',
@@ -170,95 +169,93 @@ function getFileIcon(format:string) {
     iso: 'iso.svg'
   };
   const formatIcon = icon_format_map[format] || 'file_format_other.svg';
-  return 'images/' + formatIcon;
+  return '/images/' + formatIcon;
 }
 watch(
-    () => props.file,
-    async newVal => {
-      currentFile.value = newVal;
-    },
-    { immediate: true }
-);
-watch (
-    () => props.sessionId,
-    async newVal => {
-      localSessionId.value = newVal;
-      currentSession.value.id = newVal;
-    },
-    { immediate: true }
+  () => props.file,
+  async newVal => {
+    currentFile.value = newVal;
+  },
+  { immediate: true }
 );
 watch(
-    () => props.accept,
-    async newVal => {
-      if (!newVal) {
-        localAccept.value = '*';
-        return;
-      }
-      if (typeof newVal === 'object'  ) {
-        if (newVal.includes('all')) {
-          localAccept.value = '*';
-          localAcceptDesc.value = '所有';
-          return;
-        }
-        localAccept.value = '';
-        localAcceptDesc.value = '';
-        localAcceptFormat.value = [];
-        for (const item of newVal) {
-          localAccept.value += "." + item + ',';
-          localAcceptDesc.value +=  item + "/";
-          localAcceptFormat.value.push(getFileIcon(item));
-        }
-        // 去除最后一个字符
-        localAccept.value = localAccept.value.slice(0, -1);
-        localAcceptDesc.value = localAcceptDesc.value.slice(0, -1);
-        return;
-      }
-      localAccept.value = newVal;
-    },
-    { immediate: true }
+  () => props.sessionId,
+  async newVal => {
+    localSessionId.value = newVal;
+    currentSession.value.id = newVal;
+  },
+  { immediate: true }
 );
-
+watch(
+  () => props.accept,
+  async newVal => {
+    if (!newVal) {
+      localAccept.value = '*';
+      return;
+    }
+    if (typeof newVal === 'object') {
+      if (newVal.includes('all')) {
+        localAccept.value = '*';
+        localAcceptDesc.value = '所有';
+        return;
+      }
+      localAccept.value = '';
+      localAcceptDesc.value = '';
+      localAcceptFormat.value = [];
+      for (const item of newVal) {
+        localAccept.value += '.' + item + ',';
+        localAcceptDesc.value += item + '/';
+        localAcceptFormat.value.push(getFileIcon(item));
+      }
+      // 去除最后一个字符
+      localAccept.value = localAccept.value.slice(0, -1);
+      localAcceptDesc.value = localAcceptDesc.value.slice(0, -1);
+      return;
+    }
+    localAccept.value = newVal;
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <el-upload
-      ref="uploadFileRef"
-      v-model:file-list="uploadFileList"
-      action=""
-      :limit="1"
-      :show-file-list="false"
-      :auto-upload="true"
-      name="chunk_content"
-      :on-exceed="handleExceed"
-      :accept="localAccept"
-      drag
-      :before-upload="resourceUploadManagerRef?.prepareUploadFile"
-      :http-request="resourceUploadManagerRef?.uploadFileContent"
-      :on-success="resourceUploadManagerRef?.uploadFileSuccess"
-      :on-remove="handleRemoveAttachment"
+    ref="uploadFileRef"
+    v-model:file-list="uploadFileList"
+    action=""
+    :limit="1"
+    :show-file-list="false"
+    :auto-upload="true"
+    name="chunk_content"
+    :on-exceed="handleExceed"
+    :accept="localAccept"
+    drag
+    :before-upload="resourceUploadManagerRef?.prepareUploadFile"
+    :http-request="resourceUploadManagerRef?.uploadFileContent"
+    :on-success="resourceUploadManagerRef?.uploadFileSuccess"
+    :on-remove="handleRemoveAttachment"
   >
-    <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+    <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
     <div>
-      <el-image v-for="format in localAcceptFormat" :src="format"></el-image>
+      <el-image v-for="format in localAcceptFormat" :src="format" />
     </div>
-    <div class="el-upload__text">
-      拖拽文件至此或者 <em>点击上传</em>
-    </div>
+    <div class="el-upload__text">拖拽文件至此或者 <em>点击上传</em></div>
     <template #tip>
-      <div class="el-upload__tip">
-        可接受的文件类型：{{ localAcceptDesc }}
-      </div>
+      <div class="el-upload__tip">可接受的文件类型：{{ localAcceptDesc }}</div>
     </template>
   </el-upload>
-  <AttachmentPreview v-if="currentFile?.resource_id" :attachment-list="[currentFile]"
-                     @remove-attachment="args => handleRemoveAttachment(args)" />
+  <AttachmentPreview
+    v-if="currentFile?.resource_id"
+    :attachment-list="[currentFile]"
+    @remove-attachment="args => handleRemoveAttachment(args)"
+  />
   <div id="upload-box">
     <ResourceUploadManager
-        ref="resourceUploadManagerRef"
-        v-model:file-list="uploadFileList"
-        v-model:current-session="currentSession"
-        @upload-success="data => handleUploadSuccess(data)"
-        source="session-params"
+      ref="resourceUploadManagerRef"
+      v-model:file-list="uploadFileList"
+      v-model:current-session="currentSession"
+      source="session-params"
+      @upload-success="data => handleUploadSuccess(data)"
     />
   </div>
 </template>
