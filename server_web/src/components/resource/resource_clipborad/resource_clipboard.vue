@@ -22,10 +22,10 @@ onMounted(() => {
               'background': current_resource_clipboard?.length>0 ? '#EFF8FF' : '#F2F4F7',
             }">
           <el-image v-show="current_resource_clipboard?.length>0"
-                    src="images/resource_clipboard_active.svg"
+                    src="/images/resource_clipboard_active.svg"
                     class="resource-head-button-icon"/>
           <el-image v-show="!current_resource_clipboard?.length "
-                    src="images/resource_clipboard.svg"
+                    src="/images/resource_clipboard.svg"
                     class="resource-head-button-icon"/>
 
         </div>
@@ -52,7 +52,7 @@ onMounted(() => {
           </div>
 
           <div class="std-middle-box" style="cursor:pointer;" @click="remove_copy_resource(idx)">
-            <el-image src="images/delete_red.svg" class="resource-head-button-icon"/>
+            <el-image src="/images/delete_red.svg" class="resource-head-button-icon"/>
           </div>
 
         </div>

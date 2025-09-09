@@ -26,7 +26,7 @@ import {
   new_document_form_Ref
 } from '@/components/resource/resource_list/resource_list';
 import { useResourceListStore } from '@/stores/resourceListStore';
-import { TResourceListStatus } from '@/types/resource_type';
+import { TResourceListStatus } from '@/types/resource-type';
 import { ElTooltip } from 'element-plus';
 
 const route = useRoute();
@@ -111,8 +111,8 @@ const handleMouseEnter = (event, index) => {
           @click="resourceListStatus = 'list'"
         >
           <el-tooltip content="列表模式" effect="light">
-            <el-image v-if="!showCardList" src="images/list_layout_active.svg" class="resource-head-button-icon" />
-            <el-image v-else src="images/list_layout.svg" class="resource-head-button-icon" />
+            <el-image v-if="!showCardList" src="/images/list_layout_active.svg" class="resource-head-button-icon" />
+            <el-image v-else src="/images/list_layout.svg" class="resource-head-button-icon" />
           </el-tooltip>
         </div>
         <div
@@ -121,8 +121,8 @@ const handleMouseEnter = (event, index) => {
           @click="resourceListStatus = 'card'"
         >
           <el-tooltip content="卡片模式" effect="light">
-            <el-image v-if="showCardList" src="images/card_layout_active.svg" class="resource-head-button-icon" />
-            <el-image v-else src="images/card_layout.svg" class="resource-head-button-icon" />
+            <el-image v-if="showCardList" src="/images/card_layout_active.svg" class="resource-head-button-icon" />
+            <el-image v-else src="/images/card_layout.svg" class="resource-head-button-icon" />
           </el-tooltip>
         </div>
       </div>
@@ -154,10 +154,10 @@ const handleMouseEnter = (event, index) => {
           >
             <el-image
               v-show="add_document_flag"
-              src="images/add_document_active.svg"
+              src="/images/add_document_active.svg"
               class="resource-head-button-icon"
             />
-            <el-image v-show="!add_document_flag" src="images/add_document.svg" class="resource-head-button-icon" />
+            <el-image v-show="!add_document_flag" src="/images/add_document.svg" class="resource-head-button-icon" />
           </div>
         </el-tooltip>
         <el-tooltip effect="light" content="新建文件夹" placement="top">
@@ -170,12 +170,12 @@ const handleMouseEnter = (event, index) => {
           >
             <el-image
               v-show="add_dir_dialog_flag"
-              src="images/add_new_resource_active.svg"
+              src="/images/add_new_resource_active.svg"
               class="resource-head-button-icon"
             />
             <el-image
               v-show="!add_dir_dialog_flag"
-              src="images/add_new_resource.svg"
+              src="/images/add_new_resource.svg"
               class="resource-head-button-icon"
             />
           </div>
@@ -190,12 +190,12 @@ const handleMouseEnter = (event, index) => {
           >
             <el-image
               v-show="show_dir_meta_flag"
-              src="images/switch_resource_detail_active.svg"
+              src="/images/switch_resource_detail_active.svg"
               class="resource-head-button-icon"
             />
             <el-image
               v-show="!show_dir_meta_flag"
-              src="images/switch_resource_detail.svg"
+              src="/images/switch_resource_detail.svg"
               class="resource-head-button-icon"
             />
           </div>
@@ -263,32 +263,32 @@ const handleMouseEnter = (event, index) => {
         <el-radio-group v-model="new_document_resource.resource_format" style="gap: 12px">
           <el-radio value="docx">
             <div class="new_document_type">
-              <el-image src="images/docx.svg" class="document-format-icon" />
+              <el-image src="/images/docx.svg" class="document-format-icon" />
               <el-text>文字</el-text>
             </div>
           </el-radio>
           <el-radio value="xlsx">
             <div class="new_document_type">
-              <el-image src="images/xlsx.svg" class="document-format-icon" />
+              <el-image src="/images/xlsx.svg" class="document-format-icon" />
               <el-text>表格</el-text>
             </div>
           </el-radio>
           <el-radio value="pptx">
             <div class="new_document_type">
-              <el-image src="images/pptx.svg" class="document-format-icon" />
+              <el-image src="/images/pptx.svg" class="document-format-icon" />
               <el-text>演示</el-text>
             </div>
           </el-radio>
 
           <el-radio value="otl">
             <div class="new_document_type">
-              <el-image src="images/otl.png" class="document-format-icon" />
+              <el-image src="/images/otl.png" class="document-format-icon" />
               <el-text>智能文档</el-text>
             </div>
           </el-radio>
           <el-radio value="dbt">
             <div class="new_document_type">
-              <el-image src="images/dbt.png" class="document-format-icon" />
+              <el-image src="/images/dbt.png" class="document-format-icon" />
               <el-text>多维表格</el-text>
             </div>
           </el-radio>

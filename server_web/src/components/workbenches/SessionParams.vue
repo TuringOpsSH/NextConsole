@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {nextTick, ref, watch} from 'vue';
-import {update_session} from "@/api/next_console";
+import {update_session} from "@/api/next-console";
 import SingleFileUpload from "./SingleFileUpload.vue";
 import MultipleFileUpload from "./MultipleFileUpload.vue";
 
@@ -70,6 +70,9 @@ async function handleMultipleFileUpdate(fileList, item) {
   const validRes = await sessionFormRef.value?.validate();
   schemaReady.value = !!validRes;
 }
+function close() {
+  formShow.value = false;
+}
 watch(() => props.session, async (newVal) => {
   localSessionId.value = newVal.id;
   localSchema.value = newVal.session_task_params_schema || {};
@@ -88,7 +91,8 @@ watch(() => props.title, (newVal) => {
   localTitle.value = newVal || '应用参数';
 }, { immediate: true });
 defineExpose({
-  schemaReady
+  schemaReady,
+  close
 });
 </script>
 

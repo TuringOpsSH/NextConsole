@@ -1,6 +1,6 @@
 import os.path
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import hashlib
 from sqlalchemy import or_
 import json
@@ -18,6 +18,7 @@ from app.models.resource_center.share_resource_model import ResourceDownloadCool
 from app.utils.oss.oss_client import get_download_url_path, generate_new_path, generate_download_url
 from app.models.resource_center.resource_model import ResourceObjectMeta
 from app.models.knowledge_center.rag_ref_model import RagRefInfo
+import gevent
 
 
 @celery.task
@@ -89,8 +90,29 @@ def attachment_multiple_webpage_tasks(params):
         if not target_resources:
             return "资源不存在"
         from app.services.knowledge_center.webpage_fetch import fetch_page_content_main
-        # asyncio.run(fetch_page_content_main(target_resources, session_id))
-        fetch_page_content_main(target_resources, session_id, driver=driver)
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # 如果事件循环正在运行，使用asyncio.ensure_future
+                asyncio.run_coroutine_threadsafe(fetch_page_content_main(target_resources, session_id, driver=driver),
+                                                 loop)
+        except Exception as e:
+            print(f"Error in asyncio event loop: {e}")
+            try:
+                asyncio.run(fetch_page_content_main(target_resources, session_id, driver=driver))
+            except Exception as e:
+                return f"Error fetching page content: {e}"
+
+        # fetch_page_content_main(target_resources, session_id, driver=driver)
+        # target_resources = [
+        #     resource.to_dict() for resource in target_resources
+        # ]
+        # coroutine = gevent.spawn(fetch_page_content_main, target_resources, session_id, driver=driver)
+        # gevent.joinall([coroutine])
+
+        # greenlet = spawn(fetch_page_content_main_sync_wrapper,
+        #                  target_resources, session_id, driver)
+
         return "任务完成"
 
 
@@ -104,7 +126,7 @@ def completely_delete_resources():
         # 获取删除资源
         delete_resources = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.resource_status == "删除",
-            ResourceObjectMeta.delete_time + timedelta(days=75) < datetime.now()
+            ResourceObjectMeta.delete_time + timedelta(days=75) < datetime.now(timezone.utc)
         ).all()
         if not delete_resources:
             return "无需删除"
@@ -148,18 +170,12 @@ def send_resource_download_cooling_notice_email(params):
             ResourceDownloadCoolingRecord.id == cooling_record_id
         ).first()
         # 发送邮件
-        smtp_server = app.config['smtp_server']
-        smtp_port = app.config['smtp_port']
-        smtp_user = app.config['smtp_user']
-        smtp_password = app.config['smtp_password']
-        # 配置邮件信息
-        from_email = app.config['notice_email']
         subject = '资源下载拦截告警'
         hello_html = "resource_cooling_notice.html"
         with open(os.path.join(app.config["config_static"], hello_html), "r", encoding="utf8") as f:
             info_html = f.read()
         info_html_template = Template(info_html)
-        url = f"{app.config['domain']}/#/next_console_admin/resources/resource_cooling/{cooling_record_id}"
+        url = f"{app.config['domain']}/#/next_console/resources/resource_cooling/{cooling_record_id}"
         info_params = {
             "cooling_record": cooling_record,
             "url": url,
@@ -170,16 +186,8 @@ def send_resource_download_cooling_notice_email(params):
         }
         info_html = info_html_template.render(info_params)
         # 创建 MIMEText 对象，并设置邮件主题、发件人、收件人
-        msg = MIMEText(info_html, 'html', 'utf-8')
-        msg['Subject'] = subject
-        msg['From'] = from_email
-        msg['To'] = ",".join([target_user.user_email])
-
-        # 连接 SMTP 服务器并发送邮件
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port)
-        server.login(smtp_user, smtp_password)
-        server.sendmail(from_email, [target_user.user_email], msg.as_string())
-        server.quit()
+        from app.services.task_center.celery_fun_libs import send_email_by_client
+        send_email_by_client(subject, [target_user.user_email], info_html)
         cooling_record.author_notice = True
         db.session.add(cooling_record)
         db.session.commit()
@@ -194,7 +202,7 @@ def auto_delete_resource_download_url():
     """
     with app.app_context():
         # 获取删除资源
-        begin_time = datetime.now() - timedelta(days=30)
+        begin_time = datetime.now(timezone.utc) - timedelta(days=30)
         delete_resources = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.resource_status == "正常",
             or_(
@@ -248,44 +256,13 @@ def auto_build_resource_ref_v2(params):
             ref.ref_status = "已删除"
             db.session.add(ref)
         db.session.commit()
-        # 检查是否有相同特征值的构建索引，有则复用
-        if target_resource.resource_feature_code:
-            same_feature_ref = ResourceObjectMeta.query.filter(
-                ResourceObjectMeta.id != resource_id,
-                ResourceObjectMeta.user_id == user_id,
-                ResourceObjectMeta.resource_status == '正常',
-                ResourceObjectMeta.resource_feature_code == target_resource.resource_feature_code,
-            ).join(
-                RagRefInfo,
-                RagRefInfo.resource_id == ResourceObjectMeta.id
-            ).filter(
-                RagRefInfo.ref_status == "成功"
-            ).with_entities(
-                RagRefInfo
-            ).order_by(
-                RagRefInfo.create_time.desc()
-            ).first()
-            if same_feature_ref:
-                new_ref = RagRefInfo(
-                    ref_code=same_feature_ref.ref_code,
-                    resource_id=resource_id,
-                    user_id=user_id,
-                    ref_type=same_feature_ref.ref_type,
-                    ref_chunk_cnt=same_feature_ref.ref_chunk_cnt,
-                    ref_chunk_ready_cnt=same_feature_ref.ref_chunk_ready_cnt,
-                    ref_status="成功",
-                )
-                db.session.add(new_ref)
-                db.session.commit()
-                # 推送构建信息
-                emit_resource_status.delay({
-                    "user_id": user_id,
-                    "resource_id": resource_id,
-                    "rag_status": "成功"
-                })
-                return "构建任务启动成功"
         # 启动构建初始化
         # todo 生成各项配置
+        from app.models.configure_center.system_config import SystemConfig
+        system_config = SystemConfig.query.filter(
+            SystemConfig.config_key == "ai",
+            SystemConfig.config_status == 1
+        ).first()
         file_reader_config = {
             "engine": "pandoc",
             "pandoc_config": {
@@ -321,9 +298,9 @@ def auto_build_resource_ref_v2(params):
             "question_abstract": False
         }
         file_chunk_embedding_config = {
-            "api":  app.config.get("EMBEDDING_ENDPOINT"),
-            'key': app.config.get("EMBEDDING_KEY"),
-            "model": app.config.get("EMBEDDING_MODEL"),
+            "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
+            'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
+            "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
             "batch_size": 10,
             "dimension": 1024,
             "encoding_format": "float",
@@ -357,9 +334,7 @@ def auto_build_resource_ref_v2(params):
         ]
         if target_resource.resource_format == "pdf":
             file_reader_config["engine"] = "pymupdf"
-            file_reader_config["pymupdf_config"] = {
-
-            }
+            file_reader_config["pymupdf_config"] = {}
         elif target_resource.resource_format in ("html", "shtml", "phtml", "htm"):
             file_reader_config["engine"] = "html2text"
             ref_type = "webpage"
@@ -431,9 +406,13 @@ def start_ref_task(params):
             "resource_id": resource_id,
             "rag_status": target_ref.ref_status
         })
-        if not (reader_result and isinstance(reader_result, dict) and reader_result.get("status") == "success"):
-            return '文件解析失败，请检查文件格式或内容'
+        if not (reader_result and isinstance(reader_result, dict) and reader_result.get("content")):
+            target_ref.ref_status = "文件解析失败"
+            db.session.add(target_ref)
+            db.session.commit()
+            return f'文件解析失败，请检查文件格式或内容:{reader_result.json.get("error_message")}'
         params["resource_id"] = reader_result["id"]
+        params["content"] = reader_result["content"]
         # 文件切分
         split_result = file_split(params)
         db.session.refresh(target_ref)
@@ -443,7 +422,10 @@ def start_ref_task(params):
             "rag_status": target_ref.ref_status
         })
         if not (split_result and isinstance(split_result, dict) and split_result.get("status") == "success"):
-            return '文件切分失败，请检查文件格式或内容'
+            target_ref.ref_status = "文件切分失败"
+            db.session.add(target_ref)
+            db.session.commit()
+            return f'文件切分失败，请检查文件格式或内容:{split_result.json.get("error_message")}'
         abstract_result = file_chunk_abstract(params)
         db.session.refresh(target_ref)
         emit_resource_status.delay({

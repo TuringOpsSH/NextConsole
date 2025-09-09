@@ -8,12 +8,11 @@ import {
   attachment_add_resources_into_session as attachmentAddResourcesIntoSession,
   attachment_remove_from_session as attachmentRemoveFromSession,
   attachment_search_in_session as attachmentSearchInSession
-} from '@/api/next_console';
+} from '@/api/next-console';
 import AttachmentPreview from './AttachmentPreview.vue';
 import ResourceUploadManager from './ResourceUploadManager.vue';
 import ResourcesSearch from './ResourcesSearch.vue';
-import {running_question_meta as IRunningQuestionMeta, session_item as ISessionItem} from '@/types/next_console';
-import {getInfo} from '@/utils/auth';
+import {running_question_meta as IRunningQuestionMeta, session_item as ISessionItem} from '@/types/next-console';
 
 const userInputRef = ref();
 const consoleInputRef = ref();
@@ -260,6 +259,9 @@ async function handleKeyDown(event) {
       nextTick().then(() => {
         event.target.selectionStart = start + 1;
         event.target.selectionEnd = start + 1;
+
+        const textarea = userInputRef.value.$el.querySelector('textarea');
+        textarea.scrollTop = textarea.scrollHeight;
       });
     } else {
       await askQuestion();
@@ -444,7 +446,7 @@ async function commitAddChooseResources() {
       currentMsgAttachment.value.push({
         resource_id: resource.id,
         resource_name: resource.resource_name,
-        resource_icon: 'images/' + resource.resource_icon,
+        resource_icon: '/images/' + resource.resource_icon,
         resource_size: resource.resource_size_in_MB
       });
     }
@@ -466,7 +468,7 @@ async function initSessionAttachment() {
     currentMsgAttachment.value = res.result.map(item => ({
       resource_id: item.id,
       resource_name: item.resource_name,
-      resource_icon: item.resource_icon?.includes("images/") || item.resource_icon?.includes("http") ? item.resource_icon : 'images/' + item.resource_icon,
+      resource_icon: item.resource_icon?.includes("/images/") || item.resource_icon?.includes("http") ? item.resource_icon : '/images/' + item.resource_icon,
       resource_size: item.resource_size_in_MB
     }));
   }
@@ -481,7 +483,6 @@ watch(
   async newVal => {
     if (newVal && newVal != currentSession) {
       Object.assign(currentSession, newVal);
-      userInfo.value = await getInfo();
       await initSessionAttachment();
     }
   },
@@ -535,7 +536,7 @@ defineExpose({
           <div class="std-middle-box">
             <el-popover ref="attachmentButtonRef" trigger="click" :disabled="localDisable">
               <template #reference>
-                <el-image src="images/paperclip.svg" class="footer-icon" />
+                <el-image src="/images/paperclip.svg" class="footer-icon" />
               </template>
               <div>
                 <div class="std-middle-box">
@@ -599,13 +600,13 @@ defineExpose({
                   style="background-color: red"
                   @click="stopQuestion()"
               >
-                <el-image src="images/pause_white.svg" class="input-icon" />
+                <el-image src="/images/pause_white.svg" class="input-icon" />
               </div>
               <el-popover rigger="hover" width="300px">
                 <template #reference>
                   <el-badge v-show="userBatchSize > 1" :value="userBatchSize">
                     <div class="input-button" style="background-color: red">
-                      <el-image src="images/pause_white.svg" class="input-icon" />
+                      <el-image src="/images/pause_white.svg" class="input-icon" />
                     </div>
                   </el-badge>
                 </template>
@@ -618,12 +619,12 @@ defineExpose({
                     <el-text truncated> 第{{ idx + 1 }}个问题 </el-text>
                   </div>
                   <div class="running-question-stop-button">
-                    <el-image src="images/close_red.svg" @click="stopQuestion(running_question)" />
+                    <el-image src="/images/close_red.svg" @click="stopQuestion(running_question)" />
                   </div>
                 </div>
               </el-popover>
               <div v-show="!userBatchSize" class="input-button" @click="askQuestion()">
-                <el-image src="images/send_blue.svg" class="input-icon" />
+                <el-image src="/images/send_blue.svg" class="input-icon" />
               </div>
             </div>
           </div>

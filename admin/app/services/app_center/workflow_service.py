@@ -23,7 +23,7 @@ def create_workflow(params):
         return check_res
     workflow_name = params.get("workflow_name")
     workflow_desc = params.get("workflow_desc", '')
-    workflow_icon = params.get("workflow_icon", 'images/workflow.svg')
+    workflow_icon = params.get("workflow_icon", '/images/workflow.svg')
     workflow_is_main = params.get("workflow_is_main", False)
     workflow_code = str(uuid.uuid4())
     start_node_code = str(uuid.uuid4())
@@ -84,7 +84,7 @@ def create_workflow(params):
             "nodeType": "start",
             "nodeDesc": "开始节点",
             "nodeName": "开始",
-            "nodeIcon": "images/node_start.svg",
+            "nodeIcon": "/images/node_start.svg",
             "nodeInput": "string",
             "nodeOutput": "string",
             "nodeModel": ""
@@ -145,7 +145,7 @@ def create_workflow(params):
             "nodeType": "end",
             "nodeDesc": "结束节点用于标识工作流的最终状态与输出数据",
             "nodeName": "结束",
-            "nodeIcon": "images/node_end.svg",
+            "nodeIcon": "/images/node_end.svg",
             "nodeInput": "string",
             "nodeOutput": "返回文本",
             "nodeModel": ""
@@ -184,7 +184,7 @@ def create_workflow(params):
         "node_type": "start",
         "node_name": "开始",
         "node_desc": "工作流开始节点",
-        "node_icon": "images/node_start.svg",
+        "node_icon": "/images/node_start.svg",
     })
     end_node = init_app_flow_node({
         "user_id": user_id,
@@ -194,7 +194,7 @@ def create_workflow(params):
         "node_type": "end",
         "node_name": "结束",
         "node_desc": "工作流结束节点",
-        "node_icon": "images/node_end.svg",
+        "node_icon": "/images/node_end.svg",
     })
     return next_console_response(result=workflow_info.to_dict())
 
@@ -849,7 +849,7 @@ def init_app_flow_node(params):
     node_type = params.get("node_type", "llm")
     node_name = params.get("node_name", "Agent节点")
     node_desc = params.get("node_desc", "通过大语言模型构建Agent，智能生成回复")
-    node_icon = params.get("node_icon", "images/node_llm.svg")
+    node_icon = params.get("node_icon", "/images/node_llm.svg")
     node_code = params.get("node_code")
     node_llm_code = params.get("node_llm_code")
     node_llm_params = params.get("node_llm_params", {
@@ -1310,13 +1310,13 @@ def init_rag_node(new_node):
         {
             "id": "message_attachments",
             "resource_ready": True,
-            "resource_icon": "images/node_rag.svg",
+            "resource_icon": "/images/node_rag.svg",
             "resource_name": "消息附件",
         },
         {
             "id": "session_attachments",
             "resource_ready": True,
-            "resource_icon": "images/node_rag.svg",
+            "resource_icon": "/images/node_rag.svg",
             "resource_name": "会话附件",
         },
     ]

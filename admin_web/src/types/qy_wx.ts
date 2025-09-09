@@ -1,4 +1,4 @@
-import {msg_queue_item} from "@/types/next_console";
+import {msg_queue_item} from "@/types/next-console";
 
 export interface task_member{
     id: number,

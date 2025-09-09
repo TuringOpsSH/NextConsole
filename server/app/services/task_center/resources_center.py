@@ -170,12 +170,6 @@ def send_resource_download_cooling_notice_email(params):
             ResourceDownloadCoolingRecord.id == cooling_record_id
         ).first()
         # 发送邮件
-        smtp_server = app.config['smtp_server']
-        smtp_port = app.config['smtp_port']
-        smtp_user = app.config['smtp_user']
-        smtp_password = app.config['smtp_password']
-        # 配置邮件信息
-        from_email = app.config['notice_email']
         subject = '资源下载拦截告警'
         hello_html = "resource_cooling_notice.html"
         with open(os.path.join(app.config["config_static"], hello_html), "r", encoding="utf8") as f:
@@ -192,16 +186,8 @@ def send_resource_download_cooling_notice_email(params):
         }
         info_html = info_html_template.render(info_params)
         # 创建 MIMEText 对象，并设置邮件主题、发件人、收件人
-        msg = MIMEText(info_html, 'html', 'utf-8')
-        msg['Subject'] = subject
-        msg['From'] = from_email
-        msg['To'] = ",".join([target_user.user_email])
-
-        # 连接 SMTP 服务器并发送邮件
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port)
-        server.login(smtp_user, smtp_password)
-        server.sendmail(from_email, [target_user.user_email], msg.as_string())
-        server.quit()
+        from app.services.task_center.celery_fun_libs import send_email_by_client
+        send_email_by_client(subject, [target_user.user_email], info_html)
         cooling_record.author_notice = True
         db.session.add(cooling_record)
         db.session.commit()
@@ -272,6 +258,11 @@ def auto_build_resource_ref_v2(params):
         db.session.commit()
         # 启动构建初始化
         # todo 生成各项配置
+        from app.models.configure_center.system_config import SystemConfig
+        system_config = SystemConfig.query.filter(
+            SystemConfig.config_key == "ai",
+            SystemConfig.config_status == 1
+        ).first()
         file_reader_config = {
             "engine": "pandoc",
             "pandoc_config": {
@@ -307,9 +298,9 @@ def auto_build_resource_ref_v2(params):
             "question_abstract": False
         }
         file_chunk_embedding_config = {
-            "api":  app.config.get("EMBEDDING_ENDPOINT"),
-            'key': app.config.get("EMBEDDING_KEY"),
-            "model": app.config.get("EMBEDDING_MODEL"),
+            "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
+            'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
+            "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
             "batch_size": 10,
             "dimension": 1024,
             "encoding_format": "float",

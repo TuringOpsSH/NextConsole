@@ -3,9 +3,11 @@ from app.views.user_center.user_process import *
 from app.views.management_center.management_process import *
 from app.views.user_center.role_process import *
 from app.views.user_center.user_notice_view import *
+from app.views.user_center.system_notice import *
 
 # # 配置中心
-from app.views.configure_center.admin import *
+from app.views.configure_center.system_config import *
+from app.views.configure_center.user_config import *
 from app.views.configure_center.model_manager import *
 #
 # # 工作台

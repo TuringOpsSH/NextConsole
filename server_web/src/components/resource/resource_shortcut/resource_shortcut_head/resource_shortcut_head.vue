@@ -99,7 +99,7 @@ defineOptions({
       <div id="resource_path">
         <el-image
           v-show="current_tag?.tag_value == 'search'"
-          src="images/back.svg"
+          src="/images/back.svg"
           style="width: 20px; height: 20px; margin-right: 12px; cursor: pointer"
           @click="handle_search_clear()"
         />
@@ -124,7 +124,7 @@ defineOptions({
         <el-image
           v-show="current_tag?.tag_value == 'search'"
           style="width: 20px; height: 20px; cursor: pointer; margin-left: 12px"
-          src="images/edit_label.svg"
+          src="/images/edit_label.svg"
           @click="switch_edit_search_keyword_dialog()"
         >
         </el-image>
@@ -138,11 +138,11 @@ defineOptions({
         >
           <el-tooltip content="列表模式" effect="light">
             <el-image
-              src="images/list_layout_active.svg"
+              src="/images/list_layout_active.svg"
               class="resource-head-button-icon"
               v-if="resource_view_model == 'list'"
             />
-            <el-image src="images/list_layout.svg" class="resource-head-button-icon" v-else />
+            <el-image src="/images/list_layout.svg" class="resource-head-button-icon" v-else />
           </el-tooltip>
         </div>
         <div
@@ -152,11 +152,11 @@ defineOptions({
         >
           <el-tooltip content="卡片模式" effect="light">
             <el-image
-              src="images/card_layout_active.svg"
+              src="/images/card_layout_active.svg"
               class="resource-head-button-icon"
               v-if="resource_view_model == 'card'"
             />
-            <el-image src="images/card_layout.svg" class="resource-head-button-icon" v-else />
+            <el-image src="/images/card_layout.svg" class="resource-head-button-icon" v-else />
           </el-tooltip>
         </div>
       </div>
@@ -172,10 +172,10 @@ defineOptions({
           @click="show_search_config_area()"
         >
           <el-tooltip v-if="show_search_config_area_flag" effect="light" :content="$t('resourceList')">
-            <el-image src="images/search_config_active.svg" class="resource-head-button-icon" />
+            <el-image src="/images/search_config_active.svg" class="resource-head-button-icon" />
           </el-tooltip>
           <el-tooltip v-else effect="light" :content="$t('resourceList')">
-            <el-image src="images/search_config.svg" class="resource-head-button-icon" />
+            <el-image src="/images/search_config.svg" class="resource-head-button-icon" />
           </el-tooltip>
         </div>
         <div
@@ -188,14 +188,14 @@ defineOptions({
           <el-tooltip effect="light" :content="$t('resourceDetails')">
             <el-image
               v-show="show_meta_flag"
-              src="images/switch_resource_detail_active.svg"
+              src="/images/switch_resource_detail_active.svg"
               class="resource-head-button-icon"
             />
           </el-tooltip>
           <el-tooltip effect="light" :content="$t('resourceDetails')">
             <el-image
               v-show="!show_meta_flag"
-              src="images/switch_resource_detail.svg"
+              src="/images/switch_resource_detail.svg"
               class="resource-head-button-icon"
             />
           </el-tooltip>

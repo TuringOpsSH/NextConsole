@@ -88,8 +88,8 @@ onMounted(() => {
               @click="switch_resource_edit_model"
               v-show="choose_resource_meta?.id && choose_resource_meta?.resource_parent_id"
             >
-              <el-image src="images/edit_label.svg" style="width: 20px; height: 20px" v-show="!meta_edit_flag" />
-              <el-image src="images/edit_label_active.svg" style="width: 20px; height: 20px" v-show="meta_edit_flag" />
+              <el-image src="/images/edit_label.svg" style="width: 20px; height: 20px" v-show="!meta_edit_flag" />
+              <el-image src="/images/edit_label_active.svg" style="width: 20px; height: 20px" v-show="meta_edit_flag" />
             </div>
           </div>
           <div id="resource-meta">
@@ -134,7 +134,7 @@ onMounted(() => {
           <el-divider v-show="choose_resource_meta?.id">
             <div id="resource-meta-divider">
               <div class="std-middle-box">
-                <el-image src="images/ai_abstract_active.svg" style="width: 20px; height: 20px" />
+                <el-image src="/images/ai_abstract_active.svg" style="width: 20px; height: 20px" />
               </div>
               <div class="std-middle-box">
                 <el-text style="font-size: 14px; line-height: 20px; font-weight: 600; color: #175cd3"> 摘要 </el-text>
@@ -226,7 +226,7 @@ onMounted(() => {
                 <el-tooltip effect="light" placement="top">
                   <template #default>
                     <div class="std-middle-box">
-                      <el-image src="images/tooltip.svg" style="width: 16px; height: 16px" />
+                      <el-image src="/images/tooltip.svg" style="width: 16px; height: 16px" />
                     </div>
                   </template>
                   <template #content>

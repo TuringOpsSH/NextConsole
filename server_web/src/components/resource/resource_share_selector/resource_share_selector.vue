@@ -30,18 +30,19 @@ import {
   update_right_cnt
 } from "@/components/resource/resource_share_selector/resource_share_selector";
 import {ArrowLeft, ArrowRight, Search, ArrowUp, ArrowDown} from "@element-plus/icons-vue";
-import {user_info} from "@/components/user_center/user";
 import {ref, onMounted} from "vue";
+import {useUserInfoStore} from "@/stores/userInfoStore";
+const userInfoStore = useUserInfoStore();
 const phone_view = ref(window.innerWidth < 768);
 const dialog_width = ref(window.innerWidth < 768 ? '90%' : '60%');
 function fixResourceIcon(iconPath: string) {
   if (!iconPath) {
-    return 'images/default_resource_icon.svg';
+    return '/images/default_resource_icon.svg';
   }
   if (iconPath.startsWith('http')) {
     return iconPath;
   }
-  return `images/${iconPath}`;
+  return `/images/${iconPath}`;
 
 
 }
@@ -268,7 +269,7 @@ onMounted(() => {
                                   v-if="access_object?.disabled">
                         <template #default>
                           <div class="std-middle-box">
-                            <el-image src="images/tooltip.svg" style="width: 16px;height: 16px"/>
+                            <el-image src="/images/tooltip.svg" style="width: 16px;height: 16px"/>
                           </div>
 
                         </template>
@@ -287,7 +288,7 @@ onMounted(() => {
 
                     <div class="std-middle-box" style="min-width: 70px">
                       <el-select v-model="access_object.access" size="small"
-                                 :disabled="access_object?.user_id==user_info?.user_id || access_object.disabled">
+                                 :disabled="access_object?.user_id==userInfoStore.userInfo?.user_id || access_object.disabled">
                         <el-option label="阅读" value="read">
                           阅读
                         </el-option>

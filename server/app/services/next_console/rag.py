@@ -218,8 +218,7 @@ def search_generate_rag_question(user_id, session_id, qa_id, msg_id, question_co
     if current_session.session_search_engine_switch:
         search_engine_enhanced = True
         if current_session.session_search_engine_language_type:
-            from app.services.knowledge_center.rag_service_v3 import deep_merge
-            search_engine_config = deep_merge(search_engine_config, current_session.session_search_engine_language_type)
+            search_engine_config['hl'] = current_session.session_search_engine_language_type
         search_engine_config["type"] = current_session.session_search_engine_resource_type
     rag_params = {
         "user_id": user_id,
@@ -246,7 +245,7 @@ def search_generate_rag_question(user_id, session_id, qa_id, msg_id, question_co
         new_ref_text = ""
         for i in range(len(ref_text)):
             new_ref_text += f"[{pre_fix}{i + 1}] {ref_text[i]}\n"
-        return new_ref_text
+        return new_ref_text[:60000]
     return ''
 
 

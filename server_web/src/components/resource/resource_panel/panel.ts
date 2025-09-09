@@ -10,12 +10,13 @@ import {
   search_resource_object,
   search_resource_tags,
   update_resource_tags
-} from '@/api/resource_api';
-import {user_info} from '@/components/user_center/user';
+} from '@/api/resource-api';
+import { useUserInfoStore } from '@/stores/userInfoStore';
 import router from '@/router';
 import type Node from 'element-plus/es/components/tree/src/model/node';
 import {current_resource, show_resource_list} from '@/components/resource/resource_list/resource_list';
-import {ResourceItem, ResourceTag, ResourceUploadItem} from '@/types/resource_type';
+import {ResourceItem, ResourceTag, ResourceUploadItem} from '@/types/resource-type';
+
 import {
   current_tag,
   get_system_tag,
@@ -158,9 +159,10 @@ export async function get_current_resource_usage() {
   let res = await get_resource_usage(params);
   if (!res.error_status) {
     current_resource_usage.value = res.result.usage;
-    if (user_info.value?.user_resource_limit) {
+    const userInfoStore = useUserInfoStore();
+    if (userInfoStore.userInfo?.user_resource_limit) {
       current_resource_usage_percent.value = Math.round(
-        (res.result.usage / user_info.value?.user_resource_limit) * 100
+        (res.result.usage /userInfoStore.userInfo?.user_resource_limit) * 100
       );
     } else {
       current_resource_usage_percent.value = 0;
@@ -631,7 +633,7 @@ export async function get_my_resource_tree(node: Node, resolve: (data: Tree[]) =
         disabled: true,
         resource_id: node.data.resource_id,
         resource_type: 'folder',
-        resource_icon: 'images/more.svg'
+        resource_icon: '/images/more.svg'
       });
     }
     resolve(data);
@@ -641,11 +643,11 @@ export async function router_to_resource(item: Node) {
   if (window.innerWidth < 768) {
     switch_panel();
   }
-
+  const userInfoStore = useUserInfoStore();
   if (item.data.resource_type == 'folder') {
     await show_resource_list({
       id: item.data.resource_id,
-      user_id: user_info.value.user_id,
+      user_id: userInfoStore.userInfo.user_id,
       resource_type: item.data.resource_type
     } as ResourceItem);
     return;
@@ -740,7 +742,7 @@ export async function get_share_resource_tree(node: Node, resolve: (data: Tree[]
         disabled: true,
         resource_id: node.data.resource_id,
         resource_type: 'folder',
-        resource_icon: 'images/more.svg'
+        resource_icon: '/images/more.svg'
       });
     }
     resolve(data);

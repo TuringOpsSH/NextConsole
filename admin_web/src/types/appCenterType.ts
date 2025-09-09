@@ -214,7 +214,9 @@ export interface IWorkflowNodeInfo {
   node_agent_desc: string;
   node_agent_prologue: string;
   node_agent_preset_question: string;
-  node_input_params_json_schema?: object;
+  node_input_params_json_schema?: {
+    properties: object;
+  };
   node_upstream?: any[];
   node_upstream2?: any[];
   node_downstream?: string;
@@ -307,6 +309,7 @@ export interface IWorkflowEdgeInfo {
   edge_condition_type?: string;
   edge_conditions?: IWorkflowEdgeCondition[];
   routerName?: string;
+  node_upstream?: any;
 }
 export interface IWorkflowEdgeCondition {
   src_node: Record<string, unknown>;

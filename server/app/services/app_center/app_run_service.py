@@ -33,6 +33,7 @@ from sqlalchemy import or_
 from app.services.next_console.base import *
 import requests
 from app.models.knowledge_center.rag_ref_model import *
+from app.models.configure_center.system_config import SystemConfig
 
 
 def check_user_access(target_user, app_code):
@@ -911,6 +912,10 @@ def rag_node_execute(params, task_record, global_params):
         db.session.add(task_record)
         db.session.commit()
         return
+    system_tool_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "tools",
+        SystemConfig.config_status == 1
+    ).first()
     rag_params = {
         "user_id": task_record.user_id,
         "session_id": task_record.session_id,
@@ -930,8 +935,8 @@ def rag_node_execute(params, task_record, global_params):
             "search_engine_enhanced": task_record.workflow_node_rag_web_search_config.get(
                 "search_engine_enhanced", False),
             "search_engine_config": {
-                "api": app.config.get("search_engine_endpoint", ""),
-                "key": app.config.get("search_engine_key", ""),
+                "api": system_tool_config.config_value.get("search_engine", {}).get("endpoint"),
+                "key": system_tool_config.config_value.get("search_engine", {}).get("key"),
                 "gl": "cn",
                 "hl": "zh-cn",
                 "location": "China",

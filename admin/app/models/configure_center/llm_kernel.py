@@ -53,6 +53,7 @@ class LLMInstance(db.Model):
             "llm_status": self.llm_status,
             "llm_source": self.llm_source,
             "llm_is_public": self.llm_is_public,
+            "llm_icon": self.llm_icon if self.llm_icon else "",
             "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             "update_time": self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
             "frequency_penalty": self.frequency_penalty,

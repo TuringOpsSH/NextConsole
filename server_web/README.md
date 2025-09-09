@@ -27,7 +27,7 @@ npm install
 npm run serve
 ```
 
-4. 打开浏览器访问 `http://localhost:8080`
+4. 打开浏览器访问 `http://localhost:5173`
 
 ## 贡献
 

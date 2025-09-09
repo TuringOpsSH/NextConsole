@@ -119,7 +119,7 @@ def get_app_detail(params):
         agent_code: '1',
         agent_name: 'agent1',
         agent_type: 'assistant',
-        agent_icon: 'images/assistant.svg',
+        agent_icon: '/images/assistant.svg',
         id: 1
     :param params:
     :return:

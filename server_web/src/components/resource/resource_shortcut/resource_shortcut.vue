@@ -73,12 +73,12 @@ import {
   show_search_config_area
 } from '@/components/resource/resource_shortcut/resource_shortcut_head/resource_shortcut_head';
 import Context_menu from '@/components/resource/resource_shortcut/resource_context_menu/context_menu.vue';
-import { search_resource_tags } from '@/api/resource_api';
+import { search_resource_tags } from '@/api/resource-api';
 import { close_upload_manager } from '@/components/resource/resource_upload/resource_upload';
 import { onBeforeRouteLeave } from 'vue-router';
 import Resource_share_selector from '@/components/resource/resource_share_selector/resource_share_selector.vue';
-import { user_info } from '@/components/user_center/user';
 import Resource_empty from '@/components/resource/resource_empty/resource_empty.vue';
+import {useUserInfoStore} from "@/stores/userInfoStore";
 
 const props = defineProps({
   tag_source: {
@@ -117,6 +117,7 @@ const props = defineProps({
     default: false
   }
 });
+const userInfoStore = useUserInfoStore()
 const dialog_width = ref(window.innerWidth < 768 ? '90%' : '600px');
 const page_model = ref(
   window.innerWidth < 768 ? 'total, prev, pager, next, jumper' : 'total, sizes, prev, pager, next, jumper'
@@ -273,13 +274,13 @@ defineOptions({
                   v-if="current_tag?.tag_source == 'system' && current_tag?.tag_value == 'search'"
                 >
                   <template #default="scope">
-                    <div class="std-box" v-if="scope.row.user_id == user_info?.user_id">
-                      <el-avatar :src="user_info?.user_avatar" style="width: 16px; height: 16px" />
+                    <div class="std-box" v-if="scope.row.user_id == userInfoStore.userInfo?.user_id">
+                      <el-avatar :src="userInfoStore.userInfo?.user_avatar" style="width: 16px; height: 16px" />
                       <el-text
                         style="width: 160px; font-size: 12px; font-weight: 500; line-height: 18px; color: #475467"
                         truncated
                       >
-                        {{ user_info?.user_nick_name }}
+                        {{ userInfoStore.userInfo?.user_nick_name }}
                       </el-text>
                     </div>
                     <div class="std-box" v-else>
@@ -473,7 +474,7 @@ defineOptions({
                   <template #default="scope">
                     <el-popover trigger="click" ref="button_Ref">
                       <template #reference>
-                        <el-image src="images/dot_list_grey.svg" class="resource-icon2" />
+                        <el-image src="/images/dot_list_grey.svg" class="resource-icon2" />
                       </template>
                       <div class="resource-button-group" v-show="current_tag?.tag_value != 'recycle_bin'">
                         <div class="resource-button">
@@ -575,7 +576,7 @@ defineOptions({
                     <div class="resource-item-card-body-button">
                       <el-popover trigger="click" :hide-after="0" ref="resource_shortcut_card_buttons_Ref">
                         <template #reference>
-                          <el-image src="images/dot_list_grey.svg" class="resource-icon2" />
+                          <el-image src="/images/dot_list_grey.svg" class="resource-icon2" />
                         </template>
                         <div class="resource-button-group" v-show="current_tag?.tag_value != 'recycle_bin'">
                           <div class="resource-button">

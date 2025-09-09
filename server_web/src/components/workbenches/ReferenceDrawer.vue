@@ -4,8 +4,8 @@ import {
   open_reference,
   reference_drawer_data, retry_get_icon,
   show_reference_drawer
-} from "@/components/next_console/messages_flow/reference_drawer";
-import {ResourceItem} from "@/types/resource_type";
+} from "@/components/next-console/messages-flow/reference_drawer";
+import {ResourceItem} from "@/types/resource-type";
 import {ref} from "vue";
 const drawer_width = ref(window.innerWidth < 768 ? '60vw': '15vw');
 function getResourceIcon(resource: ResourceItem) {
@@ -14,13 +14,13 @@ function getResourceIcon(resource: ResourceItem) {
     if (
       resource.resource_icon.includes('http') ||
       resource.resource_icon.includes('data:image') ||
-      resource.resource_icon.includes('images/')
+      resource.resource_icon.includes('/images/')
     ) {
       return resource.resource_icon;
     }
-    return 'images/' + resource.resource_icon;
+    return '/images/' + resource.resource_icon;
   } else {
-    return 'images/html.svg';
+    return '/images/html.svg';
   }
 }
 </script>

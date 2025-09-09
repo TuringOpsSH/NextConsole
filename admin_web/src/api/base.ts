@@ -1,32 +1,34 @@
-import request from '@/utils/request'
-import {ServerResponse} from "@/types/response";
+import { ServerResponse } from '@/types/response';
+import request from '@/utils/request';
 
-
-let env_url = ''
-
-
+const envUrl = '';
 
 export const api = {
-    version_get: env_url + '/next_console_admin/version',
-    domain_get: env_url + '/next_console_admin/domain',
+  version_get: envUrl + '/next_console_admin/version',
+  domain_get: envUrl + '/next_console_admin/domain',
+  latest_version_get: 'https://www.turingops.com.cn/next_console/version'
+};
 
-
-}
-
-export async function version_get(): Promise<ServerResponse> {
-    // @ts-ignore
-    return request({
-        url: api.version_get,
-        noAuth: true
-
-    })
+export async function versionGet(): Promise<ServerResponse> {
+  // @ts-ignore
+  return request({
+    url: api.version_get,
+    noAuth: true
+  });
 }
 
 export async function domainGet(): Promise<ServerResponse> {
-    // @ts-ignore
-    return request({
-        url: api.domain_get,
-        noAuth: true
-    })
+  // @ts-ignore
+  return request({
+    url: api.domain_get,
+    noAuth: true
+  });
 }
 
+export async function latestVersionGet(): Promise<ServerResponse> {
+  // @ts-ignore
+  return request({
+    url: api.latest_version_get,
+    noAuth: true
+  });
+}

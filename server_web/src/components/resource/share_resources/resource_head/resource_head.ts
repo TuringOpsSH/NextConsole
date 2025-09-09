@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import {ResourceItem, TResourceListStatus} from '@/types/resource_type';
+import {ResourceItem, TResourceListStatus} from '@/types/resource-type';
 import {
   current_share_resource,
   multiple_selection,

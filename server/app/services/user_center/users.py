@@ -1,44 +1,44 @@
 
 import hashlib
-import json
 import os.path
 import random
 import uuid
 from datetime import datetime, timezone, timedelta
 from functools import wraps
+
 import requests
 import sqlalchemy
 from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
+from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
+from alibabacloud_tea_openapi import models as open_api_models
 from alibabacloud_tea_util import models as util_models
 from flask_jwt_extended import (
     create_access_token, decode_token
 )
 from jinja2 import Template
 from pypinyin import pinyin, Style
-from sqlalchemy import desc, or_, and_
+from sqlalchemy import desc, and_
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app.app import aliyun_client
 from app.app import app
 from app.models.assistant_center.assistant import Assistant, UserAssistantRelation
 from app.models.configure_center.system_config import SupportArea
+from app.models.configure_center.system_config import SystemConfig
 from app.models.contacts.company_model import *
 from app.models.contacts.department_model import *
-from app.models.resource_center.resource_model import ResourceObjectMeta, ResourceObjectUpload, ResourceViewRecord, \
-    ResourceDownloadRecord
+from app.models.resource_center.resource_model import ResourceObjectMeta
 from app.models.user_center.role_info import *
 from app.models.user_center.user_info import *
 from app.models.user_center.user_role_info import *
-from app.models.next_console.next_console_model import NextConsoleMessage
 from app.services.configure_center.response_utils import next_console_response
 from app.services.configure_center.user_config import init_user_config
 from app.services.task_center.celery_fun_libs import send_user_create_email
 from app.services.task_center.celery_fun_libs import send_user_invite_email
 from app.services.task_center.celery_fun_libs import send_user_verification_code_email
-from app.services.user_center.user_role import search_user_roles
-from app.services.user_center.system_notice_service import add_system_notice_service
 from app.services.user_center.account_service import init_user_account, add_invite_user_points_service
+from app.services.user_center.system_notice_service import add_system_notice_service
+from app.services.user_center.user_role import search_user_roles
 from app.utils.oss.oss_client import generate_new_path, generate_download_url
 
 
@@ -332,6 +332,7 @@ def confirm_email_user(data):
         }
         info_html = info_html_template.render(info_params)
         send_user_create_email.delay([target_user.user_email], body=info_html)
+        userinfo["expire_time"] = expire_time.strftime('%Y-%m-%d %H:%M:%S')
         return next_console_response(result={
             "token": access_token,
             "userinfo": userinfo,
@@ -513,25 +514,7 @@ def reset_account_password_send_code(data):
 
         # 发送短信
         template_param = f'{{"code":"{user_code}"}}'
-        # 发送短信
-        send_sms_request = dysmsapi_20170525_models.SendSmsRequest(
-            phone_numbers=user_phone,
-            sign_name=app.config["sign_name"],
-            template_code=app.config["template_code"],
-            template_param=template_param
-        )
-        runtime = util_models.RuntimeOptions()
-        try:
-            # 复制代码运行请自行打印 API 的返回值
-            res = aliyun_client.send_sms_with_options(send_sms_request, runtime)
-            app.logger.info("短信发送结果：{}".format(res.body))
-            if res.body.code != "OK":
-                return next_console_response(error_status=True, error_message=res.body.message)
-        except Exception as error:
-            # 此处仅做打印展示，请谨慎对待异常处理，在工程项目中切勿直接忽略异常。
-            # 错误 message
-            app.logger.error(error)
-            return next_console_response(error_status=True, error_message="短信发送失败，请稍后重试！")
+        send_sms_by_client(user_phone, template_param)
         # 保存验证码任务
         # 旧任务失效，新任务生成
         if old_task:
@@ -825,25 +808,7 @@ def send_text_code_aliyun(data):
     verification_code = str(random.randint(100000, 999999))
     template_param = f'{{"code":"{verification_code}"}}'
     # 发送短信
-    send_sms_request = dysmsapi_20170525_models.SendSmsRequest(
-        phone_numbers=phone,
-        sign_name=app.config["sign_name"],
-        template_code=app.config["template_code"],
-        template_param=template_param
-    )
-    runtime = util_models.RuntimeOptions()
-    try:
-        # 复制代码运行请自行打印 API 的返回值
-        res = aliyun_client.send_sms_with_options(send_sms_request, runtime)
-        app.logger.info("短信发送结果：{}".format(res.body))
-        if res.body.code != "OK":
-            return next_console_response(error_status=True,error_message=res.body.message)
-    except Exception as error:
-        # 此处仅做打印展示，请谨慎对待异常处理，在工程项目中切勿直接忽略异常。
-        # 错误 message
-        app.logger.error(error)
-        return next_console_response(error_status=True, error_message="短信发送失败，请稍后重试！")
-
+    send_sms_by_client(phone, template_param)
     # 保存验证码任务
     # 旧任务失效，新任务生成
     if old_task:
@@ -1033,6 +998,7 @@ def register_or_login_phone(data):
     :param data:
     :return:
     """
+    session_30_flag = data.get("session_30_flag", False)
     res = valid_text_code(data).json
     if res.get("error_status"):
         return res
@@ -1170,6 +1136,8 @@ def register_or_login_phone(data):
                         )
 
     session_day = 7
+    if session_30_flag:
+        session_day = 30
     userinfo = user.to_dict()
     # 获取用户角色与权限
     user_role = search_user_roles({"user_id": user.user_id}).get_json()
@@ -1188,7 +1156,8 @@ def register_or_login_phone(data):
     user.last_login_time = datetime.now(timezone.utc)
     db.session.add(user)
     db.session.commit()
-    return next_console_response(result={"token": access_token, "userinfo": userinfo})
+    expire_time = (datetime.now(timezone.utc) + timedelta(days=session_day)).strftime("%Y-%m-%d %H:%M:%S")
+    return next_console_response(result={"token": access_token, "userinfo": userinfo, "expire_time": expire_time})
 
 
 def register_or_login_email(data):
@@ -1198,6 +1167,7 @@ def register_or_login_email(data):
     :return:
     """
     res = valid_text_code(data).json
+    session_30_flag = data.get("session_30_flag", False)
     if res.get("error_status"):
         return res
     user_email = data.get('user_email')
@@ -1327,6 +1297,8 @@ def register_or_login_email(data):
                         )
 
     session_day = 7
+    if session_30_flag:
+        session_day = 30
     userinfo = user.to_dict()
     # 获取用户角色与权限
     user_role = search_user_roles({"user_id": user.user_id}).get_json()
@@ -1345,17 +1317,30 @@ def register_or_login_email(data):
     user.last_login_time = datetime.now(timezone.utc)
     db.session.add(user)
     db.session.commit()
-    return next_console_response(result={"token": access_token, "userinfo": userinfo})
+    expire_time = (datetime.now(timezone.utc) + timedelta(days=session_day)).strftime("%Y-%m-%d %H:%M:%S")
+    return next_console_response(result={"token": access_token, "userinfo": userinfo, "expire_time": expire_time})
 
 
 def wx_register_user(data):
+    domain = data.get("domain")
     code = data.get("code")
-    if not code:
-        return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
+    from app.models.configure_center.system_config import SystemConfig
+    system_connectors_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "connectors",
+        SystemConfig.config_status == 1
+    ).first()
+    config = None
+    for wx in system_connectors_config.get("weixin"):
+        if wx.get("domain") == domain:
+            config = wx
+            break
+    if not config:
+        return next_console_response(error_status=True, error_message="未配置微信登录！", error_code=1002)
+
     wx_url = "https://api.weixin.qq.com/sns/oauth2/access_token"
     wx_params = {
-        "appid": app.config["WX_APP_ID"],
-        "secret": app.config["WX_APP_SECRET"],
+        "appid": config.get("wx_app_id"),
+        "secret": config.get("wx_app_secret"),
         "code": code,
         "grant_type": "authorization_code",
     }
@@ -1377,7 +1362,7 @@ def wx_register_user(data):
         # 刷新access_token
         wx_refresh_url = "https://api.weixin.qq.com/sns/oauth2/refresh_token"
         wx_refresh_params = {
-            "appid": app.config["WX_APP_ID"],
+            "appid": config.get("wx_app_id"),
             "grant_type": "refresh_token",
             "refresh_token": refresh_token,
         }
@@ -1549,7 +1534,8 @@ def wx_register_user(data):
         user.last_login_time = datetime.now(timezone.utc)
         db.session.add(user)
         db.session.commit()
-        return next_console_response(result={"token": access_token, "userinfo": userinfo})
+        expire_time = (datetime.now(timezone.utc) + timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S")
+        return next_console_response(result={"token": access_token, "userinfo": userinfo, "expire_time": expire_time})
 
     elif state in ("bind", "update"):
         old_user = UserInfo.query.filter(UserInfo.user_wx_openid == openid).first()
@@ -1587,11 +1573,12 @@ def wx_register_user(data):
             "user_id": userinfo['user_id'],
             "role_name": user_role,
         }
+        expire_time = (datetime.now(timezone.utc) + timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S")
         access_token = create_access_token(identity=str(userinfo['user_id']),
                                            expires_delta=timedelta(days=7),
                                            additional_claims=data
                                            )
-        return next_console_response(result={"token": access_token, "userinfo": userinfo})
+        return next_console_response(result={"token": access_token, "userinfo": userinfo, "expire_time": expire_time})
     else:
         return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
 
@@ -1657,24 +1644,7 @@ def bind_new_phone_send_code(data):
     db.session.commit()
     # 发送短信
     template_param = f'{{"code":"{user_code}"}}'
-    send_sms_request = dysmsapi_20170525_models.SendSmsRequest(
-        phone_numbers=new_phone,
-        sign_name=app.config["sign_name"],
-        template_code=app.config["template_code"],
-        template_param=template_param
-    )
-    runtime = util_models.RuntimeOptions()
-    try:
-        # 复制代码运行请自行打印 API 的返回值
-        res = aliyun_client.send_sms_with_options(send_sms_request, runtime)
-        app.logger.info("短信发送结果：{}".format(res.body))
-        if res.body.code != "OK":
-            return next_console_response(error_status=True, error_message=res.body.message)
-    except Exception as error:
-        # 此处仅做打印展示，请谨慎对待异常处理，在工程项目中切勿直接忽略异常。
-        # 错误 message
-        app.logger.error(error)
-        return next_console_response(error_status=True, error_message="短信发送失败，请稍后重试！")
+    send_sms_by_client(new_phone, template_param)
     if old_task:
         old_task.task_status = "已失效"
         db.session.add(old_task)
@@ -2021,5 +1991,82 @@ def validate_user(func):
             return next_console_response(error_status=True, error_message="用户不存在！", error_code=1002)
         params["target_user"] = target_user
         return func(*args, **kwargs)
-
     return wrapper
+
+
+def refresh_token_service(data):
+    """
+    根据超时时间，创建新的token
+    Parameters
+    ----------
+    data
+
+    Returns
+    -------
+    """
+    user_id = data.get("user_id")
+    expire_time = data.get("expire_time")
+    user = UserInfo.query.filter(
+        UserInfo.user_id == user_id,
+        UserInfo.user_status == 1,
+    ).first()
+    if not user:
+        return next_console_response(error_status=True, error_message="用户不存在！", error_code=1003)
+    # 解析和验证过期时间
+    expire_time = datetime.strptime(expire_time, "%Y-%m-%d %H:%M:%S")
+
+    # 计算剩余有效时间
+    now = datetime.now()
+    if expire_time <= now:
+        return next_console_response(
+            error_status=True,
+            error_message="过期时间必须大于当前时间！",
+            error_code=1004
+        )
+
+    expires_delta = expire_time - now
+    new_token = create_access_token(
+        identity=str(user.user_id),
+        expires_delta=expires_delta,
+        additional_claims={
+             "user_id": user.user_id,
+        }
+    )
+    return next_console_response(result={"token": new_token, "expire_time": expire_time.strftime("%Y-%m-%d %H:%M:%S")})
+
+
+def send_sms_by_client(phone, template_param):
+    """
+    发送短信
+    Returns
+    -------
+    """
+    system_tool_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "tools",
+        SystemConfig.config_status == 1
+    ).first()
+    aliyun_config = open_api_models.Config(
+        access_key_id=system_tool_config.config_value.get("sms", {}).get("key_id"),
+        access_key_secret=system_tool_config.config_value.get("sms", {}).get("key_secret"),
+        endpoint=system_tool_config.config_value.get("sms", {}).get("endpoint"),
+    )
+    aliyun_client = Dysmsapi20170525Client(aliyun_config)
+    send_sms_request = dysmsapi_20170525_models.SendSmsRequest(
+        phone_numbers=phone,
+        sign_name=system_tool_config.config_value.get("sms", {}).get("sign_name"),
+        template_code=system_tool_config.config_value.get("sms", {}).get("template_code"),
+        template_param=template_param
+    )
+    runtime = util_models.RuntimeOptions()
+    try:
+        # 复制代码运行请自行打印 API 的返回值
+        res = aliyun_client.send_sms_with_options(send_sms_request, runtime)
+        app.logger.info("短信发送结果：{}".format(res.body))
+        if res.body.code != "OK":
+            return next_console_response(error_status=True, error_message=res.body.message)
+    except Exception as error:
+        # 此处仅做打印展示，请谨慎对待异常处理，在工程项目中切勿直接忽略异常。
+        # 错误 message
+        app.logger.error(error)
+        return next_console_response(error_status=True, error_message="短信发送失败，请稍后重试！")
+

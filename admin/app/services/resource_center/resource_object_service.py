@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import or_, distinct
 
 from app.app import app
-from app.models.configure_center.user_config import UserConfig
+from app.services.configure_center.user_config import get_user_config
 from app.models.knowledge_center.rag_ref_model import *
 from app.models.resource_center.resource_model import *
 from app.models.resource_center.share_resource_model import ResourceDownloadCoolingRecord
@@ -517,7 +517,7 @@ def set_task_icon(resource_type, resource_format):
     :param resource_format:
     :return:
     """
-    icon_base_url = "images/"
+    icon_base_url = "/images/"
     icon_url = 'file.svg'
     icon_format_map = {
         # 文档类型
@@ -733,8 +733,8 @@ def upload_resource_object(params, chunk_content):
         except Exception as e:
             return next_console_response(error_status=True, error_message=f"更新任务异常：{e.args}")
         # 满足条件后，提交自动构建任务
-        user_config = UserConfig.query.filter_by(user_id=user_id).first()
-        if user_config and user_config.resource_auto_rag:
+        user_config = get_user_config(user_id).json.get("result")
+        if user_config and user_config["resources"]["auto_rag"]:
             # 判断类型是否支持构建
             if check_rag_is_support(new_resource_meta):
                 build_params = {

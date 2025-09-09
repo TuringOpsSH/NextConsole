@@ -1,9 +1,9 @@
 import {FormInstance} from 'element-plus';
 import {storeToRefs} from 'pinia';
 import {ref} from 'vue';
-import {searchByKeywordsApi} from '@/api/resource_api';
+import {searchByKeywordsApi} from '@/api/resource-api';
 import {useResourceListStore} from '@/stores/resourceListStore';
-import {ISearchByKeywordsParams, ResourceItem, TResourceListStatus} from '@/types/resource_type';
+import {ISearchByKeywordsParams, ResourceItem, TResourceListStatus} from '@/types/resource-type';
 import {
   current_resource as currentResource,
   get_init_resource as getInitResource,

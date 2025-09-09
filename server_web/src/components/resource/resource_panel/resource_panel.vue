@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useSessionStorage } from '@vueuse/core';
-import { useRoute, useRouter } from 'vue-router';
+import {useSessionStorage} from '@vueuse/core';
+import {useRoute, useRouter} from 'vue-router';
 import {
   add_new_user_tag,
   all_search_user_tags,
@@ -12,6 +12,7 @@ import {
   edit_tag_dialog_flag,
   edit_tag_form_data,
   edit_tag_form_Ref,
+  folderInput,
   get_current_resource_usage,
   get_my_resource_tree,
   get_recent_data_count,
@@ -33,15 +34,12 @@ import {
   new_tag_form_data,
   new_tag_form_Ref,
   panel_recent_shortcuts,
-  panel_show_label_area,
   panel_show_my_resources_area,
-  panel_show_recent_area,
   panel_show_share_resources_area,
   panel_system_labels,
   panel_user_labels,
   panel_width,
   pick_search_resource_tag,
-  rag_enhance,
   resource_keyword,
   router_share_resource,
   router_to_recycle_bin,
@@ -53,28 +51,26 @@ import {
   search_resource_tags_by_keyword,
   share_resource_tree_data,
   show_resource_progress_status,
+  show_upload_button,
   switch_on_edit_tag_dialog,
   switch_on_new_tag_dialog,
   switch_panel,
-  triggerFolderInput,
-  folderInput,
-  upload_file_Ref,
   tag_color_list,
-  show_upload_button
+  triggerFolderInput,
+  upload_file_Ref
 } from '@/components/resource/resource_panel/panel';
-import { onMounted, ref, watch } from 'vue';
-import { user_info } from '@/components/user_center/user';
-import { format_resource_size, get_resource_icon } from '@/components/resource/resource_list/resource_list';
-import { getInfo } from '@/utils/auth';
-import { Search } from '@element-plus/icons-vue';
-import { current_tag } from '@/components/resource/resource_shortcut/resource_shortcut';
+import {onMounted, ref, watch} from 'vue';
+import {format_resource_size, get_resource_icon} from '@/components/resource/resource_list/resource_list';
+import {Search} from '@element-plus/icons-vue';
+import {current_tag} from '@/components/resource/resource_shortcut/resource_shortcut';
 import {
   prepare_upload_files,
   upload_file_content,
   upload_file_list
 } from '@/components/resource/resource_upload/resource_upload';
 import Resource_upload_manager from '@/components/resource/resource_upload/resource_upload_manager.vue';
-
+import {useUserInfoStore} from "@/stores/userInfoStore";
+const userInfoStore = useUserInfoStore();
 const dialog_width = ref(window.innerWidth < 500 ? '90%' : '500px');
 const router = useRouter();
 const route = useRoute();
@@ -94,7 +90,6 @@ onMounted(async () => {
   init_share_resource_tree();
   init_user_tags();
   get_resource_data_count();
-  user_info.value = await getInfo(true);
   // handle_window_size()
   // window.addEventListener('resize', handle_window_size)
 });
@@ -123,7 +118,7 @@ defineOptions({
       <div id="panel_head_left">
         <div class="std-middle-box" style="cursor: pointer" @click="switchPanel">
           <el-tooltip :content="$t('closeSidebar')" effect="light">
-            <el-image src="images/layout_alt.svg" style="width: 16px; height: 16px" />
+            <el-image src="/images/layout_alt.svg" style="width: 16px; height: 16px" />
           </el-tooltip>
         </div>
         <div class="std-middle-box" @click="router.push({ name: 'resource_list' })" style="width: 200px">
@@ -141,7 +136,7 @@ defineOptions({
           :status="show_resource_progress_status()"
         />
         <el-text size="small">
-          {{ current_resource_usage }}M/{{ format_resource_size(user_info?.user_resource_limit) }}
+          {{ current_resource_usage }}M/{{ format_resource_size(userInfoStore.userInfo?.user_resource_limit) }}
         </el-text>
       </div>
     </div>
@@ -152,8 +147,8 @@ defineOptions({
             <el-text>最近</el-text>
           </div>
           <div class="std-middle-box" style="cursor: pointer" @click="showRecentArea = !showRecentArea">
-            <el-image v-show="showRecentArea" src="images/panel_arrow_down.svg" style="width: 16px; height: 16px" />
-            <el-image v-show="!showRecentArea" src="images/panel_arrow_up.svg" style="width: 16px; height: 16px" />
+            <el-image v-show="showRecentArea" src="/images/panel_arrow_down.svg" style="width: 16px; height: 16px" />
+            <el-image v-show="!showRecentArea" src="/images/panel_arrow_up.svg" style="width: 16px; height: 16px" />
           </div>
         </div>
         <div v-show="showRecentArea" id="panel_recent_body">
@@ -207,7 +202,7 @@ defineOptions({
                 @change="pick_search_resource_tag()"
               >
                 <template #prefix>
-                  <el-image style="width: 16px; height: 16px" src="images/search_label.svg" />
+                  <el-image style="width: 16px; height: 16px" src="/images/search_label.svg" />
                 </template>
                 <el-option
                   v-for="item in all_search_user_tags"
@@ -231,11 +226,11 @@ defineOptions({
               </el-select>
             </div>
             <div class="panel_label_head_button" @click="switch_on_new_tag_dialog()">
-              <el-image style="width: 16px; height: 16px" src="images/add_label.svg" />
+              <el-image style="width: 16px; height: 16px" src="/images/add_label.svg" />
             </div>
             <div class="panel_label_head_button" @click="showLabelArea = !showLabelArea">
-              <el-image v-show="showLabelArea" src="images/panel_arrow_down.svg" style="width: 16px; height: 16px" />
-              <el-image v-show="!showLabelArea" src="images/panel_arrow_up.svg" style="width: 16px; height: 16px" />
+              <el-image v-show="showLabelArea" src="/images/panel_arrow_down.svg" style="width: 16px; height: 16px" />
+              <el-image v-show="!showLabelArea" src="/images/panel_arrow_up.svg" style="width: 16px; height: 16px" />
             </div>
           </div>
         </div>
@@ -294,7 +289,7 @@ defineOptions({
                   v-show="user_label.tag_active"
                   @click="switch_on_edit_tag_dialog(user_label, $event)"
                 >
-                  <el-image src="images/edit_label.svg" style="width: 16px; height: 16px" />
+                  <el-image src="/images/edit_label.svg" style="width: 16px; height: 16px" />
                 </div>
               </div>
             </div>
@@ -314,7 +309,7 @@ defineOptions({
           >
             <div class="resource-router-title-left" @click="router.push({ name: 'resource_list' })">
               <div class="std-middle-box">
-                <el-image src="images/my_resources.svg" style="width: 24px; height: 24px" />
+                <el-image src="/images/my_resources.svg" style="width: 24px; height: 24px" />
               </div>
               <div class="std-middle-box">
                 <el-text style="font-size: 16px; font-weight: 600; line-height: 24px; color: #101828">
@@ -323,8 +318,8 @@ defineOptions({
               </div>
             </div>
             <div class="menu-icon-box" @click="panel_show_my_resources_area = !panel_show_my_resources_area">
-              <el-image v-show="panel_show_my_resources_area" src="images/panel_arrow_down.svg" class="menu-icon" />
-              <el-image v-show="!panel_show_my_resources_area" src="images/panel_arrow_up.svg" class="menu-icon" />
+              <el-image v-show="panel_show_my_resources_area" src="/images/panel_arrow_down.svg" class="menu-icon" />
+              <el-image v-show="!panel_show_my_resources_area" src="/images/panel_arrow_up.svg" class="menu-icon" />
             </div>
           </div>
 
@@ -370,7 +365,7 @@ defineOptions({
           >
             <div class="resource-router-title-left" @click="router_share_resource()">
               <div class="std-middle-box">
-                <el-image src="images/share_resources.svg" style="width: 24px; height: 24px" />
+                <el-image src="/images/share_resources.svg" style="width: 24px; height: 24px" />
               </div>
               <div class="std-middle-box">
                 <el-text style="font-size: 16px; font-weight: 600; line-height: 24px; color: #101828">
@@ -379,8 +374,8 @@ defineOptions({
               </div>
             </div>
             <div class="menu-icon-box" @click="panel_show_share_resources_area = !panel_show_share_resources_area">
-              <el-image src="images/panel_arrow_down.svg" v-show="panel_show_share_resources_area" class="menu-icon" />
-              <el-image src="images/panel_arrow_up.svg" v-show="!panel_show_share_resources_area" class="menu-icon" />
+              <el-image src="/images/panel_arrow_down.svg" v-show="panel_show_share_resources_area" class="menu-icon" />
+              <el-image src="/images/panel_arrow_up.svg" v-show="!panel_show_share_resources_area" class="menu-icon" />
             </div>
           </div>
           <div v-show="panel_show_share_resources_area">
@@ -451,7 +446,7 @@ defineOptions({
           <template #reference>
             <div id="panel_upload_button">
               <div class="std-middle-box">
-                <el-image src="images/upload_white.svg" style="width: 20px; height: 20px" />
+                <el-image src="/images/upload_white.svg" style="width: 20px; height: 20px" />
               </div>
               <div class="std-middle-box">
                 <el-text style="color: white; font-weight: 600; line-height: 20px; font-size: 14px">上传</el-text>
@@ -477,7 +472,7 @@ defineOptions({
               >
                 <div class="upload-method-button">
                   <div class="std-middle-box">
-                    <el-image src="images/upload_local.svg" style="width: 20px; height: 20px" />
+                    <el-image src="/images/upload_local.svg" style="width: 20px; height: 20px" />
                   </div>
                   <div class="std-middle-box">
                     <el-text style="width: 90px">上传本地资源</el-text>
@@ -487,7 +482,7 @@ defineOptions({
 
               <div class="upload-method-button" @click="triggerFolderInput">
                 <div class="std-middle-box">
-                  <el-image src="images/upload_local_dir.svg" style="width: 20px; height: 20px" />
+                  <el-image src="/images/upload_local_dir.svg" style="width: 20px; height: 20px" />
                 </div>
                 <div class="std-middle-box">
                   <el-text style="width: 80px">上传文件夹</el-text>
@@ -509,7 +504,7 @@ defineOptions({
       <div id="panel_foot_body">
         <div class="panel_foot_button" style="border-right: 1px solid #d0d5dd" v-if="false">
           <div class="std-middle-box">
-            <el-image src="images/storage_manager.svg" style="width: 24px; height: 24px" />
+            <el-image src="/images/storage_manager.svg" style="width: 24px; height: 24px" />
           </div>
           <div class="std-middle-box">
             <el-text>存储管理</el-text>
@@ -517,7 +512,7 @@ defineOptions({
         </div>
         <div class="panel_foot_button" @click="router_to_recycle_bin()">
           <div class="std-middle-box">
-            <el-image src="images/trash_area.svg" style="width: 24px; height: 24px" />
+            <el-image src="/images/trash_area.svg" style="width: 24px; height: 24px" />
           </div>
           <div class="std-middle-box">
             <el-text>回收站</el-text>

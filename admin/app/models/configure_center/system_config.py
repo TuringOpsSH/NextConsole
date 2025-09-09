@@ -8,12 +8,10 @@ class SystemConfig(db.Model):
     """
     __tablename__ = 'system_config_info'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='参数id')
-    module_name = db.Column(db.String(255), nullable=False, comment='模块名称')
-    component_name = db.Column(db.String(255), nullable=False, comment='组件名称')
-    config_name = db.Column(db.String(255), nullable=False, comment='配置名称')
+    config_key = db.Column(db.String(255), nullable=False, comment='配置名称')
     config_desc = db.Column(db.String(255), nullable=False, comment='配置描述')
-    config_default_value = db.Column(db.String(1024), nullable=False, comment='配置默认值')
-    config_value = db.Column(db.String(1024), nullable=False, comment='配置值')
+    config_default_value = db.Column(db.JSON, nullable=False, comment='配置默认值')
+    config_value = db.Column(db.JSON, nullable=False, comment='配置值')
     create_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='配置创建时间')
     update_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='配置更新时间')
     config_status = db.Column(db.Integer, nullable=False, comment='配置状态')
@@ -21,9 +19,7 @@ class SystemConfig(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "module_name": self.module_name,
-            "component_name": self.component_name,
-            "config_name": self.config_name,
+            "config_key": self.config_key,
             "config_desc": self.config_desc,
             "config_default_value": self.config_default_value,
             "config_value": self.config_value,

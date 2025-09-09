@@ -36,6 +36,7 @@ def search_roles(params):
     filters = []
     page_size = params.get("page_size", 100)
     page_num = params.get("page_num", 1)
+    fetch_all = params.get("fetch_all", False)
     role_id = params.get("role_id", [])
     if role_id:
         filters.append(RoleInfo.role_id == role_id)
@@ -65,6 +66,9 @@ def search_roles(params):
             *filters
         )
     )
+    if fetch_all:
+        return next_console_response(
+            result={"cnt": res.count(), "data": [role.to_dict() for role in res.all()]})
     res_cnt = res.count()
     pagination = res.order_by(
         desc(RoleInfo.role_id)).paginate(

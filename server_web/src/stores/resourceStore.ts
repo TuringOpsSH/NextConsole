@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { IPersistOptions } from '@/types/resource_type';
+import { IPersistOptions } from '@/types/resource-type';
 
 export const useResourceStore = defineStore(
   'resource',

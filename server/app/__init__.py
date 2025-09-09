@@ -18,7 +18,7 @@ from app.views.assistant_center.assistant_manager import *
 from app.views.assistant_center.assistant_instructions import *
 
 # 配置中心
-from app.views.configure_center.admin import *
+from app.views.configure_center.system_config import *
 from app.views.configure_center.user_config import *
 from app.views.configure_center.model_manager import *
 from app.views.configure_center.system_notice import *

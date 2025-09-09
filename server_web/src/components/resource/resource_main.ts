@@ -1,4 +1,4 @@
-import {ResourceItem} from "@/types/resource_type";
+import {ResourceItem} from "@/types/resource-type";
 
 export function check_resource_rag_support(resource:ResourceItem){
     // 检查资源是否支持RAG

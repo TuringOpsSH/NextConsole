@@ -4,7 +4,7 @@ import {storeToRefs} from 'pinia';
 import {computed, nextTick, onBeforeUnmount, onMounted, provide, ref} from 'vue';
 import ResourceHead from '@/components/resource/resource_list/resource_head/resource_head.vue';
 import {useResourceListStore} from '@/stores/resourceListStore';
-import {ResourceItem, TResourceListStatus} from '@/types/resource_type';
+import {ResourceItem, TResourceListStatus} from '@/types/resource-type';
 import {
   batch_copy_select_resources as batchCopySelectResource,
   batch_delete_resources as batchDeleteResource,
@@ -63,7 +63,7 @@ import ResourceEmpty from '@/components/resource/resource_empty/resource_empty.v
 import ResourceDetail from '@/components/resource/ResourceDetail/index.vue';
 import {check_resource_rag_support} from "@/components/resource/resource_main";
 import {ElMessage, ElNotification} from "element-plus";
-import {build_resource_object_ref} from "@/api/resource_api";
+import {build_resource_object_ref} from "@/api/resource-api";
 
 const resourceListStore = useResourceListStore();
 const { isLoading, isSearchMode } = storeToRefs(resourceListStore);
@@ -298,7 +298,7 @@ async function handleSelectionChange(val: ResourceItem[]) {
                   <template #default="scope">
                     <el-popover trigger="click" :visible="scope.row?.show_buttons" ref="resource_list_buttons_Ref">
                       <template #reference>
-                        <el-image src="images/dot_list_grey.svg" class="resource-icon2" />
+                        <el-image src="/images/dot_list_grey.svg" class="resource-icon2" />
                       </template>
                       <div class="resource-button-group">
                         <div class="resource-button">
@@ -374,7 +374,7 @@ async function handleSelectionChange(val: ResourceItem[]) {
                   <div class="resource-item-card-body-button">
                     <el-popover trigger="click" :hide-after="0" ref="resource_list_card_buttons_Ref">
                       <template #reference>
-                        <el-image src="images/dot_list_grey.svg" class="resource-icon2" />
+                        <el-image src="/images/dot_list_grey.svg" class="resource-icon2" />
                       </template>
                       <div class="resource-button-group">
                         <div class="resource-button">

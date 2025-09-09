@@ -6,8 +6,6 @@ from email.mime.text import MIMEText
 from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
 from alibabacloud_tea_util import models as util_models
 from jinja2 import Template
-
-from app.app import aliyun_client
 from app.app import app
 from app.app import celery
 from app.models.contacts.company_model import CompanyInfo
@@ -74,17 +72,19 @@ def product_delivery_task(params):
         ).all()
         all_success_flag = True
         send_result = []
+        from app.models.configure_center.system_config import SystemConfig
+        system_tool_config = SystemConfig.query.filter(
+            SystemConfig.config_key == "tools",
+            SystemConfig.config_status == 1
+        ).first()
+        smtp_server = system_tool_config.config_value.get("email", {}).get("smtp_server")
+        smtp_port = system_tool_config.config_value.get("email", {}).get("smtp_port")
+        smtp_user = system_tool_config.config_value.get("email", {}).get("smtp_user")
+        smtp_password = system_tool_config.config_value.get("email", {}).get("smtp_password")
         for order_item in all_order_item:
 
             try:
                 if "@" in target_order.delivery_message:
-                    # 发送邮件
-                    smtp_server = app.config['smtp_server']
-                    smtp_port = app.config['smtp_port']
-                    smtp_user = app.config['smtp_user']
-                    smtp_password = app.config['smtp_password']
-                    # 配置邮件信息
-                    from_email = app.config['notice_email']
                     subject = '【NextConsole智能体服务平台】商品交付通知'
                     # 创建 MIMEText 对象，并设置邮件主题、发件人、收件人
                     with open(os.path.join(app.config["config_static"], "product_delivery_message.html"), "r",
@@ -97,13 +97,13 @@ def product_delivery_task(params):
                         })
                     msg = MIMEText(info_html, 'html', 'utf-8')
                     msg['Subject'] = subject
-                    msg['From'] = from_email
+                    msg['From'] = smtp_user
                     msg['To'] = target_order.delivery_message
 
                     # 连接 SMTP 服务器并发送邮件
                     server = smtplib.SMTP_SSL(smtp_server, smtp_port)
                     server.login(smtp_user, smtp_password)
-                    server.sendmail(from_email, target_order.delivery_message, msg.as_string())
+                    server.sendmail(smtp_user, target_order.delivery_message, msg.as_string())
                     server.quit()
                 else:
                     # 发送短信
@@ -116,7 +116,6 @@ def product_delivery_task(params):
                         template_param=template_param
                     )
                     runtime = util_models.RuntimeOptions()
-                    aliyun_client.send_sms_with_options(send_sms_request, runtime)
                 order_item.order_item_status = "已交付"
                 db.session.add(order_item)
                 db.session.commit()

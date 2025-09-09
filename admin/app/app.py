@@ -14,8 +14,6 @@ from flask_jwt_extended import (
 from flask_principal import Principal
 from flask_sqlalchemy import SQLAlchemy
 import socket
-from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
-from alibabacloud_tea_openapi import models as open_api_models
 from urllib.parse import quote_plus
 
 app = Flask(__name__)
@@ -131,13 +129,3 @@ formatter = logging.Formatter(format_str)
 handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 app.logger.setLevel(app.config['LOG_LEVEL'])
-if app.config['ALIBABA_CLOUD_ACCESS_KEY_ID']:
-    aliyun_config = open_api_models.Config(
-                access_key_id=app.config['ALIBABA_CLOUD_ACCESS_KEY_ID'],
-                access_key_secret=app.config['ALIBABA_CLOUD_ACCESS_KEY_SECRET'],
-                endpoint=app.config['ALIBABA_CLOUD_ENDPOINT']
-            )
-    aliyun_client = Dysmsapi20170525Client(aliyun_config)
-else:
-    aliyun_client = None
-

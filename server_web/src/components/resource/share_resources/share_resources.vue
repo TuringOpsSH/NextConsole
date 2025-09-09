@@ -47,7 +47,7 @@ import ContextMenu from '@/components/resource/share_resources/context_menu/cont
 import ResourceShareSelector from '@/components/resource/resource_share_selector/resource_share_selector.vue';
 import ResourceEmpty from '@/components/resource/resource_empty/resource_empty.vue';
 import ResourceViewTree from '@/components/resource/resource_tree/resource_view_tree.vue';
-import { ISearchByKeywordParams, ResourceItem, TResourceListStatus } from '@/types/resource_type';
+import { ISearchByKeywordParams, ResourceItem, TResourceListStatus } from '@/types/resource-type';
 import { useShareResourceStore } from '@/stores/resourceShareStore';
 import { storeToRefs } from 'pinia';
 
@@ -258,7 +258,7 @@ provide('keyword', keyword);
                 <template #default="scope">
                   <el-popover trigger="click" :visible="scope.row?.show_buttons" ref="resource_list_buttons_Ref">
                     <template #reference>
-                      <el-image src="images/dot_list_grey.svg" class="resource-icon2" />
+                      <el-image src="/images/dot_list_grey.svg" class="resource-icon2" />
                     </template>
                     <div class="resource-button-group">
                       <div class="resource-button">
@@ -325,7 +325,7 @@ provide('keyword', keyword);
                   <div class="resource-item-card-body-button">
                     <el-popover trigger="click" :hide-after="0" ref="resource_share_list_card_buttons_Ref">
                       <template #reference>
-                        <el-image src="images/dot_list_grey.svg" class="resource-icon2" />
+                        <el-image src="/images/dot_list_grey.svg" class="resource-icon2" />
                       </template>
                       <div class="resource-button-group">
                         <div class="resource-button">

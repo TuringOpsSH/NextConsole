@@ -104,25 +104,25 @@ def lookup_session_details(params):
                 session_dict["session_source"] = {
                     "app_code": "next_search",
                     "app_name": "小亦助手",
-                    "app_icon": "images/ces_xiaoyi.svg"
+                    "app_icon": "/images/ces_xiaoyi.svg"
                 }
             elif session.session_source == "support_ticket":
                 session_dict["session_source"] = {
                     "app_code": "support_ticket",
                     "app_name": "帮助工单",
-                    "app_icon": "images/tickets_blue.svg"
+                    "app_icon": "/images/tickets_blue.svg"
                 }
             elif session.session_source == "online_service":
                 session_dict["session_source"] = {
                     "app_code": "online_service",
                     "app_name": "在线支持",
-                    "app_icon": "images/online_service_blue.svg"
+                    "app_icon": "/images/online_service_blue.svg"
                 }
             else:
                 session_dict["session_source"] = {
                     "app_code": session.session_source,
                     "app_name": "未知",
-                    "app_icon": "images/unknown_service.svg"
+                    "app_icon": "/images/unknown_service.svg"
                 }
         session_list.append(session_dict)
     return next_console_response(result={

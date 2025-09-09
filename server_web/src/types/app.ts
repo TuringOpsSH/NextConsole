@@ -1,4 +1,4 @@
-import {recommend_question_item} from "@/types/next_console";
+import {recommend_question_item} from "@/types/next-console";
 
 /**
  * ApifoxModel，ai应用信息表

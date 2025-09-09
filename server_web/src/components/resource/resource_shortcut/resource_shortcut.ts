@@ -1,5 +1,7 @@
-import {computed, ref} from 'vue';
-import {ResourceItem, ResourceTag} from '@/types/resource_type';
+import { useSessionStorage } from '@vueuse/core';
+import { ElMessage, ElNotification } from 'element-plus';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 import {
   batch_delete_resource_object,
   batch_download_resources,
@@ -14,28 +16,26 @@ import {
   search_resource_by_resource_tags,
   search_resource_by_resource_type,
   search_resource_in_recycle
-} from '@/api/resource_api';
-import router from '@/router';
-import {ElMessage, ElNotification} from 'element-plus';
-import {show_move_dialog_multiple} from '@/components/resource/resource_tree/resource_tree';
-import {push_to_clipboard} from '@/components/resource/resource_clipborad/resource_clipboard';
-import {turn_on_resource_meta} from '@/components/resource/resource_meta/resource_meta';
+} from '@/api/resource-api';
+import { md_answer } from '@/components/next-console/messages-flow/message_flow';
+import { push_to_clipboard } from '@/components/resource/resource_clipborad/resource_clipboard';
+import { check_resource_rag_support } from '@/components/resource/resource_main';
+import { turn_on_resource_meta } from '@/components/resource/resource_meta/resource_meta';
+import { refresh_panel_count } from '@/components/resource/resource_panel/panel';
+import { turn_on_share_selector } from '@/components/resource/resource_share_selector/resource_share_selector';
 import {
   current_resource_tags,
   current_resource_types,
   resource_types_name_map,
   show_search_config_area
 } from '@/components/resource/resource_shortcut/resource_shortcut_head/resource_shortcut_head';
-import {md_answer} from '@/components/next_console/messages_flow/message_flow';
-import {refresh_panel_count} from '@/components/resource/resource_panel/panel';
-import {check_resource_rag_support} from '@/components/resource/resource_main';
-import {turn_on_share_selector} from '@/components/resource/resource_share_selector/resource_share_selector';
-import {user_info} from '@/components/user_center/user';
-import {useResourceStore} from '@/stores/resourceStore';
-import {storeToRefs} from 'pinia';
-import {useSessionStorage} from '@vueuse/core';
-import {RESOURCE_FORMATS} from '@/utils/constant';
-import {sortResourceList} from '@/utils/common';
+import { show_move_dialog_multiple } from '@/components/resource/resource_tree/resource_tree';
+import router from '@/router';
+import { useResourceStore } from '@/stores/resourceStore';
+import { useUserInfoStore } from '@/stores/userInfoStore';
+import { ResourceItem, ResourceTag } from '@/types/resource-type';
+import { sortResourceList } from '@/utils/common';
+import { RESOURCE_FORMATS } from '@/utils/constant';
 
 const currentResourceValues = useSessionStorage('currentResourceValues', []);
 const resourceFormats = computed(() => {
@@ -68,7 +68,7 @@ export const system_tags = [
     tag_source: 'system',
     tag_type: 'recent',
     tag_value: 'recent_upload',
-    tag_icon: 'images/recent_upload.svg',
+    tag_icon: '/images/recent_upload.svg',
     tag_desc: '最近上传的资源',
     tag_count: 0
   },
@@ -77,7 +77,7 @@ export const system_tags = [
     tag_source: 'system',
     tag_type: 'recent',
     tag_value: 'recent_index',
-    tag_icon: 'images/recent_index.svg',
+    tag_icon: '/images/recent_index.svg',
     tag_desc: '最近索引的资源',
     tag_count: 0
   },
@@ -85,7 +85,7 @@ export const system_tags = [
     tag_name: '文档',
     tag_source: 'system',
     tag_type: 'resource_type',
-    tag_icon: 'images/document.svg',
+    tag_icon: '/images/document.svg',
     tag_count: 0,
     tag_value: 'document',
     tag_desc: '文档资源'
@@ -94,7 +94,7 @@ export const system_tags = [
     tag_name: '文件夹',
     tag_source: 'system',
     tag_type: 'resource_type',
-    tag_icon: 'images/folder.svg',
+    tag_icon: '/images/folder.svg',
     tag_count: 0,
     tag_value: 'folder',
     tag_desc: '文件夹'
@@ -103,7 +103,7 @@ export const system_tags = [
     tag_name: '代码',
     tag_source: 'system',
     tag_type: 'resource_type',
-    tag_icon: 'images/code.svg',
+    tag_icon: '/images/code.svg',
     tag_count: 0,
     tag_value: 'code',
     tag_desc: '代码资源'
@@ -112,7 +112,7 @@ export const system_tags = [
     tag_name: '图片',
     tag_source: 'system',
     tag_type: 'resource_type',
-    tag_icon: 'images/picture.svg',
+    tag_icon: '/images/picture.svg',
     tag_count: 0,
     tag_value: 'image',
     tag_desc: '图片资源'
@@ -121,7 +121,7 @@ export const system_tags = [
     tag_name: '视频',
     tag_source: 'system',
     tag_type: 'resource_type',
-    tag_icon: 'images/video.svg',
+    tag_icon: '/images/video.svg',
     tag_count: 0,
     tag_value: 'video',
     tag_desc: '视频资源'
@@ -130,7 +130,7 @@ export const system_tags = [
     tag_name: '音频',
     tag_source: 'system',
     tag_type: 'resource_type',
-    tag_icon: 'images/audio.svg',
+    tag_icon: '/images/audio.svg',
     tag_count: 0,
     tag_value: 'audio',
     tag_desc: '音频资源'
@@ -139,7 +139,7 @@ export const system_tags = [
     tag_name: '压缩包',
     tag_source: 'system',
     tag_type: 'resource_type',
-    tag_icon: 'images/archive.svg',
+    tag_icon: '/images/archive.svg',
     tag_count: 0,
     tag_value: 'archive',
     tag_desc: '压缩包资源'
@@ -148,7 +148,7 @@ export const system_tags = [
     tag_name: '网页',
     tag_source: 'system',
     tag_type: 'resource_type',
-    tag_icon: 'images/webpage.svg',
+    tag_icon: '/images/webpage.svg',
     tag_count: 0,
     tag_value: 'webpage',
     tag_desc: '网页资源'
@@ -158,7 +158,7 @@ export const system_tags = [
     tag_source: 'system',
     tag_type: 'recycle',
     tag_value: 'recycle_bin',
-    tag_icon: 'images/recycle_bin.svg',
+    tag_icon: '/images/recycle_bin.svg',
     tag_desc: '回收站资源',
     tag_count: 0
   },
@@ -167,7 +167,7 @@ export const system_tags = [
     tag_source: 'system',
     tag_type: 'search',
     tag_value: 'search',
-    tag_icon: 'images/search.svg',
+    tag_icon: '/images/search.svg',
     tag_desc: '搜索资源',
     tag_count: 0
   }
@@ -195,8 +195,8 @@ export function parseTagId(tag_id: any) {
   if (!tag_id) {
     return [];
   }
-  let new_tag_id = [];
-  for (let id of tag_id) {
+  const new_tag_id = [];
+  for (const id of tag_id) {
     try {
       new_tag_id.push(parseInt(id));
     } catch (e) {
@@ -242,7 +242,7 @@ export async function search_resource_by_tags() {
 }
 export async function search_resource_recent_upload() {
   // 最近上传
-  let params = {
+  const params = {
     resource_type: [],
     resource_format: resourceFormats.value,
     resource_tags: [],
@@ -250,7 +250,7 @@ export async function search_resource_recent_upload() {
     page_num: current_page_num.value
   };
   // 更新resource_type 的值
-  for (let resource_type of current_resource_types.value) {
+  for (const resource_type of current_resource_types.value) {
     if (resource_types_name_map?.[resource_type]) {
       params.resource_type.push(resource_types_name_map?.[resource_type]);
       continue;
@@ -264,17 +264,17 @@ export async function search_resource_recent_upload() {
   //     params.resource_format.push('');
   //   }
   // }
-  for (let resource_tag of current_resource_tags.value) {
+  for (const resource_tag of current_resource_tags.value) {
     if (resource_tag.id) {
       params.resource_tags.push(resource_tag.id);
     }
   }
 
   resource_loading.value = true;
-  let res = await search_resource_by_recent_upload(params);
+  const res = await search_resource_by_recent_upload(params);
   if (!res.error_status) {
     current_resource_list.value = [];
-    for (let item of res.result.data) {
+    for (const item of res.result.data) {
       current_resource_list.value.push({
         id: item.resource.id,
         resource_parent_id: item.resource.resource_parent_id,
@@ -314,7 +314,7 @@ export async function search_resource_recent_upload() {
 }
 export async function search_resource_recent_index() {
   // 最近索引
-  let params = {
+  const params = {
     resource_type: [],
     resource_format: resourceFormats.value,
     resource_tags: [],
@@ -322,7 +322,7 @@ export async function search_resource_recent_index() {
     page_num: current_page_num.value
   };
   // 更新resource_type 的值
-  for (let resource_type of current_resource_types.value) {
+  for (const resource_type of current_resource_types.value) {
     if (resource_types_name_map?.[resource_type]) {
       params.resource_type.push(resource_types_name_map?.[resource_type]);
       continue;
@@ -336,16 +336,16 @@ export async function search_resource_recent_index() {
   //     params.resource_format.push('');
   //   }
   // }
-  for (let resource_tag of current_resource_tags.value) {
+  for (const resource_tag of current_resource_tags.value) {
     if (resource_tag.id) {
       params.resource_tags.push(resource_tag.id);
     }
   }
   resource_loading.value = true;
-  let res = await search_resource_by_recent_index(params);
+  const res = await search_resource_by_recent_index(params);
   if (!res.error_status) {
     current_resource_list.value = [];
-    for (let item of res.result.data) {
+    for (const item of res.result.data) {
       current_resource_list.value.push({
         id: item.resource.id,
         resource_parent_id: item.resource.resource_parent_id,
@@ -378,7 +378,7 @@ export async function search_resource_recent_index() {
 }
 export async function search_resource_resource_type() {
   // 根据系统资源类型进行搜索
-  let params = {
+  const params = {
     resource_type: [],
     resource_format: resourceFormats.value,
     resource_tags: [],
@@ -394,16 +394,16 @@ export async function search_resource_resource_type() {
   //     params.resource_format.push('');
   //   }
   // }
-  for (let resource_tag of current_resource_tags.value) {
+  for (const resource_tag of current_resource_tags.value) {
     if (resource_tag.id) {
       params.resource_tags.push(resource_tag.id);
     }
   }
   resource_loading.value = true;
-  let res = await search_resource_by_resource_type(params);
+  const res = await search_resource_by_resource_type(params);
   if (!res.error_status) {
     current_resource_list.value = [];
-    for (let item of res.result.data) {
+    for (const item of res.result.data) {
       // @ts-ignore
       current_resource_list.value.push({
         id: item.id,
@@ -433,7 +433,7 @@ export async function search_resource_resource_type() {
 }
 export async function search_resource_resource_tag() {
   // 根据资源标签进行搜索
-  let params = {
+  const params = {
     resource_type: [],
     resource_format: resourceFormats.value,
     resource_tags: [],
@@ -441,7 +441,7 @@ export async function search_resource_resource_tag() {
     page_num: current_page_num.value
   };
   // 更新resource_type 的值
-  for (let resource_type of current_resource_types.value) {
+  for (const resource_type of current_resource_types.value) {
     if (resource_types_name_map?.[resource_type]) {
       params.resource_type.push(resource_types_name_map?.[resource_type]);
       continue;
@@ -455,17 +455,17 @@ export async function search_resource_resource_tag() {
   //     params.resource_format.push('');
   //   }
   // }
-  for (let resource_tag of current_resource_tags.value) {
+  for (const resource_tag of current_resource_tags.value) {
     if (resource_tag.id) {
       params.resource_tags.push(resource_tag.id);
     }
   }
   resource_loading.value = true;
-  let res = await search_resource_by_resource_tags(params);
+  const res = await search_resource_by_resource_tags(params);
   if (!res.error_status) {
     current_resource_list.value = [];
-    for (let item of res.result.data) {
-      let new_data = {
+    for (const item of res.result.data) {
+      const new_data = {
         id: item.id,
         resource_parent_id: item.resource_parent_id,
         resource_name: item.resource_name,
@@ -486,9 +486,9 @@ export async function search_resource_resource_tag() {
         delete_time: item.delete_time
       };
       // 还原标签信息
-      let new_data_tags = [];
-      for (let tag_id of item.resource_tags) {
-        for (let tag of res.result.resource_tags) {
+      const new_data_tags = [];
+      for (const tag_id of item.resource_tags) {
+        for (const tag of res.result.resource_tags) {
           if (tag.id == tag_id) {
             new_data_tags.push(tag);
           }
@@ -506,7 +506,7 @@ export async function search_resource_resource_tag() {
 }
 export async function search_resource_recycle_bin() {
   // 回收站
-  let params = {
+  const params = {
     resource_type: [],
     resource_format: resourceFormats.value,
     resource_tags: [],
@@ -514,7 +514,7 @@ export async function search_resource_recycle_bin() {
     page_num: current_page_num.value
   };
   // 更新resource_type 的值
-  for (let resource_type of current_resource_types.value) {
+  for (const resource_type of current_resource_types.value) {
     if (resource_types_name_map?.[resource_type]) {
       params.resource_type.push(resource_types_name_map?.[resource_type]);
       continue;
@@ -528,16 +528,16 @@ export async function search_resource_recycle_bin() {
   //     params.resource_format.push('');
   //   }
   // }
-  for (let resource_tag of current_resource_tags.value) {
+  for (const resource_tag of current_resource_tags.value) {
     if (resource_tag.id) {
       params.resource_tags.push(resource_tag.id);
     }
   }
   resource_loading.value = true;
-  let res = await search_resource_in_recycle(params);
+  const res = await search_resource_in_recycle(params);
   if (!res.error_status) {
     current_resource_list.value = [];
-    for (let item of res.result.data) {
+    for (const item of res.result.data) {
       current_resource_list.value.push({
         id: item.id,
         resource_parent_id: item.resource_parent_id,
@@ -570,7 +570,7 @@ export async function search_resource_recycle_bin() {
 export async function search_resource_by_keyword() {
   const { authType } = storeToRefs(useResourceStore());
   // 根据关键字搜索资源
-  let params = {
+  const params = {
     resource_type: [],
     resource_format: resourceFormats.value,
     resource_tags: [],
@@ -581,7 +581,7 @@ export async function search_resource_by_keyword() {
     auth_type: authType.value
   };
   // 更新resource_type 的值
-  for (let resource_type of current_resource_types.value) {
+  for (const resource_type of current_resource_types.value) {
     if (resource_types_name_map?.[resource_type]) {
       params.resource_type.push(resource_types_name_map?.[resource_type]);
       continue;
@@ -595,22 +595,22 @@ export async function search_resource_by_keyword() {
   //     params.resource_format.push('');
   //   }
   // }
-  for (let resource_tag of current_resource_tags.value) {
+  for (const resource_tag of current_resource_tags.value) {
     if (resource_tag.id) {
       params.resource_tags.push(resource_tag.id);
     }
   }
   resource_loading.value = true;
-  let res = await search_resource_by_resource_keyword(params);
+  const res = await search_resource_by_resource_keyword(params);
   if (!res.error_status) {
     current_resource_list.value = [];
     current_resource_cnt.value = res.result.total;
     // 获取作者信息
     sortResourceList(res.result.data);
-    for (let item of res.result.data) {
+    for (const item of res.result.data) {
       // 获取作者信息
       let author_info = null;
-      for (let user of res.result.author_info) {
+      for (const user of res.result.author_info) {
         if (user.user_id == item.user_id) {
           author_info = user;
           break;
@@ -714,8 +714,8 @@ export async function search_resource_jumper() {
       }
     });
   }
-  let all_resource_tags = [];
-  for (let tag of current_resource_tags.value) {
+  const all_resource_tags = [];
+  for (const tag of current_resource_tags.value) {
     all_resource_tags.push(tag.id);
   }
   router.push({
@@ -734,7 +734,7 @@ export async function handle_selection_change(val: ResourceItem[]) {
   // 多选框选中事件
   multiple_selection.value = val;
   show_multiple_button.value = !!val.length;
-  for (let item of val) {
+  for (const item of val) {
     item.resource_is_selected = true;
   }
 }
@@ -748,7 +748,7 @@ export function get_upload_progress(item: ResourceItem) {
   return res || 0;
 }
 export function show_upload_progress_status(item: ResourceItem) {
-  let progress = get_upload_progress(item);
+  const progress = get_upload_progress(item);
   if (progress == 100) {
     return 'success';
   }
@@ -756,15 +756,15 @@ export function show_upload_progress_status(item: ResourceItem) {
   return null;
 }
 export function batch_move_select_resources() {
-  let selected_resources = [];
+  const selected_resources = [];
   if (resource_view_model.value == 'list') {
-    for (let resource of multiple_selection.value) {
+    for (const resource of multiple_selection.value) {
       if (resource.id && resource.resource_status == '正常') {
         selected_resources.push(resource.id);
       }
     }
   } else {
-    for (let resource of current_resource_list.value) {
+    for (const resource of current_resource_list.value) {
       if (resource.resource_is_selected && resource.id && resource.resource_status == '正常') {
         selected_resources.push(resource.id);
       }
@@ -773,15 +773,15 @@ export function batch_move_select_resources() {
   show_move_dialog_multiple(selected_resources);
 }
 export function batch_copy_select_resources() {
-  let selected_resources = [];
+  const selected_resources = [];
   if (resource_view_model.value == 'list') {
-    for (let resource of multiple_selection.value) {
+    for (const resource of multiple_selection.value) {
       if (resource.id && resource.resource_status == '正常') {
         selected_resources.push(resource.id);
       }
     }
   } else {
-    for (let resource of current_resource_list.value) {
+    for (const resource of current_resource_list.value) {
       if (resource.resource_is_selected && resource.id && resource.resource_status == '正常') {
         selected_resources.push(resource.id);
       }
@@ -790,8 +790,8 @@ export function batch_copy_select_resources() {
   push_to_clipboard(selected_resources);
 }
 export function batch_share_select_resource() {
-  let selected_resources = [];
-  for (let resource of multiple_selection.value) {
+  const selected_resources = [];
+  for (const resource of multiple_selection.value) {
     if (resource.id && resource.resource_status == '正常') {
       selected_resources.push(resource.id);
     }
@@ -799,17 +799,17 @@ export function batch_share_select_resource() {
   // 调用分享接口
 }
 export async function batch_download_select_resource() {
-  let params = {
+  const params = {
     resource_list: []
   };
 
-  for (let item of multiple_selection.value) {
+  for (const item of multiple_selection.value) {
     if (item.id && item.resource_status == '正常') {
       params.resource_list.push(item.id);
     }
   }
   resource_loading.value = true;
-  let res = await batch_download_resources(params);
+  const res = await batch_download_resources(params);
   resource_loading.value = false;
   if (!res.error_status) {
     if (!res.result?.length) {
@@ -817,7 +817,7 @@ export async function batch_download_select_resource() {
       return;
     }
     ElMessage.success('批量下载启动成功！');
-    for (let link_item of res.result) {
+    for (const link_item of res.result) {
       // 创建一个隐藏的 <a> 标签
       const link = document.createElement('a');
       link.href = link_item.download_url + '?filename=' + encodeURIComponent(link_item.resource_name);
@@ -837,11 +837,11 @@ export async function batch_download_select_resource() {
 }
 export async function batch_delete_resources() {
   show_delete_flag.value = false;
-  let params = {
+  const params = {
     resource_list: []
   };
   let delete_cnt = 0;
-  for (let item of multiple_selection.value) {
+  for (const item of multiple_selection.value) {
     if (item.resource_status != '删除' && item?.id) {
       params.resource_list.push(item.id);
     } else {
@@ -857,7 +857,7 @@ export async function batch_delete_resources() {
     });
     return;
   }
-  let res = await batch_delete_resource_object(params);
+  const res = await batch_delete_resource_object(params);
   if (!res.error_status) {
     ElNotification({
       title: '系统通知',
@@ -872,11 +872,11 @@ export async function batch_delete_resources() {
 export async function batch_rebuild() {
   // 批量重建
 
-  let params = {
+  const params = {
     resource_list: []
   };
 
-  for (let item of multiple_selection.value) {
+  for (const item of multiple_selection.value) {
     if (item?.id && item.resource_status == '正常' && check_resource_rag_support(item)) {
       params.resource_list.push(item.id);
     }
@@ -885,9 +885,9 @@ export async function batch_rebuild() {
     ElMessage.warning('所选资源无法构建索引!');
     return;
   }
-  let res = await build_resource_object_ref(params);
+  const res = await build_resource_object_ref(params);
   if (!res.error_status) {
-    let task_cnt = res.result.build_cnt;
+    const task_cnt = res.result.build_cnt;
     ElNotification({
       title: '系统通知',
       message: `共成功提交${task_cnt}个重新构建任务，请耐心等待!`,
@@ -898,7 +898,7 @@ export async function batch_rebuild() {
 }
 export function cancel_multiple_selection() {
   show_multiple_button.value = false;
-  for (let item of multiple_selection.value) {
+  for (const item of multiple_selection.value) {
     item.resource_is_selected = false;
   }
   multiple_selection.value = [];
@@ -958,7 +958,8 @@ export async function show_resource_detail(resource: ResourceItem) {
     ElMessage.warning('资源已删除，请恢复后查看!');
     return;
   }
-  if (resource.user_id == user_info.value.user_id) {
+  const userInfoStore = useUserInfoStore();
+  if (resource.user_id == userInfoStore.userInfo.user_id) {
     turn_on_resource_meta(resource.id);
   } else {
     turn_on_resource_meta(resource.id, '共享');
@@ -978,10 +979,10 @@ export async function download_resource(resource: ResourceItem) {
     ElMessage.warning('文件夹无法下载!');
     return;
   }
-  let params = {
+  const params = {
     resource_id: resource.id
   };
-  let res = await download_resource_object(params);
+  const res = await download_resource_object(params);
   if (!res.error_status) {
     let download_url = res.result?.download_url;
     if (!download_url) {
@@ -1049,10 +1050,10 @@ export async function rebuild_resource(resource: ResourceItem) {
     return;
   }
 
-  let params = {
+  const params = {
     resource_list: [resource.id]
   };
-  let res = await build_resource_object_ref(params);
+  const res = await build_resource_object_ref(params);
   if (!res.error_status) {
     ElMessage.success('提交重建任务成功!');
   }
@@ -1067,10 +1068,10 @@ export async function delete_resource(resource: ResourceItem) {
     return;
   }
   // 删除资源
-  let params = {
+  const params = {
     resource_id: resource.id
   };
-  let res = await delete_resource_object_api(params);
+  const res = await delete_resource_object_api(params);
   if (!res.error_status) {
     ElMessage.success('删除成功!');
     await search_resource_by_tags();
@@ -1085,7 +1086,7 @@ export function onDragStart(event) {
   target.classList.add('dragging');
 
   // 设置拖拽数据（可选）
-  let resource_id = target.getAttribute('id');
+  const resource_id = target.getAttribute('id');
   event.dataTransfer.setData('resource_id', resource_id);
   event.dataTransfer.effectAllowed = 'move';
 }
@@ -1102,7 +1103,7 @@ export function click_resource_card(resource: ResourceItem, event: MouseEvent) {
   }
   resource.resource_is_selected = !resource.resource_is_selected;
   let selected_cnt = 0;
-  for (let item of current_resource_list.value) {
+  for (const item of current_resource_list.value) {
     if (item.resource_is_selected) {
       selected_cnt += 1;
     }
@@ -1114,7 +1115,7 @@ export function click_resource_card(resource: ResourceItem, event: MouseEvent) {
   if (resource.resource_is_selected) {
     multiple_selection.value.push(resource);
   } else {
-    let index = multiple_selection.value.findIndex(item => item.id == resource.id);
+    const index = multiple_selection.value.findIndex(item => item.id == resource.id);
     multiple_selection.value.splice(index, 1);
   }
   // 同步到列表视图
@@ -1146,11 +1147,11 @@ export const show_recover_flag = ref(false);
 export const completely_delete_flag = ref(false);
 export async function batch_recover_resources() {
   show_recover_flag.value = false;
-  let params = {
+  const params = {
     resource_list: []
   };
   let recover_cnt = 0;
-  for (let item of multiple_selection.value) {
+  for (const item of multiple_selection.value) {
     if (item.resource_status == '删除' && item?.id) {
       params.resource_list.push(item.id);
     } else {
@@ -1166,7 +1167,7 @@ export async function batch_recover_resources() {
     });
     return;
   }
-  let res = await recover_resource_recycle_object(params);
+  const res = await recover_resource_recycle_object(params);
   if (!res.error_status) {
     ElNotification({
       title: '系统通知',
@@ -1179,11 +1180,11 @@ export async function batch_recover_resources() {
 }
 export async function batch_completely_delete_resources() {
   completely_delete_flag.value = false;
-  let params = {
+  const params = {
     resource_list: []
   };
   // console.log(multiple_selection.value)
-  for (let item of multiple_selection.value) {
+  for (const item of multiple_selection.value) {
     if (item.resource_status == '删除' && item?.id) {
       params.resource_list.push(item.id);
     }
@@ -1197,7 +1198,7 @@ export async function batch_completely_delete_resources() {
     });
     return;
   }
-  let res = await delete_resource_recycle_object(params);
+  const res = await delete_resource_recycle_object(params);
   if (!res.error_status) {
     ElNotification({
       title: '系统通知',
@@ -1220,10 +1221,10 @@ export async function show_delete_resource_detail(resource: ResourceItem) {
   turn_on_resource_meta(resource.id, '删除');
 }
 export async function recover_resource(resource: ResourceItem) {
-  let params = {
+  const params = {
     resource_list: [resource.id]
   };
-  let res = await recover_resource_recycle_object(params);
+  const res = await recover_resource_recycle_object(params);
   if (!res.error_status) {
     ElMessage.success('恢复成功!');
     await search_resource_by_tags();
@@ -1232,10 +1233,10 @@ export async function recover_resource(resource: ResourceItem) {
   button_Ref.value?.hide();
 }
 export async function completely_delete_resource(resource: ResourceItem) {
-  let params = {
+  const params = {
     resource_list: [resource.id]
   };
-  let res = await delete_resource_recycle_object(params);
+  const res = await delete_resource_recycle_object(params);
   if (!res.error_status) {
     ElMessage.success('彻底删除成功!');
     await search_resource_by_tags();

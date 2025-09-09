@@ -13,12 +13,12 @@ import { ref, watch } from 'vue';
 import {
   attachment_base_init as attachmentBaseInit,
   attachment_add_into_session as attachmentAddIntoSession
-} from '@/api/next_console';
+} from '@/api/next-console';
 import {
   update_upload_task as updateUploadTask,
   add_upload_task as addUploadTask,
   upload_resource_object as uploadResourceObject
-} from '@/api/resource_api';
+} from '@/api/resource-api';
 interface IResourceUploadItem {
   id: number | null;
   resource_parent_id: number | null;
@@ -55,10 +55,7 @@ const props = defineProps({
     default: 'files'
   }
 });
-const emit = defineEmits([
-  'upload-success',
-  'upload-finished',
-]);
+const emit = defineEmits(['upload-success', 'upload-finished']);
 const localCurrentSession = ref({
   id: null
 });
@@ -76,10 +73,10 @@ function cleanUploadManager() {
   // 更新后端上传任务状态
   for (let i = 0; i < uploadFileTaskList.value.length; i++) {
     if (
-        uploadFileTaskList.value[i].task_status !== 'success' &&
-        uploadFileTaskList.value[i].task_status !== 'error' &&
-        uploadFileTaskList.value[i].task_status !== 'abort' &&
-        uploadFileTaskList.value[i].id
+      uploadFileTaskList.value[i].task_status !== 'success' &&
+      uploadFileTaskList.value[i].task_status !== 'error' &&
+      uploadFileTaskList.value[i].task_status !== 'abort' &&
+      uploadFileTaskList.value[i].id
     ) {
       let params = {
         task_id: uploadFileTaskList.value[i].id,
@@ -100,8 +97,8 @@ function closeUploadManager(notice: boolean = true) {
   if (notice) {
     for (let i = 0; i < uploadFileTaskList.value.length; i++) {
       if (
-          uploadFileTaskList.value[i].task_status !== 'success' &&
-          uploadFileTaskList.value[i].task_error_msg !== '空'
+        uploadFileTaskList.value[i].task_status !== 'success' &&
+        uploadFileTaskList.value[i].task_error_msg !== '空'
       ) {
         showCloseConfirmFlag.value = true;
         return false;
@@ -199,9 +196,9 @@ async function calculateSHA256(file: UploadRawFile): Promise<string> {
   // 计算文件的SHA256值
   const arrayBuffer = await file.arrayBuffer();
   const wordArray = enc.Latin1.parse(
-      Array.from(new Uint8Array(arrayBuffer))
-          .map(byte => String.fromCharCode(byte))
-          .join('')
+    Array.from(new Uint8Array(arrayBuffer))
+      .map(byte => String.fromCharCode(byte))
+      .join('')
   );
   return sha256(wordArray).toString(enc.Hex);
 }
@@ -416,7 +413,7 @@ async function continueUploadTask(item: IResourceUploadItem) {
 }
 function getTaskIcon(resourceType: string, resourceFormat: string) {
   // 获取任务图标
-  let iconBaseUrl = 'images/';
+  let iconBaseUrl = '/images/';
   let iconUrl = 'other.svg';
   let iconFormatMap = {
     // 文档类型
@@ -604,15 +601,15 @@ async function uploadFileSuccess(response: any, uploadFile: UploadFile, uploadFi
   let params = {
     session_id: localCurrentSession.value.id,
     resource_id: resourceId,
-    attachment_source: localSource.value,
+    attachment_source: localSource.value
   };
   attachmentAddIntoSession(params);
   // 判断是否全部任务完成，完成则关闭上传管理框
   let finishFlag = true;
   for (let i = 0; i < uploadFileTaskList.value.length; i++) {
     if (
-        uploadFileTaskList.value[i].task_status == 'pending' ||
-        uploadFileTaskList.value[i].task_status == 'uploading'
+      uploadFileTaskList.value[i].task_status == 'pending' ||
+      uploadFileTaskList.value[i].task_status == 'uploading'
     ) {
       finishFlag = false;
       break;
@@ -630,27 +627,27 @@ async function uploadFileSuccess(response: any, uploadFile: UploadFile, uploadFi
   }
 }
 watch(
-    () => props.fileList,
-    newFileList => {
-      if (newFileList.length > 0) {
-        uploadFileList.value = newFileList;
-      }
-    },
-    { immediate: true }
+  () => props.fileList,
+  newFileList => {
+    if (newFileList.length > 0) {
+      uploadFileList.value = newFileList;
+    }
+  },
+  { immediate: true }
 );
 watch(
-    () => props.currentSession,
-    newSession => {
-      localCurrentSession.value.id = newSession?.id;
-    },
-    { immediate: true , deep: true}
+  () => props.currentSession,
+  newSession => {
+    localCurrentSession.value.id = newSession?.id;
+  },
+  { immediate: true, deep: true }
 );
 watch(
-    () => props.source,
-    newSource => {
-      localSource.value = newSource;
-    },
-    { immediate: true }
+  () => props.source,
+  newSource => {
+    localSource.value = newSource;
+  },
+  { immediate: true }
 );
 defineExpose({
   closeUploadManager,
@@ -662,7 +659,6 @@ defineExpose({
   uploadFileContent,
   uploadFileSuccess
 });
-
 </script>
 
 <template>
@@ -670,7 +666,7 @@ defineExpose({
     <div id="upload_header">
       <div id="upload_header_left">
         <div id="upload_status_icon">
-          <el-image src="images/upload_blue.svg" style="width: 20px; height: 20px" />
+          <el-image src="/images/upload_blue.svg" style="width: 20px; height: 20px" />
         </div>
         <div v-show="uploadManagerStatus == 'uploading'" id="upload_status_text">
           <el-text>上传中 {{ getSuccessUploadTask() }}/{{ uploadFileTaskList.length }}</el-text>
@@ -688,18 +684,18 @@ defineExpose({
       <div id="upload_header_right">
         <div class="upload_button" @click="showUploadFileDetail = !showUploadFileDetail">
           <el-image
-              v-show="showUploadFileDetail"
-              src="images/triangle_down_blue.svg"
-              style="width: 20px; height: 20px"
+            v-show="showUploadFileDetail"
+            src="/images/triangle_down_blue.svg"
+            style="width: 20px; height: 20px"
           />
           <el-image
-              v-show="!showUploadFileDetail"
-              src="images/triangle_right_grey.svg"
-              style="width: 20px; height: 20px"
+            v-show="!showUploadFileDetail"
+            src="/images/triangle_right_grey.svg"
+            style="width: 20px; height: 20px"
           />
         </div>
         <div class="upload_button" @click="closeUploadManager()">
-          <el-image src="images/close_grey.svg" style="width: 20px; height: 20px" />
+          <el-image src="/images/close_grey.svg" style="width: 20px; height: 20px" />
         </div>
       </div>
     </div>
@@ -744,27 +740,27 @@ defineExpose({
             <div v-show="item.task_status == 'uploading'" class="upload-task-right-button-area">
               <el-progress :percentage="getUploadTaskProgress(item, 'progress')" type="circle" :width="40" />
               <div class="upload-button" @click="pauseUploadTask(item)">
-                <el-image src="images/pause_blue.svg" class="upload-button-icon" />
+                <el-image src="/images/pause_blue.svg" class="upload-button-icon" />
               </div>
             </div>
             <div v-show="item.task_status == 'success'" class="upload-task-right-button-area">
-              <el-image src="images/success_grey.svg" class="upload-button-icon" />
+              <el-image src="/images/success_grey.svg" class="upload-button-icon" />
             </div>
             <div
-                v-show="item.task_status != 'uploading' && item.task_status != 'success'"
-                class="upload-task-right-button-area"
+              v-show="item.task_status != 'uploading' && item.task_status != 'success'"
+              class="upload-task-right-button-area"
             >
               <el-tooltip v-if="item.task_status == 'error'" content="文件为空，无法上传">
-                <el-image src="images/notice_error_small.svg" class="upload-button-icon" />
+                <el-image src="/images/notice_error_small.svg" class="upload-button-icon" />
               </el-tooltip>
               <div v-show="item.task_status != 'success'" class="upload-button" @click="removeUploadTask(item)">
-                <el-image src="images/close_grey.svg" class="upload-button-icon" />
+                <el-image src="/images/close_grey.svg" class="upload-button-icon" />
               </div>
               <div v-show="item.task_status == 'error'" class="upload-button" @click="retryUploadTask(item)">
-                <el-image src="images/retry_grey.svg" class="upload-button-icon" />
+                <el-image src="/images/retry_grey.svg" class="upload-button-icon" />
               </div>
               <div v-show="item.task_status == 'pause'" class="upload-button" @click="continueUploadTask(item)">
-                <el-image src="images/continue.svg" class="upload-button-icon" />
+                <el-image src="/images/continue.svg" class="upload-button-icon" />
               </div>
             </div>
           </div>

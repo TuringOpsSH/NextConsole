@@ -1,7 +1,7 @@
 import { ref } from 'vue';
-import { ResourceItem, ResourceUploadItem } from '@/types/resource_type';
+import { ResourceItem, ResourceUploadItem } from '@/types/resource-type';
 import { ElNotification, UploadRawFile, UploadRequestOptions, UploadUserFile } from 'element-plus';
-import { add_upload_task, update_upload_task, upload_resource_object } from '@/api/resource_api';
+import { add_upload_task, update_upload_task, upload_resource_object } from '@/api/resource-api';
 import { current_resource, search_all_resource_object } from '@/components/resource/resource_list/resource_list';
 import { init_my_resource_tree, refresh_panel_count, show_upload_button, switch_panel } from '@/components/resource/resource_panel/panel';
 import { show_upload_dialog_multiple } from '@/components/resource/resource_tree/resource_tree';
@@ -290,7 +290,7 @@ export async function upload_file_content(options: UploadRequestOptions) {
 // 获取可视化要素
 export function get_task_icon(resource_type: string, resource_format: string) {
   // 获取任务图标
-  let icon_base_url = 'images/';
+  let icon_base_url = '/images/';
   let icon_url = 'other.svg';
   let icon_format_map = {
     // 文档类型

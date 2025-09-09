@@ -1,5 +1,5 @@
 import {reactive, ref} from 'vue';
-import {build_resource_object_ref, delete_resource_object_api, download_resource_object} from '@/api/resource_api';
+import {build_resource_object_ref, delete_resource_object_api, download_resource_object} from '@/api/resource-api';
 import {
   current_resource,
   current_resource_list,
@@ -7,7 +7,7 @@ import {
   search_all_resource_object,
   show_multiple_button
 } from '@/components/resource/resource_list/resource_list';
-import {ResourceItem} from '@/types/resource_type';
+import {ResourceItem} from '@/types/resource-type';
 import {ElMessage, genFileId, UploadRawFile} from 'element-plus';
 import {turn_on_resource_meta} from '@/components/resource/resource_meta/resource_meta';
 import router from '@/router';

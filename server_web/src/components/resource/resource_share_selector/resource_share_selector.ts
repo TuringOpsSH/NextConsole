@@ -1,5 +1,5 @@
 import { ref, nextTick } from 'vue';
-import { ResourceAccess, ResourceItem } from '@/types/resource_type';
+import { ResourceAccess, ResourceItem } from '@/types/resource-type';
 import {
   get_colleague_list,
   get_department_list,
@@ -9,12 +9,12 @@ import {
   search_friends
 } from '@/api/contacts';
 import type Node from 'element-plus/es/components/tree/src/model/node';
-import { user_info } from '@/components/user_center/user';
+import { useUserInfoStore } from '@/stores/userInfoStore';
 import {
   resource_share_check_access,
   resource_share_get_access_list,
   resource_share_update_access_list
-} from '@/api/resource_api';
+} from '@/api/resource-api';
 import { ElMessage } from 'element-plus';
 import { init_share_resource_tree } from '../resource_panel/panel';
 
@@ -65,7 +65,8 @@ export const access_loading = ref(false);
 export const current_search_result = ref<Tree[]>([]);
 export async function turn_on_share_selector(resource: ResourceItem) {
   // 判断是否有权限
-  if (resource.user_id != user_info.value.user_id) {
+  const userInfoStore = useUserInfoStore();
+  if (resource.user_id != userInfoStore.userInfo.user_id) {
     let check_res = await resource_share_check_access({
       resource_id: resource.id,
       access_type: 'manage'
@@ -84,19 +85,18 @@ export async function turn_on_share_selector(resource: ResourceItem) {
   current_share_resource.value = resource;
   current_all_share_objects.value = [];
   // 初始化公司架构
-  if (user_info.value?.user_account_type == '企业账号') {
+  if (userInfoStore.userInfo?.user_account_type == '企业账号') {
     current_all_share_objects.value.push({
-      label: user_info.value?.user_company,
+      label: userInfoStore.userInfo?.user_company,
       children: [],
       leaf: false,
       disabled: false,
       structure_type: 'department',
-      department_logo: 'images/department_default.svg',
+      department_logo: '/images/department_default.svg',
       structure_id: 'department',
-      company_id: user_info.value?.user_company_id,
+      company_id: userInfoStore.userInfo?.user_company_id,
       access: 'read'
     } as Tree);
-    // console.log('初始化公司架构', user_info.value?.user_company_id)
   }
   // 初始化好友列表
   let friend_tree = {
@@ -105,30 +105,30 @@ export async function turn_on_share_selector(resource: ResourceItem) {
     leaf: false,
     disabled: false,
     structure_type: 'friend',
-    user_avatar: 'images/default_friends.svg',
+    user_avatar: '/images/default_friends.svg',
     structure_id: 'friend',
     access: ''
   } as Tree;
   current_all_share_objects.value.push(friend_tree);
   // 初始化权限列表
   get_access_object_list.value = [];
-  if (resource.user_id == user_info.value.user_id) {
+  if (resource.user_id == userInfoStore.userInfo.user_id) {
     get_access_object_list.value.push({
-      label: user_info.value.user_name || user_info.value.user_nick_name,
+      label: userInfoStore.userInfo.user_name || userInfoStore.userInfo.user_nick_name,
       leaf: true,
       disabled: true,
       structure_type: 'colleague',
-      structure_id: 'colleague' + user_info.value.user_id,
-      user_nick_name_py: user_info.value.user_nick_name_py,
+      structure_id: 'colleague' + userInfoStore.userInfo.user_id,
+      user_nick_name_py: userInfoStore.userInfo.user_nick_name_py,
       //@ts-ignore
-      user_id: user_info.value.user_id,
-      user_avatar: user_info.value?.user_avatar,
-      user_position: user_info.value?.user_position,
-      user_company: user_info.value?.user_company,
-      user_email: user_info.value?.user_email,
-      user_gender: user_info.value?.user_gender,
-      user_department: user_info.value?.user_department,
-      user_department_id: user_info.value?.user_department_id,
+      user_id: userInfoStore.userInfo.user_id,
+      user_avatar: userInfoStore.userInfo?.user_avatar,
+      user_position: userInfoStore.userInfo?.user_position,
+      user_company: userInfoStore.userInfo?.user_company,
+      user_email: userInfoStore.userInfo?.user_email,
+      user_gender: userInfoStore.userInfo?.user_gender,
+      user_department: userInfoStore.userInfo?.user_department,
+      user_department_id: userInfoStore.userInfo?.user_department_id,
       access: 'manage'
     });
   }
@@ -147,7 +147,7 @@ export async function turn_on_share_selector(resource: ResourceItem) {
           leaf: false,
           disabled: access?.resource_id && access?.resource_id != resource.id,
           structure_type: 'department',
-          department_logo: access.meta.company_logo || 'images/department_default.svg',
+          department_logo: access.meta.company_logo || '/images/department_default.svg',
           structure_id: 'department' + access.meta.id,
           company_id: access.meta.id,
           access: access.auth_type,
@@ -160,7 +160,7 @@ export async function turn_on_share_selector(resource: ResourceItem) {
           leaf: false,
           disabled: false,
           structure_type: 'department',
-          department_logo: access.meta.department_logo || 'images/department_default.svg',
+          department_logo: access.meta.department_logo || '/images/department_default.svg',
           structure_id: 'department' + access.meta.id,
           department_id: access.meta.id,
           parent_department_id: access.meta.parent_department_id,
@@ -268,9 +268,10 @@ export async function get_company_structure_tree(node: Node, resolve: (data: Tre
     department_id: node.data?.department_id,
     is_root: !node.data?.department_id
   });
+  const userInfoStore = useUserInfoStore();
   if (!leaders.error_status) {
     for (let leader of leaders.result) {
-      if (leader.user_id == user_info.value.user_id) {
+      if (leader.user_id == userInfoStore.userInfo.user_id) {
         continue;
       }
       // 如果在右侧已经存在，则不再添加
@@ -331,7 +332,7 @@ export async function get_company_structure_tree(node: Node, resolve: (data: Tre
         company_id: department.company_id,
         department_id: department.id,
         department_name: department.department_name,
-        department_logo: department?.department_logo || 'images/department_default.svg',
+        department_logo: department?.department_logo || '/images/department_default.svg',
         parent_department_id: department.parent_department_id,
         access: ''
       } as Tree;
@@ -342,8 +343,9 @@ export async function get_company_structure_tree(node: Node, resolve: (data: Tre
 }
 export function batch_set_share_access(val: string) {
   // 批量设置分享权限
+  const userInfoStore = useUserInfoStore();
   for (let object of get_access_object_list.value) {
-    if (object.user_id == user_info.value.user_id) {
+    if (object.user_id == userInfoStore.userInfo.user_id) {
       continue;
     }
     object.access = val;
@@ -428,7 +430,8 @@ export async function confirm_update_share_access() {
         auth_type: object.access
       } as ResourceAccess);
     } else if (object.structure_type == 'colleague') {
-      if (object.user_id == user_info.value.user_id) {
+      const userInfoStore = useUserInfoStore();
+      if (object.user_id == userInfoStore.userInfo.user_id) {
         continue;
       }
       access_list.push({
@@ -482,7 +485,7 @@ export async function search_company_department_and_colleague() {
         company_id: department.company_id,
         department_id: department.id,
         department_name: department.department_name,
-        department_logo: department?.department_logo || 'images/department_default.svg',
+        department_logo: department?.department_logo || '/images/department_default.svg',
         parent_department_id: department.parent_department_id,
         access: ''
       } as Tree;
