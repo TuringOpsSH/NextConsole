@@ -8,6 +8,64 @@ Here's the English version of the changelog with professional formatting:
 
 ---
 
+## [0.2.6] - 2025-09-09
+
+### New Features
+
+**Official Documentation Launch**
+*   [x] Added User Center documentation
+    *   Introduces product features and usage methods
+    *   Company and team overview
+    *   API specifications
+    *   Technical blog
+
+**User Center Expansion & Refactor**
+*   [x] Refactored User Center interface, added a new Configuration Management module
+    *   View API-key and expiration time, support extending expiration to a specified date
+    *   View roles assigned to the current user
+    *   Supports modifying the session layout mode for AI Workbench - XiaoYi Assistant
+    *   Supports modifying the available model list for AI Workbench - XiaoYi Assistant
+    *   Supports modifying the Auto-Build switch for AI Resource Library
+    *   Supports modifying Contact configuration -- Allow being found by strangers
+    *   Supports viewing the current version and checking for updates
+*   [x] Added Platform Configuration page, supports modifying platform-level parameters
+    *   Supports configuring the default model for XiaoYi Assistant
+    *   Configure vectorization model address
+    *   Configure re-ranking model address
+    *   Configure speech recognition model address
+    *   Configure WeChat login parameters
+    *   Configure search engine parameters
+    *   Configure mail server parameters
+    *   Configure SMS service parameters
+    *   Configure WPS service parameters (Enable to use WPS-related features for collaborative document editing)
+    *   Supports custom branding (Logo modification, browser tab title, etc.)
+
+**AI Workbench**
+*   [x] File splitting now supports a list mode.
+
+**Architectural Changes**
+*   [x] Changed routing mode to history mode, removing the `#` from URLs
+*   [x] Introduced ESLint for unified code style enforcement
+*   [x] Introduced Pinia for state management
+
+### Fixes & Optimizations
+
+**AI Workbench**
+*   [x] Fixed abnormal display of answers after manually interrupting XiaoYi Assistant
+*   [x] Fixed message copy functionality
+*   [x] Fixed input box enter key event handling
+*   [x] Fixed session parameters automatically closing
+*   [x] Fixed abnormal menu highlighting
+
+**Reports**
+*   [x] Optimized report interface and loading performance
+
+**AI App Factory**
+*   [x] Limited RAG length to prevent overflow issues
+*   [x] Fixed trace log overwrite anomaly
+
+---
+
 ## [0.2.5] - 2025-08-24
 
 ### Fixes
