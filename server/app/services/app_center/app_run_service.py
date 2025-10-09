@@ -1,35 +1,23 @@
-import json
-
-from bs4 import BeautifulSoup
 from flask import stream_with_context, Response
 from gevent import Timeout
-from jsonschema import validate
 from sqlalchemy.orm.attributes import flag_modified
 from app.services.task_center.workflow import auto_naming_session
 from app.models.app_center.app_info_model import *
 from app.models.user_center.user_info import UserInfo
-from app.services.next_console.llm import NextConsoleLLMClient
 from app.services.next_console.workflow import *
-from app.services.task_center.workflow import emit_workflow_status
 from flask_jwt_extended import (
     create_access_token
 )
 from datetime import timedelta
-from openai import OpenAI
-from pathlib import Path
-from app.models.configure_center.llm_kernel import LLMInstance
 from app.models.contacts.department_model import DepartmentInfo
 from app.models.contacts.company_model import CompanyInfo
 from concurrent.futures import ThreadPoolExecutor
-import threading
 import queue
 import time
 from app.services.app_center.file_reader import file_reader_node_execute, file_splitter_node_execute
 from app.services.app_center.expermental_features import parallel_llm_node_execute
 from app.services.app_center.llm_node_service import llm_node_execute
 from app.services.app_center.node_params_service import *
-from app.models.next_console.next_console_model import NextConsoleSession
-from sqlalchemy import or_
 from app.services.next_console.base import *
 import requests
 from app.models.knowledge_center.rag_ref_model import *
@@ -986,7 +974,7 @@ def workflow_node_execute(task_params, task_record, global_params):
     :param global_params:
     :return:
     """
-    from app.services.next_console.llm import NextConsoleLLMClient
+    from app.services.configure_center.llm import NextConsoleLLMClient
     nc_client = NextConsoleLLMClient({
         "user_id": task_record.user_id,
         "is_nc": True

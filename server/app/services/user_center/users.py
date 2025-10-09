@@ -1330,7 +1330,7 @@ def wx_register_user(data):
         SystemConfig.config_status == 1
     ).first()
     config = None
-    for wx in system_connectors_config.get("weixin"):
+    for wx in system_connectors_config.config_value.get("weixin"):
         if wx.get("domain") == domain:
             config = wx
             break

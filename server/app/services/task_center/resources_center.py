@@ -297,10 +297,11 @@ def auto_build_resource_ref_v2(params):
             "code_abstract": False,
             "question_abstract": False
         }
+
         file_chunk_embedding_config = {
-            "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
-            'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
-            "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
+            "api":  "",
+            'key': "",
+            "model": "",
             "batch_size": 10,
             "dimension": 1024,
             "encoding_format": "float",
@@ -311,6 +312,17 @@ def auto_build_resource_ref_v2(params):
                 "model": '',
             },
         }
+        if system_config and system_config.config_value.get("embedding", {}).get("llm_code"):
+            from app.models.configure_center.llm_kernel import LLMInstance
+            embedding_model = LLMInstance.query.filter(
+                LLMInstance.llm_code == system_config.config_value.get("embedding", {}).get("llm_code", ""),
+                LLMInstance.llm_status == "正常"
+            ).first()
+            if embedding_model:
+                file_chunk_embedding_config["api"] = embedding_model.llm_base_url
+                file_chunk_embedding_config["key"] = embedding_model.llm_api_secret_key
+                file_chunk_embedding_config["model"] = embedding_model.llm_name
+
         ref_type = "resource"
         pandoc_input_formats = [
             "biblatex", "bibtex", "bits",

@@ -163,6 +163,7 @@ def messages_add():
         return next_console_response(error_status=True, error_code=400, error_message='参数错误')
 
     # 判断用户是否过期
+    from app.models.user_center.user_info import UserInfo
     user = UserInfo.query.filter_by(user_id=user_id).first()
     if user.user_expire_time and user.user_expire_time < datetime.now():
         user.user_status = -1

@@ -119,17 +119,6 @@ def rerank_call(params):
         "max_chunks_per_doc": max_chunks_per_doc,
         "overlap_tokens": overlap_tokens
     }
-    if model == "gte-rerank-v2":
-        payload = {
-            "model": model,
-            "input": {
-                "query": query,
-                "documents": documents
-            },
-            "parameters": {
-                "return_documents": False
-            }
-        }
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
@@ -141,22 +130,9 @@ def rerank_call(params):
     except Exception as e:
         app.logger.error(f"Rerank API call failed: {str(e)}")
         return []
-    if model == "gte-rerank-v2":
-        result = result.get("output", {})
     try:
         for e in result['results']:
             scores[e['index']] = e['relevance_score']
     except KeyError as e:
         return []
     return scores
-    # try:
-    #     response = requests.post(api, json=payload, headers=headers)
-    #     response.raise_for_status()
-    #     data = response.json()
-    #     for item in data.get("results", []):
-    #         scores[item['index']] = item['relevance_score']
-    #     return scores
-    # except requests.exceptions.RequestException as e:
-    #     return []
-    # except Exception as e:
-    #     return []

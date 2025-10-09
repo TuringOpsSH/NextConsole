@@ -60,3 +60,4 @@ html2text
 python-pptx
 psycopg2-binary
 pgvector
+dashscope==1.24.5
