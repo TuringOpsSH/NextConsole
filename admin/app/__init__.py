@@ -5,6 +5,12 @@ from app.views.user_center.role_process import *
 from app.views.user_center.user_notice_view import *
 from app.views.user_center.system_notice import *
 
+from app.views.contacts.company import *
+from app.views.contacts.department import *
+from app.views.contacts.friends import *
+from app.views.contacts.colleague import *
+from app.views.contacts.visitor import *
+
 # # 配置中心
 from app.views.configure_center.system_config import *
 from app.views.configure_center.user_config import *

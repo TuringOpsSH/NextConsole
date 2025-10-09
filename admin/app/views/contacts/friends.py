@@ -7,7 +7,7 @@ from app.app import app
 from app.services.contacts_service.friends_service import *
 
 
-@app.route('/next_console/contacts/friends/get_friend_list', methods=['POST'])
+@app.route('/next_console_admin/contacts/friends/get_friend_list', methods=['POST'])
 @jwt_required()
 def get_friends():
     """
@@ -17,7 +17,7 @@ def get_friends():
     return get_friends_service(user_id)
 
 
-@app.route('/next_console/user_center/friends/search', methods=['POST'])
+@app.route('/next_console_admin/user_center/friends/search', methods=['POST'])
 @jwt_required()
 def search_friends():
     """
@@ -29,7 +29,7 @@ def search_friends():
     return search_friends_service(data)
 
 
-@app.route('/next_console/user_center/friends/add', methods=['POST'])
+@app.route('/next_console_admin/user_center/friends/add', methods=['POST'])
 @jwt_required()
 def add_friends():
     """
@@ -46,7 +46,7 @@ def add_friends():
     return add_friends_service(data)
 
 
-@app.route('/next_console/user_center/friends/accept_friend_request', methods=['POST'])
+@app.route('/next_console_admin/user_center/friends/accept_friend_request', methods=['POST'])
 @jwt_required()
 def accept_friends():
     """
@@ -63,7 +63,7 @@ def accept_friends():
     return accept_friends_service(data)
 
 
-@app.route('/next_console/user_center/friends/reject_friend_request', methods=['POST'])
+@app.route('/next_console_admin/user_center/friends/reject_friend_request', methods=['POST'])
 @jwt_required()
 def reject_friends():
     """
@@ -80,7 +80,7 @@ def reject_friends():
     return reject_friends_service(data)
 
 
-@app.route('/next_console/user_center/friends/delete', methods=['POST'])
+@app.route('/next_console_admin/user_center/friends/delete', methods=['POST'])
 @jwt_required()
 def delete_friends():
     """
@@ -97,7 +97,7 @@ def delete_friends():
     return delete_friends_service(data)
 
 
-@app.route('/next_console/user_center/friends/stranger', methods=['POST'])
+@app.route('/next_console_admin/user_center/friends/stranger', methods=['POST'])
 @jwt_required()
 def get_stranger():
     """
@@ -112,7 +112,7 @@ def get_stranger():
     return get_stranger_service(data)
 
 
-@app.route('/next_console/user_center/friends/friend_requests_history', methods=['POST'])
+@app.route('/next_console_admin/user_center/friends/friend_requests_history', methods=['POST'])
 @jwt_required()
 def get_request_record():
     """
@@ -124,7 +124,7 @@ def get_request_record():
     return get_friend_request_service(data)
 
 
-@app.route('/next_console/user_center/friends/friend_requests_cnt', methods=['POST'])
+@app.route('/next_console_admin/user_center/friends/friend_requests_cnt', methods=['POST'])
 @jwt_required()
 def get_request_record_cnt():
     """

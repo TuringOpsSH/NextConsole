@@ -1,16 +1,14 @@
-import json
 from pathlib import Path
 import base64
 from openai import OpenAI
 from app.models.next_console.next_console_model import NextConsoleMessage
-from app.services.next_console.llm import NextConsoleLLMClient, LLMInstance
+from app.services.configure_center.llm import NextConsoleLLMClient, LLMInstance
 from app.app import redis_client, app
 from app.services.configure_center.response_utils import next_console_response
 from app.models.resource_center.resource_model import ResourceObjectMeta
 from app.services.app_center.node_params_service import *
 from app.services.next_console.memory import retrieve_instruction_context
 from datetime import datetime
-from app.models.knowledge_center.rag_ref_model import ResourceChunkInfo
 
 
 def llm_node_execute(params, task_record, global_params):
@@ -246,7 +244,8 @@ def load_llm_prams(task_params, task_record, global_params, imgUrl='url'):
         }).get("images", [])
         if attachment_list:
             attachment_id_list = [attachment.get("id") for attachment in attachment_list]
-            app.logger.warning(f"visual_schema: {visual_schema.get('properties')}, task_params: {task_params}, attachment_id_list: {attachment_id_list}")
+            app.logger.warning(f"visual_schema: {visual_schema.get('properties')}, task_params: {task_params}, "
+                               f"attachment_id_list: {attachment_id_list}")
             image_list = []
             target_attachments = ResourceObjectMeta.query.filter(
                 ResourceObjectMeta.id.in_(attachment_id_list),

@@ -113,14 +113,6 @@ def rerank_call(params):
         "query": query,
         "documents": documents,
     }
-    if model == "gte-rerank-v2":
-        payload = {
-            "model": model,
-            "input": {
-                "query": query,
-                "documents": documents
-            }
-        }
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
@@ -132,8 +124,6 @@ def rerank_call(params):
     except Exception as e:
         app.logger.error(f"Rerank API call failed: {str(e)}")
         return []
-    if model == "gte-rerank-v2":
-        result = result.get("output", {})
     try:
         for e in result['results']:
             scores[e['index']] = e['relevance_score']

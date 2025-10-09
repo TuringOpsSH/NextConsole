@@ -335,6 +335,19 @@ def search_ai_app_flow_node():
     return search_app_flow_node(data)
 
 
+@app.route('/next_console_admin/app_center/app_manage/workflow/node/copy', methods=['POST'])
+@roles_required(["admin", "super_admin", "next_console_admin"])
+@jwt_required()
+def copy_ai_app_flow_node():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    data["user_id"] = user_id
+    node_code = data.get("node_code")
+    if not node_code:
+        return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
+    return copy_app_flow_node(data)
+
+
 @app.route('/next_console_admin/app_center/publish_manage/search_prod_app', methods=['POST'])
 @roles_required(["admin", "super_admin", "next_console_admin"])
 @jwt_required()

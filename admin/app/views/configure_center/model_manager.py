@@ -4,6 +4,7 @@ from flask_jwt_extended import (
     jwt_required, get_jwt_identity
 )
 from app.services.user_center.roles import roles_required
+from app.services.configure_center.supplier_manager import *
 
 
 @app.route('/next_console_admin/config_center/llm_instance/search', methods=['POST'])
@@ -86,3 +87,48 @@ def models_icon_upload():
         return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
     return model_icon_upload_service(user_id, llm_icon_data)
 
+
+@app.route('/next_console_admin/config_center/llm_supplier/search', methods=['POST'])
+@roles_required(["admin", "super_admin", "next_console_admin"])
+@jwt_required()
+def llm_supplier_search():
+    """
+    搜索助手
+    """
+    user_id = get_jwt_identity()
+    data = request.json
+    data["user_id"] = int(user_id)
+    return llm_supplier_search_service(data)
+
+
+@app.route('/next_console_admin/config_center/llm_supplier/detail', methods=['POST'])
+@roles_required(["admin", "super_admin", "next_console_admin"])
+@jwt_required()
+def llm_supplier_detail():
+    """
+    搜索助手
+    """
+    user_id = get_jwt_identity()
+    data = request.json
+    data["user_id"] = int(user_id)
+    supplier_id = data.get("supplier_id")
+    if not supplier_id:
+        return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
+    return llm_supplier_detail_service(data)
+
+
+@app.route('/next_console_admin/config_center/llm_supplier/model_health_check', methods=['POST'])
+@roles_required(["admin", "super_admin", "next_console_admin"])
+@jwt_required()
+def llm_supplier_model_health_check():
+    """
+    搜索助手
+    """
+    user_id = get_jwt_identity()
+    data = request.json
+    data["user_id"] = int(user_id)
+    model = data.get("model", {})
+    step = data.get("step", 0)
+    if not model or step not in [0, 1, 2]:
+        return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
+    return model_health_check_service(data)

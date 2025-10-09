@@ -7,7 +7,7 @@ from app.app import app
 from app.services.contacts_service.colleague_service import *
 
 
-@app.route('/next_console/contacts/get_colleague_list', methods=['POST'])
+@app.route('/next_console_admin/contacts/get_colleague_list', methods=['POST'])
 @jwt_required()
 def get_colleague():
     """
@@ -24,7 +24,7 @@ def get_colleague():
     return get_colleague_list(params)
 
 
-@app.route('/next_console/contacts/search_colleague', methods=['POST'])
+@app.route('/next_console_admin/contacts/search_colleague', methods=['POST'])
 @jwt_required()
 def search_department_colleague():
     """

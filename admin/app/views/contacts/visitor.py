@@ -4,7 +4,7 @@ from app.services.configure_center.response_utils import next_console_response
 from app.services.contacts_service.visitor_service import *
 
 
-@app.route('/next_console/user_center/visitor/subscribe', methods=['POST'])
+@app.route('/next_console_admin/user_center/visitor/subscribe', methods=['POST'])
 def add_subscribe():
     """
     订阅公司邮件
@@ -16,7 +16,7 @@ def add_subscribe():
     return add_subscribe_service(data)
 
 
-@app.route('/next_console/user_center/visitor/unsubscribe', methods=['POST'])
+@app.route('/next_console_admin/user_center/visitor/unsubscribe', methods=['POST'])
 def cancel_subscribe():
     """
     取消订阅公司邮件
@@ -28,7 +28,7 @@ def cancel_subscribe():
     return cancel_subscribe_service(data)
 
 
-@app.route('/next_console/user_center/visitor/valid_invite', methods=['POST'])
+@app.route('/next_console_admin/user_center/visitor/valid_invite', methods=['POST'])
 def valid_invite():
     """
     验证邀请id合法性

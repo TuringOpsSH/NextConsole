@@ -395,15 +395,26 @@ def rag_query_v3(params):
         query_log["time_usage"]["web_search_time"] = time.time() - web_search_time
     # Rag-嵌入查询向量
     query_begin_time = time.time()
-    query_embedding_result = embedding_call({
+    embedding_call_config = {
         "content": query,
         "config": {
-            "api":  system_ai_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
-            'key': system_ai_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
-            "model": system_ai_config.config_value.get("embedding", {}).get("embedding_model", ""),
+            "api": "",
+            'key': "",
+            "model": "",
             "encoding_format": "float",
         }
-    })
+    }
+    if system_ai_config.config_value.get("embedding", {}).get("llm_code"):
+        from app.models.configure_center.llm_kernel import LLMInstance
+        embedding_model = LLMInstance.query.filter(
+            LLMInstance.llm_code == system_ai_config.config_value.get("embedding", {}).get("llm_code", ""),
+            LLMInstance.llm_status == "正常"
+        ).first()
+        if embedding_model:
+            embedding_call_config["config"]["api"] = embedding_model.llm_base_url
+            embedding_call_config["config"]["key"] = embedding_model.llm_api_secret_key
+            embedding_call_config["config"]["model"] = embedding_model.llm_name
+    query_embedding_result = embedding_call(embedding_call_config)
     if not query_embedding_result:
         return next_console_response(error_status=True, error_message="查询嵌入异常", result=result)
     query_embedding = query_embedding_result[1]
@@ -576,17 +587,28 @@ def rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log):
         SystemConfig.config_key == "ai",
         SystemConfig.config_status == 1
     ).first()
-    rerank_scores = rerank_call({
+    rerank_call_config = {
         "documents": documents,
         "query": query,
         "config": {
-            "api":  system_config.config_value.get("rerank", {}).get("rerank_endpoint", ""),
-            'key': system_config.config_value.get("rerank", {}).get("rerank_api_key", ""),
-            "model": system_config.config_value.get("rerank", {}).get("rerank_model", ""),
+            "api": "",
+            'key': "",
+            "model": "",
             "max_chunks_per_doc": max_chunk_per_doc,
             "overlap_tokens": overlap_tokens,
         }
-    })
+    }
+    if system_config and system_config.config_value.get("embedding", {}).get("llm_code"):
+        from app.models.configure_center.llm_kernel import LLMInstance
+        rerank_model = LLMInstance.query.filter(
+            LLMInstance.llm_code == system_config.config_value.get("rerank", {}).get("llm_code", ""),
+            LLMInstance.llm_status == "正常"
+        ).first()
+        if rerank_model:
+            rerank_call_config["config"]["api"] = rerank_model.llm_base_url
+            rerank_call_config["config"]["key"] = rerank_model.llm_api_secret_key
+            rerank_call_config["config"]["model"] = rerank_model.llm_name
+    rerank_scores = rerank_call(rerank_call_config)
     query_log["time_usage"]["rerank_time"] = time.time() - rerank_begin_time
     if not rerank_scores:
         query_log["status"] = "异常"

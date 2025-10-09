@@ -416,6 +416,12 @@ def publish_nextconsole(params):
     dev_app_info.app_status = '已发布'
     db.session.add(dev_app_info)
     db.session.commit()
+    # 给自己新增授权
+    author_app_publish({
+        "app_code": dev_app_info.app_code,
+        "user_id": dev_app_info.user_id,
+        "user_list": [dev_app_info.user_id]
+    })
     return new_app
 
 
