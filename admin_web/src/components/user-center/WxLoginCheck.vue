@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { wxRegister } from '@/api/user-center';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 
 const props = defineProps({
   code: {
@@ -65,7 +65,7 @@ onMounted(() => {
           return;
         }
         router.push({
-          name: 'next_console_welcome_home'
+          name: 'appCenter'
         });
       } else if (localState.value == 'bind' || localState.value == 'update') {
         loading.value = false;

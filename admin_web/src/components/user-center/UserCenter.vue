@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
+import { User, OfficeBuilding, Notification } from '@element-plus/icons-vue';
 const router = useRouter();
 const filteredComponents = ref([
   {
@@ -11,7 +12,8 @@ const filteredComponents = ref([
       name: 'user_manage'
     },
     disable: false,
-    role_require: ['admin', 'super_admin', 'next_console_admin', 'next_console_reader_admin']
+    role_require: ['admin', 'super_admin', 'next_console_admin', 'next_console_reader_admin'],
+    icon: User
   },
   {
     name: 'enterpriseManagement',
@@ -20,7 +22,8 @@ const filteredComponents = ref([
       name: 'enterpriseManagement'
     },
     disable: false,
-    role_require: ['next_console_admin', 'next_console_reader_admin']
+    role_require: ['next_console_admin', 'next_console_reader_admin'],
+    icon: OfficeBuilding
   },
   {
     name: 'user_notification_list',
@@ -29,7 +32,8 @@ const filteredComponents = ref([
       name: 'user_notification_list'
     },
     disable: false,
-    role_require: ['next_console_admin', 'next_console_reader_admin']
+    role_require: ['next_console_admin', 'next_console_reader_admin'],
+    icon: Notification
   }
 ]);
 onMounted(async () => {
@@ -67,7 +71,10 @@ defineOptions({
               :disabled="component.disable"
               class="menu-header-item"
             >
-              {{ component.label }}
+              <el-icon>
+                <component :is="component.icon" />
+              </el-icon>
+              <span>{{ component.label }}</span>
             </el-menu-item>
           </el-menu>
         </div>

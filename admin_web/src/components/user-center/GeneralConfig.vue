@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { latestVersionGet } from '@/api/base';
 import { llmInstanceSearch, userConfigGet, userConfigUpdate } from '@/api/user-center';
-import { useUserConfigStore } from '@/stores/userConfigStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
 import { IUserConfig } from '@/types/user-center';
 const userConfigStore = useUserConfigStore();
 const localUserConfig = reactive<IUserConfig>({

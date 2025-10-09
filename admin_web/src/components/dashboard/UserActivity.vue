@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import { Odometer } from '@element-plus/icons-vue';
 import { format, parseISO } from 'date-fns';
 import * as echarts from 'echarts';
 import gsap from 'gsap';
-import { onMounted, ref, reactive, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { onBeforeUnmount } from 'vue-demi';
 import { useRoute } from 'vue-router';
 import { getDashboardIndex, getAllCompany } from '@/api/dashboard';
-
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ICompany } from '@/types/contacts';
 const props = defineProps({
   tab: {
@@ -33,7 +33,7 @@ const targetCompany = ref('');
 const indexBeginTime = ref();
 const currentTab = ref('user');
 
-const echartsData = reactive({
+const echartsData = {
   user: {
     dnu: {
       ref: null,
@@ -944,7 +944,7 @@ const echartsData = reactive({
       }
     }
   }
-});
+};
 const uvCount = ref(0);
 const qaCount = ref(0);
 const sessionCount = ref(0);
@@ -1534,6 +1534,7 @@ async function handleTabChange(val: string) {
   router.replace({
     query: { tab: val }
   });
+  transTimeRange();
   if (val == 'user') {
     getDnu();
     getDnuSd();
@@ -1606,7 +1607,8 @@ watch(
               :index="component.url"
               class="menu-header-item"
             >
-              {{ component.name }}
+              <el-icon><Odometer /></el-icon>
+              <span>{{ component.name }}</span>
             </el-menu-item>
           </el-menu>
         </div>

@@ -15,7 +15,7 @@ import {
 } from '@/api/user-manage';
 
 import UserUploadExcel from '@/components/user-center/UserUploadExcel.vue';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ICompany, IDepartment } from '@/types/contacts';
 import { IUsers } from '@/types/user-center';
 const userInfoStore = useUserInfoStore();

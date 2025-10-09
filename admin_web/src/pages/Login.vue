@@ -5,8 +5,8 @@ import { onMounted, reactive, ref, computed } from 'vue';
 import { generateTextCode, getWxConfig, loginByCode, loginByPassword } from '@/api/user-center';
 import HomeFooter from '@/components/user-center/HomeFooter.vue';
 import router from '@/router';
-import { useUserConfigStore } from '@/stores/userConfigStore';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
+import { useUserInfoStore } from '@/stores/user-info-store';
 
 const LocalLoginType = ref('code');
 const nodeEnv = import.meta.env.VITE_APP_NODE_ENV;
@@ -95,7 +95,7 @@ async function codeLogin() {
       sessionStorage.removeItem('redirectRoute');
       return;
     }
-    router.push({ name: 'next_console_welcome_home' });
+    router.push({ name: 'appCenter' });
   }
 }
 async function sendMsgCode() {
@@ -175,7 +175,7 @@ async function login() {
       sessionStorage.removeItem('redirectRoute');
       return;
     }
-    router.push({ name: 'next_console_welcome_home' });
+    router.push({ name: 'appCenter' });
   }
 }
 async function initWxLogin() {

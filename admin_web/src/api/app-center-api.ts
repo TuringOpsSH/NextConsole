@@ -1,4 +1,4 @@
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ServerResponse } from '@/types/response';
 import request from '@/utils/request';
 
@@ -28,6 +28,7 @@ export const api = {
   workflow_node_detail: envUrl + '/next_console_admin/app_center/app_manage/workflow/node/detail',
   workflow_node_avatar: envUrl + '/next_console_admin/app_center/app_manage/workflow/node/agent_avatar_upload',
   workflow_node_search: envUrl + '/next_console_admin/app_center/app_manage/workflow/node/search',
+  workflow_node_copy: envUrl + '/next_console_admin/app_center/app_manage/workflow/node/copy',
   workflow_check: envUrl + '/next_console_admin/app_center/app_manage/workflow/check',
   init_app_session: envUrl + '/next_console_admin/app_center/app_run/init_session',
   add_app_message: envUrl + '/next_console_admin/app_center/app_run/messages/add',
@@ -222,6 +223,14 @@ export async function nodeDetail(params: object): Promise<ServerResponse> {
 export async function nodeSearch(params: object): Promise<ServerResponse> {
   return request({
     url: api.workflow_node_search,
+    data: params,
+    responseType: 'json'
+  });
+}
+
+export async function nodeCopy(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.workflow_node_copy,
     data: params,
     responseType: 'json'
   });

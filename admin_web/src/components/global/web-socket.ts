@@ -2,10 +2,10 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { ElNotification } from 'element-plus';
 import { io } from 'socket.io-client';
 import { ref } from 'vue';
-import { consoleInputRef } from '@/components/app-center/appPreview/console_input';
-import { msgFlowRef } from '@/components/app-center/appPreview/message_flow';
+import { consoleInputRef } from '@/components/app-center/app-preview/console_input';
+import { msgFlowRef } from '@/components/app-center/app-preview/message_flow';
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 // 创建 Socket.IO 客户端实例，连接到服务器
 export const socket = ref(null);
 export const clientFingerprint = ref('');

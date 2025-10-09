@@ -1,4 +1,4 @@
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ServerResponse } from '@/types/response';
 import request from '@/utils/request';
 

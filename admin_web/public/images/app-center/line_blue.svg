@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="80" height="30" viewBox="0 0 80 30">
+    <defs>
+        <clipPath id="clipPath9974553727">
+            <path d="M0 0L80 0L80 30L0 30L0 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 0 0)"/>
+        </clipPath>
+    </defs>
+    <g clip-path="url(#clipPath9974553727)">
+        <path d="M6.15385 0L0 4.09091L6.15385 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 0 19.0909)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.553608 3.25813L5.60024 -0.832778L6.70745 0.832778L0.553608 4.92369L-0.553608 3.25813Z" fill-rule="nonzero" transform="matrix(1 0 0 1 0 19.0909)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 0L0 5.45455L6.15385 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 6.15385 13.6364)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.663308 4.7062L5.49054 -0.748347L6.81715 0.748347L0.663308 6.20289L-0.663308 4.7062Z" fill-rule="nonzero" transform="matrix(1 0 0 1 6.15385 13.6364)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 4.09091L0 0L6.15385 4.09091Z" fill-rule="nonzero" transform="matrix(1 0 0 1 12.3077 13.6364)" fill="rgb(0, 0, 0)"/>
+        <path d="M0.553608 -0.832778L6.70745 3.25813L5.60024 4.92369L-0.553608 0.832778L0.553608 -0.832778Z" fill-rule="nonzero" transform="matrix(1 0 0 1 12.3077 13.6364)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 0L0 2.72727L6.15385 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 18.4615 15)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.405174 1.81303L5.74867 -0.91424L6.55902 0.91424L0.405174 3.64151L-0.405174 1.81303Z" fill-rule="nonzero" transform="matrix(1 0 0 1 18.4615 15)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15384 0L0 2.72727L6.15384 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 24.6154 12.2727)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.405174 1.81303L5.74867 -0.914239L6.55902 0.914239L0.405174 3.64151L-0.405174 1.81303Z" fill-rule="nonzero" transform="matrix(1 0 0 1 24.6154 12.2727)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 0L0 2.72727L6.15385 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 30.7692 9.54545)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.405174 1.81303L5.74867 -0.91424L6.55902 0.91424L0.405174 3.64151L-0.405174 1.81303Z" fill-rule="nonzero" transform="matrix(1 0 0 1 30.7692 9.54545)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 1.36364L0 0L6.15385 1.36364Z" fill-rule="nonzero" transform="matrix(1 0 0 1 36.9231 9.54545)" fill="rgb(0, 0, 0)"/>
+        <path d="M0.216343 -0.976317L6.37019 0.387319L5.9375 2.33995L-0.216343 0.976317L0.216343 -0.976317Z" fill-rule="nonzero" transform="matrix(1 0 0 1 36.9231 9.54545)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 0L0 4.09091L6.15385 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 43.0769 6.81818)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.553608 3.25813L5.60024 -0.832778L6.70745 0.832778L0.553608 4.92369L-0.553608 3.25813Z" fill-rule="nonzero" transform="matrix(1 0 0 1 43.0769 6.81818)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 0L0 2.72727L6.15385 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 49.2308 4.09091)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.405174 1.81303L5.74867 -0.914239L6.55902 0.914239L0.405174 3.64151L-0.405174 1.81303Z" fill-rule="nonzero" transform="matrix(1 0 0 1 49.2308 4.09091)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15384 4.09091L0 0L6.15384 4.09091Z" fill-rule="nonzero" transform="matrix(1 0 0 1 55.3846 4.09091)" fill="rgb(0, 0, 0)"/>
+        <path d="M0.553608 -0.832777L6.70745 3.25813L5.60023 4.92369L-0.553608 0.832777L0.553608 -0.832777Z" fill-rule="nonzero" transform="matrix(1 0 0 1 55.3846 4.09091)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 0L0 2.72727L6.15385 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 61.5385 5.45455)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.405174 1.81303L5.74867 -0.914239L6.55902 0.914239L0.405174 3.64151L-0.405174 1.81303Z" fill-rule="nonzero" transform="matrix(1 0 0 1 61.5385 5.45455)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 0L0 2.72727L6.15385 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 67.6923 2.72727)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.405174 1.81303L5.74867 -0.914239L6.55902 0.914239L0.405174 3.64151L-0.405174 1.81303Z" fill-rule="nonzero" transform="matrix(1 0 0 1 67.6923 2.72727)" fill="rgb(22, 119, 255)"/>
+        <path d="M6.15385 0L0 2.72727L6.15385 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 73.8462 0)" fill="rgb(0, 0, 0)"/>
+        <path d="M-0.405174 1.81303L5.74867 -0.914239L6.55902 0.914239L0.405174 3.64151L-0.405174 1.81303Z" fill-rule="nonzero" transform="matrix(1 0 0 1 73.8462 0)" fill="rgb(22, 119, 255)"/>
+    </g>
+</svg>

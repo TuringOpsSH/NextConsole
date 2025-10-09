@@ -4,9 +4,9 @@ import { useRoute } from 'vue-router';
 import { domainGet } from '@/api/base';
 import { getSystemNotices, getUser, setSystemNoticesRead } from '@/api/user-center';
 import router from '@/router';
-import { useSystemNoticeStore } from '@/stores/systemNoticeStore';
-import { useUserConfigStore } from '@/stores/userConfigStore';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useSystemNoticeStore } from '@/stores/system-notice-store';
+import { useUserConfigStore } from '@/stores/user-config-store';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ISystemNotice } from '@/types/user-center';
 
 const showButtonPop = ref();
@@ -37,7 +37,7 @@ const menuData = reactive([
     text: '用户管理',
     is_active: false,
     name: 'user_center',
-    rootName: 'user_center'
+    rootName: 'user-center'
   },
   {
     icon: 'app_center_grey.svg',
@@ -45,7 +45,7 @@ const menuData = reactive([
     text: 'AI应用工厂',
     is_active: false,
     name: 'appCenter',
-    rootName: 'appCenter'
+    rootName: 'app-center'
   }
 ]);
 const route = useRoute();
@@ -109,7 +109,6 @@ async function chooseMenuItem(item) {
   activeSlideBarName.value = item.rootName;
   await router.push({ name: item.name });
 }
-
 async function callUserButton(item) {
   if (item.new_window) {
     if (item?.url) {
@@ -129,12 +128,10 @@ async function callUserButton(item) {
 
   showButtonPop.value?.hide();
 }
-
 function logOut() {
   userInfoStore.$reset();
   router.push({ name: 'login' });
 }
-
 async function initSystemNotice() {
   const params = {
     fetch_all: true,
@@ -143,7 +140,6 @@ async function initSystemNotice() {
   const res = await getSystemNotices(params);
   unreadNotice.updateSystemNotice(res.result);
 }
-
 function getNoticeIcon(noticeIconUrl: string) {
   if (!noticeIconUrl) {
     return '';
@@ -178,7 +174,6 @@ async function changeNoticeType(targetType: string = 'unread') {
     allSystemNotice.value = res.result;
   }
 }
-
 async function setNoticeRead(notice: ISystemNotice) {
   const params = {
     notice_id: notice.id
@@ -192,7 +187,6 @@ async function setNoticeRead(notice: ISystemNotice) {
     }
   }
 }
-
 async function setAllNoticeRead() {
   const params = {
     read_all: true
@@ -224,7 +218,10 @@ async function loadMoreNotice() {
     }
   }
 }
-
+function lightMenu() {
+  const activeItem = menuData.find(item => route.path.replace('next-console', '').includes(item.rootName));
+  activeSlideBarName.value = activeItem?.rootName;
+}
 onMounted(async () => {
   const res = await getUser({});
   if (res.error_status) {
@@ -233,8 +230,7 @@ onMounted(async () => {
   }
   userInfoStore.updateUserInfo(res.result);
   initSystemNotice();
-  const activeItem = menuData.find(item => route.path.replace('next-console', '').includes(item.rootName));
-  activeSlideBarName.value = activeItem?.rootName;
+  lightMenu();
   if (window.innerWidth < 768) {
     noticeWidth.value = window.innerWidth - 80 + 'px';
   }
@@ -243,7 +239,7 @@ onMounted(async () => {
 
 <template>
   <el-container id="next-console-menu">
-    <el-header style="padding: 0 !important" height="60px">
+    <el-header>
       <div id="next-console-logo-box">
         <el-image :src="menuLogo" fit="scale-down" style="height: 40px; width: 40px" />
       </div>
@@ -488,9 +484,10 @@ onMounted(async () => {
   background: #fcfcfd;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid #eaecf0;
   padding: 8px;
   gap: 6px;
+  height: 43px;
   cursor: pointer;
 }
 #user-avatar {

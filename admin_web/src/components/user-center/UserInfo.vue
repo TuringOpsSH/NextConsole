@@ -17,8 +17,8 @@ import GeneralConfig from '@/components/user-center/GeneralConfig.vue';
 import SystemConfig from '@/components/user-center/SystemConfig.vue';
 import UserInviteDialog from '@/components/user-center/UserInviteDialog.vue';
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
-import { IPointTransaction, IUsers } from '@/types/user-center';
+import { useUserInfoStore } from '@/stores/user-info-store';
+import { IUsers } from '@/types/user-center';
 
 const props = defineProps({
   // 是否显示用户信息
@@ -106,7 +106,7 @@ const showInviteDialogFlag = ref(false);
 // 个人积分账户
 const showAccountTransaction = ref(false);
 const accountTransactionLoading = ref(false);
-const accountTransactionData = ref<IPointTransaction[]>([]);
+const accountTransactionData = ref<[]>([]);
 const currentPageNum = ref(1);
 const currentPageSize = ref(10);
 const currentTransactionCnt = ref(0);
@@ -576,9 +576,7 @@ async function initWxBind() {
 watch(
   () => props.tab,
   newVal => {
-    if (newVal != currentTab.value) {
-      currentTab.value = newVal;
-    }
+    currentTab.value = newVal;
   },
   { immediate: true }
 );
