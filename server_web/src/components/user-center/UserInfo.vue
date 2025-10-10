@@ -19,7 +19,7 @@ import GeneralConfig from '@/components/user-center/GeneralConfig.vue';
 import SystemConfig from '@/components/user-center/SystemConfig.vue';
 import UserInviteDialog from '@/components/user-center/UserInviteDialog.vue';
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { IPointTransaction, IUsers } from '@/types/user-center';
 
 const props = defineProps({
@@ -672,6 +672,7 @@ onMounted(async () => {
                       <el-avatar
                         v-if="userInfoStore.userInfo?.user_avatar"
                         :src="userInfoStore.userInfo?.user_avatar"
+                        class="assistant-avatar"
                       />
                       <el-avatar v-else style="background: #d1e9ff">
                         <el-text style="font-weight: 600; color: #1570ef">
@@ -1455,6 +1456,12 @@ onMounted(async () => {
   background: #ffffff;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease-in-out;
+}
+
+.assistant-avatar {
+  width: 148px;
+  height: 148px;
+  border-radius: 40px;
 }
 @media (max-width: 768px) {
   .user_info_main {

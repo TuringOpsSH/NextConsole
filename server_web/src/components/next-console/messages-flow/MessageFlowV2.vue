@@ -27,8 +27,8 @@ import WorkFlowArea from '@/components/next-console/WorkFlowArea.vue';
 import SimpleProgress from '@/components/next-console/messages-flow/SimpleProgress.vue';
 import { close_upload_manager as closeUploadManager } from '@/components/resource/resource_upload/resource_upload';
 import router from '@/router';
-import { useUserConfigStore } from '@/stores/userConfigStore';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
+import { useUserInfoStore } from '@/stores/user-info-store';
 
 import {
   msg_item as IMsgItem,
@@ -995,7 +995,7 @@ async function updateAnswer(data) {
               // 找到对应的消息
               msgIdx = i;
               msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].msg_content += msgContent;
-              if (msgReasonContent !== undefined) {
+              if (msgReasonContent !== undefined && msgReasonContent) {
                 msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].reasoning_content +=
                   msgReasonContent;
               }

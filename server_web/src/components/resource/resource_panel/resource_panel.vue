@@ -69,7 +69,7 @@ import {
   upload_file_list
 } from '@/components/resource/resource_upload/resource_upload';
 import Resource_upload_manager from '@/components/resource/resource_upload/resource_upload_manager.vue';
-import {useUserInfoStore} from "@/stores/userInfoStore";
+import {useUserInfoStore} from "@/stores/user-info-store";
 const userInfoStore = useUserInfoStore();
 const dialog_width = ref(window.innerWidth < 500 ? '90%' : '500px');
 const router = useRouter();

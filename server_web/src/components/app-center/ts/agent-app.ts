@@ -51,21 +51,21 @@ export async function getAgentApp(code:string) {
 }
 
 export async function getAgentAppSession(app_code: string, session_code: string) {
-  if (!app_code){
-    return
+  if (!app_code) {
+    return;
   }
   const result = await initAppSession({
     app_code: app_code,
     session_code: session_code
-  })
-  if (!result.error_status){
-    CurrentAgentAppSession.value = result.result
+  });
+  if (!result.error_status) {
+    CurrentAgentAppSession.value = result.result;
     router.replace({
       params: {
         app_code: app_code,
         session_code: CurrentAgentAppSession.value.session_code
       }
-    })
+    });
   }
 }
 

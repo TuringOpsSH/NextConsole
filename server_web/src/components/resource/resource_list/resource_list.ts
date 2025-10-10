@@ -29,7 +29,7 @@ import {check_resource_rag_support} from '@/components/resource/resource_main';
 import {turn_on_share_selector} from '@/components/resource/resource_share_selector/resource_share_selector';
 import {show_share_resources} from '@/components/resource/share_resources/share_resources';
 import {sortResourceList} from '@/utils/common';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 export const resource_list_Ref = ref(null);
 export const resource_view_model = ref('list');
 export const current_resource = reactive<ResourceItem>(

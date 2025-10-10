@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus';
 
 import { cancelSubscribeApi } from '@/api/contacts';
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 
 const userInfoStore = useUserInfoStore();
 const visFlag = true;

@@ -7,7 +7,7 @@ import {
   search_colleague,
   search_department_info
 } from '@/api/contacts';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { Colleague, Department } from '@/types/contacts';
 
 export const current_department = ref<Department>();

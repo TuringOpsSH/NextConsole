@@ -22,7 +22,7 @@ import {
   upload_parent_resource
 } from '@/components/resource/resource_upload/resource_upload';
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ResourceItem } from '@/types/resource-type';
 export const mousePosition = ref({ x: 0, y: 0 });
 export const resource_shortcut_context_menu_flag = ref(false);

@@ -23,7 +23,7 @@ import {
   splitMarkdown,
   tooltipStyle
 } from '@/components/next-console/messages-flow/message_flow';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ILLMInstance } from '@/types/user-center';
 import { msg_item, msg_queue_item, reference_item, running_question_meta } from '@/types/next-console';
 export const modelListRef = ref();
@@ -219,6 +219,9 @@ export async function askAgentQuestion() {
           try {
             jsonData = JSON.parse(jsonDataStr);
           } catch (e) {
+            continue;
+          }
+          if (!jsonData?.choices[0].delta?.content) {
             continue;
           }
           AgentAppMsgFlow.value[new_qa_item_idx].qa_value.answer[msg_parent_id][0].msg_content +=
@@ -517,7 +520,7 @@ export function getSessionLlmName() {
   if (CurrentAgentAppSession.value.session_llm_code) {
     for (let i = 0; i < llm_instance_queue.value.length; i++) {
       if (llm_instance_queue.value[i].llm_code === CurrentAgentAppSession.value.session_llm_code) {
-        current_llm_name = llm_instance_queue.value[i].llm_desc;
+        current_llm_name = llm_instance_queue.value[i].llm_label;
         if (window.innerWidth < 768) {
           current_llm_name = llm_instance_queue.value[i].llm_type;
         }

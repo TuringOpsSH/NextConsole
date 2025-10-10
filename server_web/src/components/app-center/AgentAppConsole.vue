@@ -154,7 +154,7 @@ onMounted(async () => {
                 </div>
                 <div class="std-middle-box" style="justify-content: flex-start">
                   <el-text truncated style="font-size: 14px;font-weight: 500;line-height: 20px;color: #344054">
-                    {{ item.llm_desc }}
+                    {{ item.llm_label }}
                   </el-text>
                 </div>
               </div>

@@ -32,7 +32,7 @@ import {
 import { show_move_dialog_multiple } from '@/components/resource/resource_tree/resource_tree';
 import router from '@/router';
 import { useResourceStore } from '@/stores/resourceStore';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ResourceItem, ResourceTag } from '@/types/resource-type';
 import { sortResourceList } from '@/utils/common';
 import { RESOURCE_FORMATS } from '@/utils/constant';

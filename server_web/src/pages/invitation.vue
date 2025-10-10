@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { acceptInviteFriend, getInviteDetail, updateInviteStatus } from '@/api/user-center';
 import { clientFingerprint, getFingerPrint } from '@/components/global/web_socket';
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { IUsers } from '@/types/user-center';
 const userInfoStore = useUserInfoStore();
 const showFlag = true;

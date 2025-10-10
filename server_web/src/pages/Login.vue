@@ -6,8 +6,8 @@ import { validInviteApi } from '@/api/contacts';
 import { generateTextCode, getWxConfig, loginByCode, loginByPassword } from '@/api/user-center';
 import HomeFooter from '@/components/user-center/HomeFooter.vue';
 import router from '@/router';
-import { useUserConfigStore } from '@/stores/userConfigStore';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
+import { useUserInfoStore } from '@/stores/user-info-store';
 const props = defineProps({
   loginType: {
     type: String,

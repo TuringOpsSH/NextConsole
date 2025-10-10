@@ -7,7 +7,7 @@ export const api = {
   app_detail: envUrl + '/next_console/app_center/app/detail',
   init_app_session: envUrl + '/next_console/app_center/app/init_session',
   init_app_msg: envUrl + '/next_console/app_center/app/init_app_msg',
-  app_search: envUrl + '/next_console/app_center/app_manage/search',
+  app_search: envUrl + '/next_console/app_center/app_manage/search'
 };
 
 export async function appDetail(params: object): Promise<ServerResponse> {

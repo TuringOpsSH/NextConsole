@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 const userInfoStore = useUserInfoStore();
 </script>
 

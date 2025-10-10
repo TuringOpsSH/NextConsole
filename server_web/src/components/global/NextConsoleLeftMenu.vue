@@ -6,8 +6,8 @@ import { getSystemNotices, getUser, setSystemNoticesRead } from '@/api/user-cent
 import { addNewSession } from '@/components/next-console/messages-flow/sessions';
 import router from '@/router';
 import { useSystemNoticeStore } from '@/stores/systemNoticeStore';
-import { useUserConfigStore } from '@/stores/userConfigStore';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ISystemNotice } from '@/types/user-center';
 const route = useRoute();
 const showButtonPop = ref();

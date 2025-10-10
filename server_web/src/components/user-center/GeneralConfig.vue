@@ -4,9 +4,9 @@ import { ElMessage } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { domainGet, latestVersionGet } from '@/api/base';
 import { llmInstanceSearch, userConfigGet, userConfigUpdate } from '@/api/user-center';
-import { useUserConfigStore } from '@/stores/userConfigStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { IUserConfig } from '@/types/user-center';
-import { useUserInfoStore } from '@/stores/userInfoStore';
 const userInfoStore = useUserInfoStore();
 const userConfigStore = useUserConfigStore();
 const localUserConfig = reactive<IUserConfig>({
@@ -176,7 +176,7 @@ onMounted(async () => {
                 target-order="push"
                 :props="{
                   key: 'llm_code',
-                  label: 'llm_desc'
+                  label: 'llm_label'
                 }"
                 :filterable="true"
                 filter-placeholder="请输入关键词进行搜索"
@@ -197,6 +197,11 @@ onMounted(async () => {
                 <template #right-footer>
                   <el-button class="transfer-footer" size="small" @click="upPickModelList">上移</el-button>
                   <el-button class="transfer-footer" size="small" @click="downPickModelList">下移</el-button>
+                </template>
+                <template #default="{ option }">
+                  <el-tooltip :content="option.llm_desc" placement="top">
+                    {{ option.llm_label }}
+                  </el-tooltip>
                 </template>
               </el-transfer>
             </el-form-item>

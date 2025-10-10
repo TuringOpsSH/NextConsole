@@ -9,7 +9,7 @@ import {
   search_friends
 } from '@/api/contacts';
 import type Node from 'element-plus/es/components/tree/src/model/node';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import {
   resource_share_check_access,
   resource_share_get_access_list,

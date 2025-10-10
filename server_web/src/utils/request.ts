@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ElNotification } from 'element-plus';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import router from '../router';
 function logOut() {
   const userInfoStore = useUserInfoStore();

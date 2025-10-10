@@ -38,7 +38,7 @@ import {
 import { ResourceItem } from '@/types/resource-type';
 import SimpleProgress from './SimpleProgress.vue';
 import '@/styles/katex.min.css';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import WelComeArea from './WelComeArea.vue';
 const props = defineProps({
   sessionCode: {

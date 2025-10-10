@@ -13,7 +13,7 @@ import { init_my_resource_tree, refresh_panel_count } from '@/components/resourc
 import { search_resource_by_tags } from '@/components/resource/resource_shortcut/resource_shortcut';
 import { search_all_resource_share_object } from '@/components/resource/share_resources/share_resources';
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ResourceItem, ResourceTag } from '@/types/resource-type';
 
 export const show_meta_flag = ref(false);
