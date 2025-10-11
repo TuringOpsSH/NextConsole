@@ -2166,8 +2166,7 @@ CREATE TABLE "next_console"."llm_instance_info"
  "llm_label" varchar(255) ,
  "extra_body" json ,
  "extra_headers" json ,
- "use_default" boolean ,
-CONSTRAINT "pk_next_console_llm_instance_info" PRIMARY KEY ("id")
+ "use_default" boolean
 )
 WITH (
     FILLFACTOR = 100,
