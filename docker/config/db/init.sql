@@ -2230,8 +2230,7 @@ EXECUTE FUNCTION update_update_time();
  "supplier_status" varchar(10) ,
  "create_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
  "update_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
- "supplier_api_url" text ,
-CONSTRAINT "pk_next_console_llm_supplier_info" PRIMARY KEY ("id")
+ "supplier_api_url" text
 )
 WITH (
     FILLFACTOR = 100,
@@ -2267,8 +2266,7 @@ CREATE TABLE "next_console"."llm_instance_authorize_info"
  "auth_type" varchar(255) NOT NULL ,
  "auth_status" varchar(255) NOT NULL ,
  "create_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
- "update_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
-CONSTRAINT "pk_next_console_llm_instance_authorize_info" PRIMARY KEY ("id")
+ "update_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 )
 WITH (
     FILLFACTOR = 100,
@@ -3655,8 +3653,6 @@ INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruc
 请直接给出回答：',null,1,'text','\n',null,null,'[]',3,'0',30);
 INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruction_name","instruction_desc","instruction_system_prompt_template","instruction_status","instruction_user_prompt_params_json_schema","instruction_result_json_schema","create_time","update_time","instruction_type","instruction_user_prompt_template","instruction_result_template","user_id","instruction_result_extract_format","instruction_result_extract_separator","instruction_result_extract_quote","instruction_system_prompt_params_json_schema","instruction_result_extract_columns","instruction_history_length","instruction_temperature","instruction_max_tokens") VALUES ('21',-12345,'WebPageFetch','网页解析',null,'正常',null,null,'2024-11-14 09:38:39+08','2024-11-14 09:38:39+08','code',null,null,1,'text','\n',null,null,'[]',0,'0',0);
 
-INSERT INTO "next_console"."llm_instance_info" ("id","llm_code","llm_name","user_id","llm_api_secret_key","llm_api_access_key","llm_type","llm_desc","llm_tags","llm_company","llm_status","create_time","update_time","llm_is_proxy","llm_base_url","llm_proxy_url","llm_source","llm_is_public","frequency_penalty","max_tokens","n","presence_penalty","response_format","stop","stream","temperature","top_p","llm_icon","is_std_openai","support_vis","support_file") VALUES ('1','ddea5407-39-43-83e','',1,'','','','','[]','','正常','2025-06-17 15:12:41+08','2025-06-17 15:12:41+08','f','','','admin','t','0',8192,1,'0','{"type": "text"}','[]','t','1','1','/images/logo.svg','t','f','f');
-
 ALTER SEQUENCE "next_console"."role_info_role_id_seq"  RESTART WITH 7;
 ALTER SEQUENCE "next_console"."user_info_user_id_seq"  RESTART WITH 2;
 ALTER SEQUENCE "next_console"."user_role_info_rel_id_seq"  RESTART WITH 2;
@@ -4037,4 +4033,7 @@ INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continen
 -------------------------------
 
 
-
+INSERT INTO "system_config_info" ("id","config_key","config_desc","config_default_value","config_value","create_time","update_time","config_status") VALUES ('4','ops','ops配置','{"brand": {"enable": false, "logo_url": "", "logo_full_url": "", "brand_name": "NextConsole"}}','{"brand": {"enable": false, "logo_url": "", "logo_full_url": "", "brand_name": "NextConsole"}}','2025-09-08 21:49:30.949113+08','2025-09-08 21:49:30.949113+08',1);
+INSERT INTO "system_config_info" ("id","config_key","config_desc","config_default_value","config_value","create_time","update_time","config_status") VALUES ('3','tools','tools配置','{"search_engine": {"endpoint": "", "key": ""}, "sms": {"provider": "\u963f\u91cc\u4e91", "key_id": "", "key_secret": "", "endpoint": "dysmsapi.aliyuncs.com", "sign_name": "", "template_code": ""}, "email": {"smtp_server": "", "smtp_port": 465, "smtp_user": "", "smtp_password": ""}, "wps": {"enabled": false, "app_id": ""}}','{"search_engine": {"endpoint": "", "key": ""}, "sms": {"provider": "\u963f\u91cc\u4e91", "key_id": "", "key_secret": "", "endpoint": "dysmsapi.aliyuncs.com", "sign_name": "", "template_code": ""}, "email": {"smtp_server": "", "smtp_port": 465, "smtp_user": "", "smtp_password": ""}, "wps": {"enabled": false, "app_id": ""}}','2025-09-08 21:49:30.949113+08','2025-09-08 22:49:21.201216+08',1);
+INSERT INTO "system_config_info" ("id","config_key","config_desc","config_default_value","config_value","create_time","update_time","config_status") VALUES ('2','connectors','connectors配置','{"qywx": [{"domain": "", "sToken": "", "sEncodingAESKey": "", "sCorpID": "", "corpsecret": "", "agent_id": ""}], "weixin": [{"domain": "", "wx_app_id": "", "wx_app_secret": ""}]}','{"qywx": [{"domain": "", "sToken": "", "sEncodingAESKey": "", "sCorpID": "", "corpsecret": "", "agent_id": ""}], "weixin": [{"domain": "", "wx_app_id": "", "wx_app_secret": ""}]}','2025-09-08 21:49:30.949113+08','2025-09-08 21:51:53.232963+08',1);
+INSERT INTO "system_config_info" ("id","config_key","config_desc","config_default_value","config_value","create_time","update_time","config_status") VALUES ('1','ai','ai配置','{"xiaoyi": {"llm_code": ""}, "embedding": {"embedding_endpoint": "https://api.siliconflow.cn/v1/embeddings", "embedding_api_key": "", "embedding_model": "BAAI/bge-m3"}, "rerank": {"enable": true, "rerank_endpoint": "https://api.siliconflow.cn/v1/rerank", "rerank_api_key": "", "rerank_model": "BAAI/bge-reranker-v2-m3"}, "stt": {"provider": "\u8baf\u98de", "xf_api": "wss://ws-api.xfyun.cn/v2/iat", "xf_api_id": "", "xf_api_key": "", "xf_api_secret": ""}}','{"xiaoyi": {"llm_code": ""}, "embedding": {"embedding_endpoint": "https://api.siliconflow.cn/v1/embeddings", "embedding_api_key": "", "embedding_model": "BAAI/bge-m3"}, "rerank": {"enable": true, "rerank_endpoint": "https://api.siliconflow.cn/v1/rerank", "rerank_api_key": "", "rerank_model": "BAAI/bge-reranker-v2-m3"}, "stt": {"provider": "\u8baf\u98de", "xf_api": "wss://ws-api.xfyun.cn/v2/iat", "xf_api_id": "", "xf_api_key": "", "xf_api_secret": ""}}','2025-09-08 21:49:30.949113+08','2025-10-08 15:49:47.128026+08',1);

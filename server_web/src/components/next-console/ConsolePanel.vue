@@ -21,8 +21,8 @@ const currentSessionTopicInputRef = ref();
 const sessionButtonsRef = ref(null);
 const defaultApp = {
   app_code: 'next_search',
-  app_name: userConfigStore.systemConfig.ai.xiaoyi.name || '小亦助手',
-  app_icon: userConfigStore.systemConfig.ai.xiaoyi.avatar_url || '/images/logo.svg'
+  app_name: userConfigStore.systemConfig?.ai?.xiaoyi?.name || '小亦助手',
+  app_icon: userConfigStore.systemConfig?.ai?.xiaoyi?.avatar_url || '/images/logo.svg'
 };
 const currentApp = ref({
   app_code: 'next_search',

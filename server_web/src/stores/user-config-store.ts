@@ -25,7 +25,9 @@ export const useUserConfigStore = defineStore(
         language: '中文'
       }
     });
-    const systemConfig = reactive<ISystemConfig>({} as ISystemConfig);
+    const systemConfig = reactive<ISystemConfig>({
+      ai: {}
+    } as ISystemConfig);
     const systemVersion = ref('');
     function updateUserConfig(config: Partial<IUserConfig>) {
       Object.assign(userConfig, config);
