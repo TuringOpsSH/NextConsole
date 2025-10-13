@@ -994,7 +994,12 @@ async function updateAnswer(data) {
             if (msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][i]?.msg_id == jsonData?.msg_id) {
               // 找到对应的消息
               msgIdx = i;
-              msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].msg_content += msgContent;
+              if(!msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].msg_content) {
+                msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].msg_content = '';
+              }
+              if (msgContent !== undefined && msgContent !==null && msgContent) {
+                msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].msg_content += msgContent;
+              }
               if (msgReasonContent !== undefined && msgReasonContent) {
                 msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].reasoning_content +=
                   msgReasonContent;

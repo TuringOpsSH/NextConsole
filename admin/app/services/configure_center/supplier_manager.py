@@ -3,9 +3,7 @@ from app.services.configure_center.response_utils import next_console_response
 from app.models.configure_center.llm_kernel import LLMSupplierInfo
 from sqlalchemy import or_
 from urllib.parse import urlparse
-import platform
 import socket
-import subprocess
 import time
 import requests
 import json
@@ -91,6 +89,7 @@ def web_connection_check(data):
     检查URL的网络连通性
     :param data:
     :return:
+
     """
     model = data.get("model", {})
     step = data.get("step", 0)
@@ -108,15 +107,12 @@ def web_connection_check(data):
     }
     domain = ''
     port = ''
-    # 解析出domain 和 port
+    # 解析出 domain 和 port
     try:
         parsed = urlparse(url)
         domain = parsed.hostname
         port = parsed.port
-        try:
-            check_result["ip"] = socket.gethostbyname(domain)  # 解析域名到IP地址
-        except Exception as e:
-            check_result["ip"] = "域名解析失败"
+
         if port is None:
             if parsed.scheme == 'https':
                 port = 443
@@ -124,60 +120,73 @@ def web_connection_check(data):
                 port = 80
             else:
                 check_result["status"] = "失败"
+
+        # 设置 domain 和 port 到 check_result
+        check_result["domain"] = domain
+        check_result["port"] = port
+
     except Exception as e:
         check_result["status"] = "失败"
+
     if check_result["status"] == "失败":
         check_result["msg"] = "模型URL协议错误，无法解析！"
+        check_result["ip"] = "未知"  # 设置默认值
         return next_console_response(result=check_result)
-    # 根据不同操作系统使用不同的ping参数
-    try:
-        param = '-n' if platform.system().lower() == 'windows' else '-c'
-        command = ['ping', param, '3', domain]
-        result = subprocess.run(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=timeout
-        )
-        if result.returncode != 0:
-            check_result["status"] = "失败"
-    except (subprocess.TimeoutExpired, Exception) as e:
-        check_result["status"] = "失败"
-    if check_result["status"] == "失败":
-        check_result["msg"] = "模型URL网络不可达，请检查网络或防火墙状态！"
-        return next_console_response(result=check_result)
-    # 检查指定域名的端口连通性
+    # 检查指定域名的端口连通性（使用 socket）
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.settimeout(timeout)
             result = sock.connect_ex((domain, port))
             if result != 0:
                 check_result["status"] = "失败"
+
     except Exception as e:
         check_result["status"] = "失败"
+
     if check_result["status"] == "失败":
         check_result["msg"] = f"模型URL端口{port}不可达，请检查网络或URL是否正确！"
+        # 尝试解析 IP 用于信息
+        try:
+            ip = socket.gethostbyname(domain)
+
+        except Exception:
+            ip = "解析失败"
+        check_result["ip"] = ip
+
         return next_console_response(result=check_result)
-    # 使用requests库测试HTTP/HTTPS端口的连通性
+
+    # 使用 requests 库测试 HTTP/HTTPS 端口的连通性
     try:
         start_time = time.time()
-        requests.get(url, timeout=timeout, verify=False,  # 忽略SSL证书验证（可选）
-                     allow_redirects=True)
+        requests.get(url, timeout=timeout, verify=False, allow_redirects=True)  # 忽略 SSL 证书验证
         duration = time.time() - start_time
+
     except requests.RequestException:
         check_result["status"] = "失败"
         check_result["msg"] = f"模型URL端口{port}不可达，请检查网络或URL是否正确！"
+
+        # 尝试解析 IP 用于信息
+        try:
+            ip = socket.gethostbyname(domain)
+        except Exception:
+            ip = "解析失败"
+        check_result["ip"] = ip
         return next_console_response(result=check_result)
+
+    # 成功时解析 IP
+    try:
+        ip = socket.gethostbyname(domain)
+    except Exception as e:
+        ip = "解析失败"
     return next_console_response(result={
         "llm_base_url": url,
         "domain": domain,
-        "ip": socket.gethostbyname(domain),  # 解析域名到IP地址
+        "ip": ip,
         "port": port,
         "status": "成功",
         "duration": f"{duration:.2f}秒",
         "msg": "模型URL网络连通性测试通过！"
     })
-
 
 def llm_dry_run(data):
     """

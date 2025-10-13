@@ -422,6 +422,7 @@ def workflow_chat(params):
             "response_format": response_format,
             "temperature": temperature,
             "max_tokens": max_tokens,
+            "extra_body": {"enable_thinking": False}
         }
         try:
             res = llm_client.chat(chat_params).model_dump_json()

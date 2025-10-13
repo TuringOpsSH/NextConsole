@@ -309,15 +309,6 @@ onMounted(async () => {
                 @change="getSessionLog"
               />
             </div>
-            <div style="width: 180px">
-              <el-input
-                v-model="targetSessionTag"
-                placeholder="搜索会话标签"
-                clearable
-                :prefix-icon="Search"
-                @change="getSessionLog"
-              />
-            </div>
             <div>
               <el-popover trigger="click" placement="bottom" width="300">
                 <template #reference>

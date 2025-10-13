@@ -205,7 +205,6 @@ async function createNewSession() {
 }
 async function askQuestion(src = null) {
   // 判断是否达到并发限制
-  console.log('askQuestion', currentSession.id, userBatchSize.value, src);
   if (userBatchSize.value >= 3) {
     ElNotification.warning({
       title: '系统消息',
@@ -247,7 +246,6 @@ async function askQuestion(src = null) {
   }
   // 判断是否为空
   if (!userInput.value || userInput.value.trim() === '') {
-    console.log(userInput.value, currentSession.session_code);
     ElNotification.warning({
       title: '系统消息',
       message: '请输入有效问题！',
@@ -382,7 +380,6 @@ async function handleUserPaste(event: any) {
       fileList.push(items[i].getAsFile());
     }
   }
-  console.log(imagesList, fileList);
   if (imagesList.length > 0) {
     await switchOnImgSearch();
     for (let j = 0; j < imagesList.length; j++) {
@@ -1032,7 +1029,6 @@ async function handleImageFileChange(uploadFile: UploadFile, uploadFiles: Upload
   if (!firstImage.value) {
     firstImage.value = uploadFile;
   }
-  console.log(uploadFile.uid, uploadFile.raw, firstImage.value.uid);
 }
 async function prepareUploadImage(uploadFile: UploadRawFile) {
   // 如果没有会话，则等待到会话生成

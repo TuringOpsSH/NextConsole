@@ -44,7 +44,7 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: 'user_center',
+        path: 'user-center',
         name: 'user_center',
         meta: {
           requiresAuth: true,
@@ -54,7 +54,7 @@ const routes: RouteRecordRaw[] = [
         strict: true,
         children: [
           {
-            path: 'user_manage',
+            path: 'user-manage',
             name: 'user_manage',
             meta: {
               requiresAuth: true,

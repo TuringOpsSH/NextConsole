@@ -569,6 +569,8 @@ async function beginUpdateBaseInfo() {
   showUpdateLLMForm.value = true;
   const copy = cloneDeep(currentLLM);
   Object.assign(editLLM, copy);
+  editLLM.extra_headers = generateNcSchema(editLLM.extra_headers || {});
+  editLLM.extra_body = generateNcSchema(editLLM.extra_body || {});
   await getAllSupportCompany();
 }
 function beforeAvatarUpload(file: File) {
@@ -1109,108 +1111,110 @@ onMounted(async () => {
             <el-tab-pane :disabled="!currentLLM.access.includes('use')" name="health" label="健康检查">
               <el-scrollbar>
                 <div class="tab-pane-area">
-                  <el-steps
-                    :active="modelTestStep"
-                    finish-status="success"
-                    direction="vertical"
-                    :process-status="modelTestStatus"
-                  >
-                    <el-step
-                      v-loading="modelTestStep == 0 && modelTesting"
-                      title="步骤一：连通性测试"
-                      content="尝试连接模型服务，确保能够成功访问API"
-                      element-loading-text="测试中..."
-                      :icon="Connection"
+                  <div>
+                    <el-steps
+                      :active="modelTestStep"
+                      finish-status="success"
+                      direction="vertical"
+                      :process-status="modelTestStatus"
                     >
-                      <template #description>
-                        <el-descriptions
-                          v-if="modelTestResult?.[0]"
-                          title="检查结果"
-                          border
-                          direction="vertical"
-                          size="large"
-                          label-width="300px"
-                        >
-                          <el-descriptions-item label="模型地址">
-                            <el-tag>{{ currentLLM.llm_base_url }}</el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="模型编号">
-                            <el-tag>{{ currentLLM.llm_name }}</el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="健康状态">
-                            <el-tag :type="modelTestResult[0]?.status == '成功' ? 'success' : 'danger'">
-                              {{ modelTestResult[0]?.status }}
-                            </el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="域名">
-                            <el-tag>{{ modelTestResult[0]?.domain }}</el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="解析ip">
-                            <el-tag>{{ modelTestResult[0]?.ip }}</el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="端口">
-                            <el-tag>{{ modelTestResult[0]?.port }}</el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="耗时">
-                            <el-tag>{{ modelTestResult[0]?.duration }}</el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="结论">
-                            <el-text :type="modelTestResult[0]?.status == '成功' ? 'success' : 'danger'">
-                              {{ modelTestResult[0]?.msg }}
-                            </el-text>
-                          </el-descriptions-item>
-                        </el-descriptions>
-                      </template>
-                    </el-step>
-                    <el-step
-                      v-loading="modelTestStep == 1 && modelTesting"
-                      title="步骤二：功能测试"
-                      content="发送测试请求，验证模型是否能够正确响应"
-                      element-loading-text="测试中..."
-                      :icon="ChatLineSquare"
-                    >
-                      <template #description>
-                        <el-descriptions
-                          v-if="modelTestResult?.[1]"
-                          title="检查结果"
-                          border
-                          direction="vertical"
-                          size="large"
-                          label-width="300px"
-                        >
-                          <el-descriptions-item label="模型供应商">
-                            <el-tag>{{ currentLLM.llm_company }}</el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="测试用例">
-                            <el-text>{{ modelTestResult[1]?.test_case }}</el-text>
-                            <el-image v-if="modelTestResult[1]?.test_image" :src="modelTestResult[1]?.test_image" />
-                          </el-descriptions-item>
-                          <el-descriptions-item label="模型类型">
-                            <el-tag :type="modelTestResult[1]?.status == '成功' ? 'success' : 'danger'">
-                              {{ currentLLM.llm_type }}
-                            </el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="耗时">
-                            <el-tag>{{ modelTestResult[1]?.duration }}</el-tag>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="响应">
-                            <el-text>{{ modelTestResult[1]?.answer }}</el-text>
-                            <div v-if="modelTestResult[1]?.answer_images">
-                              <el-image v-for="img in modelTestResult[1]?.answer_images" :key="img" :src="img" />
-                            </div>
-                          </el-descriptions-item>
-                          <el-descriptions-item label="结论">
-                            <el-text :type="modelTestResult[1]?.status == '成功' ? 'success' : 'danger'">
-                              {{ modelTestResult[1]?.msg }}
-                            </el-text>
-                          </el-descriptions-item>
-                        </el-descriptions>
-                      </template>
-                    </el-step>
-                    <el-step title="配置完成" :icon="SuccessFilled">
-                      <template #description />
-                    </el-step>
-                  </el-steps>
+                      <el-step
+                        v-loading="modelTestStep == 0 && modelTesting"
+                        title="步骤一：连通性测试"
+                        content="尝试连接模型服务，确保能够成功访问API"
+                        element-loading-text="测试中..."
+                        :icon="Connection"
+                      >
+                        <template #description>
+                          <el-descriptions
+                            v-if="modelTestResult?.[0]"
+                            title="检查结果"
+                            border
+                            direction="vertical"
+                            size="large"
+                            label-width="300px"
+                          >
+                            <el-descriptions-item label="模型地址">
+                              <el-tag>{{ currentLLM.llm_base_url }}</el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="模型编号">
+                              <el-tag>{{ currentLLM.llm_name }}</el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="健康状态">
+                              <el-tag :type="modelTestResult[0]?.status == '成功' ? 'success' : 'danger'">
+                                {{ modelTestResult[0]?.status }}
+                              </el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="域名">
+                              <el-tag>{{ modelTestResult[0]?.domain }}</el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="解析ip">
+                              <el-tag>{{ modelTestResult[0]?.ip }}</el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="端口">
+                              <el-tag>{{ modelTestResult[0]?.port }}</el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="耗时">
+                              <el-tag>{{ modelTestResult[0]?.duration }}</el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="结论">
+                              <el-text :type="modelTestResult[0]?.status == '成功' ? 'success' : 'danger'">
+                                {{ modelTestResult[0]?.msg }}
+                              </el-text>
+                            </el-descriptions-item>
+                          </el-descriptions>
+                        </template>
+                      </el-step>
+                      <el-step
+                        v-loading="modelTestStep == 1 && modelTesting"
+                        title="步骤二：功能测试"
+                        content="发送测试请求，验证模型是否能够正确响应"
+                        element-loading-text="测试中..."
+                        :icon="ChatLineSquare"
+                      >
+                        <template #description>
+                          <el-descriptions
+                            v-if="modelTestResult?.[1]"
+                            title="检查结果"
+                            border
+                            direction="vertical"
+                            size="large"
+                            label-width="300px"
+                          >
+                            <el-descriptions-item label="模型供应商">
+                              <el-tag>{{ currentLLM.llm_company }}</el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="测试用例">
+                              <el-text>{{ modelTestResult[1]?.test_case }}</el-text>
+                              <el-image v-if="modelTestResult[1]?.test_image" :src="modelTestResult[1]?.test_image" />
+                            </el-descriptions-item>
+                            <el-descriptions-item label="模型类型">
+                              <el-tag :type="modelTestResult[1]?.status == '成功' ? 'success' : 'danger'">
+                                {{ currentLLM.llm_type }}
+                              </el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="耗时">
+                              <el-tag>{{ modelTestResult[1]?.duration }}</el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="响应">
+                              <el-text>{{ modelTestResult[1]?.answer }}</el-text>
+                              <div v-if="modelTestResult[1]?.answer_images">
+                                <el-image v-for="img in modelTestResult[1]?.answer_images" :key="img" :src="img" />
+                              </div>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="结论">
+                              <el-text :type="modelTestResult[1]?.status == '成功' ? 'success' : 'danger'">
+                                {{ modelTestResult[1]?.msg }}
+                              </el-text>
+                            </el-descriptions-item>
+                          </el-descriptions>
+                        </template>
+                      </el-step>
+                      <el-step title="配置完成" :icon="SuccessFilled">
+                        <template #description />
+                      </el-step>
+                    </el-steps>
+                  </div>
                   <div v-if="currentTab == 'health'">
                     <el-button type="primary" size="large" :disabled="modelTesting" @click="checkModelConfig">
                       健康检查

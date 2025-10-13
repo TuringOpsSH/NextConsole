@@ -1752,7 +1752,6 @@ watch(
         </el-tabs>
       </div>
     </el-main>
-    <el-footer />
   </el-container>
 </template>
 
@@ -1766,7 +1765,7 @@ watch(
   gap: 8px;
   flex-wrap: wrap;
   padding: 8px;
-  height: calc(100vh - 240px);
+  height: calc(100vh - 180px);
 }
 .next-console-chart-number {
   border-radius: 12px;

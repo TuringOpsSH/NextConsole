@@ -442,7 +442,7 @@ onMounted(async () => {
                     v-if="userConfigStore.systemConfig.ops.brand.logo_url"
                     :src="userConfigStore.systemConfig.ops.brand.logo_url"
                     :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_url]"
-                    style="max-width: 400px"
+                    class="icon-preview"
                     show-progress
                   />
                   <el-upload
@@ -466,7 +466,7 @@ onMounted(async () => {
                     :src="userConfigStore.systemConfig.ops.brand.logo_full_url"
                     :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_full_url]"
                     show-progress
-                    style="max-width: 400px"
+                    class="icon-preview"
                   />
                   <el-upload
                     v-model="localSystemConfig.ops.brand.logo_full_url"
@@ -497,7 +497,7 @@ onMounted(async () => {
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 40px);
   gap: 12px;
 }
 .user_info_box {
@@ -679,5 +679,10 @@ onMounted(async () => {
   border-radius: 8px;
   margin-right: 10px;
   cursor: pointer;
+}
+.icon-preview {
+  width: 148px;
+  height: 148px;
+  border-radius: 40px;
 }
 </style>

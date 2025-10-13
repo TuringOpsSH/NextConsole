@@ -44,7 +44,6 @@ def get_domain():
 
 
 @app.route('/next_console/config_center/system_config/get', methods=['POST'])
-@roles_required(["next_console_admin"])
 @jwt_required()
 def get_system_configs():
     """
