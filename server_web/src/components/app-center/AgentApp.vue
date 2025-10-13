@@ -51,7 +51,7 @@ import {
 } from '@/components/next-console/messages-flow/reference_drawer';
 import ReferenceDrawer from '@/components/next-console/messages-flow/reference_drawer.vue';
 import SimpleProgress from '@/components/next-console/messages-flow/simple_progress.vue';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 
 const props = defineProps({
   app_code: {
@@ -366,16 +366,15 @@ onBeforeUnmount(() => {
                       </div>
                     </div>
                   </div>
-                </div>
-                <div
-                  v-if="show_scrollbar_button"
-                  v-show="item.show_button_answer_area == true || item?.short_answer"
-                  class="msg-answer-right-button-area"
-                >
-                  <div class="answer-button-box">
-                    <div class="answer-button" @click="switch_answer_length(item)">
-                      <el-image v-if="item?.short_answer" src="/images/arrow_down_grey.svg" />
-                      <el-image v-else class="answer-button-icon" src="/images/arrow_up_grey.svg" />
+                  <div
+                      v-if="show_scrollbar_button"
+                      class="msg-answer-right-button-area"
+                  >
+                    <div class="answer-button-box">
+                      <div class="answer-button" @click="switch_answer_length(item)">
+                        <el-image v-if="item?.short_answer" src="/images/arrow_down_grey.svg" />
+                        <el-image v-else class="answer-button-icon" src="/images/arrow_up_grey.svg" />
+                      </div>
                     </div>
                   </div>
                 </div>

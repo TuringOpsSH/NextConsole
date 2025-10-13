@@ -7,7 +7,7 @@ from app.app import app
 from app.services.contacts_service.company_service import *
 
 
-@app.route('/next_console/contacts/get_company_info', methods=['POST'])
+@app.route('/next_console_admin/contacts/get_company_info', methods=['POST'])
 @jwt_required()
 def get_company():
     """

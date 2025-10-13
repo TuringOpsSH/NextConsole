@@ -25,6 +25,7 @@ export const api = {
   delete_resource_shortcut: envUrl + '/next_console_admin/resources/shortcut/delete',
   build_resource_object_ref: envUrl + '/next_console_admin/resources/ref/build',
   batch_create_folders: envUrl + '/next_console_admin/resources/object/batch_add_folder',
+  upload_resource: envUrl + '/next_console_admin/resources/upload',
   // 资源快捷标签
   get_resource_recent_count: envUrl + '/next_console_admin/resources/resource_recent_count',
   search_resource_by_recent_upload: envUrl + '/next_console_admin/resources/search_by_recent_upload',

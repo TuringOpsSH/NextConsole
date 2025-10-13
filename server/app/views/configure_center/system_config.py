@@ -26,7 +26,7 @@ def get_version():
             version = f.read()
         version = json.loads(version)
     except Exception as e:
-        return next_console_response(result={"version": "0.2.6"})
+        return next_console_response(result={"version": "0.2.7"})
     return next_console_response(result=version)
 
 
@@ -44,7 +44,6 @@ def get_domain():
 
 
 @app.route('/next_console/config_center/system_config/get', methods=['POST'])
-@roles_required(["next_console_admin"])
 @jwt_required()
 def get_system_configs():
     """

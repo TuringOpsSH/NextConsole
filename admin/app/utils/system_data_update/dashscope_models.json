@@ -1,0 +1,3212 @@
+[
+    {
+        "llm_label": "通义千问3-Max-Preview",
+        "llm_name": "qwen3-max-preview",
+        "llm_desc": "通义千问3系列Max模型Preview版本，相较2.5系列整体通用能力有大幅度提升，中英文通用文本理解能力、复杂指令遵循能力、主观开放任务能力、多语言能力、工具调用能力均显著增强；模型知识幻觉更少。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 262144
+    },
+    {
+        "llm_label": "通义千问-Image",
+        "llm_name": "qwen-image",
+        "llm_desc": "通义千问系列首个图像生成模型，参数规模200亿。具备卓越的文本渲染能力，在复杂文本渲染、各类生成与编辑任务重表现出色，在多个公开基准测试中获得SOTA。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义千问-Image-Edit",
+        "llm_name": "qwen-image-edit",
+        "llm_desc": "通义千问系列首个图像编辑模型，成功将Qwen-Image的文本渲染能力拓展到编辑任务上。支持精准的中英双语文字编辑、视觉外观与语义双重编辑、具备强大的跨基准性能表现。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义千问-Plus",
+        "llm_name": "qwen-plus",
+        "llm_desc": "Qwen3系列Plus模型，实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力显著超过QwQ、通用能力显著超过Qwen2.5-Plus，达到同规模业界SOTA水平。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Plus-Latest",
+        "llm_name": "qwen-plus-latest",
+        "llm_desc": "通义千问系列能力均衡的模型，推理效果和速度介于通义千问-Max和通义千问-Turbo之间，适合中等复杂任务。本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Plus-2025-09-11",
+        "llm_name": "qwen-plus-2025-09-11",
+        "llm_desc": "本版本为2025年9月11日快照，相较7月28日快照在思考模式下指令遵循能力有提升、模型总结回复更加精简；在非思考模式下中文文本理解能力更佳、逻辑推理能力有增强。支持1M上下文长度，按照上下文长度进行阶梯计费。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Plus-2025-07-28",
+        "llm_name": "qwen-plus-2025-07-28",
+        "llm_desc": "Qwen3系列Plus模型，实现思考模式和非思考模式的有效融合，可在对话中切换模式。相较上个版本在中英文能力、工具调用上进行了专用增强。本版本为2025年7月28日快照，首次支持1M上下文长度，按照上下文长度进行阶梯计费。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Plus-2025-07-14",
+        "llm_name": "qwen-plus-2025-07-14",
+        "llm_desc": "Qwen3系列Plus模型，实现思考模式和非思考模式的有效融合，可在对话中切换模式。此版本为2025年7月14日快照模型，相较上个版本在非thinking模式下中英文能力均有大幅提升，工具调用能力专项增强。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Plus-2025-04-28",
+        "llm_name": "qwen-plus-2025-04-28",
+        "llm_desc": "Qwen3系列Plus模型，实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力显著超过QwQ、通用能力显著超过Qwen2.5-Plus，达到同规模业界SOTA水平。此版本为2025年4月28日快照模型。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Plus-2025-01-25",
+        "llm_name": "qwen-plus-2025-01-25",
+        "llm_desc": "通义千问系列能力均衡的模型，推理效果和速度介于通义千问-Max和通义千问-Turbo之间，适合中等复杂任务。相对于通义千问-Plus-2025-0112版本，整体中英文能力都有综合能力升级，中英文code能力、逻辑能力、多语言能力显著提升，回复风格面向人类偏好进行大幅调整，尤其是数学、逻辑推理、知识问答等客观类query，模型回复详实程度和格式清晰度明显改善，创作类专项、json格式遵循专项、角色扮演专项能力均定向提升，预计维护至下一个快照上线前一个月。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Plus-2024-11-25",
+        "llm_name": "qwen-plus-1125",
+        "llm_desc": "通义千问系列能力均衡的模型，推理效果和速度介于通义千问-Max和通义千问-Turbo之间，适合中等复杂任务。模型中英文综合能力显著提升，模型人类偏好显著提升，模型推理能力和复杂指令理解能力显著增强，困难任务上的表现更优，数学、代码能力显著提升。此模型为Plus模型的快照版本，预计维护到新版本发布后一个月（待定）。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Plus-2024-11-27",
+        "llm_name": "qwen-plus-1127",
+        "llm_desc": "通义千问系列能力均衡的模型，推理效果和速度介于通义千问-Max和通义千问-Turbo之间，适合中等复杂任务。模型中英文综合能力显著提升，模型人类偏好显著提升，模型推理能力和复杂指令理解能力显著增强，困难任务上的表现更优，数学、代码能力显著提升。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Plus-2024-12-20",
+        "llm_name": "qwen-plus-1220",
+        "llm_desc": "通义千问系列能力均衡的模型，推理效果和速度介于通义千问-Max和通义千问-Turbo之间，适合中等复杂任务。相对于通义千问-Plus-1125版本，中英文整体能力有提升，中英常识知识类、阅读理解能力提升较为显著，codeswtich现象相比上一版有显著改善，中文指令遵循能力显著提升。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Plus-2025-01-12",
+        "llm_name": "qwen-plus-0112",
+        "llm_desc": "通义千问系列能力均衡的模型，推理效果和速度介于通义千问-Max和通义千问-Turbo之间，适合中等复杂任务。相对于通义千问-Plus-2024-1220版本，中英文整体能力有提升，中英常识知识类、阅读理解能力提升较为显著，codeswtich现象相比上一版有显著改善，中文指令遵循能力显著提升。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Plus-2024-09-19",
+        "llm_name": "qwen-plus-0919",
+        "llm_desc": "通义千问系列能力均衡的模型，推理效果和速度介于通义千问-Max和通义千问-Turbo之间，适合中等复杂任务。模型中英文综合能力显著提升，模型人类偏好显著提升，模型推理能力和复杂指令理解能力显著增强，困难任务上的表现更优，数学、代码能力显著提升。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Plus-2024-07-23",
+        "llm_name": "qwen-plus-0723",
+        "llm_desc": "通义千问超大规模语言模型增强版，支持中文、英文等不同语言输入，该模型为qwen-plus的2024年7月23号的历史快照，预期维护到下个快照版本发布时间（待定）后一个月.",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问-Plus-2024-08-06",
+        "llm_name": "qwen-plus-0806",
+        "llm_desc": "通义千问超大规模语言模型增强版，支持中文、英文等不同语言输入，该模型为qwen-plus的2024年8月6号的历史快照，预期维护到下个快照版本发布时间（待定）后一个月.",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Flash",
+        "llm_name": "qwen-flash",
+        "llm_desc": "Qwen3系列Flash模型，实现思考模式和非思考模式的有效融合，可在对话中切换模式。复杂推理类任务性能优秀，指令遵循、文本理解等能力显著提高。支持1M上下文长度，按照上下文长度进行阶梯计费。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Flash-2025-07-28",
+        "llm_name": "qwen-flash-2025-07-28",
+        "llm_desc": "Qwen3系列Flash模型，实现思考模式和非思考模式的有效融合，可在对话中切换模式。复杂推理类任务性能优秀，指令遵循、文本理解等能力显著提高。支持1M上下文长度，按照上下文长度进行阶梯计费。本版本为2025年7月28日快照。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Max",
+        "llm_name": "qwen-max",
+        "llm_desc": "通义千问2.5系列千亿级别超大规模语言模型，支持中文、英文等不同语言输入。随着模型的升级，qwen-max将滚动更新升级。如果希望使用固定版本，请使用历史快照版本。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-Max-Latest",
+        "llm_name": "qwen-max-latest",
+        "llm_desc": "通义千问系列效果最好的模型，本模型是动态更新版本，模型更新不会提前通知，适合复杂、多步骤的任务，模型中英文综合能力显著提升，模型人类偏好显著提升，模型推理能力和复杂指令理解能力显著增强，困难任务上的表现更优，数学、代码能力显著提升，提升对Table、JSON等结构化数据的理解和生成能力。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Max-2025-01-25",
+        "llm_name": "qwen-max-2025-01-25",
+        "llm_desc": "通义千问系列效果最好的模型，中英文code能力、逻辑能力、多语言能力显著提升，回复风格面向人类偏好进行大幅调整，模型回复详实程度和格式清晰度明显改善，创作类专项、json格式遵循专项、角色扮演专项能力定向提升，此模型为通义千问-Max的2025年1月25日快照版本，预计维护至下一个快照上线前一个月。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Max-2024-09-19",
+        "llm_name": "qwen-max-0919",
+        "llm_desc": "通义千问系列效果最好的模型，适合复杂、多步骤的任务，模型中英文综合能力显著提升，模型人类偏好显著提升，模型推理能力和复杂指令理解能力显著增强，困难任务上的表现更优，数学、代码能力显著提升，提升对Table、JSON等结构化数据的理解和生成能力。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-Max-2024-04-28",
+        "llm_name": "qwen-max-0428",
+        "llm_desc": "通义千问2.5系列千亿级别超大规模语言模型，支持中文、英文等不同语言输入。该模型为qwen-max的2024年4月28号的历史快照，预期维护到下个快照版本发布时间（待定）后一个月。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 8000
+    },
+    {
+        "llm_label": "通义千问-Max-2024-04-03",
+        "llm_name": "qwen-max-0403",
+        "llm_desc": "通义千问千亿级别超大规模语言模型，支持中文、英文等不同语言输入。该模型为qwen-max的2024年4月3号的历史快照稳定版本，预期维护到下个快照版本发布时间（待定）后一个月。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 8000
+    },
+    {
+        "llm_label": "通义万相2.2-图生视频-Plus",
+        "llm_name": "wan2.2-i2v-plus",
+        "llm_desc": "全新升级的通义万相2.2图生视频，视频品质更高。优化视频生成稳定性与成功率，更强大的指令遵循能力，稳定保持图片文字、人像和商品一致性，精准运镜控制。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义千问3-Coder-Plus",
+        "llm_name": "qwen3-coder-plus",
+        "llm_desc": "基于Qwen3的代码生成模型，具有强大的Coding Agent能力，擅长工具调用和环境交互，能够实现自主编程、代码能力卓越的同时兼具通用能力。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问3-Coder-Plus-2025-07-22",
+        "llm_name": "qwen3-coder-plus-2025-07-22",
+        "llm_desc": "基于Qwen3的代码生成模型，具有强大的Coding Agent能力，擅长工具调用和环境交互，能够实现自主编程、代码能力卓越的同时兼具通用能力。本版本为2025年7月22日快照。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问3-Coder-Flash",
+        "llm_name": "qwen3-coder-flash",
+        "llm_desc": "基于Qwen3的代码生成模型，继承Qwen3-Coder-Plus的coding agent能力，支持多轮工具交互，重点优化仓库级别理解能力并增加工具调用稳定性。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问3-Coder-Flash-2025-07-28",
+        "llm_name": "qwen3-coder-flash-2025-07-28",
+        "llm_desc": "基于Qwen3的代码生成模型，继承Qwen3-Coder-Plus的coding agent能力，支持多轮工具交互，重点优化仓库级别理解能力并增加工具调用稳定性。本版本为2025年7月28日快照。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问3-Next-80B-A3B-Instruct",
+        "llm_name": "qwen3-next-80b-a3b-instruct",
+        "llm_desc": "基于Qwen3的新一代非思考模式开源模型，相较上一版本（通义千问3-235B-A22B-Instruct-2507）中文文本理解能力更佳、逻辑推理能力有增强、文本生成类任务表现更好。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-Next-80B-A3B-Thinking",
+        "llm_name": "qwen3-next-80b-a3b-thinking",
+        "llm_desc": "基于Qwen3的新一代思考模式开源模型，相较上一版本（通义千问3-235B-A22B-Thinking-2507指令遵循能力有提升、模型总结回复更加精简。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-30B-A3B-Instruct-2507",
+        "llm_name": "qwen3-30b-a3b-instruct-2507",
+        "llm_desc": "基于Qwen3的非思考模式开源模型，相较上一版本（通义千问3-30B-A3B）中英文和多语言整体通用能力有大幅提升。主观开放类任务专项优化，显著更加符合用户偏好，能够提供更有帮助性的回复。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-30B-A3B-Thinking-2507",
+        "llm_name": "qwen3-30b-a3b-thinking-2507",
+        "llm_desc": "基于Qwen3的思考模式开源模型，相较上一版本（通义千问3-30B-A3B）复杂推理类任务性能优秀，包括逻辑推理、数学、科学、代码类等具有一定难度的任务场景，指令遵循、文本理解、多语言翻译等能力显著提高。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-235B-A22B-Thinking-2507",
+        "llm_name": "qwen3-235b-a22b-thinking-2507",
+        "llm_desc": "基于Qwen3的思考模式开源模型，相较上一版本（通义千问3-235B-A22B）逻辑能力、通用能力、知识增强及创作能力均有大幅提升，适用于高难度强推理场景。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-235B-A22B-Instruct-2507",
+        "llm_name": "qwen3-235b-a22b-instruct-2507",
+        "llm_desc": "基于Qwen3的非思考模式开源模型，相较上一版本（通义千问3-235B-A22B）主观创作能力与模型安全性均有小幅度提升。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-235B-A22B",
+        "llm_name": "qwen3-235b-a22b",
+        "llm_desc": "实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力显著超过QwQ、通用能力显著超过Qwen2.5-72B-Instruct，达到同规模业界SOTA水平。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-30B-A3B",
+        "llm_name": "qwen3-30b-a3b",
+        "llm_desc": "实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力以更小参数规模比肩QwQ-32B、通用能力显著超过Qwen2.5-14B，达到同规模业界SOTA水平。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-32B",
+        "llm_name": "qwen3-32b",
+        "llm_desc": "实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力显著超过QwQ、通用能力显著超过Qwen2.5-32B-Instruct，达到同规模业界SOTA水平。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-14B",
+        "llm_name": "qwen3-14b",
+        "llm_desc": "实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力达到同规模业界SOTA水平、通用能力显著超过Qwen2.5-14B。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-8B",
+        "llm_name": "qwen3-8b",
+        "llm_desc": "实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力达到同规模业界SOTA水平、通用能力显著超过Qwen2.5-7B。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-4B",
+        "llm_name": "qwen3-4b",
+        "llm_desc": "实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力达到同规模业界SOTA水平、模型人类偏好能力显著增强，创意写作、角色扮演、多轮对话、指令遵循能力均有明显提升，用户体验预期明显更佳。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-1.7B",
+        "llm_name": "qwen3-1.7b",
+        "llm_desc": "实现思考模式和非思考模式的有效融合，可在对话中切换模式。通用能力显著超过Qwen2.5小规模系列，模型人类偏好能力显著增强，创意写作、角色扮演、多轮对话、指令遵循能力均有明显提升，用户体验预期明显更佳。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问3-0.6B",
+        "llm_name": "qwen3-0.6b",
+        "llm_desc": "实现思考模式和非思考模式的有效融合，可在对话中切换模式。通用能力显著超过Qwen2.5小规模系列。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问VL-Max",
+        "llm_name": "qwen-vl-max",
+        "llm_desc": "通义千问VL-Max（qwen-vl-max），即通义千问超大规模视觉语言模型。相比增强版，再次提升视觉推理能力和指令遵循能力，提供更高的视觉感知和认知水平。在更多复杂任务上提供最佳的性能。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Max-2025-08-13",
+        "llm_name": "qwen-vl-max-2025-08-13",
+        "llm_desc": "本模型为2025年8月13日的快照版本，在视觉理解能力方面实现全面升级，数学能力、逻辑推理能力、万物识别及人物识别能力均有所提升，同时多语言识别性能进一步增强。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Max-2025-04-08",
+        "llm_name": "qwen-vl-max-2025-04-08",
+        "llm_desc": "数学能力和推理能力有所提升；回复风格面向人类偏好进行调整，模型回复详实程度和格式清晰度明显改善。本模型为2025年4月8日的快照版本。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Max-2025-01-25",
+        "llm_name": "qwen-vl-max-2025-01-25",
+        "llm_desc": "通义千问VL-Max-2025-01-25（qwen-vl-max-2025-01-25），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能，本模型为2025年01月25日的快照版本。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Max-2025-04-02",
+        "llm_name": "qwen-vl-max-2025-04-02",
+        "llm_desc": "通义千问VL-Max-2025-04-02（qwen-vl-max-2025-04-02），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能，本模型为2025年04月02日的快照版本。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Max-Latest",
+        "llm_name": "qwen-vl-max-latest",
+        "llm_desc": "通义千问超大规模视觉语言模型。相比Plus，再次提升视觉推理能力和指令遵循能力，提供更高的视觉感知和认知水平。在更多复杂任务上提供最佳的性能。本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Max-2024-10-30",
+        "llm_name": "qwen-vl-max-1030",
+        "llm_desc": "通义千问VL-Max-1030（qwen-vl-max-1030），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能，本模型为2024年10月30日的快照版本。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问VL-Max-2024-11-19",
+        "llm_name": "qwen-vl-max-1119",
+        "llm_desc": "通义千问VL-Max-1119（qwen-vl-max-1119），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能，本模型为2024年11月19日的快照版本。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问VL-Max-2024-12-30",
+        "llm_name": "qwen-vl-max-1230",
+        "llm_desc": "通义千问VL-Max-1230（qwen-vl-max-1230），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能，本模型为2024年12月30日的快照版本。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问VL-Max-2024-08-09",
+        "llm_name": "qwen-vl-max-0809",
+        "llm_desc": "通义千问VL-Max-0809（qwen-vl-max-0809），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能，本次更新上下文支持32k，增强图像理解和视觉推理能力，可以更好地识别图片中的多语言文字和手写体的文字，并集成视觉agent能力，本模型为2024年8月9日的快照版本，期维护到下个快照版本发布时间（待定）后一个月。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问VL-Plus",
+        "llm_name": "qwen-vl-plus",
+        "llm_desc": "通义千问VL-Plus（qwen-vl-plus），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Plus-Latest",
+        "llm_name": "qwen-vl-plus-latest",
+        "llm_desc": "通义千问大规模视觉语言模型。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能。本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Plus-2025-08-15",
+        "llm_name": "qwen-vl-plus-2025-08-15",
+        "llm_desc": "本模型为qwen-vl-plus的2025年08月15日快照版本。在通用能力上接近Qwen2.5-VL-32B水平；在万物识别和人物识别效果上有提升、在RealWorld场景下的识别准确率提升，幻觉减少。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Plus-2025-07-10",
+        "llm_name": "qwen-vl-plus-2025-07-10",
+        "llm_desc": "本模型为qwen-vl-plus的2025年07月10日快照版本。大幅提升在IPC领域的视觉理解能力，万物识别效果提升、幻觉减少；同时在通用能力上接近Qwen2.5-VL-32B水平。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问VL-Plus-2025-05-07",
+        "llm_name": "qwen-vl-plus-2025-05-07",
+        "llm_desc": "本模型为qwen-vl-plus的2025年05月07日快照版本。基于qwen2.5训练，相较上一版模型在数学能力、推理能力、安防/个人摄像头场景识别方面有所提升。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Plus-2025-01-25",
+        "llm_name": "qwen-vl-plus-2025-01-25",
+        "llm_desc": "通义千问VL-Plus（qwen-vl-plus），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能。本模型为qwen-vl-plus的2025年01月25日快照版本。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问VL-Plus-2025-01-02",
+        "llm_name": "qwen-vl-plus-0102",
+        "llm_desc": "通义千问VL-Plus（qwen-vl-plus），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能。本模型为qwen-vl-plus的2025年01月02日快照版本。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问VL-Plus-2024-08-09",
+        "llm_name": "qwen-vl-plus-0809",
+        "llm_desc": "通义千问VL-Plus（qwen-vl-plus），即通义千问大规模视觉语言模型增强版。大幅提升细节识别能力和文字识别能力，支持超百万像素分辨率和任意长宽比规格的图像。在广泛的视觉任务上提供卓越的性能。本模型为qwen-vl-plus的2024年8月9日快照版本。",
+        "llm_tags": [
+            "IU",
+            "VU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问3-ASR-Flash",
+        "llm_name": "qwen3-asr-flash",
+        "llm_desc": "通义千问3-ASR-Flash是一款基于大语言模型的高精度、高智能、高鲁棒性的多语种语音识别模型。依托强大的基座模型、海量的文本与多模态数据、千万小时音频数据，通义千问3-ASR-Flash实现了高精度的语音识别功能，能够自动判断语种并准确识别11个语种的语音，在复杂的音频环境下能够保证精确转录。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义千问3-ASR-Flash-2025-09-08",
+        "llm_name": "qwen3-asr-flash-2025-09-08",
+        "llm_desc": "通义千问3-ASR-Flash是一款基于大语言模型的高精度、高智能、高鲁棒性的多语种语音识别模型。依托强大的基座模型、海量的文本与多模态数据、千万小时音频数据，通义千问3-ASR-Flash实现了高精度的语音识别功能，能够自动判断语种并准确识别11个语种的语音，在复杂的音频环境下能够保证精确转录。此版本为2025年9月8日的快照版本。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义千问-TTS",
+        "llm_name": "qwen-tts",
+        "llm_desc": "通义千问系列首个语音合成模型，支持中文、英文、中英混合输入。自适应根据输入文本调整输出语气，音色真实自然，支持流式输出。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问-TTS-Latest",
+        "llm_name": "qwen-tts-latest",
+        "llm_desc": "模型是动态更新版本，等同于最新版本快照模型，模型更新时不会提前通知。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问-TTS-2025-05-22",
+        "llm_name": "qwen-tts-2025-05-22",
+        "llm_desc": "通义千问系列首个语音合成模型，支持中文、英文、中英混合输入。自适应根据输入文本调整输出语气，音色真实自然，支持流式输出。本版本是2025年5月22日快照。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问-TTS-2025-04-10",
+        "llm_name": "qwen-tts-2025-04-10",
+        "llm_desc": "通义千问系列首个语音合成模型，支持中文、英文、中英混合输入。自适应根据输入文本调整输出语气，音色真实自然，支持流式输出。本版本是2025年4月10日快照。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问-deep-research",
+        "llm_name": "qwen-deep-research",
+        "llm_desc": "通义千问深入研究是一款面向复杂研究任务的高级智能体系统，具备多轮推理与全局规划能力，能够运用互联网搜索等多种工具，对任务进行精细化拆解，开展推理与分析，最终为用户生成可溯源、逻辑严谨的研究型报告。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-TTS-Realtime",
+        "llm_name": "qwen-tts-realtime",
+        "llm_desc": "Qwen-TTS实时模型是通义实验室“qwen系列”模型中的语音合成模型。具备双向上下文感知能力，可以低延迟高保真完成多音色、方言及长文本的双向流式生成。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问-TTS-Realtime-Latest",
+        "llm_name": "qwen-tts-realtime-latest",
+        "llm_desc": "Qwen-TTS实时模型是通义实验室通义千问模型中语音合成利器，始终与最新快照版能力相同。具备双向上下文感知能力，可以低延迟高保真完成多音色、方言及长文本的双向流式生成。本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问-TTS-Realtime-2025-07-15",
+        "llm_name": "qwen-tts-realtime-2025-07-15",
+        "llm_desc": "Qwen-TTS实时模型是通义实验室“qwen系列”模型中的语音合成利器。具备双向上下文感知能力，可以低延迟高保真完成多音色、方言及长文本的双向流式生成。此版本为2025年7月15日快照模型。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问-Omni-Turbo",
+        "llm_name": "qwen-omni-turbo",
+        "llm_desc": "通义千问全新多模态理解生成大模型，支持文本, 图像，语音，视频输入理解和混合输入理解，具备文本和语音同时流式生成能力，多模态内容理解速度显著提升，提供了4种自然对话音色。",
+        "llm_tags": [
+            "OMNI"
+        ],
+        "llm_type": "全模态",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-Omni-Turbo-Latest",
+        "llm_name": "qwen-omni-turbo-latest",
+        "llm_desc": "通义千问全新多模态理解生成大模型，支持文本, 图像，语音，视频输入理解和混合输入理解，具备文本和语音同时流式生成能力，多模态内容理解速度显著提升，提供了4种自然对话音色，此版本为动态更新版本。",
+        "llm_tags": [
+            "OMNI"
+        ],
+        "llm_type": "全模态",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-Omni-Turbo-2025-03-26",
+        "llm_name": "qwen-omni-turbo-2025-03-26",
+        "llm_desc": "通义千问全新多模态理解生成大模型，支持文本, 图像，语音，视频输入理解和混合输入理解，具备文本和语音同时流式生成能力，多模态内容理解速度显著提升，提供了4种自然对话音色，此版本为2025年3月26日的快照版本，相比1月19日的快照版本在视觉能力上有大幅提升。",
+        "llm_tags": [
+            "OMNI"
+        ],
+        "llm_type": "全模态",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-Omni-Turbo-2025-01-19",
+        "llm_name": "qwen-omni-turbo-2025-01-19",
+        "llm_desc": "通义千问全模态理解生成大模型，支持文本, 图像，语音，视频输入理解和混合输入理解，具备文本和语音同时流式生成能力，多模态内容理解速度显著提升，提供了4种自然对话音色，此版本为2025年1月19日的快照版本，预计维护至下一个快照发布前的一个月左右。",
+        "llm_tags": [
+            "OMNI"
+        ],
+        "llm_type": "全模态",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-Omni-Turbo-Realtime",
+        "llm_name": "qwen-omni-turbo-realtime",
+        "llm_desc": "通义千问全新多模态理解生成大模型实时版，适合实时音频交互场景。支持音频伴随文本、图像、视频混合输入理解，具备语音和文本同时流式生成能力，提供了4种自然对话音色。",
+        "llm_tags": [
+            "OMNI"
+        ],
+        "llm_type": "全模态",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-Omni-Turbo-Realtime-Latest",
+        "llm_name": "qwen-omni-turbo-realtime-latest",
+        "llm_desc": "通义千问全新多模态理解生成大模型实时版，此版本为动态更新版本。",
+        "llm_tags": [
+            "OMNI"
+        ],
+        "llm_type": "全模态",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-Omni-Turbo-Realtime-2025-05-08",
+        "llm_name": "qwen-omni-turbo-realtime-2025-05-08",
+        "llm_desc": "通义千问全新多模态理解生成大模型实时版，适合实时音频交互场景。支持音频伴随文本、图像、视频混合输入理解，具备语音和文本同时流式生成能力，提供了4种自然对话音色。此版本为2025年5月8日的快照版本。",
+        "llm_tags": [
+            "OMNI"
+        ],
+        "llm_type": "全模态",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-MT-Image",
+        "llm_name": "qwen-mt-image",
+        "llm_desc": "专注做图片翻译的模型服务，能将中、英、日等11个语言的图片翻译到指定的语言，精准还原图片排版和内容信息，支持术语定义、敏感词过滤、商品主体检测等自定义功能，提供灵活、准确、高效的图像本地化服务。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义千问-MT-Plus",
+        "llm_name": "qwen-mt-plus",
+        "llm_desc": "基于Qwen3全面升级的旗舰级翻译大模型，支持92个语种互译，模型性能和翻译效果全面升级，并提供更稳定的术语定制、格式还原度、领域提示能力，让译文更精准、自然。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问-MT-Turbo",
+        "llm_name": "qwen-mt-turbo",
+        "llm_desc": "基于Qwen3全面升级的轻量级文本翻译大模型，支持92个语种互译，模型性能和翻译效果全面升级，提供更稳定的术语定制、格式还原度、领域提示能力，让译文更精准、自然。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问-QwQ-Plus",
+        "llm_name": "qwq-plus",
+        "llm_desc": "通义千问QwQ推理模型增强版，基于Qwen2.5模型训练的QwQ推理模型，通过强化学习大幅度提升了模型推理能力。模型数学代码等核心指标（AIME 24/25、livecodebench）以及部分通用指标（IFEval、LiveBench等）达到DeepSeek-R1 满血版水平。",
+        "llm_tags": [
+            "QwQ"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QwQ-Plus-2025-03-05",
+        "llm_name": "qwq-plus-2025-03-05",
+        "llm_desc": "通义千问QwQ推理模型增强版，基于Qwen2.5模型训练的QwQ推理模型，通过强化学习大幅度提升了模型推理能力。模型数学代码等核心指标（AIME 24/25、livecodebench）以及部分通用指标（IFEval、LiveBench等）达到DeepSeek-R1 满血版水平。该模型为QwQ-Plus的2025年03月05号的历史快照，预期维护到下个快照版本发布时间（待定）后一个月。",
+        "llm_tags": [
+            "QwQ"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QwQ-Plus-Latest",
+        "llm_name": "qwq-plus-latest",
+        "llm_desc": "通义千问QwQ推理模型增强版，基于Qwen2.5模型训练的QwQ推理模型，通过强化学习大幅度提升了模型推理能力。模型数学代码等核心指标（AIME 24/25、livecodebench）以及部分通用指标（IFEval、LiveBench等）达到DeepSeek-R1 满血版水平。本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "QwQ"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QVQ-Max",
+        "llm_name": "qvq-max",
+        "llm_desc": "通义千问QVQ视觉推理模型，支持视觉输入及思维链输出，在数学、编程、视觉分析、创作以及通用任务上都表现了更强的能力。",
+        "llm_tags": [
+            "IU",
+            "QwQ"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QVQ-Max-Latest",
+        "llm_name": "qvq-max-latest",
+        "llm_desc": "通义千问QVQ视觉推理模型，支持视觉输入及思维链输出，在数学、编程、视觉分析、创作以及通用任务上都表现了更强的能力。本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "IU",
+            "QwQ"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QVQ-Max-2025-05-15",
+        "llm_name": "qvq-max-2025-05-15",
+        "llm_desc": "通义千问QVQ视觉推理模型，支持视觉输入及思维链输出，在数学、编程、视觉分析、创作以及通用任务上都表现了更强的能力。该模型为QVQ-Max的2025年05月15号的历史快照。",
+        "llm_tags": [
+            "QwQ",
+            "VU",
+            "IU"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QVQ-Max-2025-03-25",
+        "llm_name": "qvq-max-2025-03-25",
+        "llm_desc": "通义千问QVQ视觉推理模型，支持视觉输入及思维链输出，在数学、编程、视觉分析、创作以及通用任务上都表现了更强的能力。该模型为QVQ-Max的2025年03月25号的历史快照，预期维护到下个快照版本发布时间（待定）后一个月。",
+        "llm_tags": [
+            "IU",
+            "QwQ"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QVQ-Plus",
+        "llm_name": "qvq-plus",
+        "llm_desc": "通义千问QVQ视觉推理模型增强版，支持视觉输入及思维链输出，在数学、编程、视觉分析、创作以及通用任务上都表现了更强的能力",
+        "llm_tags": [
+            "QwQ",
+            "VU",
+            "IU"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QVQ-Plus-Latest",
+        "llm_name": "qvq-plus-latest",
+        "llm_desc": "通义千问QVQ视觉推理模型增强版，支持视觉输入及思维链输出，在数学、编程、视觉分析、创作以及通用任务上都表现了更强的能力。此版本为动态更新版本。",
+        "llm_tags": [
+            "QwQ",
+            "VU",
+            "IU"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QVQ-Plus-2025-05-15",
+        "llm_name": "qvq-plus-2025-05-15",
+        "llm_desc": "通义千问QVQ视觉推理模型增强版，支持视觉输入及思维链输出，在数学、编程、视觉分析、创作以及通用任务上都表现了更强的能力。此版本为2025年5月15日快照模型。",
+        "llm_tags": [
+            "QwQ",
+            "VU",
+            "IU"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问3-Coder-480B-A35B-Instruct",
+        "llm_name": "qwen3-coder-480b-a35b-instruct",
+        "llm_desc": "基于Qwen3的代码生成模型，具有强大的Coding Agent能力，代码能力达到开源模型 SOTA。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 262144
+    },
+    {
+        "llm_label": "通义千问3-Coder-30B-A3B-Instruct",
+        "llm_name": "qwen3-coder-30b-a3b-instruct",
+        "llm_desc": "基于Qwen3的代码生成模型，继承Qwen3-Coder-480B-A35B-Instruct的coding agent能力，代码能力达到同尺寸规模模型SOTA。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 262144
+    },
+    {
+        "llm_label": "DeepSeek-V3.1",
+        "llm_name": "deepseek-v3.1",
+        "llm_desc": "DeepSeek-V3.1为混合推理架构模型，同时支持思考模式与非思考模式，具备更高的推理效率和更强的Agent能力。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "DeepSeek-R1",
+        "llm_name": "deepseek-r1",
+        "llm_desc": "DeepSeek-R1 在后训练阶段大规模使用了强化学习技术，在仅有极少标注数据的情况下，极大提升了模型推理能力。在数学、代码、自然语言推理等任务上，性能较高，能力较强。",
+        "llm_tags": [
+            "QwQ"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "DeepSeek-V3",
+        "llm_name": "deepseek-v3",
+        "llm_desc": "DeepSeek-V3 为自研 MoE 模型，671B 参数，激活 37B，在 14.8T token 上进行了预训练，在长文本、代码、数学、百科、中文 能力上表现优秀。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 65536
+    },
+    {
+        "llm_label": "DeepSeek-R1-0528",
+        "llm_name": "deepseek-r1-0528",
+        "llm_desc": "0528为R1模型的小版本升级，相较于旧版 R1，新版在复杂推理任务中的表现有了显著提升。在数学、编程与通用逻辑等多个基准测评中取得了优异成绩。",
+        "llm_tags": [
+            "QwQ"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "llm_name": "deepseek-r1-distill-qwen-1.5b",
+        "llm_desc": "DeepSeek-R1-Distill-Qwen-1.5B是一个基于Qwen2.5-Math-1.5B的蒸馏大型语言模型，使用了 DeepSeek R1 的输出。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "DeepSeek-R1-Distill-Qwen-7B",
+        "llm_name": "deepseek-r1-distill-qwen-7b",
+        "llm_desc": "DeepSeek-R1-Distill-Qwen-7B是一个基于Qwen2.5-Math-7B的蒸馏大型语言模型，使用了 DeepSeek R1 的输出。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "DeepSeek-R1-Distill-Qwen-14B",
+        "llm_name": "deepseek-r1-distill-qwen-14b",
+        "llm_desc": "DeepSeek-R1-Distill-Qwen-14B是一个基于Qwen2.5-14B的蒸馏大型语言模型，使用了 DeepSeek R1 的输出。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "DeepSeek-R1-Distill-Qwen-32B",
+        "llm_name": "deepseek-r1-distill-qwen-32b",
+        "llm_desc": "DeepSeek-R1-Distill-Qwen-32B是一个基于Qwen2.5-32B的蒸馏大型语言模型，使用了 DeepSeek R1 的输出。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "GLM-4.5",
+        "llm_name": "glm-4.5",
+        "llm_desc": "GLM-4.5采用混合专家（MoE）架构，总参数量为3550 亿，激活参数320亿，在复杂推理、代码生成及智能体交互等通用能力上实现了能力融合与技术突破。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "GLM-4.5-Air",
+        "llm_name": "glm-4.5-air",
+        "llm_desc": "GLM-4.5-Air采用混合专家（MoE）架构，总参数量为1060亿，激活参数120亿，相较GLM-4.5更紧凑、轻量，适用于对模型规模和资源消耗有一定限制的场景。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "Moonshot-Kimi-K2-Instruct",
+        "llm_name": "Moonshot-Kimi-K2-Instruct",
+        "llm_desc": "Kimi-K2是月之暗面提供的国内首个开源万亿参数MoE模型，激活参数达 320 亿，具有卓越的编码和工具调用能力。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-VL-32B",
+        "llm_name": "qwen2.5-vl-32b-instruct",
+        "llm_desc": "Qwen2.5VL系列模型，在math和学科问题解答达到了接近Qwen2.5VL-72B的水平，回复风格面向人类偏好进行大幅调整，尤其是数学、逻辑推理、知识问答等客观类query，模型回复详实程度和格式清晰度明显改善。此版本为32B版本。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-VL-72B",
+        "llm_name": "qwen2.5-vl-72b-instruct",
+        "llm_desc": "指令跟随、数学、解题、代码整体提升，万物识别能力提升，支持多样格式直接精准定位视觉元素，支持对长视频文件（最长10分钟）进行理解和秒级别的事件时刻定位，能理解时间先后和快慢，基于解析和定位能力支持操控OS或Mobile的Agent，关键信息抽取能力和Json格式输出能力强，此版本为72B版本，本系列能力最强的版本。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-VL-7B",
+        "llm_name": "qwen2.5-vl-7b-instruct",
+        "llm_desc": "指令跟随、数学、解题、代码整体提升，万物识别能力提升，支持多样格式直接精准定位视觉元素，支持对长视频文件（最长10分钟）进行理解和秒级别的事件时刻定位，能理解时间先后和快慢，基于解析和定位能力支持操控OS或Mobile的Agent，关键信息抽取能力和Json格式输出能力强，此版本为7B版本，计算量与性能相对平衡。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-VL-3B",
+        "llm_name": "qwen2.5-vl-3b-instruct",
+        "llm_desc": "指令跟随、数学、解题、代码整体提升，万物识别能力提升，支持多样格式直接精准定位视觉元素，支持对长视频文件（最长10分钟）进行理解和秒级别的事件时刻定位，能理解时间先后和快慢，基于解析和定位能力支持操控OS或Mobile的Agent，关键信息抽取能力和Json格式输出能力强，此版本为3B版本，适合移动端使用。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-7B-1M",
+        "llm_name": "qwen2.5-7b-instruct-1m",
+        "llm_desc": "Qwen2.5系列7B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 上下文支持1M Token。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问2.5-14B-1M",
+        "llm_name": "qwen2.5-14b-instruct-1m",
+        "llm_desc": "Qwen2.5系列14B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 上下文长度支持1M Token。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问2.5-Omni-7B",
+        "llm_name": "qwen2.5-omni-7b",
+        "llm_desc": "基于Qwen2.5训练的全新多模态理解生成大模型，支持文本, 图像，语音，视频输入理解和混合输入理解，具备文本和语音同时流式生成能力，多模态内容理解速度显著提升，提供了4种自然对话音色。",
+        "llm_tags": [
+            "OMNI"
+        ],
+        "llm_type": "全模态",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问2.5-72B",
+        "llm_name": "qwen2.5-72b-instruct",
+        "llm_desc": "Qwen2.5系列72B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-32B",
+        "llm_name": "qwen2.5-32b-instruct",
+        "llm_desc": "Qwen2.5系列32B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-14B",
+        "llm_name": "qwen2.5-14b-instruct",
+        "llm_desc": "Qwen2.5系列14B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-Math-72B",
+        "llm_name": "qwen2.5-math-72b-instruct",
+        "llm_desc": "Qwen2.5系列数学专家72B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问2.5-Math-7B",
+        "llm_name": "qwen2.5-math-7b-instruct",
+        "llm_desc": "Qwen2.5系列数学专家7B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问2.5-Coder-14B",
+        "llm_name": "qwen2.5-coder-14b-instruct",
+        "llm_desc": "Qwen2.5系列编程专家14B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-Coder-0.5B",
+        "llm_name": "qwen2.5-coder-0.5b-instruct",
+        "llm_desc": "Qwen2.5系列编程专家0.5B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问2.5-Coder-1.5B",
+        "llm_name": "qwen2.5-coder-1.5b-instruct",
+        "llm_desc": "Qwen2.5系列编程专家1.5B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问2.5-Coder-7B",
+        "llm_name": "qwen2.5-coder-7b-instruct",
+        "llm_desc": "Qwen2.5系列编程专家7B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-Coder-3B",
+        "llm_name": "qwen2.5-coder-3b-instruct",
+        "llm_desc": "Qwen2.5系列编程专家3B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问2.5-Coder-32B",
+        "llm_name": "qwen2.5-coder-32b-instruct",
+        "llm_desc": "Qwen2.5系列编程专家32B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2.5-Math-1.5B",
+        "llm_name": "qwen2.5-math-1.5b-instruct",
+        "llm_desc": "Qwen2.5系列数学专家1.5B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问2.5-3B",
+        "llm_name": "qwen2.5-3b-instruct",
+        "llm_desc": "Qwen2.5系列3B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问2.5-7B",
+        "llm_name": "qwen2.5-7b-instruct",
+        "llm_desc": "Qwen2.5系列7B模型，相较于 Qwen2，Qwen2.5 获得了显著更多的知识，并在编程能力和数学能力方面有了大幅提升。此外，新模型在指令执行、生成长文本、理解结构化数据（例如表格）以及生成结构化输出特别是 JSON 方面取得了显著改进。 ",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Turbo",
+        "llm_name": "qwen-turbo",
+        "llm_desc": "Qwen3系列Turbo模型，实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力以更小参数规模比肩QwQ-32B、通用能力显著超过Qwen2.5-Turbo，达到同规模业界SOTA水平。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Turbo-2025-07-15",
+        "llm_name": "qwen-turbo-2025-07-15",
+        "llm_desc": "Qwen3系列Turbo模型，实现思考模式和非思考模式的有效融合，可在对话中切换模式。此版本为2025年7月15日快照模型，相较上个版本在非thinking模式下中英文能力均有大幅提升，工具调用能力专项增强。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Turbo-2025-04-28",
+        "llm_name": "qwen-turbo-2025-04-28",
+        "llm_desc": "Qwen3系列Turbo模型，实现思考模式和非思考模式的有效融合，可在对话中切换模式。推理能力以更小参数规模比肩QwQ-32B、通用能力显著超过Qwen2.5-Turbo，达到同规模业界SOTA水平。此版本为2025年4月28日快照模型。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Turbo-2025-02-11",
+        "llm_name": "qwen-turbo-2025-02-11",
+        "llm_desc": "通义千问系列速度最快、成本很低的模型，适合简单任务。长序列性能明显提升，回复风格面向人类偏好进行大幅调整。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Turbo-2024-09-19",
+        "llm_name": "qwen-turbo-0919",
+        "llm_desc": "通义千问系列速度最快、成本很低的模型，适合简单任务。模型中英文综合能力显著提升，模型人类偏好显著提升，模型推理能力和复杂指令理解能力显著增强，困难任务上的表现更优，数学、代码能力显著提升。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Turbo-Latest",
+        "llm_name": "qwen-turbo-latest",
+        "llm_desc": "通义千问系列速度最快、成本很低的模型，适合简单任务。本模型是动态更新版本，模型更新不会提前通知，模型中英文综合能力显著提升，模型人类偏好显著提升，模型推理能力和复杂指令理解能力显著增强，困难任务上的表现更优，数学、代码能力显著提升。",
+        "llm_tags": [
+            "QwQ",
+            "TG"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Turbo-2024-11-01",
+        "llm_name": "qwen-turbo-1101",
+        "llm_desc": "在qwen-turbo-2024-09-19模型的能力之上，qwen-turbo-2024-11-01模型主要的提升点在扩展上下文长度，模型支持的最大上下文长度从128k扩展到1M，该长度约为100万个英文单词或150万个汉字，相当于10本长篇小说，150小时的演讲稿，3万行代码。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 1000000
+    },
+    {
+        "llm_label": "通义千问-Turbo-2024-06-24",
+        "llm_name": "qwen-turbo-0624",
+        "llm_desc": "通义千问超大规模语言模型，支持中文、英文等不同语言输入，该模型为qwen-turbo的2024年6月24号的历史快照，预期维护到下个快照版本发布时间（待定）后一个月。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 8000
+    },
+    {
+        "llm_label": "通义万相2.2-首尾帧-Flash",
+        "llm_name": "wan2.2-kf2v-flash",
+        "llm_desc": "全新升级的通义万相2.2-首尾帧生视频，生成速度更快。优化视频动态稳定性与成功率，更强大的指令遵循能力，两张图片生成丝滑过度视频。",
+        "llm_tags": [
+            "VU"
+        ],
+        "llm_type": "视频理解",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.2-数字人-S2V",
+        "llm_name": "wan2.2-s2v",
+        "llm_desc": "wan2.2-s2v 是一款视频生成模型，可基于人物图片和人声音频文件，生成高质量的人物说话/唱歌/表演动态视频。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.2-数字人-S2V-Detect",
+        "llm_name": "wan2.2-s2v-detect",
+        "llm_desc": "wan2.2-s2v-detect 是 wan2.2-s2v 的辅助模型，用于确认输入的人物肖像图片是否符合 wan2.2-s2v 模型所需的人物肖像图片规范。wan2.2-s2v 模型基于 wan2.2-s2v-detect 检测通过的图片和人声音频文件进行视频生成。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.2-图生视频-Flash",
+        "llm_name": "wan2.2-i2v-flash",
+        "llm_desc": "全新升级的通义万相2.2图生视频，生成速度更快。优化视频生成稳定性与成功率，更强大的指令遵循能力，稳定保持图片文字、人像和商品一致性，精准运镜控制。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.2-文生视频-Plus",
+        "llm_name": "wan2.2-t2v-plus",
+        "llm_desc": "全新升级的通义万相2.2文生视频，视频品质更高。可稳定生成大幅度复杂运动，支持影视级画面表现与控制，更强大的指令遵循能力，实现物理世界还原。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.2-文生图-Plus",
+        "llm_name": "wan2.2-t2i-plus",
+        "llm_desc": "全新升级的通义万相2.2文生图，更丰富的画面细节。在生成图像创意性、稳定性、写实质感方面全面升级，指令遵循更强，原生支持多种风格。支持最大200万像素生成，支持智能提示词改写等。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.2-文生图-Flash",
+        "llm_name": "wan2.2-t2i-flash",
+        "llm_desc": "全新升级的通义万相2.2文生图，更快的生成速度。在生成图像创意性、稳定性、写实质感方面全面升级，指令遵循更强，原生支持多种风格。支持最大200万像素生成，支持智能提示词改写等。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.1-首尾帧-Plus",
+        "llm_name": "wanx2.1-kf2v-plus",
+        "llm_desc": "通义万相2.1-首尾帧-Plus，两张图片生成丝滑过度视频。支持大幅度复杂运动、物理规律遵循、丰富艺术风格和影视级画面质感，指令遵循能力进一步提升，生成画面细节更丰富。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.1-图生视频-Plus",
+        "llm_name": "wanx2.1-i2v-plus",
+        "llm_desc": "通义万相2.1-图生视频-Plus，让图片变为动态视频。支持大幅度复杂运动、物理规律遵循、丰富艺术风格和影视级画面质感，指令遵循能力进一步提升，视频质量更高。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.1-文生视频-Plus",
+        "llm_name": "wanx2.1-t2v-plus",
+        "llm_desc": "通义万相2.1-文生视频-Plus，一句话生成视频。视频品质更高，支持大幅度复杂运动、现实物理规律还原、丰富艺术风格和影视级画面质感，指令遵循能力进一步提升。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.1-文生图-Plus",
+        "llm_name": "wanx2.1-t2i-plus",
+        "llm_desc": "通义万相2.1-文生图-Plus，更丰富的画面细节，在图像美观度、真实感、艺术性上全面升级，更强的语义理解能力、丰富的风格泛化性、支持最大200万像素生成，支持智能提示词改写等。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.1-VACE-Plus",
+        "llm_name": "wanx2.1-vace-plus",
+        "llm_desc": "通义万相2.1-VACE-Plus，视频编辑统一模型。支持局部编辑、视频重绘、背景扩展、时长延展、图片参考等多种视频编辑与生成任务，支持文本、图像、视频等多模态条件控制。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.1-文生视频-Turbo",
+        "llm_name": "wanx2.1-t2v-turbo",
+        "llm_desc": "通义万相2.1-文生视频-Turbo，一句话生成视频。生成速度更快，支持大幅度复杂运动、现实物理规律还原、丰富的艺术风格和影视级画面质感，指令遵循能力进一步提升。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相2.1-文生图-Turbo",
+        "llm_name": "wanx2.1-t2i-turbo",
+        "llm_desc": "通义万相2.1-文生图-Turbo，更快的生成速度，在图像美观度、真实感、艺术性上全面升级，更强的语义理解能力、丰富的风格泛化性、支持最大200万像素生成，支持智能提示词改写等。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通用文本向量-v4",
+        "llm_name": "text-embedding-v4",
+        "llm_desc": "是通义实验室基于Qwen3训练的多语言文本统一向量模型，相较V3版本在文本检索、聚类、分类性能大幅提升；在MTEB多语言、中英、Code检索等评测任务上效果提升15%~40%；支持64~2048维用户自定义向量维度。",
+        "llm_tags": [
+            "TR"
+        ],
+        "llm_type": "向量模型",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通用文本向量-v3",
+        "llm_name": "text-embedding-v3",
+        "llm_desc": "通用文本向量，是通义实验室基于LLM底座的多语言文本统一向量模型，面向全球多个主流语种，提供高水准的向量服务，帮助开发者将文本数据快速转换为高质量的向量数据。",
+        "llm_tags": [
+            "TR"
+        ],
+        "llm_type": "向量模型",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通用多模态向量",
+        "llm_name": "multimodal-embedding-v1",
+        "llm_desc": "通义实验室基于预训练多模态大模型构建的多模态向量模型。该模型根据用户的输入生成高维连续向量，这些输入可以是文本、图片或视频。多模态向量在可应用于图片搜索、文搜图、视频搜索、图片分类和视频内容审核等下游任务中。",
+        "llm_tags": [
+            "TR"
+        ],
+        "llm_type": "向量模型",
+        "max_tokens": 0
+    },
+    {
+        "llm_label": "通用文本向量-v2",
+        "llm_name": "text-embedding-v2",
+        "llm_desc": "通用文本向量，是通义实验室基于LLM底座的多语言文本统一向量模型，面向全球多个主流语种，提供高水准的向量服务，帮助开发者将文本数据快速转换为高质量的向量数据。",
+        "llm_tags": [
+            "TR"
+        ],
+        "llm_type": "向量模型",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通用文本向量-v1",
+        "llm_name": "text-embedding-v1",
+        "llm_desc": "通用文本向量，是通义实验室基于LLM底座的多语言文本统一向量模型，面向全球多个主流语种，提供高水准的向量服务，帮助开发者将文本数据快速转换为高质量的向量数据。",
+        "llm_tags": [
+            "TR"
+        ],
+        "llm_type": "向量模型",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通用文本向量-async-v2",
+        "llm_name": "text-embedding-async-v2",
+        "llm_desc": "通用文本向量的批处理接口，通过这个接口客户可以以文本方式一次性的提交大批量的向量计算请求，在系统完成所有的计算之后，大模型服务平台会将结果信息存储在结果文件中供客户下载解析。",
+        "llm_tags": [
+            "TR"
+        ],
+        "llm_type": "向量模型",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通用文本向量-async-v1",
+        "llm_name": "text-embedding-async-v1",
+        "llm_desc": "通用文本向量的批处理接口，通过这个接口客户可以以文本方式一次性的提交大批量的向量计算请求，在系统完成所有的计算之后，大模型服务平台会将结果信息存储在结果文件中供客户下载解析。",
+        "llm_tags": [
+            "TR"
+        ],
+        "llm_type": "向量模型",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "语音生成CosyVoice-v3大模型",
+        "llm_name": "cosyvoice-v3",
+        "llm_desc": "合成能力：CosyVoice-v3是通义实验室CosyVoice系列最新版的语音合成大模型，较之前版本在自然度、音质、韵律、情感表现力上有更好的表现。该模型支持文本至语音的实时流式合成。克隆能力：CosyVoice-v3也是通义实验室CosyVoice系列最新版的语音克隆大模型，较之前版本提升了发音准确性、音色相似度，并且增加了更多小语种支持（德、西、法、意、俄）。仅需提供5-20s的参考音频，即可迅速生成高度相似且听感自然的定制声音。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "语音生成CosyVoice-v3-plus大模型",
+        "llm_name": "cosyvoice-v3-plus",
+        "llm_desc": "克隆能力：CosyVoice-v3-plus是通义实验室CosyVoice系列最新版的语音克隆大模型，具有更好的音质和复刻相似度，适用于更专业的场景。仅需提供5-20s的参考音频，即可迅速生成高度相似且听感自然的定制声音。合成能力：CosyVoice-v3-plus是通义实验室CosyVoice系列最新版的语音合成大模型，具有更好的音质和表现力，适用于更专业的场景。该模型支持文本至语音的实时流式合成。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "声音复刻CosyVoice大模型",
+        "llm_name": "cosyvoice-clone-v1",
+        "llm_desc": "声音复刻Cosyvoice大模型，依托先进的大模型技术进行特征提取，从而完成声音的复刻，且无需训练过程。仅需提供时长较短的音频，即可迅速生成高度相似且听感自然的定制声音。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "语音生成cosyvoice-v2大模型",
+        "llm_name": "cosyvoice-v2",
+        "llm_desc": "cosyvoice-V2是通义实验室依托大规模预训练语言模型，在深度融合文本理解和语音生成的新一代生成式语音合成大模型，支持文本至语音的实时流式合成。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "语音合成CosyVoice大模型",
+        "llm_name": "cosyvoice-v1",
+        "llm_desc": "CosyVoice 是通义实验室依托大规模预训练语言模型，深度融合文本理解和语音生成的新一代生成式语音合成大模型，支持文本至语音的实时流式合成。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "AI试衣-Plus版",
+        "llm_name": "aitryon-plus",
+        "llm_desc": "aitryon-plus是一款效果出众的虚拟试衣图片生成模型，可基于服饰平拍图片以及人物正面全身照，输出服饰的人物试衣效果图片。 相较于aitryon模型，aitryon-plus模型在图片清晰度、服饰纹理细节和logo还原效果等方面均有提升，但生成耗时较长，适用于对时效性要求不高的场景。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "AI试衣-基础版",
+        "llm_name": "aitryon",
+        "llm_desc": "aitryon是一款性能出众的虚拟试衣图片生成模型，可基于服饰平拍图片以及人物正面全身照，输出服饰的人物试衣效果图片。aitryon模型可在较短时间内生成试衣图片，适用于对时效性要求较高的场景。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义千问-QVQ-72B-Preview",
+        "llm_name": "qvq-72b-preview",
+        "llm_desc": "通义千问-QVQ-72B-Preview是由 Qwen 团队开发的一个实验性研究模型，专注于提升视觉推理能力。通义千问-QVQ-72B-Preview模型在基准测试中取得了优异的表现，在 MMMU 上达到了70.3%，展示了 QVQ 在多学科理解和推理任务上的强大能力，MathVista 和 MathVision 的提升凸显了模型在数学推理任务上的进步。与 Qwen2-VL-72B 相比，QVQ 验证了思维链有助于模型提升视觉推理能力，尤其是需要深度思考和推理的数学领力。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-QwQ-32B",
+        "llm_name": "qwq-32b",
+        "llm_desc": "基于Qwen2.5-32B模型训练的QwQ推理模型，通过强化学习大幅度提升了模型推理能力。模型数学代码等核心指标（AIME 24/25、livecodebench）以及部分通用指标（IFEval、LiveBench等）达到DeepSeek-R1 满血版水平，各指标均显著超过同样基于 Qwen2.5-32B 的 DeepSeek-R1-Distill-Qwen-32B。",
+        "llm_tags": [
+            "QwQ"
+        ],
+        "llm_type": "推理模型",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-QwQ-32B-Preview",
+        "llm_name": "qwq-32b-preview",
+        "llm_desc": "QwQ模型是由 Qwen 团队开发的实验性研究模型，专注于增强 AI 推理能力。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "深度文本重排序",
+        "llm_name": "gte-rerank-v2",
+        "llm_desc": "gte-rerank-v2是通义实验室研发的多语言文本统一排序模型，面向全球多个主流语种，提供高水平的文本排序服务。通常用于语义检索、RAG等场景，可以简单、有效地提升文本检索的效果。给定查询 (Query) 和一系列候选文本 (documents)，模型会根据与查询的语义相关性从高到低对候选文本进行排序。",
+        "llm_tags": [
+            "RK"
+        ],
+        "llm_type": "排序模型",
+        "max_tokens": 30000
+    },
+    {
+        "llm_label": "通义千问-Audio-Turbo",
+        "llm_name": "qwen-audio-turbo",
+        "llm_desc": "通义千问Audio是阿里云研发的大规模音频语言模型，能够接受多种音频（包括说话人语音、自然声音、音乐、歌声）和文本作为输入，并输出文本。通义千问Audio不仅能对输入的音频进行转录，还具备更深层次的语义理解、情感分析、音频事件检测、语音聊天等能力。",
+        "llm_tags": [
+            "AU"
+        ],
+        "llm_type": "音频理解",
+        "max_tokens": 8000
+    },
+    {
+        "llm_label": "通义千问-Audio-Turbo-Latest",
+        "llm_name": "qwen-audio-turbo-latest",
+        "llm_desc": "通义千问Audio是阿里云研发的大规模音频语言模型，能够接受多种音频（包括说话人语音、自然声音、音乐、歌声）和文本作为输入，并输出文本。通义千问Audio不仅能对输入的音频进行转录，还具备更深层次的语义理解、情感分析、音频事件检测、语音聊天等能力。本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "AU"
+        ],
+        "llm_type": "音频理解",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问-Audio-Turbo-2024-12-04",
+        "llm_name": "qwen-audio-turbo-1204",
+        "llm_desc": "通义千问Audio是阿里云研发的大规模音频语言模型，能够接受多种音频（包括说话人语音、自然声音、音乐、歌声）和文本作为输入，并输出文本。通义千问Audio不仅能对输入的音频进行转录，还具备更深层次的语义理解、情感分析、音频事件检测、语音聊天等能力。本模型为2024年12月04日快照版本。",
+        "llm_tags": [
+            "AU"
+        ],
+        "llm_type": "音频理解",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问-Audio-Turbo-2024-08-07",
+        "llm_name": "qwen-audio-turbo-0807",
+        "llm_desc": "通义千问Audio是阿里云研发的大规模音频语言模型，能够接受多种音频（包括说话人语音、自然声音、音乐、歌声）和文本作为输入，并输出文本。通义千问Audio不仅能对输入的音频进行转录，还具备更深层次的语义理解、情感分析、音频事件检测、语音聊天等能力。本模型为2024年12月04日快照版本。",
+        "llm_tags": [
+            "AU"
+        ],
+        "llm_type": "音频理解",
+        "max_tokens": 8000
+    },
+    {
+        "llm_label": "通义千问ASR",
+        "llm_name": "qwen-audio-asr",
+        "llm_desc": "基于Qwen-Audio的端到端语音识别大模型，支持3分钟以内的音频识别，目前主要支持中英文识别。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问ASR-Latest",
+        "llm_name": "qwen-audio-asr-latest",
+        "llm_desc": "基于Qwen-Audio的端到端语音识别大模型，支持3分钟以内的音频识别，目前主要支持中英文识别。本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问ASR-2024-12-04",
+        "llm_name": "qwen-audio-asr-1204",
+        "llm_desc": "基于Qwen-Audio的端到端语音识别大模型，支持3分钟以内的音频识别，目前主要支持中英文识别。本模型为2024年12月04日快照版本。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "通义千问VL-OCR",
+        "llm_name": "qwen-vl-ocr",
+        "llm_desc": "通义千问VL-OCR（qwen-vl-ocr），即基于Qwen-VL训练的OCR识别大模型。通过统一模型的方式聚合多种图文识别、解析、处理类任务，提供强大的图文识别能力。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 34096
+    },
+    {
+        "llm_label": "通义千问VL-OCR-Latest",
+        "llm_name": "qwen-vl-ocr-latest",
+        "llm_desc": "通义千问VL-OCR（qwen-vl-ocr），即基于Qwen-VL训练的OCR识别大模型。通过统一模型的方式聚合多种图文识别、解析、处理类任务，提供强大的图文识别能力。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 34096
+    },
+    {
+        "llm_label": "通义千问VL-OCR-2025-08-28",
+        "llm_name": "qwen-vl-ocr-2025-08-28",
+        "llm_desc": "本模型为2025年8月28日的快照版本，在文字定位能力上实现全面升级，通用文字识别及卡证票据信息抽取能力均有提升。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 34096
+    },
+    {
+        "llm_label": "通义千问VL-OCR-2025-04-13",
+        "llm_name": "qwen-vl-ocr-2025-04-13",
+        "llm_desc": "通义千问VL-OCR（qwen-vl-ocr-2025-04-13），即基于Qwen-VL训练的OCR识别大模型。通过统一模型的方式聚合多种图文识别、解析、处理类任务，提供强大的图文识别能力。模型内置六种识别任务分别是：通用识别、文档解析、表格解析、信息抽取、多语言识别、公式识别。本模型为2025年04月13日的快照版本。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 34096
+    },
+    {
+        "llm_label": "通义千问VL-OCR-2024-10-28",
+        "llm_name": "qwen-vl-ocr-1028",
+        "llm_desc": "通义千问VL-OCR（qwen-vl-ocr），即基于Qwen-VL训练的OCR识别大模型。通过统一模型的方式聚合多种图文识别、解析、处理类任务，提供强大的图文识别能力。本模型为2024年10月28日的快照版本。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 34096
+    },
+    {
+        "llm_label": "通义千问2-VL-72B",
+        "llm_name": "qwen2-vl-72b-instruct",
+        "llm_desc": "通义千问2-VL-72B，扩展上下文至32k，增强图像理解能力，能更好地识别图片中的多语种和手写体。在广泛的视觉任务中提供卓越性能。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问2-VL-7B",
+        "llm_name": "qwen2-vl-7b-instruct",
+        "llm_desc": "通义千问2-VL-7B，扩展上下文至32k，增强图像理解能力，能更好地识别图片中的多语种和手写体。在广泛的视觉任务中提供卓越性能。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问2-VL-2B",
+        "llm_name": "qwen2-vl-2b-instruct",
+        "llm_desc": "通义千问2-VL-2B，扩展上下文至32k，增强图像理解能力，能更好地识别图片中的多语种和手写体。在广泛的视觉任务中提供卓越性能。",
+        "llm_tags": [
+            "IU"
+        ],
+        "llm_type": "图片理解",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问2-72B",
+        "llm_name": "qwen2-72b-instruct",
+        "llm_desc": "通义千问2对外开源的72B规模的模型。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2-57B",
+        "llm_name": "qwen2-57b-a14b-instruct",
+        "llm_desc": "通义千问2对外开源的57B规模14B激活参数的MOE模型。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 65536
+    },
+    {
+        "llm_label": "通义千问2-7B",
+        "llm_name": "qwen2-7b-instruct",
+        "llm_desc": "通义千问2对外开源的7B规模的模型。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问2-1.5B",
+        "llm_name": "qwen2-1.5b-instruct",
+        "llm_desc": "通义千问2对外开源的1.5B规模的模型。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问2-0.5B",
+        "llm_name": "qwen2-0.5b-instruct",
+        "llm_desc": "通义千问2对外开源的0.5B规模的模型。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "通义千问-Math-Plus",
+        "llm_name": "qwen-math-plus",
+        "llm_desc": "通义千问数学模型具有强大的数学解题能力,擅长处理中英文数学题，包括方程、计算、证明等方向。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问-Math-Plus-2024-09-19",
+        "llm_name": "qwen-math-plus-0919",
+        "llm_desc": "通义千问系列数学模型是专门用于数学解题的语言模型，推理效果好，模型性能优秀本模型为2024年9月19日快照版本，预计维护到下个版本发布后一个月（待定）。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问-Math-Plus-Latest",
+        "llm_name": "qwen-math-plus-latest",
+        "llm_desc": "通义千问系列数学模型是专门用于数学解题的语言模型，推理效果好，模型性能优秀，本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问-Math-Plus-2024-08-16",
+        "llm_name": "qwen-math-plus-0816",
+        "llm_desc": "通义千问数学模型具有强大的数学解题能力,擅长处理中英文数学题，包括方程、计算、证明等方向。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问-Math-Turbo",
+        "llm_name": "qwen-math-turbo",
+        "llm_desc": "通义千问系列数学模型是专门用于数学解题的语言模型，推理速度快，成本低。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问-Math-Turbo-2024-09-19",
+        "llm_name": "qwen-math-turbo-0919",
+        "llm_desc": "通义千问系列数学模型是专门用于数学解题的语言模型，推理速度快，成本低，本模型为2024年9月19日快照版本，预计维护到下个版本发布后一个月（待定）。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问-Math-Turbo-Latest",
+        "llm_name": "qwen-math-turbo-latest",
+        "llm_desc": "通义千问系列数学模型是专门用于数学解题的语言模型，推理速度快，成本低，本模型是动态更新版本，模型更新不会提前通知。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 4096
+    },
+    {
+        "llm_label": "通义千问-Coder-Turbo",
+        "llm_name": "qwen-coder-turbo",
+        "llm_desc": "通义千问系列代码及编程模型是专门用于编程和代码生成的语言模型，推理速度快，成本低。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Coder-Turbo-2024-09-19",
+        "llm_name": "qwen-coder-turbo-0919",
+        "llm_desc": "通义千问系列代码及编程模型是专门用于编程和代码生成的语言模型，推理速度快，成本低，本模型为2024年9月19日快照版本，预计维护到下个版本发布后一个月（待定）。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Coder-Turbo-Latest",
+        "llm_name": "qwen-coder-turbo-latest",
+        "llm_desc": "通义千问系列代码及编程模型是专门用于编程和代码生成的语言模型，推理速度快，成本低，本模型是动态更新版本，模型更新不会提前通知，预计维护到下个版本发布后一个月（待定）。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义万相2.1-图生视频-Turbo",
+        "llm_name": "wanx2.1-i2v-turbo",
+        "llm_desc": "通义万相2.1-图生视频-Turbo，让图片变为动态视频。支持大幅度复杂运动、物理规律遵循、丰富艺术风格和影视级画面质感，指令遵循能力进一步提升，生成速度更快。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "AI试衣OutfitAnyone-图片分割",
+        "llm_name": "aitryon-parsing-v1",
+        "llm_desc": "图片分割模型是AI试衣OutfitAnyone的辅助模型，可对模特图、服饰图进行分割，用于试衣图片的前后处理。",
+        "llm_tags": [
+            "IP"
+        ],
+        "llm_type": "图片处理",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "意图分类模型",
+        "llm_name": "tongyi-intent-detect-v3",
+        "llm_desc": "意图识别和槽位填充是对话系统中的基础任务。本模型实现了一个基于 API的意图（intent）和槽位参数（slots）联合预测。在一次模型输出中，同时完成多个指令API的返回和槽位参数的填充。返回的结果为标准json格式。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "Qwen-Long",
+        "llm_name": "qwen-long",
+        "llm_desc": "Qwen-Long是在通义千问针对超长上下文处理场景的大语言模型，支持中文、英文等不同语言输入，支持最长1000万tokens(约1500万字或1.5万页文档)的超长上下文对话。配合同步上线的文档服务，可支持文本文件（ TXT、DOCX、PDF、XLSX、EPUB、MOBI、MD、CSV）和图片文件（BMP、PNG、JPG/JPEG、GIF 以及PDF扫描件）的解析和对话。说明：通过HTTP直接提交请求，支持1M tokens长度，超过此长度建议通过文件方式提交。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 10000000
+    },
+    {
+        "llm_label": "Qwen-Long-2025-01-25",
+        "llm_name": "qwen-long-2025-01-25",
+        "llm_desc": "通义千问系列上下文窗口最长，能力均衡且成本较低的模型，适合长文本分析、信息抽取、总结摘要和分类打标等任务。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 10000000
+    },
+    {
+        "llm_label": "Qwen-Long-Latest",
+        "llm_name": "qwen-long-latest",
+        "llm_desc": "通义千问系列上下文窗口最长，能力均衡且成本较低的模型，适合长文本分析、信息抽取、总结摘要和分类打标等任务。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 10000000
+    },
+    {
+        "llm_label": "通义千问1.5-开源版-110B",
+        "llm_name": "qwen1.5-110b-chat",
+        "llm_desc": "通义千问1.5对外开源的110B规模参数量是经过人类指令对齐的chat模型",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问1.5-开源版-7B",
+        "llm_name": "qwen1.5-7b-chat",
+        "llm_desc": "通义千问1.5对外开源的7B规模参数量是经过人类指令对齐的chat模型",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 8000
+    },
+    {
+        "llm_label": "通义千问1.5-开源版-72B",
+        "llm_name": "qwen1.5-72b-chat",
+        "llm_desc": "通义千问1.5对外开源的72B规模参数量的经过人类指令对齐的chat模型",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问1.5-开源版-32B",
+        "llm_name": "qwen1.5-32b-chat",
+        "llm_desc": "通义千问1.5对外开源的32B规模参数量的经过人类指令对齐的chat模型",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问1.5-开源版-14B",
+        "llm_name": "qwen1.5-14b-chat",
+        "llm_desc": "通义千问1.5对外开源的14B规模参数量的经过人类指令对齐的chat模型",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 8000
+    },
+    {
+        "llm_label": "通义千问1.5-开源版-1.8B",
+        "llm_name": "qwen1.5-1.8b-chat",
+        "llm_desc": "通义千问1.5对外开源的1.8B规模参数量是经过人类指令对齐的chat模型",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问1.5-开源版-0.5B",
+        "llm_name": "qwen1.5-0.5b-chat",
+        "llm_desc": "通义千问1.5对外开源的0.5B规模参数量是经过人类指令对齐的chat模型",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32000
+    },
+    {
+        "llm_label": "通义千问-doc-turbo",
+        "llm_name": "qwen-doc-turbo",
+        "llm_desc": "快速对文档进行精准信息抽取，打标分类，内容审核及摘要总结。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 262144
+    },
+    {
+        "llm_label": "表情包Emoji",
+        "llm_name": "emoji-v1",
+        "llm_desc": "表情包emoji是一款人脸动效视频生成模型，可基于人脸图片和预设的人脸动态模板，生成人脸动效视频。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相-文本生成图像",
+        "llm_name": "wanx-v1",
+        "llm_desc": "通义万相-文本生成图像大模型，支持中英文双语输入，重点风格包括但不限于水彩、油画、中国画、素描、扁平插画、二次元、3D卡通",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相-文本生成图像-2024-05-21",
+        "llm_name": "wanx-v1-0521",
+        "llm_desc": "通义万相-文本生成图像大模型，支持中英文双语输入，重点风格包括但不限于水彩、油画、中国画、素描、扁平插画、二次元、3D卡通，本模型为通义万相的2024年5月21号的历史快照。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "表情包Emoji-detect",
+        "llm_name": "emoji-detect-v1",
+        "llm_desc": "表情包Emoji-Detect是辅助表情包Emoji生成的图像检测模型，用于检测图片中的人物形象是否符合视频生成要求。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Paraformer实时语音识别-8k-v2",
+        "llm_name": "paraformer-realtime-8k-v2",
+        "llm_desc": "推荐使用 Paraformer最新实时语音识别模型，支持多个语种自由切换的视频直播、会议等实时场景的语音识别。可以通过language_hints参数选择语种获得更准确的识别效果。支持8kHz电话客服等场景下的实时语音识别。\n支持的语言包括：中文（含粤语等各种方言）、英文、日语、韩语。\n注：paraformer-realtime-v2暂不支持热词。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Paraformer语音识别-8k-v1",
+        "llm_name": "paraformer-8k-v1",
+        "llm_desc": "Paraformer语音识别提供的文件转写API，能够对常见的音频或音视频文件进行语音识别，并将结果返回给调用者。Paraformer中文语音识别模型，支持8kHz电话语音识别。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "FunASR语音识别",
+        "llm_name": "fun-asr",
+        "llm_desc": "通义实验室推出的新一代端到端语音识别大模型，基于领先的自研语音技术，具备卓越的上下文感知和高精度语音转写能力。基于端到端架构，FunASR 集成了创新的 RAG 技术，支持大规模热词自定义、敏感/语气词自动过滤、ITN 规范化、标点预测等多维功能，显著提升了整体识别准确率和语境贴合度。同时，FunASR 支持中英文自由切换，多地区方言覆盖，具备更强的噪声鲁棒性，适应多样复杂环境。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "FunASR语音识别-2025-08-25",
+        "llm_name": "fun-asr-2025-08-25",
+        "llm_desc": "通义实验室推出的新一代端到端语音识别大模型，基于领先的自研语音技术，具备卓越的上下文感知和高精度语音转写能力。基于端到端架构，FunASR 集成了创新的 RAG 技术，支持大规模热词自定义、敏感/语气词自动过滤、ITN 规范化、标点预测等多维功能，显著提升了整体识别准确率和语境贴合度。同时，FunASR 支持中英文自由切换，多地区方言覆盖，具备更强的噪声鲁棒性，适应多样复杂环境。此版本为2025年8月25日的快照版本。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "一句话识别及翻译V1.0",
+        "llm_name": "gummy-chat-v1",
+        "llm_desc": "多语言语音转写及翻译的多模态大模型。本模型支持60秒以内的实时语音识别，适用于语音搜索、设备指令等场景。提供10个混合语种的高准确率识别服务，同时支持中英日韩互译，以其他6个语种翻译成中文或英文。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "舞动人像AnimateAnyone",
+        "llm_name": "animate-anyone-gen2",
+        "llm_desc": "AnimateAnyone是一款视频生成模型，可基于人物图片和动作模板生成人物全身动作视频。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "大模型声音复刻",
+        "llm_name": "voice-enrollment",
+        "llm_desc": "大模型声音复刻服务依托先进的大模型技术进行特征提取，无需训练过程就可以完成声音的复刻。仅需提供极短的音频，即可迅速生成高度相似且听感自然的定制声音。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "语音识别热词",
+        "llm_name": "speech-biasing",
+        "llm_desc": "热词是指用户可以预先定义的一组特定词汇或短语，这些词汇或短语在识别、翻译过程中会被赋予更高的优先级。针对您的特定业务领域，如果有部分词汇的语音识别、翻译效果不够好，可以将这些关键词或短语添加为热词进行优先识别或翻译，从而提升识别、翻译效果。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义千问-Plus-Character",
+        "llm_name": "qwen-plus-character",
+        "llm_desc": "通义千问系列角色扮演模型，本模型是动态更新版本，模型更新会提前通知，适合拟人化的角色扮演，同时优化了限定人设指令遵循、话题推进、倾听共情等能力，支持个性化角色的深度还原。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 32768
+    },
+    {
+        "llm_label": "舞动人像AnimateAnyone-template",
+        "llm_name": "animate-anyone-template-gen2",
+        "llm_desc": "AnimateAnyone-Template是辅助AnimateAnyone的动作模板生成模型，可基于视频提取人物动作并制作模板。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "舞动人像AnimateAnyone-detect",
+        "llm_name": "animate-anyone-detect-gen2",
+        "llm_desc": "AnimateAnyone-detect是辅助AnimateAnyone的图像检测模型，用于检测图片中的人物形象是否符合视频生成要求。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "声动人像VideoRetalk",
+        "llm_name": "videoretalk",
+        "llm_desc": "VideoRetalk是一个人物视频生成模型，可基于人物视频和人声音频，生成人物讲话口型与输入音频相匹配的新视频。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "悦动人像EMO",
+        "llm_name": "emo-v1",
+        "llm_desc": "EMO是一款视频生成模型，可基于人物图片生成高质量的人物肖像动态视频。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "视频风格重绘",
+        "llm_name": "video-style-transform",
+        "llm_desc": "视频风格重绘可以将输入的视频帧序列进行多种风格化的重绘/生成，使新视频画面在兼顾原始人物和物体相貌的同时，带来不同风格的绘画效果。当前支持预置重绘风格包括日式漫画、美式漫画、清新漫画、3D卡通、国风卡通。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "悦动人像EMO-detect",
+        "llm_name": "emo-detect-v1",
+        "llm_desc": "EMO-Detect是辅助EMO的图像检测模型，用于检测图片中的人物形象是否符合视频生成要求。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "灵动人像LivePortrait",
+        "llm_name": "liveportrait",
+        "llm_desc": "LivePortrait是一款视频生成模型，可基于人物图片生成轻量化的人物肖像动态视频。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "灵动人像LivePortrait-detect",
+        "llm_name": "liveportrait-detect",
+        "llm_desc": "LivePortrait-detect是辅助LivePortrait的图像检测模型，用于检测图片中的人物形象是否符合视频生成要求。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Beth",
+        "llm_name": "sambert-beth-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Brian",
+        "llm_name": "sambert-brian-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Cally",
+        "llm_name": "sambert-cally-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Camila",
+        "llm_name": "sambert-camila-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Cindy",
+        "llm_name": "sambert-cindy-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Clara",
+        "llm_name": "sambert-clara-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Donna",
+        "llm_name": "sambert-donna-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Eva",
+        "llm_name": "sambert-eva-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Hanna",
+        "llm_name": "sambert-hanna-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Indah",
+        "llm_name": "sambert-indah-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Perla",
+        "llm_name": "sambert-perla-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Waan",
+        "llm_name": "sambert-waan-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知厨",
+        "llm_name": "sambert-zhichu-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知达",
+        "llm_name": "sambert-zhida-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知德",
+        "llm_name": "sambert-zhide-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知飞",
+        "llm_name": "sambert-zhifei-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知柜",
+        "llm_name": "sambert-zhigui-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知浩",
+        "llm_name": "sambert-zhihao-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知佳",
+        "llm_name": "sambert-zhijia-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知婧",
+        "llm_name": "sambert-zhijing-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知伦",
+        "llm_name": "sambert-zhilun-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知猫",
+        "llm_name": "sambert-zhimao-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知妙（多情感）",
+        "llm_name": "sambert-zhimiao-emo-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知茗",
+        "llm_name": "sambert-zhiming-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知墨",
+        "llm_name": "sambert-zhimo-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知娜",
+        "llm_name": "sambert-zhina-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知琪",
+        "llm_name": "sambert-zhiqi-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知倩",
+        "llm_name": "sambert-zhiqian-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知茹",
+        "llm_name": "sambert-zhiru-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知树",
+        "llm_name": "sambert-zhishu-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知硕",
+        "llm_name": "sambert-zhishuo-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知莎",
+        "llm_name": "sambert-zhistella-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知婷",
+        "llm_name": "sambert-zhiting-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知薇",
+        "llm_name": "sambert-zhiwei-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知祥",
+        "llm_name": "sambert-zhixiang-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知笑",
+        "llm_name": "sambert-zhixiao-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知雅",
+        "llm_name": "sambert-zhiya-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知晔",
+        "llm_name": "sambert-zhiye-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知颖",
+        "llm_name": "sambert-zhiying-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知媛",
+        "llm_name": "sambert-zhiyuan-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知悦",
+        "llm_name": "sambert-zhiyue-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-Betty",
+        "llm_name": "sambert-betty-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Sambert语音合成-知楠",
+        "llm_name": "sambert-zhinan-v1",
+        "llm_desc": "提供SAMBERT+NSFGAN深度神经网络算法与传统领域知识深度结合的文字转语音服务，兼具读音准确，韵律自然，声音还原度高，表现力强的特点。",
+        "llm_tags": [
+            "TTS"
+        ],
+        "llm_type": "语音合成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "StableDiffusion文生图模型-3.5-large-turbo",
+        "llm_name": "stable-diffusion-3.5-large-turbo",
+        "llm_desc": "stable-diffusion-3.5-large-turbo是在stable-diffusion-3.5-large的基础上采用对抗性扩散蒸馏（ADD）技术的模型，具备更快的速度。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "StableDiffusion文生图模型-3.5-large",
+        "llm_name": "stable-diffusion-3.5-large",
+        "llm_desc": "stable-diffusion-3.5-large是一个具有8亿参数的多模态扩散变压器（MMDiT）文本到图像生成模型，具备卓越的图像质量和提示词匹配度，支持生成100万像素的高分辨率图像，且能够在普通消费级硬件上高效运行。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Paraformer语音识别-v2",
+        "llm_name": "paraformer-v2",
+        "llm_desc": "推荐使用 Paraformer最新语音识别模型，支持多个语种的语音识别。可以通过language_hints参数选择语种获得更准确的识别效果，支持任意采样率。 支持的语言包括：中文（含粤语等各种方言）、英文、日语、韩语。可支持热词。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Paraformer实时语音识别-v2",
+        "llm_name": "paraformer-realtime-v2",
+        "llm_desc": "推荐使用 Paraformer最新实时语音识别模型，支持多个语种自由切换的视频直播、会议等实时场景的语音识别。可以通过language_hints参数选择语种获得更准确的识别效果。支持任意采样率。 支持的语言包括：中文（含粤语等各种方言）、英文、日语、韩语。 可支持热词。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "图像擦除补全",
+        "llm_name": "image-erase-completion",
+        "llm_desc": "图像擦除补全通过指定图像mask中要删除的人体、宠物、物品、文字、水印等图像区域，在保留背景的同时移除图像中的一个或多个人物、物体、文字等元素，此功能不支持输入prompt的消除。擦除补全技术结合了计算机视觉、AIGC inpainting等先进技术，可以在多种场景下应用，从而满足用户对隐私保护、内容创作和图像编辑等方面需求。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "人物实例分割",
+        "llm_name": "image-instance-segmentation",
+        "llm_desc": "人物实例分割运用了检测和分割技术，不仅能够在图像中识别出不同的对象，而且还能准确地画出每一个对象边界的像素级掩码（mask）。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "AI试衣OutfitAnyone-图片精修",
+        "llm_name": "aitryon-refiner",
+        "llm_desc": "图片精修是对AI试衣生成的效果图进行二次生成，输出还原度更高的精修试衣效果图。",
+        "llm_tags": [
+            "IP"
+        ],
+        "llm_type": "图片处理",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "MiniMax abab6.5g-8k",
+        "llm_name": "abab6.5g-chat",
+        "llm_desc": "abab6.5g是MiniMax推出的大语言模型，适用于英文人设对话场景，在英文语言支持、人设保持、指令遵从、生成趣味上会有比较好的效果。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "MiniMax abab6.5t-8k",
+        "llm_name": "abab6.5t-chat",
+        "llm_desc": "abab6.5t是MiniMax推出的大语言模型，适用于中文人设对话场景，在人设保持、指令遵从、意图理解、生成趣味上会有比较好的效果。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 8192
+    },
+    {
+        "llm_label": "MiniMax abab6.5s-245k",
+        "llm_name": "abab6.5s-chat",
+        "llm_desc": "abab6.5s 是MiniMax推出的万亿参数大语言模型，性价比极高，适用于通用场景，特别是在生产力复杂任务场景上表现较好，最大支持245k上下文窗口，支持搜索、function call等功能。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 245760
+    },
+    {
+        "llm_label": "虚拟模特",
+        "llm_name": "wanx-virtualmodel",
+        "llm_desc": "虚拟模特可以对上传的真人或者人台实拍商品展示图进行智能生成，将其中的模特和背景替换为心仪的内容，在保持人物姿态不变的情况下，使用虚拟模特对商品进行更加精美、多样的展示。支持各种与模特产生互动的商品，如手持小商品、服装、鞋靴、配饰等。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "虚拟模特V2",
+        "llm_name": "virtualmodel-v2",
+        "llm_desc": "虚拟模特可以对上传的真人或者人台实拍商品展示图进行智能生成，将其中的模特和背景替换为心仪的内容，在保持人物姿态不变的情况下，使用虚拟模特对商品进行更加精美、多样的展示。支持各种与模特产生互动的商品，如手持小商品、服装、鞋靴、配饰等。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "创意海报生成",
+        "llm_name": "wanx-poster-generation-v1",
+        "llm_desc": "创意海报生成，您的创意海报魔法工厂！它能够根据你的要求自动生成海报的背景和文字排版，支持多种海报风格，从宣传到祝福，让每一张海报都成为你的个性宣言。无需设计基础，轻松制作出彩作品，让创意触手可及。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "鞋靴模特",
+        "llm_name": "shoemodel-v1",
+        "llm_desc": "鞋靴模特支持输入多视角鞋靴系列图片，同时对输入模特模板图的鞋子区域进行鞋靴AI试穿，实现模特鞋靴布局重绘生成，最终生成图片的效果, 布局自然、细节丰富、画面细腻、试穿结果逼真。可用于模特商品图设计、新鞋AI试穿、模特穿戴布局重绘等场景。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相-涂鸦作画",
+        "llm_name": "wanx-sketch-to-image-lite",
+        "llm_desc": "通义万相-涂鸦作画通过手绘任意内容加文字描述，即可生成精美的涂鸦绘画作品，作品中的内容在参考手绘线条的同时，兼顾创意性和趣味性。涂鸦作画支持扁平插画、油画、二次元、3D卡通和水彩5种风格，可用于创意娱乐、辅助设计、儿童教学等场景。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Paraformer实时语音识别-8k-v1",
+        "llm_name": "paraformer-realtime-8k-v1",
+        "llm_desc": "Paraformer中文实时语音识别模型，支持8kHz电话客服等场景下的实时语音识别。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Paraformer实时语音识别-v1",
+        "llm_name": "paraformer-realtime-v1",
+        "llm_desc": "Paraformer中文实时语音识别模型，支持16kHz及以上采样率的视频直播、会议等实时场景下的语音识别。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相-图像局部重绘",
+        "llm_name": "wanx-x-painting",
+        "llm_desc": "通义万相-图像局部重绘是基于自研的Composer组合生成框架的AI绘画创作大模型后置处理链路，能够根据用户输入的原始图片和意涂抹图中局部区域和prompt提示词文字内容，生成符合语义描述的多样化风格的局部重绘图像。通过知识重组与可变维度扩散模型，加速收敛并提升最终生成图片的效果, 布局自然、细节丰富、画面细腻、结果逼真。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "图像画面扩展",
+        "llm_name": "image-out-painting",
+        "llm_desc": "图像画面大模型，对输入图像进行画面自由扩展，支持旋转画面，支持按照扩展系数和扩展像素数两种方式进行扩图。用户可以通过指定宽度、高度画面扩展比例或者左、右、上、下的扩展的像素值来控制画面扩展，可用于创意娱乐、辅助作图、画面设计、影视后期制作等场景。",
+        "llm_tags": [
+            "IP"
+        ],
+        "llm_type": "图片处理",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义法睿-Plus-32K",
+        "llm_name": "farui-plus",
+        "llm_desc": "通义法睿是以通义千问为基座经法律行业数据和知识专门训练的法律行业大模型产品，综合运用了模型精调、强化学习、 RAG检索增强、法律Agent技术，具有回答法律问题、推理法律适用、推荐裁判类案、辅助案情分析、生成法律文书、检索法律知识、审查合同条款等功能",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 12000
+    },
+    {
+        "llm_label": "悦动人像EMO-detect-deployment",
+        "llm_name": "emo-detect",
+        "llm_desc": "EMO-detect是辅助EMO的图像检测模型。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "悦动人像EMO-deployment",
+        "llm_name": "emo",
+        "llm_desc": "EMO是一款视频生成模型，可基于人物图片生成人物肖像动态视频。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "舞动人像AnimateAnyone-detect-deployment",
+        "llm_name": "animate-anyone-detect",
+        "llm_desc": "AnimateAnyone-detect是辅助AnimateAnyone的图像检测模型。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "舞动人像AnimateAnyone-deployment",
+        "llm_name": "animate-anyone",
+        "llm_desc": "AnimateAnyone是一款视频生成模型，可基于人物图片生成人物全身动作视频。",
+        "llm_tags": [
+            "VG"
+        ],
+        "llm_type": "视频生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Paraformer语音识别-v1",
+        "llm_name": "paraformer-v1",
+        "llm_desc": "Paraformer中英文语音识别模型，支持16kHz及以上采样率的音频或视频语音识别。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Paraformer语音识别-mtl-v1",
+        "llm_name": "paraformer-mtl-v1",
+        "llm_desc": "Paraformer多语言语音识别模型，支持16kHz及以上采样率的音频或视频语音识别。\n\n支持的语种/方言包括：中文普通话、中文方言（粤语、吴语、闽南语、东北话、甘肃话、贵州话、河南话、湖北话、湖南话、宁夏话、山西话、陕西话、山东话、四川话、天津话）、英语、日语、韩语、西班牙语、印尼语、法语、德语、意大利语、马来语。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "OpenNLU开放域文本理解模型",
+        "llm_name": "opennlu-v1",
+        "llm_desc": "OpenNLU是开箱即用的文本理解大模型，适用于零样本、少样本条件下进行文本理解任务，如信息抽取、文本分类等。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "StableDiffusion文生图模型-xl",
+        "llm_name": "stable-diffusion-xl",
+        "llm_desc": "stable-diffusion-xl相比于v1.5做了重大的改进，并且与当前为开源的文生图SOTA模型（midjorney）效果相当，具体改进之处包括： 更大的unet backbone，是之前的3倍； 增加了refinement模块用于改善生成图片的质量；更高效的训练技巧等。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "WordArt锦书-文字变形",
+        "llm_name": "wordart-semantic",
+        "llm_desc": "WordArt锦书-文字变形可以对输入的文字边缘轮廓进行创意变形，根据提示词内容进行边缘变化，实现一种字体的更多种创意用法，返回带有文字内容的黑底白色mask图。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "WordArt锦书-文字纹理生成",
+        "llm_name": "wordart-texture",
+        "llm_desc": "WordArt锦书-文字纹理生成可以对输入的文字内容或文字图片进行创意设计，根据提示词内容对文字添加材质和纹理，实现立体凸显或场景融合的效果，生成效果精美、风格多样的艺术字，结合背景可以直接作为文字海报使用。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "FaceChain人物形象训练",
+        "llm_name": "facechain-finetune",
+        "llm_desc": "对上传的图像进行模型训练，从而获得该图像中对应人物的resource，基于该resource可以实现人物的写真生成。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "FaceChain人物写真生成",
+        "llm_name": "facechain-generation",
+        "llm_desc": "基于人物形象训练已经得到的形象，可以继续通过人物生成写真模型完成该形象的写真生成，支持多种预设风格，包括证件照、商务写真等。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "FaceChain人物图像检测",
+        "llm_name": "facechain-facedetect",
+        "llm_desc": "对用户上传的人物图像进行检测，判断其中所包含的人脸是否符合facechain微调所需的标准，检测维度包括人脸数量、大小、角度、光照、清晰度等多维度，支持图像组输入，并返回每张图像对应的检测结果。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "图像背景生成",
+        "llm_name": "wanx-background-generation-v2",
+        "llm_desc": "图像背景生成可以基于输入的前景图像素材拓展生成背景信息，实现自然的光影融合效果，与细腻的写实画面生成。支持文本描述、图像引导等多种方式，同时支持对生成的图像智能添加文字内容。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "人像风格重绘",
+        "llm_name": "wanx-style-repaint-v1",
+        "llm_desc": "人像风格重绘可以将输入的人物图像进行多种风格化的重绘生成，使新生成的图像在兼顾原始人物相貌的同时，带来不同风格的绘画效果。",
+        "llm_tags": [
+            "IP"
+        ],
+        "llm_type": "图片处理",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "实时语音识别及翻译V1.0",
+        "llm_name": "gummy-realtime-v1",
+        "llm_desc": "多语言语音转写及翻译的多模态大模型。本模型提供长时间、高准确率、实时转写中/英/日/韩等10个混合语种的服务。同时支持中英日韩互译，以其他6个语种翻译成中文或英文。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相-通用图像编辑",
+        "llm_name": "wanx2.1-imageedit",
+        "llm_desc": "通义万相-通义图像编辑，支持预设编辑任务与指令式编辑，包含多种局部/全图编辑能力，如图像风格化、线稿生图、局部重绘、参考图生成、图像外扩、图像超分等。",
+        "llm_tags": [
+            "IP"
+        ],
+        "llm_type": "图片处理",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义万相-文生图2.0-Turbo",
+        "llm_name": "wanx2.0-t2i-turbo",
+        "llm_desc": "通义万相-文生图2.0-Turbo，更擅长质感人像和创意设计画作生成，在图像美观度、真实感、艺术性上全面升级，支持最大200万像素生成，支持智能提示词改写等。",
+        "llm_tags": [
+            "IG"
+        ],
+        "llm_type": "图片生成",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "Paraformer语音识别-8k-v2",
+        "llm_name": "paraformer-8k-v2",
+        "llm_desc": "Paraformer最新中文语音识别模型，模型结构升级，具有更好的识别效果,支持8kHz电话语音识别，仅支持中文热词。",
+        "llm_tags": [
+            "ASR"
+        ],
+        "llm_type": "语音识别",
+        "max_tokens": null
+    },
+    {
+        "llm_label": "通义千问-Coder-Plus-Latest",
+        "llm_name": "qwen-coder-plus-latest",
+        "llm_desc": "通义千问系列代码及编程模型是专门用于编程和代码生成的语言模型，性能出色，效果突出，本模型是动态更新版本，模型更新不会提前通知，预计维护到下个版本发布后一个月（待定）。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Coder-Plus-2024-11-06",
+        "llm_name": "qwen-coder-plus-1106",
+        "llm_desc": "通义千问系列代码及编程模型是专门用于编程和代码生成的语言模型，性能出色，效果突出，本模型是2024年11月6日快照版本，模型更新不会提前通知，预计维护到下个版本发布后一个月（待定）。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    },
+    {
+        "llm_label": "通义千问-Coder-Plus",
+        "llm_name": "qwen-coder-plus",
+        "llm_desc": "通义千问系列代码及编程模型是专门用于编程和代码生成的语言模型，性能出色，效果突出。",
+        "llm_tags": [
+            "TG"
+        ],
+        "llm_type": "文本生成",
+        "max_tokens": 131072
+    }
+]

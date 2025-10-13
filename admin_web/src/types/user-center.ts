@@ -1,4 +1,4 @@
-import { Company, Department } from '@/types/contacts';
+import { ICompany, IDepartment } from '@/types/contacts';
 
 export interface IUsers {
   user_id?: string | number;
@@ -212,8 +212,8 @@ export interface INoticeParams {
   target_company: boolean;
   target_department: boolean;
   target_user: boolean;
-  target_companies: Company[];
-  target_departments: Department[];
+  target_companies: ICompany[];
+  target_departments: IDepartment[];
   target_users: IUsers[];
 }
 export interface ITaskInstance {
@@ -227,4 +227,83 @@ export interface ITaskInstance {
   notice_status: string;
   create_time: string;
   update_time: string;
+}
+
+export interface ISystemConfig {
+  ai: {
+    xiaoyi: {
+      llm_code: string;
+      name: string;
+      avatar_url: string;
+    };
+    embedding: {
+      llm_code: string;
+    };
+    rerank: {
+      enable: boolean;
+      llm_code: string;
+    };
+    stt: {
+      provider: string;
+      xf_api: string;
+      xf_api_id: string;
+      xf_api_key: string;
+      xf_api_secret: string;
+    };
+  };
+  connectors: {
+    qywx: [
+      {
+        domain: string;
+        sToken: string;
+        sEncodingAESKey: string;
+        sCorpID: string;
+        corpsecret: string;
+        agent_id: string;
+      }
+    ];
+    weixin: [
+      {
+        domain: string;
+        wx_app_id: string;
+        wx_app_secret: string;
+      }
+    ];
+  };
+  tools: {
+    search_engine: {
+      provider: string;
+      endpoint: string;
+      key: string;
+    };
+    sms: {
+      provider: string;
+      key_id: string;
+      key_secret: string;
+      endpoint: string;
+      sign_name: string;
+      template_code: string;
+    };
+    email: {
+      smtp_server: string;
+      smtp_port: 465;
+      smtp_user: string;
+      smtp_password: string;
+      notice_email: string;
+    };
+    wps: {
+      enabled: boolean;
+      app_id: string;
+      preview: boolean;
+      edit: boolean;
+    };
+  };
+  ops: {
+    brand: {
+      enable: boolean;
+      logo_url: string;
+      logo_full_url: string;
+      brand_name: string;
+    };
+  };
 }

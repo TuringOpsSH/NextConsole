@@ -1,12 +1,9 @@
-import time
-from app.models.next_console.next_console_model import *
-from app.models.app_center.app_info_model import WorkFlowTaskInfo
 from app.services.task_center.workflow import auto_naming_session, create_recommend_question
 from flask import Response, stream_with_context
 from app.models.configure_center.llm_kernel import LLMInstance
 from app.services.assistant_center.assistant_manager import get_assistant
 from app.services.next_console.base import *
-from app.services.next_console.llm import llm_chat
+from app.services.configure_center.llm import llm_chat
 from app.services.next_console.workflow import *
 from app.services.next_console.attachment import extract_attachment_images_to_question
 from app.services.assistant_center.assistant_instruction import run_assistant_instruction

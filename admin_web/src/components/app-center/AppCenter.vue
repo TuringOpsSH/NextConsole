@@ -1,24 +1,47 @@
 <script setup lang="ts">
-import { Document, Menu as IconMenu, Link, Cpu, Medal } from '@element-plus/icons-vue';
+import { Cpu, Link, Menu as IconMenu } from '@element-plus/icons-vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import router from '@/router';
+
 const windowWidth = ref(window.innerWidth);
 const currentIndex = ref('/next-console/appCenter/app_list');
 function updateWidth() {
   windowWidth.value = window.innerWidth;
 }
-
+function changeCurrentIndexValue() {
+  if (router.currentRoute.value.path.startsWith('/next-console/app-center/app-detail/')) {
+    currentIndex.value = '/next-console/app-center/app-list';
+  } else if (router.currentRoute.value.path.includes('/next-console/app-center/publish-detail/')) {
+    currentIndex.value = '/next-console/app-center/publish-list';
+  } else if (
+    router.currentRoute.value.path.includes('/next-console/app-center/llm-create') ||
+    router.currentRoute.value.path.includes('/next-console/app-center/llm-detail')
+  ) {
+    currentIndex.value = '/next-console/app-center/llm-manage';
+  } else {
+    currentIndex.value = router.currentRoute.value.path;
+  }
+}
 onMounted(() => {
   window.addEventListener('resize', updateWidth);
   currentIndex.value = router.currentRoute.value.path;
   // 应用详情页也高亮
+
   router.afterEach(to => {
-    if (to.path.startsWith('/next-console/appCenter/app_detail/')) {
-      currentIndex.value = '/next-console/appCenter/app_list';
+    if (to.path.startsWith('/next-console/app-center/app-detail/')) {
+      currentIndex.value = '/next-console/app-center/app-list';
+    } else if (to.path.includes('/next-console/app-center/publish-detail/')) {
+      currentIndex.value = '/next-console/app-center/publish-list';
+    } else if (
+      to.path.includes('/next-console/app-center/llm-create') ||
+      to.path.includes('/next-console/app-center/llm-detail')
+    ) {
+      currentIndex.value = '/next-console/app-center/llm-manage';
     } else {
       currentIndex.value = to.path;
     }
   });
+  changeCurrentIndexValue();
 });
 // 在组件卸载时移除监听器，防止内存泄漏
 onUnmounted(() => {
@@ -27,43 +50,33 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <el-container style="height: 100vh">
-    <el-container>
-      <el-aside width="120px">
-        <div id="app-panel">
-          <el-menu router :default-active="currentIndex">
-            <el-menu-item index="/next-console/appCenter/app_list">
-              <el-icon><IconMenu /></el-icon>
-              <span>应用管理</span>
-            </el-menu-item>
-            <el-menu-item index="/next-console/appCenter/resource_manage" disabled>
-              <el-icon><Document /></el-icon>
-              <span>资源管理</span>
-            </el-menu-item>
-            <el-menu-item index="/next-console/appCenter/publish_list">
-              <el-icon><Link /></el-icon>
-              <span>发布管理</span>
-            </el-menu-item>
-            <el-menu-item index="/next-console/appCenter/llm_manage/llm">
-              <el-icon><Cpu /></el-icon>
-              <span>模型管理</span>
-            </el-menu-item>
-            <el-menu-item index="/next-console/appCenter/effect_manage" disabled>
-              <el-icon><Medal /></el-icon>
-              <span>效果评测</span>
-            </el-menu-item>
-          </el-menu>
+  <el-container style="height: 100%">
+    <el-header>
+      <div id="app-panel">
+        <el-menu router :default-active="currentIndex" mode="horizontal">
+          <el-menu-item index="/next-console/app-center/llm-manage">
+            <el-icon><Cpu /></el-icon>
+            <span>模型管理</span>
+          </el-menu-item>
+          <el-menu-item index="/next-console/app-center/app-list">
+            <el-icon><IconMenu /></el-icon>
+            <span>应用管理</span>
+          </el-menu-item>
+          <el-menu-item index="/next-console/app-center/publish-list">
+            <el-icon><Link /></el-icon>
+            <span>发布管理</span>
+          </el-menu-item>
+        </el-menu>
+      </div>
+    </el-header>
+    <el-main style="padding: 0">
+      <div v-if="router.currentRoute.value.name == 'appCenter'" id="welcome-box">
+        <div class="slogan-container">
+          <h1 class="slogan">欢迎使用AI应用工厂</h1>
         </div>
-      </el-aside>
-      <el-main style="padding: 0">
-        <div v-if="router.currentRoute.value.name == 'appCenter'" id="welcome-box">
-          <div class="slogan-container">
-            <h1 class="slogan">欢迎使用AI应用工厂</h1>
-          </div>
-        </div>
-        <router-view v-else />
-      </el-main>
-    </el-container>
+      </div>
+      <router-view v-else />
+    </el-main>
   </el-container>
 </template>
 

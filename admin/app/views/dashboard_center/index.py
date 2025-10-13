@@ -7,10 +7,11 @@ from flask_jwt_extended import (
 from app.app import app
 from app.services.dashboard_center.index_service import *
 from app.services.user_center.users import *
-import datetime
+
 from app.services.user_center.roles import roles_required
 from app.models.user_center.user_role_info import UserRoleInfo
 from app.models.user_center.role_info import RoleInfo
+from app.services.dashboard_center.model_service import *
 
 
 @app.route('/next_console_admin/dashboard/index', methods=['GET'])
@@ -22,6 +23,7 @@ def index_get():
         只有天问管理员可以查看全部公司的数据
         管理员和超级管理员可以查看自己公司的数据
     """
+    from datetime import datetime
     user_id = get_jwt_identity()
     target_user = UserInfo.query.filter(
         UserInfo.user_id == user_id
@@ -58,13 +60,15 @@ def index_get():
         top = 10
     if begin_time is None:
         try:
-            begin_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            begin_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         except Exception as e:
+            print(e)
             return next_console_response(error_status=True, error_message="时间格式错误！")
     if end_time is None:
         try:
-            end_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         except Exception as e:
+            print(e)
             return next_console_response(error_status=True, error_message="时间格式错误！")
 
     if index_name == "uv":
@@ -282,3 +286,70 @@ def index_get():
     return next_console_response(error_status=True, error_message="暂不支持此类指标！")
 
 
+@app.route('/next_console_admin/dashboard/model', methods=['GET'])
+@roles_required(["admin", "super_admin", "next_console_admin", "next_console_reader_admin"])
+@jwt_required()
+def model_index_get():
+    """
+    模型实例指标获取
+    :return:
+    """
+    user_id = int(get_jwt_identity())
+    index_name = request.args.get('index_name')
+    llm_code = request.args.get('llm_code')
+    begin_time = request.args.get('begin_time')
+    end_time = request.args.get('end_time')
+    duration = request.args.get('duration', '天')
+    if index_name == "base_cnt":
+        new_params = {
+            "user_id": user_id,
+            "llm_code": llm_code,
+            "begin_time": begin_time,
+            "end_time": end_time,
+        }
+        return model_base_cnt(new_params)
+    elif index_name == 'token_time_cnt':
+        new_params = {
+            "user_id": user_id,
+            "llm_code": llm_code,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "duration": duration
+        }
+        return model_token_time_cnt(new_params)
+    elif index_name == 'qa_time_cnt':
+        new_params = {
+            "user_id": user_id,
+            "llm_code": llm_code,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "duration": duration
+        }
+        return model_qa_time_cnt(new_params)
+    elif index_name == 'user_time_cnt':
+        new_params = {
+            "user_id": user_id,
+            "llm_code": llm_code,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "duration": duration
+        }
+        return model_user_time_cnt(new_params)
+    elif index_name == 'session_source_cnt':
+        new_params = {
+            "user_id": user_id,
+            "llm_code": llm_code,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "duration": duration
+        }
+        return model_session_source_cnt(new_params)
+    elif index_name == 'app_top_cnt':
+        new_params = {
+            "user_id": user_id,
+            "llm_code": llm_code,
+            "begin_time": begin_time,
+            "end_time": end_time
+        }
+        return model_app_top_cnt(new_params)
+    return next_console_response(error_status=True, error_message="暂不支持此类指标！")

@@ -1,8 +1,6 @@
 import json
 import csv
-import time
 from datetime import datetime
-from app.models.assistant_center.assistant import Assistant
 from jinja2 import Template
 from jsonschema import validate
 from app.app import db, app
@@ -12,7 +10,7 @@ from app.models.app_center.app_info_model import WorkFlowTaskInfo
 from app.services.configure_center.response_utils import next_console_response
 from app.services.next_console.rag import search_generate_rag_question
 from app.services.next_console.memory import retrieve_instruction_context
-from app.services.next_console.llm import workflow_chat
+from app.services.configure_center.llm import workflow_chat
 from app.services.task_center.workflow import emit_workflow_status
 from app.models.configure_center.llm_kernel import LLMInstance
 

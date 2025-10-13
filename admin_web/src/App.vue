@@ -14,7 +14,7 @@ import { clientFingerprint, getFingerPrint } from '@/components/global/web-socke
 // 导入样式
 import '@/styles/global.css';
 import { systemConfigLoad } from '@/api/user-center';
-import { useUserConfigStore } from '@/stores/userConfigStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
 
 const userConfigStore = useUserConfigStore();
 let versionCheckInterval = null;

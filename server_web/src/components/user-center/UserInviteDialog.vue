@@ -5,7 +5,7 @@ import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import { reactive, ref, watch } from 'vue';
 import { getInviteDetail, refreshInviteCode, sendInviteCodeByEmail } from '@/api/user-center';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { IUsers } from '@/types/user-center';
 const userInfoStore = useUserInfoStore();
 const props = defineProps({

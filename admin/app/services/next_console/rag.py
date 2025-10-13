@@ -1,6 +1,5 @@
 import app
-from app.models.user_center.user_info import UserInfo
-from app.services.next_console.llm import *
+from app.services.configure_center.llm import *
 from app.models.knowledge_center.rag_ref_model import RagRefInfo
 from app.models.assistant_center.assistant import AssistantInstruction
 from app.models.app_center.app_info_model import WorkFlowTaskInfo

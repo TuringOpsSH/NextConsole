@@ -8,10 +8,12 @@ import { delete_session, search_session, update_session } from '@/api/next-conso
 import { session_history_top5 } from '@/components/next-console/messages-flow/sessions';
 import router from '@/router';
 import { useSessionStore } from '@/stores/sessionStore';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { session_item } from '@/types/next-console';
+import { useUserConfigStore } from '@/stores/user-config-store';
 const sessionStore = useSessionStore();
 const userInfoStore = useUserInfoStore();
+const userConfigStore = useUserConfigStore();
 const showSidebar = ref(true);
 const appAreaExpand = ref(true);
 const panelWidth = ref('200px');
@@ -19,8 +21,8 @@ const currentSessionTopicInputRef = ref();
 const sessionButtonsRef = ref(null);
 const defaultApp = {
   app_code: 'next_search',
-  app_name: '小亦助手',
-  app_icon: '/images/logo.svg'
+  app_name: userConfigStore.systemConfig?.ai?.xiaoyi?.name || '小亦助手',
+  app_icon: userConfigStore.systemConfig?.ai?.xiaoyi?.avatar_url || '/images/logo.svg'
 };
 const currentApp = ref({
   app_code: 'next_search',

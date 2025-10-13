@@ -31,7 +31,7 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy.vue';
 import ResetPassword from '@/pages/ResetPassword.vue';
 import invitation from '@/pages/invitation.vue';
 import unsubscribe from '@/pages/unsubscribe.vue';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 
 const routes: RouteRecordRaw[] = [
   {

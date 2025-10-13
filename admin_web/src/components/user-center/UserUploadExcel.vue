@@ -10,7 +10,7 @@ import {
 } from 'element-plus';
 import { ref, watch } from 'vue';
 import { api, createUserByExcel, createUserByExcelTW } from '@/api/user-manage';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 const props = defineProps({
   model: {
     type: Boolean,

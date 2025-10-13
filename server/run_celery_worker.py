@@ -1,5 +1,9 @@
 from gevent import monkey
-monkey.patch_all()
+import platform
+if platform.system().lower().startswith('darwin'):
+    monkey.patch_socket()
+else:
+    monkey.patch_all()
 from app.app import celery
 import socket
 

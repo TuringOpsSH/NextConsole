@@ -5,7 +5,7 @@ import ConsoleInput from '@/components/next-console/messages-flow/ConsoleInput.v
 import { consoleInputRef } from '@/components/next-console/messages-flow/console_input';
 import router from '@/router';
 import { useSessionStore } from '@/stores/sessionStore';
-import {useUserInfoStore} from "@/stores/userInfoStore";
+import {useUserInfoStore} from "@/stores/user-info-store";
 
 const store = useSessionStore();
 const userInfoStore = useUserInfoStore()

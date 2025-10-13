@@ -129,6 +129,8 @@ export interface ISystemConfig {
   ai: {
     xiaoyi: {
       llm_code: string;
+      name: string;
+      avatar_url: string;
     };
     embedding: {
       embedding_endpoint: string;
@@ -212,14 +214,33 @@ export interface ISearchResourceType {
   resource_active: boolean;
 }
 export interface ILLMInstance {
+  id: number;
   llm_code: string;
   llm_name: string;
+  llm_label: string;
   llm_type: string;
   llm_desc: string;
   llm_icon: string;
   llm_status: string;
-  llm_is_proxy: boolean;
   support_vis?: boolean;
+  support_file?: boolean;
+  stream?: boolean;
   create_time: string;
   update_time: string;
+  is_editable?: boolean;
+  llm_company?: string;
+  llm_is_public?: boolean;
+  llm_proxy_url?: string;
+  is_std_openai?: boolean;
+  llm_api_secret_key?: string;
+  max_tokens?: number;
+  llm_base_url?: string;
+  llm_tags?: string[];
+  use_default?: boolean;
+  temperature?: number;
+  frequency_penalty?: number;
+  presence_penalty?: number;
+  top_p?: number;
+  extra_headers?: Record<string, unknown>;
+  extra_body?: Record<string, unknown>;
 }

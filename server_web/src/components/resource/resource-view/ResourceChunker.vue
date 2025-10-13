@@ -1,62 +1,62 @@
 <script setup lang="ts">
-import {ResourceItem} from "@/types/resource-type";
-import {reactive, ref, watch, onMounted} from 'vue';
+import markdownItKatex from '@vscode/markdown-it-katex';
+import * as echarts from 'echarts';
+import { ElMessage } from 'element-plus';
+import hljs from 'highlight.js';
+import MarkdownIt from 'markdown-it';
+import markdownItMermaid from 'markdown-it-mermaid-plugin';
+import MarkdownTasks from 'markdown-it-task-lists';
+import { reactive, ref, watch, onMounted } from 'vue';
 import {
   resource_chunk_recall,
   resource_chunk_update,
   resource_chunks_delete,
   resource_chunks_get
-} from "@/api/resource-api";
-import MarkdownIt from "markdown-it";
-import hljs from "highlight.js";
-import markdownItKatex from "@vscode/markdown-it-katex";
-import markdownItMermaid from "markdown-it-mermaid-plugin";
-import MarkdownTasks from "markdown-it-task-lists";
-import {ElMessage} from "element-plus";
-import * as echarts from 'echarts';
+} from '@/api/resource-api';
+import { ResourceItem } from '@/types/resource-type';
 
 const props = defineProps({
   resourceId: {
     type: Number,
     default: 0,
     required: true
-  },
-})
+  }
+});
 const currentViewResource = reactive<ResourceItem>(
-    // @ts-ignore
-    {
-      sub_rag_file_cnt: 0,
-      id: null,
-      resource_parent_id: null,
-      user_id: null,
-      resource_name: null,
-      resource_type: null,
-      resource_desc: null,
-      resource_icon: null,
-      resource_format: null,
-      resource_path: null,
-      resource_size_in_MB: null,
-      resource_status: null,
-      rag_status: null,
-      create_time: null,
-      update_time: null,
-      delete_time: null,
-      show_buttons: null,
-      resource_parent_name: null,
-      resource_is_selected: null,
-      sub_resource_dir_cnt: null,
-      sub_resource_file_cnt: null,
-      resource_feature_code: '',
-      resource_is_supported: false,
-      resource_show_url: '',
-      resource_source_url: '',
-      resource_title: '',
-      resource_source: 'resource_center',
-      ref_text: null,
-      rerank_score: null,
-      view_config: {},
-      chunks: null
-    }
+  // @ts-ignore
+  {
+    sub_rag_file_cnt: 0,
+    id: null,
+    resource_parent_id: null,
+    user_id: null,
+    resource_name: null,
+    resource_type: null,
+    resource_desc: null,
+    resource_icon: null,
+    resource_format: null,
+    resource_path: null,
+    resource_size_in_MB: null,
+    resource_status: null,
+    rag_status: null,
+    create_time: null,
+    update_time: null,
+    delete_time: null,
+    show_buttons: null,
+    resource_parent_name: null,
+    resource_is_selected: null,
+    sub_resource_dir_cnt: null,
+    sub_resource_file_cnt: null,
+    resource_feature_code: '',
+    resource_is_supported: false,
+    resource_show_url: '',
+    resource_source_url: '',
+    resource_title: '',
+    resource_source: 'resource_center',
+    ref_text: null,
+    rerank_score: null,
+    view_config: {},
+    chunks: null
+  }
 );
 const resourceViewerLoading = ref(false);
 const currentChunkIndex = reactive({
@@ -70,8 +70,8 @@ const currentChunkIndex = reactive({
   chunk_pane: 'chunk_content',
   test_question: '',
   chart: null,
-  status: '正常',
-})
+  status: '正常'
+});
 const showEditRawContentDialog = ref(false);
 const showEditEmbeddingContentDialog = ref(false);
 const showEditEmbeddingDialog = ref(false);
@@ -88,45 +88,45 @@ let mdAnswer = new MarkdownIt({
     let language = lang ? lang : 'plaintext';
     let languageText = '<span style="">' + language + '</span>';
     let copyButton =
-        '<img src="/images/copy.svg" alt="复制" class="answer-code-copy" style="width: 20px;height: 20px;cursor: pointer"/>';
+      '<img src="/images/copy.svg" alt="复制" class="answer-code-copy" style="width: 20px;height: 20px;cursor: pointer"/>';
     let header =
-        '<div style="display: flex;justify-content: space-between;border-bottom: 1px solid #D0D5DD;padding: 8px">' +
-        languageText +
-        copyButton +
-        '</div>';
+      '<div style="display: flex;justify-content: space-between;border-bottom: 1px solid #D0D5DD;padding: 8px">' +
+      languageText +
+      copyButton +
+      '</div>';
 
     if (hljs.getLanguage(language)) {
       try {
         return (
-            '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
-            'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
-            header +
-            '<code class="hljs-code" >' +
-            '<br>' +
-            hljs.highlight(str, { language: language, ignoreIllegals: true }).value +
-            '<br>' +
-            '</code></pre>'
+          '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
+          'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
+          header +
+          '<code class="hljs-code" >' +
+          '<br>' +
+          hljs.highlight(str, { language: language, ignoreIllegals: true }).value +
+          '<br>' +
+          '</code></pre>'
         );
       } catch (__) {}
     }
 
     return (
-        '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
-        'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
-        header +
-        '<code class="hljs-code" >' +
-        '<br>' +
-        hljs.highlight(str, { language: 'plaintext', ignoreIllegals: true }).value +
-        '<br>' +
-        '</code></pre>'
+      '<pre class="hljs" style="white-space: pre-wrap; overflow: auto ; position: relative;' +
+      'border-bottom: 1px solid #D0D5DD;padding: 16px">' +
+      header +
+      '<code class="hljs-code" >' +
+      '<br>' +
+      hljs.highlight(str, { language: 'plaintext', ignoreIllegals: true }).value +
+      '<br>' +
+      '</code></pre>'
     );
   }
 });
 const defaultTableRule =
-    mdAnswer.renderer.rules.table_open ||
-    function (tokens, idx, options, env, self) {
-      return self.renderToken(tokens, idx, options);
-    };
+  mdAnswer.renderer.rules.table_open ||
+  function (tokens, idx, options, env, self) {
+    return self.renderToken(tokens, idx, options);
+  };
 mdAnswer.renderer.rules.table_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrPush(['class', 'custom-table']);
   return defaultTableRule(tokens, idx, options, env, self);
@@ -196,7 +196,7 @@ async function initResourceIndexer() {
     });
     if (!res.error_message) {
       currentViewResource.chunks = res.result;
-      currentViewResource.chunks.forEach((chunk) => {
+      currentViewResource.chunks.forEach(chunk => {
         chunk.chunk_pane = 'chunk_raw_content';
       });
     } else {
@@ -216,8 +216,8 @@ function renderMarkdown(chunk_content: string): string {
 }
 async function handleDeleteRawChunk(chunk_id: number) {
   const res = await resource_chunks_delete({
-    chunk_ids : [chunk_id],
-  })
+    chunk_ids: [chunk_id]
+  });
   if (!res.error_status) {
     ElMessage.success('删除分段成功');
     // 重新加载分段数据
@@ -227,9 +227,9 @@ async function handleDeleteRawChunk(chunk_id: number) {
 }
 async function handleSwitchRawChunk(chunk_id: number, status: string) {
   const res = await resource_chunk_update({
-    chunk_id : chunk_id,
+    chunk_id: chunk_id,
     chunk_status: status
-  })
+  });
   if (!res.error_status) {
     ElMessage.success(`分段状态已更新为 ${status}`);
     // 重新加载分段数据
@@ -238,22 +238,18 @@ async function handleSwitchRawChunk(chunk_id: number, status: string) {
   }
 }
 async function handleBeginUpdateChunk(chunk) {
-
   currentChunkIndex.chunk_id = chunk.chunk_id;
   currentChunkIndex.chunk_raw_content = chunk.chunk_raw_content;
   currentChunkIndex.chunk_embedding_content = chunk.chunk_embedding_content;
   currentChunkIndex.chunk_embedding = chunk.chunk_embedding;
-  currentChunkIndex.chunk_pane = chunk.chunk_pane ;
-  if (currentChunkIndex.chunk_pane == "chunk_raw_content") {
+  currentChunkIndex.chunk_pane = chunk.chunk_pane;
+  if (currentChunkIndex.chunk_pane == 'chunk_raw_content') {
     showEditRawContentDialog.value = true;
-  }
-  else if (currentChunkIndex.chunk_pane == "chunk_embedding_content") {
+  } else if (currentChunkIndex.chunk_pane == 'chunk_embedding_content') {
     showEditEmbeddingContentDialog.value = true;
-  }
-  else if (currentChunkIndex.chunk_pane == "chunk_embedding") {
+  } else if (currentChunkIndex.chunk_pane == 'chunk_embedding') {
     showEditEmbeddingDialog.value = true;
   }
-
 }
 async function confirmUpdateChunk() {
   try {
@@ -353,7 +349,7 @@ function ValidNewEmbedding(rule, value, callback) {
     }
 
     // 检查数组的长度是否等于 1024
-    if (value.length!== 1024) {
+    if (value.length !== 1024) {
       callback(new Error('嵌入向量的维度必须等于 1024'));
       return;
     }
@@ -370,7 +366,7 @@ function ValidNewEmbedding(rule, value, callback) {
   // 将字符串按逗号分割成数组
   const vectorArray = value.split(',');
   // 检查数组的长度是否等于 1024
-  if (vectorArray.length!== 1024) {
+  if (vectorArray.length !== 1024) {
     callback(new Error('嵌入向量的维度必须等于 1024'));
     return;
   }
@@ -396,9 +392,11 @@ async function handleTestChunk(chunk) {
       await initChart(chunk);
     }
     chunk.chart.setOption({
-      series: [{
-        data: [{ value: chunk.test_score, name: '相似度' }]
-      }]
+      series: [
+        {
+          data: [{ value: chunk.test_score, name: '相似度' }]
+        }
+      ]
     });
     ElMessage.success('测试成功，分段内容召回评分：' + chunk.test_score);
   } else {
@@ -431,7 +429,7 @@ async function initChart(chunk) {
             ]
           }
         },
-        data: [{ value: 0  }]
+        data: [{ value: 0 }]
       }
     ],
     graphic: [
@@ -515,14 +513,14 @@ async function initChart(chunk) {
   });
 }
 watch(
-    () => props.resourceId,
-    async (newResourceID) => {
-      currentViewResource.id = newResourceID;
-    },
-    {
-      immediate: true,
-      deep: true
-    }
+  () => props.resourceId,
+  async newResourceID => {
+    currentViewResource.id = newResourceID;
+  },
+  {
+    immediate: true,
+    deep: true
+  }
 );
 defineExpose({
   initResourceIndexer
@@ -532,8 +530,8 @@ defineExpose({
 <template>
   <el-scrollbar>
     <div v-loading="resourceViewerLoading" element-loading-text="加载中" style="height: 100%" class="chunk-main">
-      <div class="chunk-box" v-for="(chunk, idx) in currentViewResource?.chunks" :key="chunk.chunk_id">
-        <div class="chunk-info" >
+      <div v-for="(chunk, idx) in currentViewResource?.chunks" :key="chunk.chunk_id" class="chunk-box">
+        <div class="chunk-info">
           <div class="chunk-info-text">
             <el-tag>编号: {{ chunk.chunk_id }}</el-tag>
             <el-tag>命中次数: {{ chunk.chunk_hit_counts }}</el-tag>
@@ -543,32 +541,44 @@ defineExpose({
             <el-tag>向量维度: {{ chunk.chunk_embedding_length }}</el-tag>
           </div>
           <div class="chunk-manage-buttons">
-            <el-button text type="primary" @click="handleBeginUpdateChunk(chunk)"
-                       v-show="chunk.chunk_pane != 'chunk_embedding_test'">
+            <el-button
+              v-show="chunk.chunk_pane != 'chunk_embedding_test'"
+              text
+              type="primary"
+              @click="handleBeginUpdateChunk(chunk)"
+            >
               编辑
             </el-button>
-            <el-popconfirm title="确认删除此分段，此操作无法撤销！" confirm-button-type="danger"
-                           @confirm="(e: MouseEvent) => handleDeleteRawChunk(chunk.chunk_id)"
-                           cancel-button-text="取消" confirm-button-text="删除"
+            <el-popconfirm
+              title="确认删除此分段，此操作无法撤销！"
+              confirm-button-type="danger"
+              cancel-button-text="取消"
+              confirm-button-text="删除"
+              @confirm="(e: MouseEvent) => handleDeleteRawChunk(chunk.chunk_id)"
             >
               <template #reference>
                 <el-button text type="danger">删除</el-button>
               </template>
             </el-popconfirm>
-            <el-popconfirm v-if = "chunk.status == '正常'"
-                           title="确认暂时禁用此分段？" confirm-button-type="warning"
-
-                           @confirm="(e: MouseEvent) => handleSwitchRawChunk(chunk.chunk_id, '禁用')"
-                           cancel-button-text="取消" confirm-button-text="禁用"
+            <el-popconfirm
+              v-if="chunk.status == '正常'"
+              title="确认暂时禁用此分段？"
+              confirm-button-type="warning"
+              cancel-button-text="取消"
+              confirm-button-text="禁用"
+              @confirm="(e: MouseEvent) => handleSwitchRawChunk(chunk.chunk_id, '禁用')"
             >
               <template #reference>
                 <el-button text type="warning">禁用</el-button>
               </template>
             </el-popconfirm>
-            <el-popconfirm v-if = "chunk.status == '禁用'"
-                           title="确认启用此分段？" confirm-button-type="primary"
-                           @confirm="(e: MouseEvent) => handleSwitchRawChunk(chunk.chunk_id, '正常')"
-                           cancel-button-text="取消" confirm-button-text="禁用"
+            <el-popconfirm
+              v-if="chunk.status == '禁用'"
+              title="确认启用此分段？"
+              confirm-button-type="primary"
+              cancel-button-text="取消"
+              confirm-button-text="禁用"
+              @confirm="(e: MouseEvent) => handleSwitchRawChunk(chunk.chunk_id, '正常')"
             >
               <template #reference>
                 <el-button text type="primary">启用</el-button>
@@ -576,12 +586,12 @@ defineExpose({
             </el-popconfirm>
           </div>
         </div>
-        <el-tabs tab-position="left" v-model="chunk.chunk_pane" class="chunk-tabs">
+        <el-tabs v-model="chunk.chunk_pane" tab-position="left" class="chunk-tabs">
           <el-tab-pane label="分段内容" name="chunk_raw_content">
-            <div class="chunk-content" v-html="renderMarkdown(chunk.chunk_raw_content)"/>
+            <div class="chunk-content" v-html="renderMarkdown(chunk.chunk_raw_content)" />
           </el-tab-pane>
           <el-tab-pane label="嵌入内容" name="chunk_embedding_content">
-            <div class="chunk-content" v-html="renderMarkdown(chunk.chunk_embedding_content)"/>
+            <div class="chunk-content" v-html="renderMarkdown(chunk.chunk_embedding_content)" />
           </el-tab-pane>
           <el-tab-pane label="嵌入向量" name="chunk_embedding">
             <div class="chunk-content">
@@ -590,23 +600,32 @@ defineExpose({
           </el-tab-pane>
           <el-tab-pane label="问答测试" name="chunk_embedding_test" @click="initChart(chunk)">
             <div class="test-area">
-              <div :id="chunk.chunk_id" style="width: 600px; height: 400px;"></div>
-              <el-form :model="chunk" label-width="100px" class="chunk-test-form"
-                       ref="chunkTestFormRef"
-                       v-if="chunk.chunk_pane === 'chunk_embedding_test'"
-                       :rules="{
-                            test_question: [{ required: true, message: '测试问题不能为空', trigger: 'blur' }]
-                          }">
+              <div :id="chunk.chunk_id" style="width: 600px; height: 400px" />
+              <el-form
+                v-if="chunk.chunk_pane === 'chunk_embedding_test'"
+                ref="chunkTestFormRef"
+                :model="chunk"
+                label-width="100px"
+                class="chunk-test-form"
+                :rules="{
+                  test_question: [{ required: true, message: '测试问题不能为空', trigger: 'blur' }]
+                }"
+              >
                 <el-form-item label-position="top" label="测试文本" prop="test_question">
-                  <el-input type="textarea" v-model="chunk.test_question"
-                            placeholder="请输入测试问题，系统会返回分段内容的召回评分"
-                            :rows="5" show-word-limit :maxlength="1000" :minlength="1"
-                            resize="none"
+                  <el-input
+                    v-model="chunk.test_question"
+                    type="textarea"
+                    placeholder="请输入测试问题，系统会返回分段内容的召回评分"
+                    :rows="5"
+                    show-word-limit
+                    :maxlength="1000"
+                    :minlength="1"
+                    resize="none"
                   />
                 </el-form-item>
               </el-form>
               <div>
-                <el-button @click="handleTestChunk(chunk)" type="primary">测试</el-button>
+                <el-button type="primary" @click="handleTestChunk(chunk)">测试</el-button>
               </div>
             </div>
           </el-tab-pane>
@@ -616,81 +635,119 @@ defineExpose({
         </div>
       </div>
       <div v-if="!currentViewResource?.chunks?.length">
-        <el-empty description="暂无分段"></el-empty>
+        <el-empty description="暂无分段" />
       </div>
     </div>
   </el-scrollbar>
-  <el-dialog title="编辑原始分段内容" v-model="showEditRawContentDialog" :fullscreen="true">
+  <el-dialog v-model="showEditRawContentDialog" title="编辑原始分段内容" :fullscreen="true">
     <el-form
-        :model="currentChunkIndex" label-width="100px" class="chunk-edit-form"  :rules="{
-        chunk_raw_content: [{  required: true, message: '分段内容不能为空', trigger: 'blur' }]}">
-      <el-form-item label="分段内容" prop="chunk_raw_content" required label-position="top" ref="rawContentFormRef">
-        <el-input type="textarea" v-model="currentChunkIndex.chunk_raw_content" :rows="20"
-                  placeholder="建议输入 Markdown 格式的内容，支持代码块、公式、表格等"
+      :model="currentChunkIndex"
+      label-width="100px"
+      class="chunk-edit-form"
+      :rules="{
+        chunk_raw_content: [{ required: true, message: '分段内容不能为空', trigger: 'blur' }]
+      }"
+    >
+      <el-form-item ref="rawContentFormRef" label="分段内容" prop="chunk_raw_content" required label-position="top">
+        <el-input
+          v-model="currentChunkIndex.chunk_raw_content"
+          type="textarea"
+          :rows="20"
+          placeholder="建议输入 Markdown 格式的内容，支持代码块、公式、表格等"
         />
       </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="showEditRawContentDialog = false">取消</el-button>
-      <el-popconfirm title="确认更新分段内容？此操作将会影响召回的文本" confirm-button-type="primary"
-                     @confirm="confirmUpdateChunk" cancel-button-text="取消" confirm-button-text="更新"
-                     width="180"
+      <el-popconfirm
+        title="确认更新分段内容？此操作将会影响召回的文本"
+        confirm-button-type="primary"
+        cancel-button-text="取消"
+        confirm-button-text="更新"
+        width="180"
+        @confirm="confirmUpdateChunk"
       >
         <template #reference>
           <el-button type="primary">更新</el-button>
         </template>
       </el-popconfirm>
-
     </template>
   </el-dialog>
-  <el-dialog title="编辑嵌入分段内容" v-model="showEditEmbeddingContentDialog" :fullscreen="true">
+  <el-dialog v-model="showEditEmbeddingContentDialog" title="编辑嵌入分段内容" :fullscreen="true">
     <el-form
-        :model="currentChunkIndex" label-width="100px" class="chunk-edit-form"  :rules="{
-        chunk_embedding_content: [{  required: true, message: '嵌入分段内容不能为空', trigger: 'blur' }]}">
-      <el-form-item label="分段内容" prop="chunk_embedding_content" required label-position="top"
-                    ref="rawEmbeddingContentFormRef">
-        <el-input type="textarea" v-model="currentChunkIndex.chunk_embedding_content" :rows="20"
-                  placeholder="建议输入 Markdown 格式的内容，支持代码块、公式、表格等，嵌入分段开头可添加文件来源等信息"
+      :model="currentChunkIndex"
+      label-width="100px"
+      class="chunk-edit-form"
+      :rules="{
+        chunk_embedding_content: [{ required: true, message: '嵌入分段内容不能为空', trigger: 'blur' }]
+      }"
+    >
+      <el-form-item
+        ref="rawEmbeddingContentFormRef"
+        label="分段内容"
+        prop="chunk_embedding_content"
+        required
+        label-position="top"
+      >
+        <el-input
+          v-model="currentChunkIndex.chunk_embedding_content"
+          type="textarea"
+          :rows="20"
+          placeholder="建议输入 Markdown 格式的内容，支持代码块、公式、表格等，嵌入分段开头可添加文件来源等信息"
         />
       </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="showEditEmbeddingContentDialog = false">取消</el-button>
-      <el-popconfirm title="确认更新嵌入分段内容？系统会自动更新嵌入向量" confirm-button-type="primary"
-                     @confirm="confirmUpdateEChunk" cancel-button-text="取消" confirm-button-text="更新"
-                     width="180"
+      <el-popconfirm
+        title="确认更新嵌入分段内容？系统会自动更新嵌入向量"
+        confirm-button-type="primary"
+        cancel-button-text="取消"
+        confirm-button-text="更新"
+        width="180"
+        @confirm="confirmUpdateEChunk"
       >
         <template #reference>
           <el-button type="primary">更新</el-button>
         </template>
       </el-popconfirm>
-
     </template>
   </el-dialog>
-  <el-dialog title="编辑嵌入向量" v-model="showEditEmbeddingDialog" :fullscreen="true">
+  <el-dialog v-model="showEditEmbeddingDialog" title="编辑嵌入向量" :fullscreen="true">
     <el-form
-        :model="currentChunkIndex" label-width="100px" class="chunk-edit-form"  :rules="{
+      :model="currentChunkIndex"
+      label-width="100px"
+      class="chunk-edit-form"
+      :rules="{
         chunk_embedding: [
-            {  required: true, message: '嵌入向量不能为空', trigger: 'blur' },
-            { validator: ValidNewEmbedding, trigger: 'blur' }
-            ]}">
-      <el-form-item label="嵌入向量" prop="chunk_embedding" required label-position="top" ref="rawEmbeddingFormRef">
-        <el-input type="textarea" v-model="currentChunkIndex.chunk_embedding" :rows="20"
-                  placeholder="不建议手动修改向量，请使用重新构建自动更新向量"
+          { required: true, message: '嵌入向量不能为空', trigger: 'blur' },
+          { validator: ValidNewEmbedding, trigger: 'blur' }
+        ]
+      }"
+    >
+      <el-form-item ref="rawEmbeddingFormRef" label="嵌入向量" prop="chunk_embedding" required label-position="top">
+        <el-input
+          v-model="currentChunkIndex.chunk_embedding"
+          type="textarea"
+          :rows="20"
+          placeholder="不建议手动修改向量，请使用重新构建自动更新向量"
         />
       </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="showEditEmbeddingDialog = false">取消</el-button>
-      <el-popconfirm title="确认手动更新向量？建议使用自动更新向量" confirm-button-type="danger"
-                     @confirm="confirmUpdateEmbedding" cancel-button-text="取消" confirm-button-text="手动更新"
-                     width="180"
+      <el-popconfirm
+        title="确认手动更新向量？建议使用自动更新向量"
+        confirm-button-type="danger"
+        cancel-button-text="取消"
+        confirm-button-text="手动更新"
+        width="180"
+        @confirm="confirmUpdateEmbedding"
       >
         <template #reference>
           <el-button type="danger">更新</el-button>
         </template>
       </el-popconfirm>
-
     </template>
   </el-dialog>
 </template>

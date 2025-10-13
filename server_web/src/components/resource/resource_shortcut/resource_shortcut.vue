@@ -78,7 +78,7 @@ import { close_upload_manager } from '@/components/resource/resource_upload/reso
 import { onBeforeRouteLeave } from 'vue-router';
 import Resource_share_selector from '@/components/resource/resource_share_selector/resource_share_selector.vue';
 import Resource_empty from '@/components/resource/resource_empty/resource_empty.vue';
-import {useUserInfoStore} from "@/stores/userInfoStore";
+import {useUserInfoStore} from "@/stores/user-info-store";
 
 const props = defineProps({
   tag_source: {

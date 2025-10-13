@@ -105,6 +105,8 @@ def lookup_user_details_twadmin(params):
 
     all_colleagues = UserInfo.query.filter(
         *all_conditions
+    ).order_by(
+        UserInfo.create_time.desc()
     )
     total = all_colleagues.count()
     all_colleagues = all_colleagues.paginate(page=page_num, per_page=page_size, error_out=False)
@@ -385,9 +387,10 @@ def lookup_user_details_admin(params):
         all_conditions.append(
             UserInfo.user_status < 0
         )
-
     all_colleagues = UserInfo.query.filter(
         *all_conditions
+    ).order_by(
+        UserInfo.create_time.desc()
     )
     total = all_colleagues.count()
     all_colleagues = all_colleagues.paginate(page=page_num, per_page=page_size, error_out=False)

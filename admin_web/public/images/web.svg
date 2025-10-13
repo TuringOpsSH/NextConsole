@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="120" height="120" viewBox="0 0 120 120">
+    <defs>
+        <clipPath id="clipPath2289934972">
+            <path d="M0 0L120 0L120 120L0 120L0 0Z" fill-rule="nonzero" transform="matrix(1 0 0 1 0 0)"/>
+        </clipPath>
+    </defs>
+    <g clip-path="url(#clipPath2289934972)">
+        <circle cx="6" cy="6" r="6" transform="matrix(1 0 0 1 24 24)" fill="rgb(66, 133, 244)"/>
+        <circle cx="6" cy="6" r="6" transform="matrix(1 0 0 1 54 14)" fill="rgb(66, 133, 244)"/>
+        <circle cx="6" cy="6" r="6" transform="matrix(1 0 0 1 84 24)" fill="rgb(66, 133, 244)"/>
+        <circle cx="6" cy="6" r="6" transform="matrix(1 0 0 1 14 54)" fill="rgb(66, 133, 244)"/>
+        <circle cx="6" cy="6" r="6" transform="matrix(1 0 0 1 44 44)" fill="rgb(66, 133, 244)"/>
+        <circle cx="6" cy="6" r="6" transform="matrix(1 0 0 1 74 54)" fill="rgb(66, 133, 244)"/>
+        <circle cx="6" cy="6" r="6" transform="matrix(1 0 0 1 24 84)" fill="rgb(66, 133, 244)"/>
+        <circle cx="6" cy="6" r="6" transform="matrix(1 0 0 1 54 74)" fill="rgb(66, 133, 244)"/>
+        <circle cx="6" cy="6" r="6" transform="matrix(1 0 0 1 84 84)" fill="rgb(66, 133, 244)"/>
+        <path d="M-0.229507 8.28598L27.7705 -0.714021L28.2295 0.714021L0.229507 9.71402L-0.229507 8.28598Z" fill-rule="nonzero" transform="matrix(1 0 0 1 30 21)" fill="rgb(66, 133, 244)"/>
+        <path d="M0.229507 -0.714021L28.2295 8.28598L27.7705 9.71402L-0.229507 0.714021L0.229507 -0.714021Z" fill-rule="nonzero" transform="matrix(1 0 0 1 60 20)" fill="rgb(66, 133, 244)"/>
+        <path d="M8.72114 0.206041L0.721143 28.206L-0.721143 27.794L7.27886 -0.206041L8.72114 0.206041Z" fill-rule="nonzero" transform="matrix(1 0 0 1 22 30)" fill="rgb(66, 133, 244)"/>
+        <path d="M0.53033 -0.53033L18.5303 17.4697L17.4697 18.5303L-0.53033 0.53033L0.53033 -0.53033Z" fill-rule="nonzero" transform="matrix(1 0 0 1 30 30)" fill="rgb(66, 133, 244)"/>
+        <path d="M9.71402 0.229507L0.714021 28.2295L-0.714021 27.7705L8.28598 -0.229507L9.71402 0.229507Z" fill-rule="nonzero" transform="matrix(1 0 0 1 51 20)" fill="rgb(66, 133, 244)"/>
+        <path d="M9.71402 0.229507L0.714021 28.2295L-0.714021 27.7705L8.28598 -0.229507L9.71402 0.229507Z" fill-rule="nonzero" transform="matrix(1 0 0 1 81 30)" fill="rgb(66, 133, 244)"/>
+        <path d="M-0.229507 8.28598L27.7705 -0.714021L28.2295 0.714021L0.229507 9.71402L-0.229507 8.28598Z" fill-rule="nonzero" transform="matrix(1 0 0 1 20 51)" fill="rgb(66, 133, 244)"/>
+        <path d="M0.229507 -0.714021L28.2295 8.28598L27.7705 9.71402L-0.229507 0.714021L0.229507 -0.714021Z" fill-rule="nonzero" transform="matrix(1 0 0 1 50 50)" fill="rgb(66, 133, 244)"/>
+        <path d="M0.714021 -0.229507L9.71402 27.7705L8.28598 28.2295L-0.714021 0.229507L0.714021 -0.229507Z" fill-rule="nonzero" transform="matrix(1 0 0 1 20 60)" fill="rgb(66, 133, 244)"/>
+        <path d="M0.714021 -0.229507L9.71402 27.7705L8.28598 28.2295L-0.714021 0.229507L0.714021 -0.229507Z" fill-rule="nonzero" transform="matrix(1 0 0 1 50 50)" fill="rgb(66, 133, 244)"/>
+        <path d="M0.714021 -0.229507L9.71402 27.7705L8.28598 28.2295L-0.714021 0.229507L0.714021 -0.229507Z" fill-rule="nonzero" transform="matrix(1 0 0 1 80 60)" fill="rgb(66, 133, 244)"/>
+        <path d="M-0.229507 8.28598L27.7705 -0.714021L28.2295 0.714021L0.229507 9.71402L-0.229507 8.28598Z" fill-rule="nonzero" transform="matrix(1 0 0 1 30 81)" fill="rgb(66, 133, 244)"/>
+        <path d="M0.229507 -0.714021L28.2295 8.28598L27.7705 9.71402L-0.229507 0.714021L0.229507 -0.714021Z" fill-rule="nonzero" transform="matrix(1 0 0 1 60 80)" fill="rgb(66, 133, 244)"/>
+    </g>
+</svg>

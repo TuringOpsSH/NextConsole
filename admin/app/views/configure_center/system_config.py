@@ -23,7 +23,7 @@ def get_version():
             version = f.read()
         version = json.loads(version)
     except Exception as e:
-        return next_console_response(result={"version": "0.2.6"})
+        return next_console_response(result={"version": "0.2.7"})
     return next_console_response(result=version)
 
 

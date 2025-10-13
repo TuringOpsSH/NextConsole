@@ -32,7 +32,7 @@ import {
   friends_width,
   back_friends_list
 } from '@/components/contacts/friends/friends';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 onMounted(async () => {
   init_current_friend_list();
 });

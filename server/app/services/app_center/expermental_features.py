@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from app.app import app, db
 from app.models.next_console.next_console_model import NextConsoleMessage
-from app.services.next_console.llm import NextConsoleLLMClient
+from app.services.configure_center.llm import NextConsoleLLMClient
 from app.services.next_console.next_console import next_console_response
 from concurrent.futures import wait
 

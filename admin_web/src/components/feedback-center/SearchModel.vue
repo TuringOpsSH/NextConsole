@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Search, Setting } from '@element-plus/icons-vue';
+import { Search, Setting, HomeFilled } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { adminFavorite, getSessionHistoryMsg, searchSessionLog, searchSessionSourceAPI } from '@/api/feedback_center';
-import MessageFlowV2 from '@/components/app-center/appPreview/MessageFlowV2.vue';
+import MessageFlowV2 from '@/components/app-center/app-preview/MessageFlowV2.vue';
 import { IMsgQueueItem, ISessionItem } from '@/types/next-console';
 
 const route = useRoute();
@@ -237,7 +237,8 @@ onMounted(async () => {
               :index="component.url"
               class="menu-header-item"
             >
-              {{ component.name }}
+              <el-icon><HomeFilled /></el-icon>
+              <span>{{ component.name }}</span>
             </el-menu-item>
           </el-menu>
         </div>
@@ -305,15 +306,6 @@ onMounted(async () => {
                 placeholder="搜索会话标题"
                 :prefix-icon="Search"
                 clearable
-                @change="getSessionLog"
-              />
-            </div>
-            <div style="width: 180px">
-              <el-input
-                v-model="targetSessionTag"
-                placeholder="搜索会话标签"
-                clearable
-                :prefix-icon="Search"
                 @change="getSessionLog"
               />
             </div>

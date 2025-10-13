@@ -23,7 +23,7 @@ import { currentPathTree } from '@/components/resource/resource-view/resource-vi
 import router from '@/router';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useSystemNoticeStore } from '@/stores/systemNoticeStore';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { Friend } from '@/types/contacts';
 import { recommend_question_item, workflow_task_item, workflow_task_map } from '@/types/next-console';
 import { ResourceItem } from '@/types/resource-type';

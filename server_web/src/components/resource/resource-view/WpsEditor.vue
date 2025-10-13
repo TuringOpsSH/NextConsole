@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, reactive, ref, watch } from 'vue';
 import WebOfficeSDK from '@/components/global/wps/web-office-sdk-solution-v2.0.7.es.js';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 
 const props = defineProps({
   appId: {

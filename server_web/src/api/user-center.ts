@@ -1,4 +1,4 @@
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ServerResponse } from '@/types/response';
 import request from '@/utils/request';
 
@@ -60,7 +60,8 @@ export const api = {
   system_config_update: envUrl + '/next_console/config_center/system_config/update',
   refresh_token: envUrl + '/next_console/user_center/refresh_token',
   get_wx_config: envUrl + '/next_console/config_center/system_config/get_wx_config',
-  system_config_load: envUrl + '/next_console/config_center/system_config/load'
+  system_config_load: envUrl + '/next_console/config_center/system_config/load',
+  get_domain: envUrl + '/next_console/domain'
 };
 
 export async function getSupportArea(params: object): Promise<ServerResponse> {

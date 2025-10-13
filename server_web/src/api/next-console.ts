@@ -1,6 +1,6 @@
 import { ServerResponse } from '@/types/response';
 import request from '@/utils/request';
-import {useUserInfoStore} from "@/stores/userInfoStore";
+import {useUserInfoStore} from "@/stores/user-info-store";
 
 const envUrl = '';
 

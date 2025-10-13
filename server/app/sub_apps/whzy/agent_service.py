@@ -1,20 +1,18 @@
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import text
 
 from app.app import socketio, redis_client
-from app.models.app_center.app_info_model import AppMetaInfo, WorkFlowTaskInfo
-from app.models.next_console.next_console_model import *
 from app.services.next_console.base import *
 from app.models.configure_center.llm_kernel import LLMInstance
 from app.services.assistant_center.assistant_instruction import run_assistant_instruction
 from app.services.assistant_center.assistant_manager import get_assistant
 from app.services.next_console.attachment import extract_attachment_images_to_question
 from app.services.next_console.memory import retrieve_messages_to_prompt
-from app.services.next_console.llm import llm_chat
+from app.services.configure_center.llm import llm_chat
 from app.services.next_console.workflow import *
 from app.services.task_center.workflow import async_generate_chart_options
 from app.services.task_center.workflow import auto_naming_session, create_recommend_question
@@ -71,7 +69,10 @@ def agent_add_message(params):
     ).first()
     target_model_code = assistant["assistant_model_code"]
     if current_session.session_llm_code != target_model_code:
-        target_model_code = current_session.session_llm_code
+        # target_model_code = current_session.session_llm_code
+        current_session.session_llm_code = target_model_code
+        db.session.add(current_session)
+        db.session.commit()
     msg_llm_type = LLMInstance.query.filter(
         LLMInstance.llm_code == target_model_code
     ).first()

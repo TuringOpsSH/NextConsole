@@ -292,7 +292,7 @@ import {
   get_resource_icon as getResourceIcon,
   search_all_resource_object as searchAllResourceObject
 } from '@/components/resource/resource_list/resource_list';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ResourceTag } from '@/types/resource-type';
 import {
   init_my_resource_tree as initMyResourceTree,

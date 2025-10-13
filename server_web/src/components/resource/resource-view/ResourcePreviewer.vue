@@ -3,7 +3,7 @@ import { onBeforeUnmount, reactive, ref, watch } from 'vue';
 import VueJsonPretty from 'vue-json-pretty';
 import WebOfficeSDK from '@/components/global/wps/web-office-sdk-solution-v2.0.7.es.js';
 import { add_copy_button_event } from '@/components/next-console/messages-flow/message_flow';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ResourceItem } from '@/types/resource-type';
 import 'vue-json-pretty/lib/styles.css';
 import { clientFingerprint, getFingerPrint } from '@/components/global/web_socket';

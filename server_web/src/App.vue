@@ -16,7 +16,7 @@ import { resource_list_context_menu_flag } from '@/components/resource/resource_
 import '@/styles/global.css';
 import { resource_shortcut_context_menu_flag } from '@/components/resource/resource_shortcut/resource_context_menu/context_menu';
 import { resource_share_context_menu_flag } from '@/components/resource/share_resources/context_menu/context_menu';
-import { useUserConfigStore } from '@/stores/userConfigStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
 import { systemConfigLoad } from '@/api/user-center';
 const userConfigStore = useUserConfigStore();
 let versionCheckInterval = null;

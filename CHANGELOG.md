@@ -4,7 +4,33 @@ All notable changes to this project will be documented in this file.
 Format adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-Here's the English version of the changelog with professional formatting:
+## [0.2.7] - 2025-09-26
+
+### Features
+
+**Model Management Module Refactor**
+  - [x] Refined model integration process
+  - [x] Support for text generation, reasoning models, vector models, ranking models, and image understanding models
+  - [x] Support for instant health testing
+  - [x] Support for runtime parameter configuration
+  - [x] Support for model permission management
+  - [x] Support for viewing model runtime status
+
+### Fixes and Improvements
+
+- [x] Fixed format restrictions for file list parameters
+- [x] Optimized the data model for model parameters
+- [x] Added headers to Extra-body
+- [x] After application publication, automatically add authorization to self by default
+- [x] Optimized layout of AI Application Factory
+- [x] Agent nodes can search and select models
+- [x] Nodes can directly create duplicates
+- [x] Added icons to backend management menu keys
+- [x] Support for launching services from source code on Mac
+- [x] Official assistants can modify names and icons
+- [x] Introduced store in Application Factory
+- [x] Fixed coding standards for some components
+
 
 ---
 

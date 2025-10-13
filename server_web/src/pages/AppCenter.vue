@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { onBeforeMount } from 'vue-demi';
 import { getUser } from '@/api/user-center';
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 const userInfoStore = useUserInfoStore();
 const errorMsg = ref('请选择一个应用');
 onBeforeMount(async () => {

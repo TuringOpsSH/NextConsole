@@ -39,7 +39,7 @@ import {
 } from '@/components/resource/resource_upload/resource_upload';
 import ResourceUploadManager from '@/components/resource/resource_upload/resource_upload_manager.vue';
 import router from '@/router';
-import { useUserConfigStore } from '@/stores/userConfigStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
 import { ILLMInstance, ISearchResourceType } from '@/types/user-center';
 import { running_question_meta, session_item } from '@/types/next-console';
 import { ResourceItem, ResourceUploadItem } from '@/types/resource-type';
@@ -170,7 +170,7 @@ function getSessionLlmName() {
   if (currentSession.session_llm_code) {
     for (let i = 0; i < llmInstanceQueue.value.length; i++) {
       if (llmInstanceQueue.value[i].llm_code === currentSession.session_llm_code) {
-        currentLlmName = llmInstanceQueue.value[i].llm_desc;
+        currentLlmName = llmInstanceQueue.value[i].llm_label;
         if (window.innerWidth < 768) {
           currentLlmName = llmInstanceQueue.value[i].llm_type;
         }
@@ -205,7 +205,6 @@ async function createNewSession() {
 }
 async function askQuestion(src = null) {
   // 判断是否达到并发限制
-  console.log('askQuestion', currentSession.id, userBatchSize.value, src);
   if (userBatchSize.value >= 3) {
     ElNotification.warning({
       title: '系统消息',
@@ -247,7 +246,6 @@ async function askQuestion(src = null) {
   }
   // 判断是否为空
   if (!userInput.value || userInput.value.trim() === '') {
-    console.log(userInput.value, currentSession.session_code);
     ElNotification.warning({
       title: '系统消息',
       message: '请输入有效问题！',
@@ -382,7 +380,6 @@ async function handleUserPaste(event: any) {
       fileList.push(items[i].getAsFile());
     }
   }
-  console.log(imagesList, fileList);
   if (imagesList.length > 0) {
     await switchOnImgSearch();
     for (let j = 0; j < imagesList.length; j++) {
@@ -1032,7 +1029,6 @@ async function handleImageFileChange(uploadFile: UploadFile, uploadFiles: Upload
   if (!firstImage.value) {
     firstImage.value = uploadFile;
   }
-  console.log(uploadFile.uid, uploadFile.raw, firstImage.value.uid);
 }
 async function prepareUploadImage(uploadFile: UploadRawFile) {
   // 如果没有会话，则等待到会话生成
@@ -1690,8 +1686,12 @@ async function removeResourceItem(resource: ResourceItem) {
   });
 }
 async function commitAddChooseResources() {
+  const res = resourcesSearchRef.value?.getSelectedResources();
+  if (!res?.length) {
+    return;
+  }
+  sessionResourcesList.value = res;
   resourceSearchDialogShow.value = false;
-  sessionResourcesList.value = resourcesSearchRef.value?.getSelectedResources();
   currentSession.session_local_resource_switch = true;
   currentSession.session_local_resource_use_all = false;
   if (!currentSession?.id) {
@@ -1721,8 +1721,7 @@ async function commitAddChooseResources() {
   await nextTick();
 }
 async function toLLMConfigArea() {
-  router.push({ name: 'next_console_user_info', query: { tab: 'setting' }});
-
+  router.push({ name: 'next_console_user_info', query: { tab: 'setting' } });
 }
 onMounted(async () => {
   if (window.innerWidth >= 768) {
@@ -2579,7 +2578,7 @@ defineExpose({
                 </div>
                 <div class="std-middle-box" style="justify-content: flex-start">
                   <el-text truncated style="font-size: 14px; font-weight: 500; line-height: 20px; color: #344054">
-                    {{ item.llm_desc }}
+                    {{ item.llm_label }}
                   </el-text>
                 </div>
               </div>

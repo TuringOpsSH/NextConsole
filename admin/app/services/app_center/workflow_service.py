@@ -1,5 +1,6 @@
 import os.path
 from sqlalchemy import or_
+from sqlalchemy.orm.attributes import flag_modified
 from app.models.app_center.app_info_model import *
 from app.services.app_center.app_manage_service import check_has_role
 import uuid
@@ -1915,6 +1916,155 @@ def upload_node_agent_icon(user_id, node_agent_avatar):
     return next_console_response(result={
         "node_agent_avatar": app_icon,
     })
+
+
+def copy_app_flow_node(params):
+    """
+    复制应用代理节点
+        新增节点数据
+        修改工作流的schema
+    :param params:
+    :return:
+    """
+    node_code = params.get("node_code")
+    target_node = WorkflowNodeInfo.query.filter(
+        WorkflowNodeInfo.node_code == node_code,
+        WorkflowNodeInfo.node_status == '正常',
+        WorkflowNodeInfo.environment == "开发"
+    ).first()
+    if not target_node:
+        return next_console_response(error_status=True, error_message="节点不存在！", error_code=1002)
+    target_flow = WorkFlowMetaInfo.query.filter(
+        WorkFlowMetaInfo.id == target_node.workflow_id,
+        WorkFlowMetaInfo.workflow_status == '正常',
+        WorkFlowMetaInfo.environment == '开发'
+    ).first()
+    if not target_flow:
+        return next_console_response(error_status=True, error_message="工作流不存在！", error_code=1002)
+    new_node_code = str(uuid.uuid4())
+    new_node = WorkflowNodeInfo(
+        user_id=target_node.user_id,
+        workflow_id=target_node.workflow_id,
+        node_code=new_node_code,
+        node_type=target_node.node_type,
+        node_name=target_node.node_name + "_副本",
+        node_icon=target_node.node_icon,
+        node_desc=target_node.node_desc,
+        node_run_model_config=target_node.node_run_model_config,
+        node_llm_code=target_node.node_llm_code,
+        node_llm_params=target_node.node_llm_params,
+        node_llm_system_prompt_template=target_node.node_llm_system_prompt_template,
+        node_llm_user_prompt_template=target_node.node_llm_user_prompt_template,
+        node_result_format=target_node.node_result_format,
+        node_result_params_json_schema=target_node.node_result_params_json_schema,
+        node_result_extract_separator=target_node.node_result_extract_separator,
+        node_result_extract_quote=target_node.node_result_extract_quote,
+        node_result_extract_columns=target_node.node_result_extract_columns,
+        node_result_template=target_node.node_result_template,
+        node_timeout=target_node.node_timeout,
+        node_retry_max=target_node.node_retry_max,
+        node_retry_duration=target_node.node_retry_duration,
+        node_retry_model=target_node.node_retry_model,
+        node_failed_solution=target_node.node_failed_solution,
+        node_failed_template=target_node.node_failed_template,
+        node_session_memory_size=target_node.node_session_memory_size,
+        node_deep_memory=target_node.node_deep_memory,
+        node_agent_nickname=target_node.node_agent_nickname,
+        node_agent_desc=target_node.node_agent_desc,
+        node_agent_avatar=target_node.node_agent_avatar,
+        node_agent_prologue=target_node.node_agent_prologue,
+        node_agent_preset_question=target_node.node_agent_preset_question,
+        node_agent_tools=target_node.node_agent_tools,
+        node_input_params_json_schema=target_node.node_input_params_json_schema,
+        node_tool_api_url=target_node.node_tool_api_url,
+        node_tool_http_method=target_node.node_tool_http_method,
+        node_tool_http_header=target_node.node_tool_http_header,
+        node_tool_http_params=target_node.node_tool_http_params,
+        node_tool_http_body=target_node.node_tool_http_body,
+        node_tool_http_body_type=target_node.node_tool_http_body_type,
+        node_rag_resources=target_node.node_rag_resources,
+        node_rag_ref_show=target_node.node_rag_ref_show,
+        node_rag_query_template=target_node.node_rag_query_template,
+        node_rag_recall_config=target_node.node_rag_recall_config,
+        node_rag_rerank_config=target_node.node_rag_rerank_config,
+        node_rag_web_search_config=target_node.node_rag_web_search_config,
+        node_enable_message=target_node.node_enable_message,
+        node_message_schema_type=target_node.node_message_schema_type,
+        node_message_schema=target_node.node_message_schema,
+        node_file_reader_config=target_node.node_file_reader_config,
+        node_file_splitter_config=target_node.node_file_splitter_config,
+        node_sub_workflow_config=target_node.node_sub_workflow_config,
+    )
+    db.session.add(new_node)
+    db.session.commit()
+    # 修改工作流的schema
+    try:
+        first_node = target_flow.workflow_edit_schema.get("cells")[0]
+        end_node = target_flow.workflow_edit_schema.get("cells")[-1]
+        new_x = int((first_node["position"]["x"] + end_node["position"]["x"])/2) + 100
+        new_y = int((first_node["position"]["y"] + end_node["position"]["y"])/2) + 100
+    except Exception as e:
+        new_x = 100
+        new_y = 100
+    target_cell = next(filter(lambda x: x.get("id") == node_code, target_flow.workflow_edit_schema.get("cells")), None)
+    target_flow.workflow_edit_schema.get("cells").append(
+        {
+            "position": {
+                "x": new_x,
+                "y": new_y,
+            },
+            "size": {
+                "width": 300,
+                "height": 100
+            },
+            "shape": "custom-vue-node",
+            "ports": {
+                "groups": {
+                    "top": {
+                        "position": "left",
+                        "attrs": {
+                            "circle": {
+                                "r": 4,
+                                "magnet": True,
+                                "stroke": "#31d0c6",
+                                "strokeWidth": 2,
+                                "fill": "#fff"
+                            }
+                        }
+                    },
+                    "bottom": {
+                        "position": "right",
+                        "attrs": {
+                            "circle": {
+                                "r": 4,
+                                "magnet": True,
+                                "stroke": "#31d0c6",
+                                "strokeWidth": 2,
+                                "fill": "#fff"
+                            }
+                        }
+                    }
+                },
+                "items": [
+                    {
+                        "group": "top",
+                        "id": uuid.uuid4().hex
+                    },
+                    {
+                        "group": "bottom",
+                        "id": uuid.uuid4().hex
+                    }
+                ]
+            },
+            "id": new_node_code,
+            "data": target_cell.get("data"),
+            "zIndex": 3
+        }
+    )
+    flag_modified(target_flow, "workflow_edit_schema")
+    db.session.add(target_flow)
+    db.session.commit()
+    return next_console_response(result=target_flow.to_dict())
 
 
 def search_app_flow_node(params):

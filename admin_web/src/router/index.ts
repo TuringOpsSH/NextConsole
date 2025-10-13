@@ -1,27 +1,29 @@
 import { ElMessage } from 'element-plus';
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import appCenter from '@/components/app-center/AppCenter.vue';
-import appDetail from '@/components/app-center/AppDetail.vue';
-import appList from '@/components/app-center/AppList.vue';
-import ConfigEditor from '@/components/app-center/ConfigEditor.vue';
-import effectManage from '@/components/app-center/EffectManage.vue';
-import llmManage from '@/components/app-center/LlmManage.vue';
-import resourceManage from '@/components/app-center/ResourceManage.vue';
-import workflowEdit from '@/components/app-center/WorkflowEdit.vue';
-import PublishConnector from '@/components/app-center/publish/PublishConnector.vue';
-import PublishCreate from '@/components/app-center/publish/PublishCreate.vue';
-import PublishDetail from '@/components/app-center/publish/PublishDetail.vue';
-import PublishList from '@/components/app-center/publish/PublishList.vue';
+import AppCenter from '@/components/app-center/AppCenter.vue';
+import AppDetail from '@/components/app-center/app-manage/AppDetail.vue';
+import AppList from '@/components/app-center/app-manage/AppList.vue';
+import ConfigEditor from '@/components/app-center/app-manage/ConfigEditor.vue';
+import effectManage from '@/components/app-center/app-manage/EffectManage.vue';
+import resourceManage from '@/components/app-center/app-manage/ResourceManage.vue';
+import workflowEdit from '@/components/app-center/app-manage/WorkflowEdit.vue';
+import LLMCreate from '@/components/app-center/model-manage/LLMCreate.vue';
+import LLMDetail from '@/components/app-center/model-manage/LLMDetail.vue';
+import LlmManage from '@/components/app-center/model-manage/LlmManage.vue';
+import PublishConnector from '@/components/app-center/publish-manage/PublishConnector.vue';
+import PublishCreate from '@/components/app-center/publish-manage/PublishCreate.vue';
+import PublishDetail from '@/components/app-center/publish-manage/PublishDetail.vue';
+import PublishList from '@/components/app-center/publish-manage/PublishList.vue';
 import Dashboard from '@/components/dashboard/Dashboard.vue';
 import UserActivity from '@/components/dashboard/UserActivity.vue';
 import Feedback from '@/components/feedback-center/Feedback.vue';
 import SearchModel from '@/components/feedback-center/SearchModel.vue';
 import MarketingCampaign from '@/components/user-center/MarketingCampaign.vue';
 import MarketingCampaignDetail from '@/components/user-center/MarketingCampaignDetail.vue';
-import UserInfo from '@/components/user-center/UserInfo.vue';
-import WxLoginCheck from '@/components/user-center/WxLoginCheck.vue';
 import UserCenter from '@/components/user-center/UserCenter.vue';
+import UserInfo from '@/components/user-center/UserInfo.vue';
 import UserManage from '@/components/user-center/UserManage.vue';
+import WxLoginCheck from '@/components/user-center/WxLoginCheck.vue';
 import UserNoticeDetail from '@/components/user-center/user-notice/UserNoticeDetail.vue';
 import UserNotification from '@/components/user-center/user-notice/UserNotification.vue';
 import UserNotificationList from '@/components/user-center/user-notice/UserNotificationList.vue';
@@ -31,7 +33,7 @@ import NextConsole from '@/pages/NextConsole.vue';
 import Page404 from '@/pages/Page404.vue';
 import ResetPassword from '@/pages/ResetPassword.vue';
 import PrivacyPolicy from '@/pages/privacyPolicy.vue';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -42,7 +44,7 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: 'user_center',
+        path: 'user-center',
         name: 'user_center',
         meta: {
           requiresAuth: true,
@@ -52,7 +54,7 @@ const routes: RouteRecordRaw[] = [
         strict: true,
         children: [
           {
-            path: 'user_manage',
+            path: 'user-manage',
             name: 'user_manage',
             meta: {
               requiresAuth: true,
@@ -147,7 +149,10 @@ const routes: RouteRecordRaw[] = [
           requiresAuth: true,
           requiresAuthRole: ['admin', 'super_admin', 'next_console_admin', 'next_console_reader_admin']
         },
-        component: UserInfo
+        component: UserInfo,
+        props: route => ({
+          tab: route.query.tab || 'info'
+        })
       },
       {
         path: 'dashboard',
@@ -190,30 +195,30 @@ const routes: RouteRecordRaw[] = [
       },
       {
         name: 'appCenter',
-        path: 'appCenter',
+        path: 'app-center',
         meta: {
           requiresAuth: true,
           requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
         },
-        component: appCenter,
+        component: AppCenter,
         children: [
           {
             name: 'appList',
-            path: 'app_list',
+            path: 'app-list',
             meta: {
               requiresAuth: true,
               requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
             },
-            component: appList
+            component: AppList
           },
           {
             name: 'appDetail',
-            path: 'app_detail/:app_code',
+            path: 'app-detail/:app_code',
             meta: {
               requiresAuth: true,
               requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
             },
-            component: appDetail,
+            component: AppDetail,
             props: route => ({
               appCode: route.params.app_code || ''
             }),
@@ -248,7 +253,7 @@ const routes: RouteRecordRaw[] = [
           },
           {
             name: 'publishList',
-            path: 'publish_list',
+            path: 'publish-list',
             meta: {
               requiresAuth: true,
               requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
@@ -257,7 +262,7 @@ const routes: RouteRecordRaw[] = [
           },
           {
             name: 'publishCreate',
-            path: 'publish_create/:app_code',
+            path: 'publish-create/:app_code',
             meta: {
               requiresAuth: true,
               requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
@@ -269,7 +274,7 @@ const routes: RouteRecordRaw[] = [
           },
           {
             name: 'publishConnector',
-            path: 'publish_connector',
+            path: 'publish-connector',
             meta: {
               requiresAuth: true,
               requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
@@ -278,7 +283,7 @@ const routes: RouteRecordRaw[] = [
           },
           {
             name: 'publishDetail',
-            path: ':app_code/publish_detail',
+            path: 'publish-detail/:app_code',
             meta: {
               requiresAuth: true,
               requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
@@ -292,7 +297,7 @@ const routes: RouteRecordRaw[] = [
           },
           {
             name: 'resourceManage',
-            path: 'resource_manage',
+            path: 'resource-manage',
             meta: {
               requiresAuth: true,
               requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
@@ -301,12 +306,12 @@ const routes: RouteRecordRaw[] = [
           },
           {
             name: 'llmManage',
-            path: 'llm_manage/:subpage',
+            path: 'llm-manage',
             meta: {
               requiresAuth: true,
               requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
             },
-            component: llmManage,
+            component: LlmManage,
             props: route => ({
               subpage: route.params.subpage || 'llm',
               page_num: route.query.page_num,
@@ -314,6 +319,31 @@ const routes: RouteRecordRaw[] = [
               keyword: route.query.keyword,
               status: route.query.status,
               type: route.query.type
+            })
+          },
+          {
+            name: 'llmCreate',
+            path: 'llm-create',
+            meta: {
+              requiresAuth: true,
+              requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
+            },
+            component: LLMCreate,
+            props: route => ({
+              step: route.query.step
+            })
+          },
+          {
+            name: 'llmDetail',
+            path: 'llm-detail/:llmCode',
+            meta: {
+              requiresAuth: true,
+              requiresAuthRole: ['next_console_admin', 'admin', 'super_admin']
+            },
+            component: LLMDetail,
+            props: route => ({
+              llmCode: route.params.llmCode,
+              tab: route.query.tab
             })
           },
           {
@@ -382,7 +412,7 @@ const routes: RouteRecordRaw[] = [
     name: 'defaultPage',
     strict: true,
     meta: { requiresAuth: false },
-    component: appCenter,
+    component: AppCenter,
     beforeEnter: (to, from, next) => {
       const userInfoStore = useUserInfoStore();
       if (userInfoStore.token) {

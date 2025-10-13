@@ -74,17 +74,15 @@ def init_system_configs():
         'ai': {
             "xiaoyi": {
                 "llm_code": "",
+                "name": "小亦助手",
+                "avatar_url": "/images/logo.svg"
             },
             "embedding": {
-                "embedding_endpoint": "https://api.siliconflow.cn/v1/embeddings",
-                "embedding_api_key": "",
-                "embedding_model": "BAAI/bge-m3",
+                "llm_code": "",
             },
             "rerank": {
-                "enable": True,
-                "rerank_endpoint": "https://api.siliconflow.cn/v1/rerank",
-                "rerank_api_key": "",
-                "rerank_model": "BAAI/bge-reranker-v2-m3",
+                "enable": False,
+                "llm_code": "",
             },
             "stt": {
                 "provider": "讯飞",

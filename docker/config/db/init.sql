@@ -2130,7 +2130,6 @@ EXECUTE FUNCTION update_update_time();
 
 ------------------------------------------------------------
 
-
 CREATE TABLE "next_console"."llm_instance_info"
 (
  "id" SERIAL PRIMARY KEY,
@@ -2155,15 +2154,19 @@ CREATE TABLE "next_console"."llm_instance_info"
  "max_tokens" integer ,
  "n" integer ,
  "presence_penalty" double precision ,
- "response_format" json,
+ "response_format" json ,
  "stop" json ,
  "stream" boolean ,
  "temperature" double precision ,
  "top_p" double precision ,
  "llm_icon" text ,
- "is_std_openai" boolean  ,
+ "is_std_openai" boolean ,
  "support_vis" boolean ,
- "support_file" boolean
+ "support_file" boolean ,
+ "llm_label" varchar(255) ,
+ "extra_body" json ,
+ "extra_headers" json ,
+ "use_default" boolean
 )
 WITH (
     FILLFACTOR = 100,
@@ -2200,6 +2203,10 @@ COMMENT ON COLUMN "next_console"."llm_instance_info"."llm_icon" IS '模型图标
 COMMENT ON COLUMN "next_console"."llm_instance_info"."is_std_openai" IS '是否支持openai-sdk';
 COMMENT ON COLUMN "next_console"."llm_instance_info"."support_vis" IS '是否支持视觉';
 COMMENT ON COLUMN "next_console"."llm_instance_info"."support_file" IS '是否支持文件';
+COMMENT ON COLUMN "next_console"."llm_instance_info"."llm_label" IS '模型显示名称';
+COMMENT ON COLUMN "next_console"."llm_instance_info"."extra_body" IS '额外请求头';
+COMMENT ON COLUMN "next_console"."llm_instance_info"."extra_headers" IS '额外请求体';
+COMMENT ON COLUMN "next_console"."llm_instance_info"."use_default" IS '使用默认参数';
 COMMENT ON TABLE "next_console"."llm_instance_info" IS '基模型实例信息表';
 
 CREATE INDEX "user_id12"
@@ -2208,6 +2215,84 @@ ON "next_console"."llm_instance_info" USING btree ( "user_id" )
 
 CREATE TRIGGER update_llm_instance_info_trigger BEFORE UPDATE ON "next_console"."llm_instance_info" FOR EACH ROW
 EXECUTE FUNCTION update_update_time();
+
+------------------------------------------------------------
+    CREATE TABLE "next_console"."llm_supplier_info"
+(
+  id SERIAL PRIMARY KEY,
+ "supplier_code" varchar(256) ,
+ "supplier_name" varchar(256) ,
+ "supplier_desc" text ,
+ "supplier_icon" text ,
+ "supplier_type" varchar(10) ,
+ "supplier_website" text ,
+ "supplier_models" json ,
+ "supplier_status" varchar(10) ,
+ "create_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
+ "update_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
+ "supplier_api_url" text
+)
+WITH (
+    FILLFACTOR = 100,
+    OIDS = FALSE
+)
+;
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."id" IS '自增id';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."supplier_code" IS '基模型厂商编号';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."supplier_name" IS '基模型厂商名称';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."supplier_desc" IS '基模型厂商描述';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."supplier_icon" IS '基模型厂商图标';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."supplier_type" IS '基模型厂商类型';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."supplier_website" IS '基模型厂商官网';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."supplier_models" IS '基模型厂商支持的模型列表';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."supplier_status" IS '基模型厂商状态';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."create_time" IS '创建时间';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."update_time" IS '更新时间';
+COMMENT ON COLUMN "next_console"."llm_supplier_info"."supplier_api_url" IS '厂商api地址';
+COMMENT ON TABLE "next_console"."llm_supplier_info" IS '基模型厂商信息表';
+
+-----------------------------------------------------------
+
+
+CREATE TABLE "next_console"."llm_instance_authorize_info"
+(
+  id SERIAL PRIMARY KEY,
+ "user_id" integer NOT NULL ,
+ "model_id" integer NOT NULL ,
+ "auth_colleague_id" integer ,
+ "auth_friend_id" integer ,
+ "auth_department_id" integer ,
+ "auth_company_id" integer ,
+ "auth_type" varchar(255) NOT NULL ,
+ "auth_status" varchar(255) NOT NULL ,
+ "create_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
+ "update_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+)
+WITH (
+    FILLFACTOR = 100,
+    OIDS = FALSE
+)
+;
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."id" IS '自增id';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."user_id" IS '用户id';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."model_id" IS '模型id';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_colleague_id" IS '被授权同事id';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_friend_id" IS '被授权联系人id';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_department_id" IS '被授权部门id';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_company_id" IS '被授权公司id';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_type" IS '授权类型';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_status" IS '授权状态';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."create_time" IS '创建时间';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."update_time" IS '更新时间';
+COMMENT ON TABLE "next_console"."llm_instance_authorize_info" IS '模型授权用户表';
+
+CREATE INDEX "llm_instance_authorize_user_id49"
+ON "next_console"."llm_instance_authorize_info" USING btree ( "user_id" )
+;
+CREATE INDEX "model_id50"
+ON "next_console"."llm_instance_authorize_info" USING btree ( "model_id" )
+;
+
 
 ------------------------------------------------------------
 CREATE TABLE "next_console"."system_config_info"
@@ -3086,7 +3171,7 @@ INSERT INTO "next_console"."assistant_info" ("id","assistant_name","assistant_de
 
   $$包裹块级公式, 如
 
- $$ \n   \\pi = 4 \\left(1 - \\frac{1}{3} + \\frac{1}{5} - \\frac{1}{7} + \\frac{1}{9} - \\frac{1}{11} + \\cdots \\right) \n   $$。
+ $$ \n  \pi = 4 \left(1 - \frac{1}{3} + \frac{1}{5} - \frac{1}{7} + \frac{1}{9} - \frac{1}{11} + \cdots \right) \n   $$。
 
 
   当用户提问涉及数据的可视化方面问题时，优先使用最新的Mermaid 语法直接渲染数据。
@@ -3568,8 +3653,6 @@ INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruc
 请直接给出回答：',null,1,'text','\n',null,null,'[]',3,'0',30);
 INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruction_name","instruction_desc","instruction_system_prompt_template","instruction_status","instruction_user_prompt_params_json_schema","instruction_result_json_schema","create_time","update_time","instruction_type","instruction_user_prompt_template","instruction_result_template","user_id","instruction_result_extract_format","instruction_result_extract_separator","instruction_result_extract_quote","instruction_system_prompt_params_json_schema","instruction_result_extract_columns","instruction_history_length","instruction_temperature","instruction_max_tokens") VALUES ('21',-12345,'WebPageFetch','网页解析',null,'正常',null,null,'2024-11-14 09:38:39+08','2024-11-14 09:38:39+08','code',null,null,1,'text','\n',null,null,'[]',0,'0',0);
 
-INSERT INTO "next_console"."llm_instance_info" ("id","llm_code","llm_name","user_id","llm_api_secret_key","llm_api_access_key","llm_type","llm_desc","llm_tags","llm_company","llm_status","create_time","update_time","llm_is_proxy","llm_base_url","llm_proxy_url","llm_source","llm_is_public","frequency_penalty","max_tokens","n","presence_penalty","response_format","stop","stream","temperature","top_p","llm_icon","is_std_openai","support_vis","support_file") VALUES ('1','ddea5407-39-43-83e','',1,'','','','','[]','','正常','2025-06-17 15:12:41+08','2025-06-17 15:12:41+08','f','','','admin','t','0',8192,1,'0','{"type": "text"}','[]','t','1','1','/images/logo.svg','t','f','f');
-
 ALTER SEQUENCE "next_console"."role_info_role_id_seq"  RESTART WITH 7;
 ALTER SEQUENCE "next_console"."user_info_user_id_seq"  RESTART WITH 2;
 ALTER SEQUENCE "next_console"."user_role_info_rel_id_seq"  RESTART WITH 2;
@@ -3947,3 +4030,10 @@ INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continen
 INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','玉树藏族自治州','正常');
 INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','海西蒙古族藏族自治州','正常');
 
+-------------------------------
+
+
+INSERT INTO "system_config_info" ("id","config_key","config_desc","config_default_value","config_value","create_time","update_time","config_status") VALUES ('4','ops','ops配置','{"brand": {"enable": false, "logo_url": "", "logo_full_url": "", "brand_name": "NextConsole"}}','{"brand": {"enable": false, "logo_url": "", "logo_full_url": "", "brand_name": "NextConsole"}}','2025-09-08 21:49:30.949113+08','2025-09-08 21:49:30.949113+08',1);
+INSERT INTO "system_config_info" ("id","config_key","config_desc","config_default_value","config_value","create_time","update_time","config_status") VALUES ('3','tools','tools配置','{"search_engine": {"endpoint": "", "key": ""}, "sms": {"provider": "\u963f\u91cc\u4e91", "key_id": "", "key_secret": "", "endpoint": "dysmsapi.aliyuncs.com", "sign_name": "", "template_code": ""}, "email": {"smtp_server": "", "smtp_port": 465, "smtp_user": "", "smtp_password": ""}, "wps": {"enabled": false, "app_id": ""}}','{"search_engine": {"endpoint": "", "key": ""}, "sms": {"provider": "\u963f\u91cc\u4e91", "key_id": "", "key_secret": "", "endpoint": "dysmsapi.aliyuncs.com", "sign_name": "", "template_code": ""}, "email": {"smtp_server": "", "smtp_port": 465, "smtp_user": "", "smtp_password": ""}, "wps": {"enabled": false, "app_id": ""}}','2025-09-08 21:49:30.949113+08','2025-09-08 22:49:21.201216+08',1);
+INSERT INTO "system_config_info" ("id","config_key","config_desc","config_default_value","config_value","create_time","update_time","config_status") VALUES ('2','connectors','connectors配置','{"qywx": [{"domain": "", "sToken": "", "sEncodingAESKey": "", "sCorpID": "", "corpsecret": "", "agent_id": ""}], "weixin": [{"domain": "", "wx_app_id": "", "wx_app_secret": ""}]}','{"qywx": [{"domain": "", "sToken": "", "sEncodingAESKey": "", "sCorpID": "", "corpsecret": "", "agent_id": ""}], "weixin": [{"domain": "", "wx_app_id": "", "wx_app_secret": ""}]}','2025-09-08 21:49:30.949113+08','2025-09-08 21:51:53.232963+08',1);
+INSERT INTO "system_config_info" ("id","config_key","config_desc","config_default_value","config_value","create_time","update_time","config_status") VALUES ('1','ai','ai配置','{"xiaoyi": {"llm_code": ""}, "embedding": {"embedding_endpoint": "https://api.siliconflow.cn/v1/embeddings", "embedding_api_key": "", "embedding_model": "BAAI/bge-m3"}, "rerank": {"enable": true, "rerank_endpoint": "https://api.siliconflow.cn/v1/rerank", "rerank_api_key": "", "rerank_model": "BAAI/bge-reranker-v2-m3"}, "stt": {"provider": "\u8baf\u98de", "xf_api": "wss://ws-api.xfyun.cn/v2/iat", "xf_api_id": "", "xf_api_key": "", "xf_api_secret": ""}}','{"xiaoyi": {"llm_code": ""}, "embedding": {"embedding_endpoint": "https://api.siliconflow.cn/v1/embeddings", "embedding_api_key": "", "embedding_model": "BAAI/bge-m3"}, "rerank": {"enable": true, "rerank_endpoint": "https://api.siliconflow.cn/v1/rerank", "rerank_api_key": "", "rerank_model": "BAAI/bge-reranker-v2-m3"}, "stt": {"provider": "\u8baf\u98de", "xf_api": "wss://ws-api.xfyun.cn/v2/iat", "xf_api_id": "", "xf_api_key": "", "xf_api_secret": ""}}','2025-09-08 21:49:30.949113+08','2025-10-08 15:49:47.128026+08',1);

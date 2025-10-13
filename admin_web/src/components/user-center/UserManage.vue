@@ -15,7 +15,7 @@ import {
 } from '@/api/user-manage';
 
 import UserUploadExcel from '@/components/user-center/UserUploadExcel.vue';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ICompany, IDepartment } from '@/types/contacts';
 import { IUsers } from '@/types/user-center';
 const userInfoStore = useUserInfoStore();
@@ -491,7 +491,7 @@ watch(
 <template>
   <el-container style="height: calc(100vh - 60px)">
     <el-main>
-      <div style="height: calc(100vh - 170px)">
+      <div style="height: calc(100vh - 120px)">
         <el-scrollbar>
           <div
             class="next-console-div"
@@ -650,7 +650,7 @@ watch(
             </div>
           </div>
           <div class="next-console-div">
-            <el-table :data="userTableData" stripe border element-loading-text="加载中" height="calc(100vh - 240px)">
+            <el-table :data="userTableData" stripe border element-loading-text="加载中" height="calc(100vh - 200px)">
               <el-table-column type="selection" width="55" />
               <el-table-column v-if="viewField.includes('用户ID')" prop="user_id" label="用户ID" sortable width="100" />
               <el-table-column
@@ -904,7 +904,7 @@ watch(
         </template>
       </el-dialog>
     </el-main>
-    <el-footer>
+    <el-footer height="40px">
       <div class="kg-pagination">
         <el-pagination
           size="small"

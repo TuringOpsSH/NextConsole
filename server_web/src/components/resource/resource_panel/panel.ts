@@ -11,7 +11,7 @@ import {
   search_resource_tags,
   update_resource_tags
 } from '@/api/resource-api';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import router from '@/router';
 import type Node from 'element-plus/es/components/tree/src/model/node';
 import {current_resource, show_resource_list} from '@/components/resource/resource_list/resource_list';

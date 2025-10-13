@@ -7,7 +7,7 @@ from app.app import app
 from app.services.contacts_service.department_service import *
 
 
-@app.route('/next_console/contacts/get_department_list', methods=['POST'])
+@app.route('/next_console_admin/contacts/get_department_list', methods=['POST'])
 @jwt_required()
 def get_department_list():
     """
@@ -19,7 +19,7 @@ def get_department_list():
     return get_department_list_info(params)
 
 
-@app.route('/next_console/contacts/get_department_info', methods=['POST'])
+@app.route('/next_console_admin/contacts/get_department_info', methods=['POST'])
 @jwt_required()
 def get_department_info():
     """
@@ -34,7 +34,7 @@ def get_department_info():
     return get_department_detail(params)
 
 
-@app.route('/next_console/contacts/search_department_info', methods=['POST'])
+@app.route('/next_console_admin/contacts/search_department_info', methods=['POST'])
 @jwt_required()
 def search_department_info():
     """

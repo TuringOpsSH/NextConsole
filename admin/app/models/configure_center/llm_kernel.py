@@ -9,6 +9,7 @@ class LLMInstance(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='自增id')
     llm_code = db.Column(db.String(255), comment='基模型实例编号')
     llm_name = db.Column(db.String(255), nullable=False, comment='基模型名称')
+    llm_label = db.Column(db.String(255), nullable=False, comment='模型显示标签')
     user_id = db.Column(db.Integer, nullable=False, comment='创建用户')
     llm_api_secret_key = db.Column(db.String(1000), comment='基模型认证钥匙')
     llm_api_access_key = db.Column(db.String(1000), comment='基模型访问钥匙')
@@ -35,6 +36,9 @@ class LLMInstance(db.Model):
     is_std_openai = db.Column(db.Boolean, default=True, comment='是否支持openai-sdk')
     support_vis = db.Column(db.Boolean, default=False, comment='是否支持视觉')
     support_file = db.Column(db.Boolean, default=False, comment='是否支持文件')
+    extra_headers = db.Column(db.JSON, comment='请求头', default={})
+    extra_body = db.Column(db.JSON, comment='请求体', default={})
+    use_default = db.Column(db.Boolean, default=True, comment='是否使用默认配置')
     create_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='创建时间')
     update_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='更新时间')
 
@@ -42,7 +46,9 @@ class LLMInstance(db.Model):
         return {
             "llm_code": self.llm_code,
             "llm_name": self.llm_name,
+            "llm_label": self.llm_label,
             "user_id": self.user_id,
+            "llm_icon": self.llm_icon,
             "llm_type": self.llm_type,
             "llm_desc": self.llm_desc,
             "llm_tags": self.llm_tags,
@@ -53,7 +59,6 @@ class LLMInstance(db.Model):
             "llm_status": self.llm_status,
             "llm_source": self.llm_source,
             "llm_is_public": self.llm_is_public,
-            "llm_icon": self.llm_icon if self.llm_icon else "",
             "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             "update_time": self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
             "frequency_penalty": self.frequency_penalty,
@@ -68,15 +73,22 @@ class LLMInstance(db.Model):
             "is_std_openai": self.is_std_openai,
             "support_file": self.support_file,
             "support_vis": self.support_vis,
+            "extra_headers": self.extra_headers,
+            "extra_body": self.extra_body,
+            "use_default": self.use_default,
         }
 
     def show_info(self):
         return {
+            "user_id": self.user_id,
             "llm_code": self.llm_code,
             "llm_name": self.llm_name,
+            "llm_company": self.llm_company if self.llm_company else "未知厂商",
+            "llm_label": self.llm_label if self.llm_label else "",
             "llm_type": self.llm_type,
             "llm_desc": self.llm_desc,
             "llm_icon": self.llm_icon,
+            "llm_tags": self.llm_tags,
             "llm_status": self.llm_status,
             "llm_is_proxy": self.llm_is_proxy,
             "support_vis": self.support_vis,
@@ -84,3 +96,82 @@ class LLMInstance(db.Model):
             "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             "update_time": self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
         }
+
+
+class LLMInstanceAuthorizeInfo(db.Model):
+    """
+    基模型实例授权信息表
+    """
+    __tablename__ = 'llm_instance_authorize_info'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='自增id')
+    user_id = db.Column(db.Integer, nullable=False, comment='用户id')
+    model_id = db.Column(db.Integer, nullable=False, comment='模型id')
+    auth_colleague_id = db.Column(db.Integer, comment='被授权用户id')
+    auth_department_id = db.Column(db.Integer, comment='被授权部门id')
+    auth_company_id = db.Column(db.Integer, comment='被授权公司id')
+    auth_friend_id = db.Column(db.Integer, comment='被授权联系人id')
+    auth_type = db.Column(db.String(255), nullable=False, comment='授权类型')
+    auth_status = db.Column(db.String(255), nullable=False, comment='授权状态')
+    create_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='创建时间')
+    update_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='更新时间')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "model_id": self.model_id,
+            "auth_colleague_id": self.auth_colleague_id,
+            "auth_department_id": self.auth_department_id,
+            "auth_company_id": self.auth_company_id,
+            "auth_friend_id": self.auth_friend_id,
+            "auth_type": self.auth_type,
+            "auth_status": self.auth_status,
+            "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            "update_time": self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
+        }
+
+
+class LLMSupplierInfo(db.Model):
+    """
+    基模型厂商信息表
+    """
+    __tablename__ = 'llm_supplier_info'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='自增id')
+    supplier_code = db.Column(db.String(255), nullable=False, comment='基模型厂商编号')
+    supplier_name = db.Column(db.String(255), nullable=False, comment='基模型厂商名称')
+    supplier_desc = db.Column(db.Text, comment='基模型厂商描述')
+    supplier_icon = db.Column(db.Text, comment='基模型厂商图标')
+    supplier_type = db.Column(db.String(10), comment='基模型厂商类型')
+    supplier_website = db.Column(db.String(255), comment='基模型厂商官网')
+    supplier_models = db.Column(db.JSON, comment='基模型厂商支持的模型列表')
+    supplier_api_url = db.Column(db.Text, comment='基模型厂商API地址')
+    supplier_status = db.Column(db.String(255), comment='基模型厂商状态', default='正常')
+    create_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='创建时间')
+    update_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='更新时间')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "supplier_code": self.supplier_code,
+            "supplier_name": self.supplier_name,
+            "supplier_desc": self.supplier_desc,
+            "supplier_icon": self.supplier_icon,
+            "supplier_website": self.supplier_website,
+            "supplier_models": self.supplier_models,
+            "supplier_api_url": self.supplier_api_url,
+            "supplier_type": self.supplier_type,
+            "supplier_status": self.supplier_status,
+            "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            "update_time": self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
+        }
+
+    def show_info(self):
+        return {
+            "id": self.id,
+            "supplier_code": self.supplier_code,
+            "supplier_name": self.supplier_name,
+            "supplier_desc": self.supplier_desc,
+            "supplier_icon": self.supplier_icon,
+            "supplier_type": self.supplier_type,
+        }
+

@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { Connection, DocumentRemove, Plus } from '@element-plus/icons-vue';
+import { Connection, DocumentRemove, Plus, TopRight } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { api as resourceApi } from '@/api/resource-api';
 import { llmInstanceSearch, systemConfigGet, systemConfigUpdate } from '@/api/user-center';
-import { useUserConfigStore } from '@/stores/userConfigStore';
-import { useUserInfoStore } from '@/stores/userInfoStore';
+import { useUserConfigStore } from '@/stores/user-config-store';
+import { useUserInfoStore } from '@/stores/user-info-store';
 import { ISystemConfig } from '@/types/user-center';
 const userInfoStore = useUserInfoStore();
 const userConfigStore = useUserConfigStore();
 const localSystemConfig = reactive<Partial<ISystemConfig>>({});
 const availAbleModels = ref([]);
+const embeddingModels = computed(() => availAbleModels.value.filter(item => item.llm_type === '向量模型'));
+const rerankModels = computed(() => availAbleModels.value.filter(item => item.llm_type === '排序模型'));
 const aiRef = ref(null);
 const connectorsRef = ref(null);
 const toolsRef = ref(null);
@@ -88,7 +90,11 @@ async function handleChangeUpdate(configKey: string) {
 }
 function getLLMDesc(llmCode: string) {
   const llm = availAbleModels.value.find(item => item.llm_code === llmCode);
-  return llm ? llm.llm_desc : llmCode;
+  return llm ? llm.llm_label : llmCode;
+}
+function getLLMIcon(llmCode: string) {
+  const llm = availAbleModels.value.find(item => item.llm_code === llmCode);
+  return llm ? llm.llm_icon : '';
 }
 async function getSystemConfigs() {
   const res = await systemConfigGet({});
@@ -120,13 +126,15 @@ async function handleUploadFullLogoSuccess(res: any) {
     handleChangeUpdate('ops');
   }
 }
+async function toLLMCreate() {
+  window.open('/next-console/app-center/llm-create', '_blank');
+}
 onMounted(async () => {
   getSystemConfigs();
   const res = await llmInstanceSearch({ fetch_all: true });
   if (!res.error_status) {
     availAbleModels.value = res.result?.data;
   }
-  console.log(window.location.hostname, window.location.host)
 });
 </script>
 
@@ -140,11 +148,11 @@ onMounted(async () => {
           </div>
           <div class="form-area-body">
             <el-form
-              ref="aiRef"
-              label-width="auto"
-              :model="localSystemConfig.ai"
-              :rules="aiFormRules"
-              @change="handleChangeUpdate('ai')"
+                ref="aiRef"
+                label-width="auto"
+                :model="localSystemConfig.ai"
+                :rules="aiFormRules"
+                @change="handleChangeUpdate('ai')"
             >
               <div class="sub-title">
                 <el-text>小亦AI助手</el-text>
@@ -152,7 +160,20 @@ onMounted(async () => {
               <el-form-item label="默认模型:" label-position="left" prop="xiaoyi.llm_code">
                 <el-select v-model="localSystemConfig.ai.xiaoyi.llm_code" @change="handleChangeUpdate('ai')">
                   <template #label="{ label }">
-                    <span>{{ getLLMDesc(label) }} </span>
+                    <div class="llm-instance-item">
+                      <div class="std-middle-box">
+                        <el-avatar
+                            :src="getLLMIcon(label)"
+                            style="width: 20px; height: 20px; background-color: white"
+                            fit="contain"
+                        />
+                      </div>
+                      <div class="std-middle-box" style="justify-content: flex-start">
+                        <el-text truncated style="font-size: 14px; font-weight: 500; line-height: 20px; color: #344054">
+                          {{ getLLMDesc(label) }}
+                        </el-text>
+                      </div>
+                    </div>
                   </template>
                   <el-option v-for="llm in availAbleModels" :key="llm.llm_code" :value="llm.llm_code">
                     <div class="llm-options">
@@ -160,38 +181,86 @@ onMounted(async () => {
                         <el-image :src="llm.llm_icon" style="width: 12px; height: 12px" />
                       </div>
                       <div>
-                        <el-text>{{ llm.llm_desc }}</el-text>
+                        <el-text>{{ llm.llm_label }}</el-text>
                       </div>
                     </div>
+                  </el-option>
+                  <el-option value="">
+                    <el-button :icon="TopRight" @click="toLLMCreate">前往模型配置 </el-button>
                   </el-option>
                 </el-select>
               </el-form-item>
               <div class="sub-title">
                 <el-text>向量化模型</el-text>
               </div>
-              <el-form-item label="访问地址:" label-position="left" prop="embedding.embedding_endpoint">
-                <el-input v-model="localSystemConfig.ai.embedding.embedding_endpoint" />
-              </el-form-item>
-              <el-form-item label="api_key:" label-position="left">
-                <el-input v-model="localSystemConfig.ai.embedding.embedding_api_key" show-password type="password" />
-              </el-form-item>
-              <el-form-item label="模型名称:" label-position="left">
-                <el-input v-model="localSystemConfig.ai.embedding.embedding_model" />
+              <el-form-item label="默认模型:" label-position="left" prop="embedding.llm_code">
+                <el-select v-model="localSystemConfig.ai.embedding.llm_code" @change="handleChangeUpdate('ai')">
+                  <template #label="{ label }">
+                    <div class="llm-instance-item">
+                      <div class="std-middle-box">
+                        <el-avatar
+                            :src="getLLMIcon(label)"
+                            style="width: 20px; height: 20px; background-color: white"
+                            fit="contain"
+                        />
+                      </div>
+                      <div class="std-middle-box" style="justify-content: flex-start">
+                        <el-text truncated style="font-size: 14px; font-weight: 500; line-height: 20px; color: #344054">
+                          {{ getLLMDesc(label) }}
+                        </el-text>
+                      </div>
+                    </div>
+                  </template>
+                  <el-option v-for="llm in embeddingModels" :key="llm.llm_code" :value="llm.llm_code">
+                    <div class="llm-options">
+                      <div>
+                        <el-image :src="llm.llm_icon" style="width: 12px; height: 12px" />
+                      </div>
+                      <div>
+                        <el-text>{{ llm.llm_label }}</el-text>
+                      </div>
+                    </div>
+                  </el-option>
+                  <el-option value="">
+                    <el-button :icon="TopRight" @click="toLLMCreate">前往模型配置 </el-button>
+                  </el-option>
+                </el-select>
               </el-form-item>
               <div class="sub-title">
                 <el-text>重排序模型</el-text>
               </div>
-              <el-form-item label="启用:" label-position="left">
-                <el-switch v-model="localSystemConfig.ai.rerank.enable" />
-              </el-form-item>
-              <el-form-item label="访问地址:" label-position="left" prop="rerank.rerank_endpoint">
-                <el-input v-model="localSystemConfig.ai.rerank.rerank_endpoint" />
-              </el-form-item>
-              <el-form-item label="api_key:" label-position="left">
-                <el-input v-model="localSystemConfig.ai.rerank.rerank_api_key" show-password type="password" />
-              </el-form-item>
-              <el-form-item label="模型名称:" label-position="left">
-                <el-input v-model="localSystemConfig.ai.rerank.rerank_model" />
+              <el-form-item label="默认模型:" label-position="left" prop="rerank.llm_code">
+                <el-select v-model="localSystemConfig.ai.rerank.llm_code" @change="handleChangeUpdate('ai')">
+                  <template #label="{ label }">
+                    <div class="llm-instance-item">
+                      <div class="std-middle-box">
+                        <el-avatar
+                            :src="getLLMIcon(label)"
+                            style="width: 20px; height: 20px; background-color: white"
+                            fit="contain"
+                        />
+                      </div>
+                      <div class="std-middle-box" style="justify-content: flex-start">
+                        <el-text truncated style="font-size: 14px; font-weight: 500; line-height: 20px; color: #344054">
+                          {{ getLLMDesc(label) }}
+                        </el-text>
+                      </div>
+                    </div>
+                  </template>
+                  <el-option v-for="llm in rerankModels" :key="llm.llm_code" :value="llm.llm_code">
+                    <div class="llm-options">
+                      <div>
+                        <el-image :src="llm.llm_icon" style="width: 12px; height: 12px" />
+                      </div>
+                      <div>
+                        <el-text>{{ llm.llm_label }}</el-text>
+                      </div>
+                    </div>
+                  </el-option>
+                  <el-option value="">
+                    <el-button :icon="TopRight" @click="toLLMCreate">前往模型配置 </el-button>
+                  </el-option>
+                </el-select>
               </el-form-item>
               <div class="sub-title">
                 <el-text>语音识别</el-text>
@@ -220,10 +289,10 @@ onMounted(async () => {
           </div>
           <div class="form-area-body">
             <el-form
-              ref="connectorsRef"
-              label-width="auto"
-              :model="localSystemConfig.connectors"
-              :rules="connectorsFormRules"
+                ref="connectorsRef"
+                label-width="auto"
+                :model="localSystemConfig.connectors"
+                :rules="connectorsFormRules"
             >
               <div class="sub-title">
                 <el-text>微信</el-text>
@@ -240,8 +309,8 @@ onMounted(async () => {
                       <el-icon><Connection /></el-icon>
                       <span>微信连接器 #{{ idx + 1 }}</span>
                       <span
-                        v-if="userConfigStore.systemConfig?.connectors.weixin.includes(item)"
-                        class="status-indicator"
+                          v-if="userConfigStore.systemConfig?.connectors.weixin.includes(item)"
+                          class="status-indicator"
                       >
                         已配置
                       </span>
@@ -276,11 +345,11 @@ onMounted(async () => {
           </div>
           <div class="form-area-body">
             <el-form
-              ref="toolsRef"
-              label-width="auto"
-              :model="localSystemConfig.tools"
-              :rules="toolsFormRules"
-              @change="handleChangeUpdate('tools')"
+                ref="toolsRef"
+                label-width="auto"
+                :model="localSystemConfig.tools"
+                :rules="toolsFormRules"
+                @change="handleChangeUpdate('tools')"
             >
               <div class="sub-title">
                 <el-text>搜索引擎</el-text>
@@ -352,11 +421,11 @@ onMounted(async () => {
           </div>
           <div class="form-area-body">
             <el-form
-              ref="opsRef"
-              label-width="auto"
-              :model="localSystemConfig.ops"
-              :rules="opsFormRules"
-              @change="handleChangeUpdate('ops')"
+                ref="opsRef"
+                label-width="auto"
+                :model="localSystemConfig.ops"
+                :rules="opsFormRules"
+                @change="handleChangeUpdate('ops')"
             >
               <div class="sub-title">
                 <el-text>自主品牌</el-text>
@@ -370,21 +439,21 @@ onMounted(async () => {
               <el-form-item label="品牌小图标:" label-position="left">
                 <div style="display: flex; gap: 12px">
                   <el-image
-                    v-if="userConfigStore.systemConfig.ops.brand.logo_url"
-                    :src="userConfigStore.systemConfig.ops.brand.logo_url"
-                    :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_url]"
-                    style="max-width: 400px"
-                    show-progress
+                      v-if="userConfigStore.systemConfig.ops.brand.logo_url"
+                      :src="userConfigStore.systemConfig.ops.brand.logo_url"
+                      :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_url]"
+                      class="icon-preview"
+                      show-progress
                   />
                   <el-upload
-                    v-model="localSystemConfig.ops.brand.logo_url"
-                    list-type="picture-card"
-                    :limit="1"
-                    accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
-                    name="data"
-                    :headers="userInfoStore.userHeader"
-                    :action="resourceApi.upload_resource"
-                    :on-success="handleUploadLogoSuccess"
+                      v-model="localSystemConfig.ops.brand.logo_url"
+                      list-type="picture-card"
+                      :limit="1"
+                      accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
+                      name="data"
+                      :headers="userInfoStore.userHeader"
+                      :action="resourceApi.upload_resource"
+                      :on-success="handleUploadLogoSuccess"
                   >
                     <el-icon><Plus /></el-icon>
                   </el-upload>
@@ -393,21 +462,21 @@ onMounted(async () => {
               <el-form-item label="品牌完整图标:" label-position="left">
                 <div style="display: flex; gap: 12px">
                   <el-image
-                    v-if="userConfigStore.systemConfig.ops.brand.logo_full_url"
-                    :src="userConfigStore.systemConfig.ops.brand.logo_full_url"
-                    :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_full_url]"
-                    show-progress
-                    style="max-width: 400px"
+                      v-if="userConfigStore.systemConfig.ops.brand.logo_full_url"
+                      :src="userConfigStore.systemConfig.ops.brand.logo_full_url"
+                      :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_full_url]"
+                      show-progress
+                      class="icon-preview"
                   />
                   <el-upload
-                    v-model="localSystemConfig.ops.brand.logo_full_url"
-                    list-type="picture-card"
-                    :limit="1"
-                    accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
-                    name="data"
-                    :headers="userInfoStore.userHeader"
-                    :action="resourceApi.upload_resource"
-                    :on-success="handleUploadFullLogoSuccess"
+                      v-model="localSystemConfig.ops.brand.logo_full_url"
+                      list-type="picture-card"
+                      :limit="1"
+                      accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
+                      name="data"
+                      :headers="userInfoStore.userHeader"
+                      :action="resourceApi.upload_resource"
+                      :on-success="handleUploadFullLogoSuccess"
                   >
                     <el-icon><Plus /></el-icon>
                   </el-upload>
@@ -428,7 +497,7 @@ onMounted(async () => {
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 40px);
   gap: 12px;
 }
 .user_info_box {
@@ -599,5 +668,21 @@ onMounted(async () => {
 .empty-state .el-icon {
   font-size: 40px;
   margin-bottom: 10px;
+}
+
+.llm-instance-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  border-radius: 8px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+.icon-preview {
+  width: 148px;
+  height: 148px;
+  border-radius: 40px;
 }
 </style>
