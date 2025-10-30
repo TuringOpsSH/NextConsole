@@ -503,9 +503,9 @@ def save_new_resource_meta(tgt_format, target_new_path, target_new_media_path, r
     db.session.add(new_resource)
     db.session.commit()
     return {
-        "id": resource.id,
-        "name": resource.resource_name + f".{tgt_format}",
-        "size": resource.resource_size_in_MB,
+        "id": new_resource.id,
+        "name": new_resource.resource_name + f".{tgt_format}",
+        "size": new_resource.resource_size_in_MB,
         "format": tgt_format,
         "url": new_resource.resource_download_url,
         "content": content,
