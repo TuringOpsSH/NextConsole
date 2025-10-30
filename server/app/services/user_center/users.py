@@ -230,6 +230,7 @@ def init_user(user, user_confirm_flag=True, user_hello_flag=True):
         resource_status="正常",
         resource_path=user.user_resource_base_path,
         resource_icon="folder.svg",
+        resource_source="resource_center",
     )
     db.session.add(user_resource)
     db.session.commit()
@@ -396,6 +397,7 @@ def login_user(data):
                 resource_status="正常",
                 resource_path=user.user_resource_base_path,
                 resource_icon="folder.svg",
+                resource_source="resource_center",
             )
             db.session.add(user_resource)
             db.session.commit()
