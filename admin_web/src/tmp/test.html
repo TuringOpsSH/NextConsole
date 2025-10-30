@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Vue 3 列表拖拽排序</title>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+        }
+
+        body {
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            line-height: 1.6;
+
+            color: #333;
+
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+            min-height: 100vh;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            padding: 20px;
+
+        }
+
+        .container {
+
+            width: 100%;
+
+            max-width: 800px;
+
+            background: white;
+
+            border-radius: 12px;
+
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+
+            overflow: hidden;
+
+        }
+
+        .header {
+
+            background: #4a6cf7;
+
+            color: white;
+
+            padding: 20px;
+
+            text-align: center;
+
+        }
+
+        .header h1 {
+
+            font-weight: 600;
+
+            font-size: 1.8rem;
+
+        }
+
+        .content {
+
+            padding: 30px;
+
+        }
+
+        .list-container {
+
+            margin-top: 20px;
+
+        }
+
+        .list-item {
+
+            display: flex;
+
+            align-items: center;
+
+            padding: 15px;
+
+            margin-bottom: 12px;
+
+            background: #f8fafc;
+
+            border-radius: 8px;
+
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+            transition: all 0.3s ease;
+
+            cursor: grab;
+
+            border-left: 4px solid #4a6cf7;
+
+        }
+
+        .list-item:hover {
+
+            background: #edf2f7;
+
+            transform: translateY(-2px);
+
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+        }
+
+        .list-item.dragging {
+
+            opacity: 0.6;
+
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+            background: #e2e8f0;
+
+        }
+
+        .list-item .drag-handle {
+
+            margin-right: 15px;
+
+            color: #718096;
+
+            cursor: grab;
+
+            user-select: none;
+
+        }
+
+        .list-item .content {
+
+            flex: 1;
+
+            padding: 0;
+
+        }
+
+        .list-item .title {
+
+            font-weight: 600;
+
+            color: #2d3748;
+
+            margin-bottom: 5px;
+
+        }
+
+        .list-item .description {
+
+            color: #718096;
+
+            font-size: 0.9rem;
+
+        }
+
+        .placeholder {
+
+            border: 2px dashed #a0aec0;
+
+            border-radius: 8px;
+
+            height: 70px;
+
+            margin-bottom: 12px;
+
+            background: #f1f5f9;
+
+        }
+
+        .instructions {
+
+            background: #e6f7ff;
+
+            padding: 15px;
+
+            border-radius: 8px;
+
+            margin-top: 25px;
+
+            border-left: 4px solid #1890ff;
+
+        }
+
+        .instructions h3 {
+
+            color: #1890ff;
+
+            margin-bottom: 10px;
+
+        }
+
+        .instructions ol {
+
+            padding-left: 20px;
+
+        }
+
+        .instructions li {
+
+            margin-bottom: 8px;
+
+        }
+
+        .reset-btn {
+
+            display: block;
+
+            width: 100%;
+
+            padding: 12px;
+
+            background: #4a6cf7;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 6px;
+
+            font-size: 1rem;
+
+            font-weight: 500;
+
+            cursor: pointer;
+
+            transition: background 0.3s;
+
+            margin-top: 20px;
+
+        }
+
+        .reset-btn:hover {
+
+            background: #3b5be0;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div id="app">
+
+    <div class="container">
+
+        <div class="header">
+
+            <h1>Vue 3 列表拖拽排序</h1>
+
+        </div>
+
+        <div class="content">
+
+            <p>拖拽下面的项目来重新排序列表：</p>
+
+
+
+            <div class="list-container">
+
+                <!-- 拖拽占位符 -->
+
+                <div v-if="dragging" class="placeholder"></div>
+
+
+
+                <!-- 列表项 -->
+
+                <div
+
+                        v-for="(item, index) in items"
+
+                        :key="item.id"
+
+                        class="list-item"
+
+                        :class="{ dragging: item.id === draggedItemId }"
+
+                        draggable="true"
+
+                        @dragstart="onDragStart($event, item)"
+
+                        @dragover="onDragOver($event, index)"
+
+                        @dragenter="onDragEnter($event)"
+
+                        @dragend="onDragEnd"
+
+                >
+
+                    <div class="drag-handle">☰</div>
+
+                    <div class="content">
+
+                        <div class="title">{{ item.title }}</div>
+
+                        <div class="description">{{ item.description }}</div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="instructions">
+
+                <h3>使用说明</h3>
+
+                <ol>
+
+                    <li>将鼠标悬停在列表项上，光标会变为抓取样式</li>
+
+                    <li>点击并按住鼠标左键拖动项目</li>
+
+                    <li>将项目拖到您想要的位置</li>
+
+                    <li>释放鼠标按钮放置项目</li>
+
+                </ol>
+
+            </div>
+
+
+
+            <button class="reset-btn" @click="resetOrder">重置为初始顺序</button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    const { createApp, ref } = Vue;
+
+
+
+    createApp({
+
+        setup() {
+
+            // 初始列表数据
+
+            const initialItems = [
+
+                { id: 1, title: '项目一', description: '这是第一个列表项目' },
+
+                { id: 2, title: '项目二', description: '这是第二个列表项目' },
+
+                { id: 3, title: '项目三', description: '这是第三个列表项目' },
+
+                { id: 4, title: '项目四', description: '这是第四个列表项目' },
+
+                { id: 5, title: '项目五', description: '这是第五个列表项目' },
+
+                { id: 6, title: '项目六', description: '这是第六个列表项目' }
+
+            ];
+
+
+
+            const items = ref([...initialItems]);
+
+            const draggedItem = ref(null);
+
+            const draggedItemId = ref(null);
+
+            const dragging = ref(false);
+
+
+
+            // 拖拽开始
+
+            const onDragStart = (event, item) => {
+
+                draggedItem.value = item;
+
+                draggedItemId.value = item.id;
+
+                dragging.value = true;
+
+
+
+                // 设置拖拽图像
+
+                event.dataTransfer.effectAllowed = 'move';
+
+                event.dataTransfer.setData('text/plain', '');
+
+
+
+                // 在 Firefox 中需要调用此方法
+
+                event.target.classList.add('dragging');
+
+            };
+
+
+
+            // 拖拽经过
+
+            const onDragOver = (event, index) => {
+
+                event.preventDefault();
+
+
+
+                if (draggedItem.value && draggedItem.value.id !== items.value[index].id) {
+
+                    // 从数组中删除拖拽的项目
+
+                    const draggedIndex = items.value.findIndex(item => item.id === draggedItem.value.id);
+
+                    items.value.splice(draggedIndex, 1);
+
+
+
+                    // 在目标位置插入项目
+
+                    items.value.splice(index, 0, draggedItem.value);
+
+                }
+
+            };
+
+
+
+            // 拖拽进入
+
+            const onDragEnter = (event) => {
+
+                event.preventDefault();
+
+            };
+
+
+
+            // 拖拽结束
+
+            const onDragEnd = () => {
+
+                dragging.value = false;
+
+                draggedItemId.value = null;
+
+                draggedItem.value = null;
+
+            };
+
+
+
+            // 重置顺序
+
+            const resetOrder = () => {
+
+                items.value = [...initialItems];
+
+            };
+
+
+
+            return {
+
+                items,
+
+                draggedItemId,
+
+                dragging,
+
+                onDragStart,
+
+                onDragOver,
+
+                onDragEnter,
+
+                onDragEnd,
+
+                resetOrder
+
+            };
+
+        }
+
+    }).mount('#app');
+
+</script>
+
+</body>
+
+</html>
