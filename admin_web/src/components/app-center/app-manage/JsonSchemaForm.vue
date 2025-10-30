@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowDown, ArrowRight, Minus, Plus, QuestionFilled, StarFilled, List } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { ref, defineProps, defineEmits, onMounted, watch, nextTick } from 'vue';
+import { ref, defineProps, defineEmits, watch } from 'vue';
 import RefSelect from '@/components/app-center/app-manage/RefSelect.vue';
 const props = defineProps({
   jsonSchema: {
@@ -205,7 +205,7 @@ function handleChangeToFile(key: string, isItem: boolean) {
     }
   };
   target.ncOrders = ['id', 'name', 'size', 'format', 'icon'];
-  delete target.enum;
+  target.enum = [];
   delete target.required;
   delete target.items;
 }
@@ -280,7 +280,7 @@ function handleChangeToFileList(key: string, isItem: boolean) {
   };
   target.ncOrders = [];
   delete target.properties;
-  delete target.enum;
+  target.enum = [];
   delete target.required;
 }
 function handleChangeToBoolean(key: string, isItem: boolean) {

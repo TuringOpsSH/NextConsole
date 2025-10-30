@@ -299,7 +299,6 @@ function getSuccessUploadTask() {
               v-show="item.task_status != 'uploading' && item.task_status != 'success'"
               class="upload-task-right-button-area"
             >
-              >
               <el-tooltip v-if="item.task_status == 'error'" content="文件为空，无法上传">
                 <el-image src="/images/notice_error_small.svg" class="upload-button-icon" />
               </el-tooltip>
