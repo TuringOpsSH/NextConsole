@@ -86,6 +86,21 @@ const accessOptions = [
 async function initShareSelector() {
   currentAllShareObjects.value = [];
   // 初始化公司架构
+  if (userInfoStore.userInfo?.user_role?.includes('next_console_admin')) {
+    currentAllShareObjects.value.push({
+      label: '全平台',
+      children: [],
+      leaf: true,
+      disabled: false,
+      structure_type: 'user',
+      department_logo: '/images/logo.svg',
+      structure_id: 'user_all',
+      user_avatar: '/images/logo.svg',
+      company_id: 0,
+      user_id: 0,
+      access: 'read'
+    } as ITree);
+  }
   if (userInfoStore.userInfo?.user_account_type == '企业账号') {
     currentAllShareObjects.value.push({
       label: userInfoStore.userInfo?.user_company,
@@ -94,11 +109,12 @@ async function initShareSelector() {
       disabled: false,
       structure_type: 'department',
       department_logo: '/images/department_default.svg',
-      structure_id: 'department',
+      structure_id: 'department_all',
       company_id: userInfoStore.userInfo?.user_company_id,
       access: 'read'
     } as ITree);
   }
+
   // 初始化好友列表
   let friendTree = {
     label: '好友',
@@ -107,8 +123,8 @@ async function initShareSelector() {
     disabled: false,
     structure_type: 'friend',
     user_avatar: '/images/default_friends.svg',
-    structure_id: 'friend',
-    user_id: -1,
+    structure_id: 'friend_all',
+    user_id: 0,
     access: ''
   } as ITree;
   currentAllShareObjects.value.push(friendTree);
@@ -405,7 +421,7 @@ function removeGetAccessObject() {
     if (object.get_access) {
       if (object.structure_type == 'department') {
         // 如果为根节点
-        if (object.structure_id == 'department') {
+        if (object.structure_id == 'department_all') {
           currentAllShareObjects.value.unshift(object);
         } else {
           // console.log(object, '开始恢复')
@@ -420,7 +436,7 @@ function removeGetAccessObject() {
           currentShareRef.value.append(object, 'department' + object.user_department_id);
         }
       } else if (object.structure_type == 'friend') {
-        if (object.structure_id == 'friend') {
+        if (object.structure_id == 'friend_all') {
           currentAllShareObjects.value.push(object);
         } else {
           currentShareRef.value.append(object, 'friend');
@@ -446,18 +462,19 @@ function addGetAccessObject() {
   }
   leftCnt.value = currentShareRef.value.getCheckedNodes().length;
   for (let object of checkedNodes) {
+    console.log(1, object)
     let accessObject = {
       label: object.label,
       leaf: true,
       disabled: false,
       structure_type: object.structure_type,
       structure_id: object.structure_id,
-      company_logo: '',
-      company_id: 0,
+      company_logo: object?.company_logo,
+      company_id: object?.company_id,
       parent_company_id: 0,
       parent_department_id: 0,
-      department_id: 0,
-      department_logo: '',
+      department_id: object?.department_id,
+      department_logo: object?.department_logo,
       user_id: object.user_id,
       user_avatar: object.user_avatar,
       user_position: object.user_position,
@@ -466,9 +483,17 @@ function addGetAccessObject() {
       user_nick_name: object.user_nick_name,
       user_nick_name_py: object.user_nick_name_py,
       access: 'use',
+      colleague_id: object?.user_id,
+      friend_id: object?.user_id,
+      auth_user_id: object?.user_id,
       children: []
     };
+    if (object.structure_type == 'department' && object?.structure_id == 'department_all') {
+      // 分享整个公司时
+      accessObject.department_id = 0;
+    }
     getAccessObjectList.value.push(accessObject);
+    console.log(2, accessObject);
   }
   emits('updateAccessList', getAccessObjectList.value);
 }
@@ -497,7 +522,9 @@ watch(
   () => mainProps.shareModel,
   val => {
     Object.assign(currentShareLLM, val);
-    initShareSelector();
+    if (!getAccessObjectList.value.length) {
+      initShareSelector();
+    }
   },
   { immediate: true, deep: true }
 );
@@ -573,6 +600,19 @@ defineExpose({
                     />
                     <el-avatar
                       v-show="data?.structure_type == 'friend' && !data?.user_avatar"
+                      style="width: 24px; height: 24px; background: #d1e9ff"
+                    >
+                      <el-text style="font-size: 8px; font-weight: 600; color: #1570ef">
+                        {{ data?.user_nick_name_py }}
+                      </el-text>
+                    </el-avatar>
+                    <el-avatar
+                      v-show="data?.structure_type == 'user' && data?.user_avatar"
+                      :src="data?.user_avatar"
+                      style="width: 24px; height: 24px; background-color: white"
+                    />
+                    <el-avatar
+                      v-show="data?.structure_type == 'user' && !data?.user_avatar"
                       style="width: 24px; height: 24px; background: #d1e9ff"
                     >
                       <el-text style="font-size: 8px; font-weight: 600; color: #1570ef">
@@ -738,55 +778,68 @@ defineExpose({
         </div>
         <el-scrollbar>
           <div id="selector_right_body" v-loading="accessLoading" element-loading-text="权限加载中...">
-            <div v-for="(access_object, idx) in getAccessObjectList" :key="idx" class="access-object-area">
+            <div v-for="(accessObject, idx) in getAccessObjectList" :key="idx" class="access-object-area">
               <div class="access-object-area-left">
                 <el-checkbox
-                  v-model="access_object.get_access"
-                  :disabled="access_object?.user_id == userInfoStore.userInfo?.user_id || access_object.disabled"
+                  v-model="accessObject.get_access"
+                  :disabled="accessObject?.user_id == userInfoStore.userInfo?.user_id || accessObject.disabled"
                   @change="updateRightCnt"
                 />
                 <div class="std-middle-box">
                   <el-avatar
-                    v-show="access_object?.structure_type == 'colleague' && access_object?.user_avatar"
-                    :src="access_object?.user_avatar"
+                    v-show="accessObject?.structure_type == 'colleague' && accessObject?.user_avatar"
+                    :src="accessObject?.user_avatar"
                     style="width: 24px; height: 24px; background-color: white"
                   />
                   <el-avatar
-                    v-show="access_object?.structure_type == 'colleague' && !access_object?.user_avatar"
+                    v-show="accessObject?.structure_type == 'colleague' && !accessObject?.user_avatar"
                     style="width: 24px; height: 24px; background: #d1e9ff"
                   >
                     <el-text style="font-size: 8px; font-weight: 600; color: #1570ef">
-                      {{ access_object?.user_nick_name_py }}
+                      {{ accessObject?.user_nick_name_py }}
                     </el-text>
                   </el-avatar>
                   <el-avatar
-                    v-show="access_object?.structure_type == 'company'"
-                    :src="access_object.company_logo"
+                    v-show="accessObject?.structure_type == 'company'"
+                    :src="accessObject.company_logo"
                     style="width: 24px; height: 24px; background-color: white"
                   />
                   <el-avatar
-                    v-show="access_object?.structure_type == 'department'"
-                    :src="access_object?.department_logo"
+                    v-show="accessObject?.structure_type == 'department'"
+                    :src="accessObject?.department_logo"
                     style="width: 24px; height: 24px; background-color: white"
                   />
                   <el-avatar
-                    v-show="access_object?.structure_type == 'friend' && access_object?.user_avatar"
-                    :src="access_object?.user_avatar"
+                    v-show="accessObject?.structure_type == 'friend' && accessObject?.user_avatar"
+                    :src="accessObject?.user_avatar"
                     style="width: 24px; height: 24px; background-color: white"
                   />
                   <el-avatar
-                    v-show="access_object?.structure_type == 'friend' && !access_object?.user_avatar"
+                    v-show="accessObject?.structure_type == 'friend' && !accessObject?.user_avatar"
                     style="width: 24px; height: 24px; background: #d1e9ff"
                   >
                     <el-text style="font-size: 8px; font-weight: 600; color: #1570ef">
-                      {{ access_object?.user_nick_name_py }}
+                      {{ accessObject?.user_nick_name_py }}
+                    </el-text>
+                  </el-avatar>
+                  <el-avatar
+                    v-show="accessObject?.structure_type == 'user' && accessObject?.user_avatar"
+                    :src="accessObject?.user_avatar"
+                    style="width: 24px; height: 24px; background-color: white"
+                  />
+                  <el-avatar
+                    v-show="accessObject?.structure_type == 'user' && !accessObject?.user_avatar"
+                    style="width: 24px; height: 24px; background: #d1e9ff"
+                  >
+                    <el-text style="font-size: 8px; font-weight: 600; color: #1570ef">
+                      {{ accessObject?.user_nick_name_py }}
                     </el-text>
                   </el-avatar>
                 </div>
                 <div>
-                  <el-text style="max-width: 170px" truncated>{{ access_object.label }}</el-text>
+                  <el-text style="max-width: 170px" truncated>{{ accessObject.label }}</el-text>
                 </div>
-                <el-tooltip v-if="access_object?.disabled" effect="dark" placement="right">
+                <el-tooltip v-if="accessObject?.disabled" effect="dark" placement="right">
                   <template #default>
                     <div class="std-middle-box">
                       <el-image src="/images/tooltip.svg" style="width: 16px; height: 16px" />
@@ -794,13 +847,13 @@ defineExpose({
                   </template>
                   <template #content>
                     <el-text
-                      v-if="access_object?.resource_id && access_object?.resource_id != currentShareLLM.id"
+                      v-if="accessObject?.resource_id && accessObject?.resource_id != currentShareLLM.id"
                       style="color: white; font-size: 12px"
                     >
                       权限来自上层资源
                     </el-text>
                     <el-text
-                      v-if="access_object?.user_id == currentShareLLM.user_id"
+                      v-if="accessObject?.user_id == currentShareLLM.user_id"
                       style="color: white; font-size: 12px"
                     >
                       拥有者
@@ -810,9 +863,9 @@ defineExpose({
               </div>
               <div class="std-middle-box" style="min-width: 70px">
                 <el-select
-                  v-model="access_object.access"
+                  v-model="accessObject.access"
                   size="small"
-                  :disabled="access_object?.user_id == userInfoStore.userInfo?.user_id || access_object.disabled"
+                  :disabled="accessObject?.user_id == userInfoStore.userInfo?.user_id || accessObject.disabled"
                   @change="args => emits('updateAccessList', getAccessObjectList)"
                 >
                   <el-option

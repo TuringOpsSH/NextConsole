@@ -110,6 +110,7 @@ class LLMInstanceAuthorizeInfo(db.Model):
     auth_department_id = db.Column(db.Integer, comment='被授权部门id')
     auth_company_id = db.Column(db.Integer, comment='被授权公司id')
     auth_friend_id = db.Column(db.Integer, comment='被授权联系人id')
+    auth_user_id = db.Column(db.Integer, comment='被授权用户id')
     auth_type = db.Column(db.String(255), nullable=False, comment='授权类型')
     auth_status = db.Column(db.String(255), nullable=False, comment='授权状态')
     create_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='创建时间')
@@ -124,6 +125,7 @@ class LLMInstanceAuthorizeInfo(db.Model):
             "auth_department_id": self.auth_department_id,
             "auth_company_id": self.auth_company_id,
             "auth_friend_id": self.auth_friend_id,
+            "auth_user_id": self.auth_user_id,
             "auth_type": self.auth_type,
             "auth_status": self.auth_status,
             "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),

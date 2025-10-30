@@ -115,10 +115,10 @@ async function callUserButton(item) {
       window.open(item.url, '_blank');
       return;
     }
-    if (item?.name == 'admin_app') {
+    if (item?.name == 'server_app') {
       const res = await domainGet();
-      const adminDomain = res.result.admin_domain;
-      window.open(adminDomain, '_blank');
+      const serverDomain = res.result.server_domain;
+      window.open(serverDomain, '_blank');
       return;
     }
     window.open(router.resolve({ name: item.name }).href, '_blank');

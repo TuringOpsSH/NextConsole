@@ -39,36 +39,39 @@ class UserInfo(db.Model):
     user_invite_code = db.Column(db.String(100), default='')
 
     def to_dict(self):
-        return {'user_id': self.user_id,
-                'user_name': self.user_name,
-                'user_nick_name': self.user_nick_name,
-                'user_nick_name_py': self.user_nick_name_py,
-                'user_code': self.user_code,
-                'user_source': self.user_source,
-                'user_email': self.user_email,
-                'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'last_login_time': self.last_login_time.strftime('%Y-%m-%d %H:%M:%S')
-                if self.last_login_time else "2999-01-01 00:00:00",
-                'user_expire_time': self.user_expire_time.strftime('%Y-%m-%d %H:%M:%S')
-                if self.user_expire_time else "2999-01-01 00:00:00",
-                'user_phone': self.user_phone,
-                'user_gender': self.user_gender,
-                'user_age': self.user_age,
-                'user_avatar': self.user_avatar,
-                'user_company': self.user_company,
-                'user_account_type': self.user_account_type,
-                'user_department': self.user_department,
-                'user_position': self.user_position,
-                'user_wx_nickname': self.user_wx_nickname,
-                'user_wx_avatar': self.user_wx_avatar,
-                'user_wx_openid': self.user_wx_openid,
-                'user_wx_union_id': self.user_wx_union_id,
-                'user_status': self.user_status,
-                'user_area': self.user_area,
-                'user_resource_limit': self.user_resource_limit,
-                "user_invite_code": self.user_invite_code,
-                }
+        return {
+            'user_id': self.user_id,
+            'user_name': self.user_name,
+            'user_nick_name': self.user_nick_name,
+            'user_nick_name_py': self.user_nick_name_py,
+            'user_code': self.user_code,
+            'user_source': self.user_source,
+            'user_email': self.user_email,
+            'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'last_login_time': self.last_login_time.strftime('%Y-%m-%d %H:%M:%S')
+            if self.last_login_time else "2999-01-01 00:00:00",
+            'user_expire_time': self.user_expire_time.strftime('%Y-%m-%d %H:%M:%S')
+            if self.user_expire_time else "2999-01-01 00:00:00",
+            'user_phone': self.user_phone,
+            'user_gender': self.user_gender,
+            'user_age': self.user_age,
+            'user_avatar': self.user_avatar,
+            'user_company': self.user_company,
+            'user_account_type': self.user_account_type,
+            'user_department': self.user_department,
+            'user_position': self.user_position,
+            'user_wx_nickname': self.user_wx_nickname,
+            'user_wx_avatar': self.user_wx_avatar,
+            'user_wx_openid': self.user_wx_openid,
+            'user_wx_union_id': self.user_wx_union_id,
+            'user_status': self.user_status,
+            'user_area': self.user_area,
+            'user_resource_limit': self.user_resource_limit,
+            "user_invite_code": self.user_invite_code,
+            "user_company_id": self.user_company_id,
+            "user_department_id": self.user_department_id,
+        }
 
     def get_id(self):
         return str(self.user_id)

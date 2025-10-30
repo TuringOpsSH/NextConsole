@@ -8,6 +8,7 @@ import FileReaderNodeAttrEdit from '@/components/app-center/app-manage/FileReade
 import FileSplitterNodeAttrEdit from '@/components/app-center/app-manage/FileSplitterNodeAttrEdit.vue';
 import JsonSchemaForm from '@/components/app-center/app-manage/JsonSchemaForm.vue';
 import RagNodeAttrEdit from '@/components/app-center/app-manage/RagNodeAttrEdit.vue';
+import StartNodeAttrEdit from '@/components/app-center/app-manage/StartNodeAttrEdit.vue';
 import SubWorkFlowNodeAttrEdit from '@/components/app-center/app-manage/SubWorkFlowNodeAttrEdit.vue';
 import TemplateEditor from '@/components/app-center/app-manage/TemplateEditor.vue';
 import ToolNodeAttrEdit from '@/components/app-center/app-manage/ToolNodeAttrEdit.vue';
@@ -19,7 +20,7 @@ const workflowStore = useWorkflowStore();
 const isResizing = ref(false);
 const startX = ref(0);
 const startWidth = ref(0);
-const nodeDetailWidth = ref(560);
+const nodeDetailWidth = ref(620);
 const nodeDetailRef = ref();
 const showInputParamsFlag = ref(false);
 const showOutputParamsFlag = ref(false);
@@ -27,6 +28,12 @@ const showRunParamsFlag = ref(false);
 const nodeNameEdit = ref(false);
 const nodeDescEdit = ref(false);
 const searchSubWorkflowLoading = ref(false);
+const parallelType = ['llm', 'rag'];
+
+const resultMergeOptions = ref([
+  { label: '默认', value: 'list' },
+  { label: '去重', value: 'set' }
+]);
 function handleOverNodeDetail(event) {
   const rect = nodeDetailRef.value.getBoundingClientRect();
   const leftBorderWidth = 10; // 左侧边框可触发拖拉的宽度范围
@@ -623,6 +630,7 @@ defineExpose({
                     ? '配置工作流输入变量，请不要与系统变量命名冲突~'
                     : '配置节点输入变量'
                 "
+                placement="top"
               >
                 <el-icon>
                   <QuestionFilled />
@@ -658,6 +666,7 @@ defineExpose({
             </el-form>
           </div>
         </div>
+        <StartNodeAttrEdit />
         <AgentNodeAttrEdit />
         <ToolNodeAttrEdit />
         <RagNodeAttrEdit />
@@ -684,7 +693,7 @@ defineExpose({
               <el-text> 输出设置 </el-text>
             </div>
             <div>
-              <el-tooltip content="配置结果的解析格式、配置结果输出至消息流">
+              <el-tooltip content="配置结果的解析格式、配置结果输出至消息流" placement="top">
                 <el-icon>
                   <QuestionFilled />
                 </el-icon>
@@ -844,7 +853,7 @@ defineExpose({
             </el-form>
           </div>
         </div>
-        <div v-if="!['start'].includes(workflowStore.currentNodeDetail?.node_type)" class="config-item">
+        <div class="config-item">
           <div class="config-head">
             <div class="std-middle-box">
               <el-icon v-if="showRunParamsFlag" class="config-arrow" @click="showRunParamsFlag = false">
@@ -858,7 +867,7 @@ defineExpose({
               <el-text> 运行设置 </el-text>
             </div>
             <div>
-              <el-tooltip content="配置节点运行策略">
+              <el-tooltip content="配置节点运行策略" placement="top">
                 <el-icon>
                   <QuestionFilled />
                 </el-icon>
@@ -873,7 +882,10 @@ defineExpose({
                   @change="updateNodeRunConfig"
                 >
                   <el-radio-button value="sync">默认</el-radio-button>
-                  <el-radio-button value="parallel" :disabled="workflowStore.currentNodeDetail.node_type != 'llm'">
+                  <el-radio-button
+                    value="parallel"
+                    :disabled="!parallelType.includes(workflowStore.currentNodeDetail.node_type)"
+                  >
                     并行
                   </el-radio-button>
                   <el-radio-button value="async" disabled>异步</el-radio-button>
@@ -897,6 +909,18 @@ defineExpose({
                     :disabled="!value?.type?.includes('array')"
                   />
                 </el-select>
+              </el-form-item>
+              <el-form-item
+                v-show="workflowStore.currentNodeDetail.node_run_model_config.node_run_model == 'parallel'"
+                label="结果汇总模式"
+                prop="result_merge_model"
+              >
+                <el-segmented
+                  v-model="workflowStore.currentNodeDetail.node_run_model_config.result_merge_model"
+                  block
+                  :options="resultMergeOptions"
+                  @change="updateNodeRunConfig"
+                />
               </el-form-item>
               <el-form-item label="运行超时（秒）" prop="node_timeout">
                 <el-input-number

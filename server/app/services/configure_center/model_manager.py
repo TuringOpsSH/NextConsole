@@ -1,6 +1,6 @@
 from app.app import app, db
 import uuid
-from sqlalchemy import or_, distinct
+from sqlalchemy import or_, distinct, and_
 from app.models.configure_center.llm_kernel import LLMInstance, LLMInstanceAuthorizeInfo
 from app.services.configure_center.response_utils import next_console_response
 from app.models.user_center.user_info import UserInfo
@@ -21,137 +21,137 @@ def model_instance_get(params):
     return next_console_response(result=llm_instance.to_dict())
 
 
-def model_instance_add(params):
-    """
-    添加模型实例
-    :return:
-    """
-    llm_name = params.get("llm_name", "")
-    llm_type = params.get("llm_type", "")
-    llm_api_secret_key = params.get("llm_api_secret_key", "")
-    llm_api_access_key = params.get("llm_api_access_key", "")
-    llm_desc = params.get("llm_desc", "")
-    llm_tags = params.get("llm_tags", "")
-    llm_company = params.get("llm_company", "")
-    llm_is_proxy = params.get("llm_is_proxy", False)
-    llm_base_url = params.get("llm_base_url", "")
-    llm_proxy_url = params.get("llm_proxy_url", app.config['openai_url'])
-    llm_is_public = params.get("llm_is_public", False)
-    if llm_is_public not in (True, False):
-        return next_console_response(error_status=True, error_message="代理参数错误")
-    llm_source = params.get("llm_source", "")
-    user_id = int(params.get("user_id"))
-    llm_status = "正常"
-    frequency_penalty = params.get("frequency_penalty", 0)
-    max_tokens = params.get("max_tokens", 100000)
-    n = params.get("n", 1)
-    presence_penalty = params.get("presence_penalty", 0)
-    response_format = params.get("response_format", {
-        "type": "text",
-    })
-    stop = params.get("stop", [])
-    stream = params.get("stream", True)
-    temperature = params.get("temperature", 1)
-    top_p = params.get("top_p", 1)
-    # 检查模型是否存在
-    old_llm_instance = LLMInstance.query.filter_by(
-        llm_name=llm_name,
-        llm_api_secret_key=llm_api_secret_key,
-        user_id=user_id
-    ).first()
-    if old_llm_instance:
-        return next_console_response(error_status=True, error_message="模型已存在")
-    llm_code = str(uuid.uuid4())[:20]
-    llm_instance = LLMInstance(
-        llm_code=llm_code, llm_name=llm_name, user_id=user_id,
-        llm_api_secret_key=llm_api_secret_key, llm_api_access_key=llm_api_access_key,
-        llm_type=llm_type, llm_desc=llm_desc, llm_tags=llm_tags, llm_company=llm_company,llm_is_proxy=llm_is_proxy,
-        llm_base_url=llm_base_url, llm_proxy_url=llm_proxy_url,
-        llm_status=llm_status, llm_source=llm_source, llm_is_public=llm_is_public,
-        frequency_penalty=frequency_penalty, max_tokens=max_tokens, n=n, presence_penalty=presence_penalty,
-        response_format=response_format, stop=stop, stream=stream, temperature=temperature, top_p=top_p
-    )
-    db.session.add(llm_instance)
-    db.session.commit()
-    return next_console_response(result=llm_instance.to_dict())
-
-
-def model_instance_delete(params):
-    """
-    删除模型实例
-    :param params:
-    :return:
-    """
-    llm_codes = params.get("llm_codes", [])
-    user_id = int(params.get("user_id"))
-    llm_instances = LLMInstance.query.filter(
-        LLMInstance.llm_code.in_(llm_codes),
-        LLMInstance.user_id == user_id
-    ).all()
-    if llm_instances:
-        for llm_instance in llm_instances:
-            db.session.delete(llm_instance)
-        db.session.commit()
-        return next_console_response(result="删除成功")
-    else:
-        return next_console_response(error_status=True, error_message="模型不存在")
-
-
-def model_instance_update(params):
-    """
-    更新模型实例
-    :param params:
-    :return:
-    """
-    llm_code = params.get("llm_code")
-    user_id = int(params.get("user_id"))
-    target_llm_instance = LLMInstance.query.filter_by(llm_code=llm_code).first()
-    if not target_llm_instance:
-        return next_console_response(error_status=True, error_message="模型不存在")
-    if target_llm_instance.user_id != user_id:
-        return next_console_response(error_status=True, error_message="无权限修改")
-    llm_name = params.get("llm_name")
-    llm_type = params.get("llm_type")
-    llm_api_secret_key = params.get("llm_api_secret_key")
-    llm_api_access_key = params.get("llm_api_access_key")
-    llm_desc = params.get("llm_desc")
-    llm_tags = params.get("llm_tags")
-    llm_company = params.get("llm_company")
-    llm_is_proxy = params.get("llm_is_proxy", False)
-    llm_is_public = params.get("llm_is_public", False)
-    llm_source = params.get("llm_source")
-    llm_base_url = params.get("llm_base_url")
-    llm_proxy_url = params.get("llm_proxy_url", app.config['openai_url'])
-    if llm_is_proxy not in (True, False):
-        return next_console_response(error_status=True, error_message="代理参数错误")
-    if llm_name and llm_name != target_llm_instance.llm_name:
-        target_llm_instance.llm_name = llm_name
-    if llm_type is not None and llm_type != target_llm_instance.llm_type:
-        target_llm_instance.llm_type = llm_type
-    if llm_api_secret_key is not None and llm_api_secret_key != target_llm_instance.llm_api_secret_key:
-        target_llm_instance.llm_api_secret_key = llm_api_secret_key
-    if llm_api_access_key is not None and llm_api_access_key != target_llm_instance.llm_api_access_key:
-        target_llm_instance.llm_api_access_key = llm_api_access_key
-    if llm_desc is not None and llm_desc != target_llm_instance.llm_desc:
-        target_llm_instance.llm_desc = llm_desc
-    if llm_tags is not None and llm_tags != target_llm_instance.llm_tags:
-        target_llm_instance.llm_tags = llm_tags
-    if llm_company is not None and llm_company != target_llm_instance.llm_company:
-        target_llm_instance.llm_company = llm_company
-    if llm_is_proxy is not None and llm_is_proxy != target_llm_instance.llm_is_proxy:
-        target_llm_instance.llm_is_proxy = llm_is_proxy
-    if llm_is_public is not None and llm_is_public != target_llm_instance.llm_is_public:
-        target_llm_instance.llm_is_public = llm_is_public
-    if llm_source is not None and llm_source != target_llm_instance.llm_source:
-        target_llm_instance.llm_source = llm_source
-    if llm_base_url is not None and llm_base_url != target_llm_instance.llm_base_url:
-        target_llm_instance.llm_base_url = llm_base_url
-    if llm_proxy_url is not None and llm_proxy_url != target_llm_instance.llm_proxy_url:
-        target_llm_instance.llm_proxy_url = llm_proxy_url
-
-    db.session.add(target_llm_instance)
-    db.session.commit()
-    return next_console_response(result=target_llm_instance.to_dict())
+# def model_instance_add(params):
+#     """
+#     添加模型实例
+#     :return:
+#     """
+#     llm_name = params.get("llm_name", "")
+#     llm_type = params.get("llm_type", "")
+#     llm_api_secret_key = params.get("llm_api_secret_key", "")
+#     llm_api_access_key = params.get("llm_api_access_key", "")
+#     llm_desc = params.get("llm_desc", "")
+#     llm_tags = params.get("llm_tags", "")
+#     llm_company = params.get("llm_company", "")
+#     llm_is_proxy = params.get("llm_is_proxy", False)
+#     llm_base_url = params.get("llm_base_url", "")
+#     llm_proxy_url = params.get("llm_proxy_url", app.config['openai_url'])
+#     llm_is_public = params.get("llm_is_public", False)
+#     if llm_is_public not in (True, False):
+#         return next_console_response(error_status=True, error_message="代理参数错误")
+#     llm_source = params.get("llm_source", "")
+#     user_id = int(params.get("user_id"))
+#     llm_status = "正常"
+#     frequency_penalty = params.get("frequency_penalty", 0)
+#     max_tokens = params.get("max_tokens", 100000)
+#     n = params.get("n", 1)
+#     presence_penalty = params.get("presence_penalty", 0)
+#     response_format = params.get("response_format", {
+#         "type": "text",
+#     })
+#     stop = params.get("stop", [])
+#     stream = params.get("stream", True)
+#     temperature = params.get("temperature", 1)
+#     top_p = params.get("top_p", 1)
+#     # 检查模型是否存在
+#     old_llm_instance = LLMInstance.query.filter_by(
+#         llm_name=llm_name,
+#         llm_api_secret_key=llm_api_secret_key,
+#         user_id=user_id
+#     ).first()
+#     if old_llm_instance:
+#         return next_console_response(error_status=True, error_message="模型已存在")
+#     llm_code = str(uuid.uuid4())[:20]
+#     llm_instance = LLMInstance(
+#         llm_code=llm_code, llm_name=llm_name, user_id=user_id,
+#         llm_api_secret_key=llm_api_secret_key, llm_api_access_key=llm_api_access_key,
+#         llm_type=llm_type, llm_desc=llm_desc, llm_tags=llm_tags, llm_company=llm_company,llm_is_proxy=llm_is_proxy,
+#         llm_base_url=llm_base_url, llm_proxy_url=llm_proxy_url,
+#         llm_status=llm_status, llm_source=llm_source, llm_is_public=llm_is_public,
+#         frequency_penalty=frequency_penalty, max_tokens=max_tokens, n=n, presence_penalty=presence_penalty,
+#         response_format=response_format, stop=stop, stream=stream, temperature=temperature, top_p=top_p
+#     )
+#     db.session.add(llm_instance)
+#     db.session.commit()
+#     return next_console_response(result=llm_instance.to_dict())
+#
+#
+# def model_instance_delete(params):
+#     """
+#     删除模型实例
+#     :param params:
+#     :return:
+#     """
+#     llm_codes = params.get("llm_codes", [])
+#     user_id = int(params.get("user_id"))
+#     llm_instances = LLMInstance.query.filter(
+#         LLMInstance.llm_code.in_(llm_codes),
+#         LLMInstance.user_id == user_id
+#     ).all()
+#     if llm_instances:
+#         for llm_instance in llm_instances:
+#             db.session.delete(llm_instance)
+#         db.session.commit()
+#         return next_console_response(result="删除成功")
+#     else:
+#         return next_console_response(error_status=True, error_message="模型不存在")
+#
+#
+# def model_instance_update(params):
+#     """
+#     更新模型实例
+#     :param params:
+#     :return:
+#     """
+#     llm_code = params.get("llm_code")
+#     user_id = int(params.get("user_id"))
+#     target_llm_instance = LLMInstance.query.filter_by(llm_code=llm_code).first()
+#     if not target_llm_instance:
+#         return next_console_response(error_status=True, error_message="模型不存在")
+#     if target_llm_instance.user_id != user_id:
+#         return next_console_response(error_status=True, error_message="无权限修改")
+#     llm_name = params.get("llm_name")
+#     llm_type = params.get("llm_type")
+#     llm_api_secret_key = params.get("llm_api_secret_key")
+#     llm_api_access_key = params.get("llm_api_access_key")
+#     llm_desc = params.get("llm_desc")
+#     llm_tags = params.get("llm_tags")
+#     llm_company = params.get("llm_company")
+#     llm_is_proxy = params.get("llm_is_proxy", False)
+#     llm_is_public = params.get("llm_is_public", False)
+#     llm_source = params.get("llm_source")
+#     llm_base_url = params.get("llm_base_url")
+#     llm_proxy_url = params.get("llm_proxy_url", app.config['openai_url'])
+#     if llm_is_proxy not in (True, False):
+#         return next_console_response(error_status=True, error_message="代理参数错误")
+#     if llm_name and llm_name != target_llm_instance.llm_name:
+#         target_llm_instance.llm_name = llm_name
+#     if llm_type is not None and llm_type != target_llm_instance.llm_type:
+#         target_llm_instance.llm_type = llm_type
+#     if llm_api_secret_key is not None and llm_api_secret_key != target_llm_instance.llm_api_secret_key:
+#         target_llm_instance.llm_api_secret_key = llm_api_secret_key
+#     if llm_api_access_key is not None and llm_api_access_key != target_llm_instance.llm_api_access_key:
+#         target_llm_instance.llm_api_access_key = llm_api_access_key
+#     if llm_desc is not None and llm_desc != target_llm_instance.llm_desc:
+#         target_llm_instance.llm_desc = llm_desc
+#     if llm_tags is not None and llm_tags != target_llm_instance.llm_tags:
+#         target_llm_instance.llm_tags = llm_tags
+#     if llm_company is not None and llm_company != target_llm_instance.llm_company:
+#         target_llm_instance.llm_company = llm_company
+#     if llm_is_proxy is not None and llm_is_proxy != target_llm_instance.llm_is_proxy:
+#         target_llm_instance.llm_is_proxy = llm_is_proxy
+#     if llm_is_public is not None and llm_is_public != target_llm_instance.llm_is_public:
+#         target_llm_instance.llm_is_public = llm_is_public
+#     if llm_source is not None and llm_source != target_llm_instance.llm_source:
+#         target_llm_instance.llm_source = llm_source
+#     if llm_base_url is not None and llm_base_url != target_llm_instance.llm_base_url:
+#         target_llm_instance.llm_base_url = llm_base_url
+#     if llm_proxy_url is not None and llm_proxy_url != target_llm_instance.llm_proxy_url:
+#         target_llm_instance.llm_proxy_url = llm_proxy_url
+#
+#     db.session.add(target_llm_instance)
+#     db.session.commit()
+#     return next_console_response(result=target_llm_instance.to_dict())
 
 
 def model_instance_search(params):
@@ -172,7 +172,7 @@ def model_instance_search(params):
     filter_list = [
         or_(
             LLMInstance.user_id == user_id,
-            LLMInstance.llm_is_public
+            LLMInstance.id.in_(check_model_authorize(user_id))
         )
     ]
     if llm_code:
@@ -251,13 +251,17 @@ def model_instance_search(params):
     })
 
 
-def check_model_authorize(user_id, model_list):
+def check_model_authorize(user_id, model_list=None, required_access=None, show_access=False):
     """
     检查用户是否有模型使用权限,如果有权限，返回有权限的模型列表
     1. 用户自己创建的模型
-    2. 用户被授权的模型
-    3. 用户所在部门被授权的模型
-    4. 用户所在公司的模型
+    2. 全平台公开 （auth_user_id = 0），
+    3. 用户被明确授权的模型（好友,同事,用户）
+    4. 用户所在部门被授权的模型
+    5. 用户所在公司的模型
+    6. 用户好友的全部好友类型
+    :param required_access:
+    :param show_access:
     :param user_id:
     :param model_list:
     :return:
@@ -271,6 +275,12 @@ def check_model_authorize(user_id, model_list):
     ).first()
     all_company_ids = []
     all_department_ids = []
+    all_access_type = ['read', 'use', 'edit', 'manage', 'own']
+    if required_access and required_access not in all_access_type:
+        return results
+    elif required_access:
+        required_access_idx = all_access_type.index(required_access)
+        required_access = all_access_type[required_access_idx:]
     if target_user.user_company_id:
         all_company_ids.append(target_user.user_company_id)
         target_company = CompanyInfo.query.filter(
@@ -296,21 +306,102 @@ def check_model_authorize(user_id, model_list):
             ).first()
             if target_department:
                 all_department_ids.append(target_department.id)
-    all_llm_ids = [model.id for model in model_list]
-    authorize_info = LLMInstanceAuthorizeInfo.query.filter(
-        LLMInstanceAuthorizeInfo.model_id.in_(all_llm_ids),
+    # 泛授权类型（全部好友）
+    from app.models.user_center.user_info import UserFriendsRelation
+    friends_relations = UserFriendsRelation.query.filter(
+        UserFriendsRelation.rel_status >= 1,
+        or_(
+            and_(
+                UserFriendsRelation.user_id == user_id,
+                UserFriendsRelation.rel_status.in_([1, 2])
+            ),
+            and_(
+                UserFriendsRelation.friend_id == user_id,
+                UserFriendsRelation.rel_status.in_([1, 3])
+            )
+        ),
+    ).all()
+    friend_ids = []
+    for friends_relation in friends_relations:
+        if friends_relation.user_id != user_id:
+            friend_ids.append(friends_relation.friend_id)
+        if friends_relation.friend_id != user_id:
+            friend_ids.append(friends_relation.friend_id)
+    friend_ids = list(set(friend_ids))
+    filter_conditions = [
         LLMInstanceAuthorizeInfo.auth_status == '正常',
         or_(
-            LLMInstanceAuthorizeInfo.auth_colleague_id == user_id,
+            LLMInstanceAuthorizeInfo.user_id == user_id,
+            LLMInstanceAuthorizeInfo.auth_user_id == 0,
+            LLMInstanceAuthorizeInfo.auth_user_id == user_id,
             LLMInstanceAuthorizeInfo.auth_friend_id == user_id,
-            LLMInstanceAuthorizeInfo.auth_friend_id == -1,
-            LLMInstanceAuthorizeInfo.auth_company_id.in_(all_company_ids),
+            and_(
+                LLMInstanceAuthorizeInfo.user_id.in_(friend_ids),
+                LLMInstanceAuthorizeInfo.auth_friend_id == 0
+            ),
+            LLMInstanceAuthorizeInfo.auth_colleague_id == user_id,
             LLMInstanceAuthorizeInfo.auth_department_id.in_(all_department_ids),
+            and_(
+                LLMInstanceAuthorizeInfo.auth_company_id.in_(all_company_ids),
+                LLMInstanceAuthorizeInfo.auth_department_id == 0
+            )
         )
+    ]
+    if model_list:
+        all_llm_ids = [model.id for model in model_list if model.user_id != user_id]
+        filter_conditions.append(LLMInstanceAuthorizeInfo.model_id.in_(all_llm_ids))
+    if required_access:
+        filter_conditions.append(LLMInstanceAuthorizeInfo.auth_type.in_(required_access))
+    authorize_info = LLMInstanceAuthorizeInfo.query.filter(
+        *filter_conditions
     ).all()
     all_authorize_model_ids = list(set([info.model_id for info in authorize_info]))
+    if not model_list:
+        return all_authorize_model_ids
     for model in model_list:
         if model.user_id == user_id or model.id in all_authorize_model_ids:
             results.append(model)
+    if show_access:
+        access_map = {}
+        for info in authorize_info:
+            if info.model_id not in access_map:
+                access_map[info.model_id] = []
+            if info.auth_type not in access_map[info.model_id]:
+                access_map[info.model_id].append(info.auth_type)
+        for model in model_list:
+            if model.user_id == user_id:
+                access_map[model.id] = all_access_type
+        return results, access_map
     return results
+
+
+def remove_access_service(params):
+    """
+    移除模型访问权限
+    :return:
+    """
+    user_id = int(params.get("user_id"))
+    llm_code = params.get("llm_code")
+    access_id = params.get("access_id")
+    target_llm_instance = LLMInstance.query.filter(
+        LLMInstance.llm_code == llm_code,
+        LLMInstance.llm_status != "已删除"
+    ).first()
+    if not target_llm_instance:
+        return next_console_response(error_status=True, error_message="模型不存在")
+    required_access = 'manage'
+    _, access_info = check_model_authorize(
+        user_id, [target_llm_instance], required_access=required_access, show_access=True)
+    if not access_info:
+        return next_console_response(error_status=True, error_message="无权限修改")
+    target_access = LLMInstanceAuthorizeInfo.query.filter(
+        LLMInstanceAuthorizeInfo.id == access_id,
+        LLMInstanceAuthorizeInfo.model_id == target_llm_instance.id
+    ).first()
+    if not target_access:
+        return next_console_response(error_status=True, error_message="授权信息不存在")
+    target_access.auth_status = "已移除"
+    db.session.add(target_access)
+    db.session.commit()
+    return next_console_response(result="移除成功")
 

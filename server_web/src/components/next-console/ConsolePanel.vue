@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp } from '@element-plus/icons-vue';
+import { ArrowDown, ArrowUp, Memo } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 import { onBeforeMount } from 'vue-demi';
 import { appSearch } from '@/api/app-center';
 import { delete_session, search_session, update_session } from '@/api/next-console';
 import { session_history_top5 } from '@/components/next-console/messages-flow/sessions';
 import router from '@/router';
 import { useSessionStore } from '@/stores/sessionStore';
-import { useUserInfoStore } from '@/stores/user-info-store';
-import { session_item } from '@/types/next-console';
 import { useUserConfigStore } from '@/stores/user-config-store';
+import { useUserInfoStore } from '@/stores/user-info-store';
+import { ISessionItem } from '@/types/next-console';
 const sessionStore = useSessionStore();
 const userInfoStore = useUserInfoStore();
 const userConfigStore = useUserConfigStore();
@@ -30,7 +30,7 @@ const currentApp = ref({
   app_icon: '/images/logo.svg'
 });
 const currentAppList = ref([]);
-const currentSession = ref<session_item>({
+const currentSession = ref<ISessionItem>({
   session_source: 'next_search'
 });
 const newSessionLoading = ref(false);
@@ -61,7 +61,7 @@ function switchPanel() {
     router.replace({ query: { ...router.currentRoute.value.query, show_panel: 'false' } });
   }
 }
-async function panelRewriteSessionTopic(item: session_item) {
+async function panelRewriteSessionTopic(item: ISessionItem) {
   let params = {
     session_id: item.id,
     session_topic: item.session_topic
@@ -72,7 +72,7 @@ async function panelRewriteSessionTopic(item: session_item) {
     ElMessage.success('修改成功');
   }
 }
-async function panelDeleteSession(item: session_item) {
+async function panelDeleteSession(item: ISessionItem) {
   let params = {
     session_id: item.id
   };
@@ -98,7 +98,7 @@ async function panelDeleteSession(item: session_item) {
     sessionButtonsRef.value[i]?.hide();
   }
 }
-async function focusSessionTopicInput(item: session_item) {
+async function focusSessionTopicInput(item: ISessionItem) {
   item.is_edit = true;
   // 在渲染完成后聚焦
   nextTick().then(() => {
@@ -129,7 +129,7 @@ async function getLastedSession() {
     }
   }
 }
-async function changeCurrentSession(targetSession: session_item, event: any) {
+async function changeCurrentSession(targetSession: ISessionItem, event: any) {
   if (targetSession?.is_edit) {
     return;
   }
@@ -247,7 +247,7 @@ onBeforeMount(() => {
     currentApp.value.app_code = router.currentRoute.value.params.appCode;
   }
   if (router.currentRoute.value.params?.session_code) {
-    currentSession.value.session_code = router.currentRoute.value.params.session_code;
+    currentSession.value.session_code = router.currentRoute.value.params.session_code as string;
   }
 });
 onMounted(async () => {
@@ -272,8 +272,10 @@ onMounted(async () => {
         </el-text>
       </div>
       <div id="layout_button" @click="switchPanel">
-        <el-tooltip effect="light" :content="$t('closeSidebar')">
-          <el-image src="/images/layout_alt_grey.svg" style="width: 16px; height: 16px" />
+        <el-tooltip effect="light" :content="$t('closeSidebar')" placement="right" :show-after="1500">
+          <el-icon>
+            <Memo />
+          </el-icon>
         </el-tooltip>
       </div>
     </div>

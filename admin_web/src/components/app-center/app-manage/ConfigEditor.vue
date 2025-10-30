@@ -83,7 +83,7 @@ watch(
       if (newVal == area.area) {
         appInfoStore.updateAppConfigArea(area);
         if (!appInfoStore.currentApp.app_code) {
-          appInfoStore.currentApp.app_code = router.currentRoute.value.params.app_code[0] || '';
+          appInfoStore.currentApp.app_code = (router.currentRoute.value.params.app_code as string) || '';
           const res = await appDetail({
             app_code: appInfoStore.currentApp.app_code
           });
@@ -113,126 +113,131 @@ watch(
 
 <template>
   <el-container>
-    <el-main v-if="appInfoStore.currentAppConfigArea.area == 'welcome'">
-      <div class="preview-area">
-        <div class="preview-area-top">
-          <div class="top-row">
-            <div class="icon-area">
-              <el-image :src="welcomeConfig.image" class="welcome-icon" />
+    <el-main>
+      <el-scrollbar>
+        <div class="app-config-area">
+          <div v-if="appInfoStore.currentAppConfigArea.area == 'welcome'" class="welcome-area">
+            <div class="preview-area">
+              <div class="preview-area-top">
+                <div class="top-row">
+                  <div class="icon-area">
+                    <el-image :src="welcomeConfig.image" class="welcome-icon" />
+                  </div>
+                  <div>
+                    <el-text class="title-text">{{ welcomeConfig.title }}</el-text>
+                  </div>
+                </div>
+                <div>
+                  <el-text class="desc-text">{{ welcomeConfig.description }}</el-text>
+                </div>
+              </div>
+              <div class="preview-area-body" />
+              <div class="preview-area-foot">
+                <el-tag
+                  v-for="(question, index) in welcomeConfig.prefixQuestions"
+                  :key="index"
+                  class="prefix-question-tag"
+                  size="large"
+                  round
+                >
+                  {{ question }}
+                </el-tag>
+              </div>
             </div>
-            <div>
-              <el-text class="title-text">{{ welcomeConfig.title }}</el-text>
+
+            <div class="config-area">
+              <el-form ref="welcomeConfigRef" :model="welcomeConfig" :rules="welcomeConfigRules">
+                <el-form-item label="标题" prop="title">
+                  <el-input v-model="welcomeConfig.title" placeholder="请输入标题" />
+                </el-form-item>
+                <el-form-item label="描述" prop="description">
+                  <el-input v-model="welcomeConfig.description" type="textarea" placeholder="请输入描述" />
+                </el-form-item>
+                <el-form-item label="图片" prop="image">
+                  <el-upload
+                    drag
+                    :show-file-list="false"
+                    accept=".png, .jpg, .jpeg, .gif, .bmp, .webp"
+                    name="app_icon"
+                    :headers="userInfoStore.userHeader"
+                    :before-upload="beforeAvatarUpload"
+                    :action="api.app_icon_upload"
+                    :on-success="handleAvatarUploadSuccess"
+                    style="min-width: 160px; max-width: 200px"
+                  >
+                    <div v-if="welcomeConfig.image">
+                      <el-image :src="welcomeConfig.image" style="border-radius: 10%" />
+                    </div>
+                    <div v-else>
+                      <el-avatar src="/images/upload_cloud.svg" style="background: #f2f4f7" fit="scale-down" />
+                      <i class="el-icon-upload" />
+                      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                    </div>
+                  </el-upload>
+                </el-form-item>
+                <el-form-item label="前置问题">
+                  <el-select
+                    v-model="welcomeConfig.prefixQuestions"
+                    multiple
+                    placeholder="请输入预置问题"
+                    allow-create
+                    filterable
+                    default-first-option
+                  />
+                </el-form-item>
+                <el-form-item label="持久显示">
+                  <el-switch v-model="welcomeConfig.keep" active-text="开启" inactive-text="关闭" />
+                </el-form-item>
+                <el-form-item>
+                  <el-popconfirm title="确认更新应用配置么" width="180" @confirm="commitSaveConfig">
+                    <template #reference>
+                      <el-button type="primary">保存配置</el-button>
+                    </template>
+                  </el-popconfirm>
+                </el-form-item>
+              </el-form>
             </div>
           </div>
-          <div>
-            <el-text class="desc-text">{{ welcomeConfig.description }}</el-text>
+          <div v-if="appInfoStore.currentAppConfigArea.area == 'params'" class="app-config-area">
+            <div class="config-area">
+              <el-form ref="paramsConfigRef" :model="paramsConfig" :rules="paramsConfigRules">
+                <el-form-item label="会话参数标题" prop="title">
+                  <el-input v-model="paramsConfig.title" placeholder="请输入标题" />
+                </el-form-item>
+                <el-form-item>
+                  <el-popconfirm title="确认更新应用配置么" width="180" @confirm="commitSaveConfig">
+                    <template #reference>
+                      <el-button type="primary">保存配置</el-button>
+                    </template>
+                  </el-popconfirm>
+                </el-form-item>
+              </el-form>
+            </div>
           </div>
         </div>
-        <div class="preview-area-body" />
-        <div class="preview-area-foot">
-          <el-tag
-            v-for="(question, index) in welcomeConfig.prefixQuestions"
-            :key="index"
-            class="prefix-question-tag"
-            size="large"
-            round
-          >
-            {{ question }}
-          </el-tag>
-        </div>
-      </div>
-
-      <div class="config-area">
-        <el-scrollbar>
-          <el-form ref="welcomeConfigRef" :model="welcomeConfig" :rules="welcomeConfigRules">
-            <el-form-item label="标题" prop="title">
-              <el-input v-model="welcomeConfig.title" placeholder="请输入标题" />
-            </el-form-item>
-            <el-form-item label="描述" prop="description">
-              <el-input v-model="welcomeConfig.description" type="textarea" placeholder="请输入描述" />
-            </el-form-item>
-            <el-form-item label="图片" prop="image">
-              <el-upload
-                drag
-                :show-file-list="false"
-                accept=".png, .jpg, .jpeg, .gif, .bmp, .webp"
-                name="app_icon"
-                :headers="userInfoStore.userHeader"
-                :before-upload="beforeAvatarUpload"
-                :action="api.app_icon_upload"
-                :on-success="handleAvatarUploadSuccess"
-                style="min-width: 160px; max-width: 200px"
-              >
-                <div v-if="welcomeConfig.image">
-                  <el-image :src="welcomeConfig.image" style="border-radius: 10%" />
-                </div>
-                <div v-else>
-                  <el-avatar src="/images/upload_cloud.svg" style="background: #f2f4f7" fit="scale-down" />
-                  <i class="el-icon-upload" />
-                  <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-                </div>
-              </el-upload>
-            </el-form-item>
-            <el-form-item label="前置问题">
-              <el-select
-                v-model="welcomeConfig.prefixQuestions"
-                multiple
-                placeholder="请输入预置问题"
-                allow-create
-                filterable
-                default-first-option
-              />
-            </el-form-item>
-            <el-form-item label="持久显示">
-              <el-switch v-model="welcomeConfig.keep" active-text="开启" inactive-text="关闭" />
-            </el-form-item>
-            <el-form-item>
-              <el-popconfirm title="确认更新应用配置么" width="180" @confirm="commitSaveConfig">
-                <template #reference>
-                  <el-button type="primary">保存配置</el-button>
-                </template>
-              </el-popconfirm>
-            </el-form-item>
-          </el-form>
-        </el-scrollbar>
-      </div>
-    </el-main>
-    <el-main v-if="appInfoStore.currentAppConfigArea.area == 'params'">
-      <div class="config-area">
-        <el-scrollbar>
-          <el-form ref="paramsConfigRef" :model="paramsConfig" :rules="paramsConfigRules">
-            <el-form-item label="会话参数标题" prop="title">
-              <el-input v-model="paramsConfig.title" placeholder="请输入标题" />
-            </el-form-item>
-
-            <el-form-item>
-              <el-popconfirm title="确认更新应用配置么" width="180" @confirm="commitSaveConfig">
-                <template #reference>
-                  <el-button type="primary">保存配置</el-button>
-                </template>
-              </el-popconfirm>
-            </el-form-item>
-          </el-form>
-        </el-scrollbar>
-      </div>
+      </el-scrollbar>
     </el-main>
   </el-container>
 </template>
 
 <style scoped>
+.app-config-area {
+  max-height: calc(100vh - 240px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
 .preview-area {
-  height: 40vh;
+  height: 240px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-
-  /* 新增边框样式 */
   border: 1px dashed #d1d5db; /* 浅灰色虚线边框 */
   border-radius: 8px; /* 圆角 */
   padding: 20px; /* 内边距 */
   background-color: #f9fafb; /* 非常浅的背景色 */
   position: relative; /* 为标题装饰定位 */
-
   /* 添加预览区域标识 */
   &::before {
     content: '预览区域';
@@ -245,7 +250,6 @@ watch(
     color: #6b7280;
     font-weight: 500;
   }
-
   /* 悬停效果 */
   &:hover {
     border-color: #9ca3af;
@@ -307,7 +311,7 @@ watch(
 }
 
 .config-area {
-  height: 30vh;
+  max-height: 600px;
   margin-top: 12px;
 }
 

@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { Sunny, MoonNight } from '@element-plus/icons-vue';
+import { Picture as IconPicture } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { domainGet, latestVersionGet } from '@/api/base';
 import { llmInstanceSearch, userConfigGet, userConfigUpdate } from '@/api/user-center';
+import ResourcesSearch from '@/components/next-console/messages-flow/ResourcesSearch.vue';
 import { useUserConfigStore } from '@/stores/user-config-store';
 import { useUserInfoStore } from '@/stores/user-info-store';
+import { ResourceItem } from '@/types/resource-type';
 import { IUserConfig } from '@/types/user-center';
+
 const userInfoStore = useUserInfoStore();
 const userConfigStore = useUserConfigStore();
 const localUserConfig = reactive<IUserConfig>({
@@ -15,7 +19,14 @@ const localUserConfig = reactive<IUserConfig>({
     model_list: [],
     message_layout: 'default',
     search_engine_language: 'zh',
-    search_engine_resource: 'search'
+    search_engine_resource: 'search',
+    session_resources_list: [
+      {
+        resource_id: -1,
+        resource_icon: 'all_resource.svg',
+        resource_name: '全部资源'
+      } as ResourceItem
+    ]
   },
   resources: {
     auto_rag: true,
@@ -44,6 +55,8 @@ const themeOptions = [
     disabled: true
   }
 ];
+const resourcesSearchRef = ref(null);
+const resourceSearchDialogShow = ref(false);
 async function handleChangeUpdate(configKey: string) {
   const res = await userConfigUpdate({
     config_key: configKey,
@@ -136,7 +149,48 @@ async function checkLatestVersion() {
     }
   }
 }
+function getResourceIcon(resource: ResourceItem) {
+  // 获取资源图标
+  if (resource.resource_icon) {
+    if (
+      resource.resource_icon.includes('http') ||
+      resource.resource_icon.includes('data:image') ||
+      resource.resource_icon.includes('/images/')
+    ) {
+      return resource.resource_icon;
+    }
+    return '/images/' + resource.resource_icon;
+  } else {
+    return '/images/html.svg';
+  }
+}
+function removeResourceItem(resource: ResourceItem) {
+  const indexToRemove = localUserConfig.workbench.session_resources_list.findIndex(item => item.id === resource.id);
+  if (indexToRemove !== -1) {
+    localUserConfig.workbench.session_resources_list.splice(indexToRemove, 1);
+  }
+  handleChangeUpdate('workbench');
+}
+function setDefaultResources() {
 
+  localUserConfig.workbench.session_resources_list = [
+    {
+      resource_id: -1,
+      resource_icon: 'all_resource.svg',
+      resource_name: '全部资源'
+    } as ResourceItem
+  ];
+  handleChangeUpdate('workbench');
+}
+function commitAddChooseResources() {
+  const res = resourcesSearchRef.value?.getSelectedResources();
+  if (!res?.length) {
+    return;
+  }
+  resourceSearchDialogShow.value = false;
+  localUserConfig.workbench.session_resources_list = res;
+  handleChangeUpdate('workbench');
+}
 onMounted(async () => {
   const userConfigData = await userConfigGet({});
   if (!userConfigData.error_status) {
@@ -204,6 +258,59 @@ onMounted(async () => {
                   </el-tooltip>
                 </template>
               </el-transfer>
+            </el-form-item>
+            <el-form-item label="默认知识库列表" label-position="left">
+              <div id="ai-image-body">
+                <el-scrollbar style="width: calc(100%)">
+                  <div id="ai-file-body-left">
+                    <div id="ai_file_body_left_bg">
+                      <div
+                        v-for="(item, idx) in localUserConfig.workbench.session_resources_list"
+                        :key="idx"
+                        class="ai-file-item"
+                      >
+                        <el-tooltip placement="top" effect="light">
+                          <template #default>
+                            <el-image src="/images/support_attachment.svg" style="width: 16px; height: 16px" />
+                          </template>
+                          <template #content>
+                            <el-text> 资源解析完成 </el-text>
+                          </template>
+                        </el-tooltip>
+                        <el-image :src="getResourceIcon(item)" style="width: 20px; height: 20px">
+                          <template #error>
+                            <el-icon>
+                              <IconPicture />
+                            </el-icon>
+                          </template>
+                        </el-image>
+                        <el-text style="max-width: 120px" truncated>
+                          {{ item?.resource_name }}
+                        </el-text>
+                        <el-image
+                          src="/images/remove_img.svg"
+                          style="width: 16px; height: 16px; cursor: pointer"
+                          @click="removeResourceItem(item)"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </el-scrollbar>
+                <div id="ai-image-body-right">
+                  <el-button text type="primary" @click="resourceSearchDialogShow = true"> 搜索 </el-button>
+                  <el-button text type="primary" @click="setDefaultResources"> 重置 </el-button>
+                </div>
+              </div>
+              <ResourcesSearch
+                ref="resourcesSearchRef"
+                :model="resourceSearchDialogShow"
+                :session-resources="localUserConfig.workbench.session_resources_list"
+                @commit="
+                  args => {
+                    commitAddChooseResources();
+                  }
+                "
+              />
             </el-form-item>
           </div>
         </div>
@@ -347,5 +454,50 @@ onMounted(async () => {
   flex-direction: column;
   gap: 8px;
   padding: 8px;
+}
+#ai-image-body {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 16px;
+  padding: 8px 0;
+  gap: 10px;
+  border-bottom: 1px solid #d0d5dd;
+  width: 100%;
+}
+#ai-file-body-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+#ai-file-body-left-bg {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #eff8ff;
+}
+.ai-file-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background-color: #ffffff;
+  border: 1px solid #d0d5dd;
+  box-shadow: 0 1px 2px 0 #1018280d;
+  margin-bottom: 6px;
+}
+#ai-image-body-right {
+  display: flex;
+  flex-direction: row;
 }
 </style>

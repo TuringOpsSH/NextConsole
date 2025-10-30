@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { User, OfficeBuilding, Notification } from '@element-plus/icons-vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserInfoStore } from '@/stores/user-info-store';
-import { User, OfficeBuilding, Notification } from '@element-plus/icons-vue';
 const router = useRouter();
 const filteredComponents = ref([
   {

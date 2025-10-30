@@ -21,6 +21,7 @@ import UserInviteDialog from '@/components/user-center/UserInviteDialog.vue';
 import router from '@/router';
 import { useUserInfoStore } from '@/stores/user-info-store';
 import { IPointTransaction, IUsers } from '@/types/user-center';
+import Clipboard from "clipboard";
 
 const props = defineProps({
   // 是否显示用户信息
@@ -504,22 +505,12 @@ async function updateUserArea() {
 }
 function copyToken() {
   // 复制到剪贴板
-  navigator.clipboard
-      .writeText(userInfoStore.token)
-      .then(() => {
-        ElMessage({
-          message: 'API-KEY已复制到剪贴板',
-          type: 'success',
-          duration: 3000
-        });
-      })
-      .catch(() => {
-        ElMessage({
-          message: '请手动复制API-KEY',
-          type: 'error',
-          duration: 3000
-        });
-      });
+  Clipboard.copy(userInfoStore.token);
+  ElMessage({
+    message: 'API-KEY已复制到剪贴板',
+    type: 'success',
+    duration: 3000
+  });
 }
 function beginUpdateExpireTime() {
   localUpdateStatus.expire_time = true;
@@ -576,13 +567,13 @@ async function initWxBind() {
 }
 
 watch(
-    () => props.tab,
-    newVal => {
-      if (newVal != currentTab.value) {
-        currentTab.value = newVal;
-      }
-    },
-    { immediate: true }
+  () => props.tab,
+  newVal => {
+    if (newVal != currentTab.value && newVal) {
+      currentTab.value = newVal;
+    }
+  },
+  { immediate: true }
 );
 onMounted(async () => {
   Object.assign(localUserInfo, userInfoStore.userInfo);
@@ -605,15 +596,6 @@ onMounted(async () => {
           <el-scrollbar>
             <div class="user_info_main">
               <div class="user_info_box">
-                <el-row>
-                  <el-col :span="24">
-                    <div class="user_info_headers">
-                      <div class="user-info-meta">
-
-                      </div>
-                    </div>
-                  </el-col>
-                </el-row>
                 <el-descriptions title="基础信息" border>
                   <el-descriptions-item label="账号ID">
                     <el-text>
@@ -626,12 +608,11 @@ onMounted(async () => {
                         {{ userInfoStore.userInfo?.user_account_type }}
                       </el-text>
                       <el-image
-                          v-if="userInfoStore.userInfo.user_account_type == '企业账号'"
-                          src="/images/certification.svg"
-                          style="width: 18px; height: 18px"
+                        v-if="userInfoStore.userInfo.user_account_type == '企业账号'"
+                        src="/images/certification.svg"
+                        style="width: 18px; height: 18px"
                       />
                     </div>
-
                   </el-descriptions-item>
                   <el-descriptions-item label="注册时间">
                     <el-text>
@@ -660,9 +641,9 @@ onMounted(async () => {
                   <el-col :span="3">
                     <div class="std-middle-box">
                       <el-avatar
-                          v-if="userInfoStore.userInfo?.user_avatar"
-                          :src="userInfoStore.userInfo?.user_avatar"
-                          class="assistant-avatar"
+                        v-if="userInfoStore.userInfo?.user_avatar"
+                        :src="userInfoStore.userInfo?.user_avatar"
+                        class="assistant-avatar"
                       />
                       <el-avatar v-else style="background: #d1e9ff">
                         <el-text style="font-weight: 600; color: #1570ef">
@@ -674,15 +655,15 @@ onMounted(async () => {
                   <el-col :span="9">
                     <div style="margin-left: 12px">
                       <el-upload
-                          drag
-                          :show-file-list="false"
-                          accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
-                          :before-upload="beforeAvatarUpload"
-                          :action="api.user_avatar_update"
-                          :on-success="handleAvatarUploadSuccess"
-                          style=""
-                          name="avatar"
-                          :headers="userInfoStore.userHeader"
+                        drag
+                        :show-file-list="false"
+                        accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
+                        :before-upload="beforeAvatarUpload"
+                        :action="api.user_avatar_update"
+                        :on-success="handleAvatarUploadSuccess"
+                        style=""
+                        name="avatar"
+                        :headers="userInfoStore.userHeader"
                       >
                         <el-avatar src="/images/upload_cloud.svg" style="background: #f2f4f7" fit="scale-down" />
 
@@ -700,10 +681,10 @@ onMounted(async () => {
                   <el-col :span="12" style="flex-direction: row">
                     <div v-if="localUpdateStatus.user_nick_name">
                       <el-input
-                          ref="nickNameRef"
-                          v-model="localUserInfo.user_nick_name"
-                          @change="updateUserNickName"
-                          @blur="localUpdateStatus.user_nick_name = false"
+                        ref="nickNameRef"
+                        v-model="localUserInfo.user_nick_name"
+                        @change="updateUserNickName"
+                        @blur="localUpdateStatus.user_nick_name = false"
                       />
                     </div>
                     <div v-else class="user-info-meta-value">
@@ -714,10 +695,10 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="!localUpdateStatus.user_nick_name"
-                        text
-                        style="margin-left: 12px"
-                        @click="beginUpdateNickName"
+                      v-if="!localUpdateStatus.user_nick_name"
+                      text
+                      style="margin-left: 12px"
+                      @click="beginUpdateNickName"
                     >
                       <el-text class="button-text"> 修改 </el-text>
                     </el-button>
@@ -738,14 +719,14 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="
+                      v-if="
                         !localUpdateStatus.user_email &&
                         userInfoStore.userInfo?.user_account_type == '个人账号' &&
                         !userInfoStore.userInfo.user_email
                       "
-                        text
-                        style="margin-left: 12px"
-                        @click="localUpdateStatus.user_email = true"
+                      text
+                      style="margin-left: 12px"
+                      @click="localUpdateStatus.user_email = true"
                     >
                       <el-text class="button-text"> 绑定 </el-text>
                     </el-button>
@@ -766,10 +747,10 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="!localUpdateStatus.phone && !userInfoStore.userInfo.user_phone"
-                        text
-                        style="margin-left: 12px"
-                        @click="localUpdateStatus.phone = true"
+                      v-if="!localUpdateStatus.phone && !userInfoStore.userInfo.user_phone"
+                      text
+                      style="margin-left: 12px"
+                      @click="localUpdateStatus.phone = true"
                     >
                       <el-text class="button-text"> 绑定 </el-text>
                     </el-button>
@@ -790,10 +771,10 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="!localUpdateStatus.user_wx && !userInfoStore.userInfo.user_wx_union_id"
-                        text
-                        style="margin-left: 12px"
-                        @click="beginBindWx"
+                      v-if="!localUpdateStatus.user_wx && !userInfoStore.userInfo.user_wx_union_id"
+                      text
+                      style="margin-left: 12px"
+                      @click="beginBindWx"
                     >
                       <el-text class="button-text"> 绑定 </el-text>
                     </el-button>
@@ -813,10 +794,10 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="!localUpdateStatus.password"
-                        text
-                        style="margin-left: 12px"
-                        @click="localUpdateStatus.password = true"
+                      v-if="!localUpdateStatus.password"
+                      text
+                      style="margin-left: 12px"
+                      @click="localUpdateStatus.password = true"
                     >
                       <el-text class="button-text"> 修改 </el-text>
                     </el-button>
@@ -934,16 +915,16 @@ onMounted(async () => {
                   <el-col :span="12" style="flex-direction: row">
                     <div v-if="localUpdateStatus.user_name">
                       <el-input
-                          ref="nameRef"
-                          v-model="localUserInfo.user_name"
-                          @change="updateUserName"
-                          @blur="localUpdateStatus.user_name = false"
+                        ref="nameRef"
+                        v-model="localUserInfo.user_name"
+                        @change="updateUserName"
+                        @blur="localUpdateStatus.user_name = false"
                       />
                     </div>
                     <div
-                        v-else
-                        class="user-info-meta-value"
-                        :class="{
+                      v-else
+                      class="user-info-meta-value"
+                      :class="{
                         'user-info-meta-value-disabled': userInfoStore.userInfo?.user_account_type == '企业账号'
                       }"
                     >
@@ -954,10 +935,10 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="!localUpdateStatus.user_name && userInfoStore.userInfo?.user_account_type != '企业账号'"
-                        text
-                        style="margin-left: 12px"
-                        @click="beginUpdateName()"
+                      v-if="!localUpdateStatus.user_name && userInfoStore.userInfo?.user_account_type != '企业账号'"
+                      text
+                      style="margin-left: 12px"
+                      @click="beginUpdateName"
                     >
                       <el-text class="button-text"> 修改 </el-text>
                     </el-button>
@@ -972,16 +953,16 @@ onMounted(async () => {
                   <el-col :span="12" style="flex-direction: row">
                     <div v-if="localUpdateStatus.user_company">
                       <el-input
-                          ref="companyRef"
-                          v-model="localUserInfo.user_company"
-                          @change="updateUserCompany"
-                          @blur="localUpdateStatus.user_company = false"
+                        ref="companyRef"
+                        v-model="localUserInfo.user_company"
+                        @change="updateUserCompany"
+                        @blur="localUpdateStatus.user_company = false"
                       />
                     </div>
                     <div
-                        v-else
-                        class="user-info-meta-value"
-                        :class="{
+                      v-else
+                      class="user-info-meta-value"
+                      :class="{
                         'user-info-meta-value-disabled': userInfoStore.userInfo?.user_account_type == '企业账号'
                       }"
                     >
@@ -992,10 +973,10 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="!localUpdateStatus.user_company && userInfoStore.userInfo?.user_account_type != '企业账号'"
-                        text
-                        style="margin-left: 12px"
-                        @click="beginUpdateCompany"
+                      v-if="!localUpdateStatus.user_company && userInfoStore.userInfo?.user_account_type != '企业账号'"
+                      text
+                      style="margin-left: 12px"
+                      @click="beginUpdateCompany"
                     >
                       <el-text class="button-text"> 修改 </el-text>
                     </el-button>
@@ -1010,16 +991,16 @@ onMounted(async () => {
                   <el-col :span="12" style="flex-direction: row">
                     <div v-if="localUpdateStatus.user_department">
                       <el-input
-                          ref="departmentRef"
-                          v-model="localUserInfo.user_department"
-                          @change="updateUserDepartment"
-                          @blur="localUpdateStatus.user_department = false"
+                        ref="departmentRef"
+                        v-model="localUserInfo.user_department"
+                        @change="updateUserDepartment"
+                        @blur="localUpdateStatus.user_department = false"
                       />
                     </div>
                     <div
-                        v-else
-                        class="user-info-meta-value"
-                        :class="{
+                      v-else
+                      class="user-info-meta-value"
+                      :class="{
                         'user-info-meta-value-disabled': userInfoStore.userInfo?.user_account_type == '企业账号'
                       }"
                     >
@@ -1030,12 +1011,12 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="
+                      v-if="
                         !localUpdateStatus.user_department && userInfoStore.userInfo?.user_account_type != '企业账号'
                       "
-                        text
-                        style="margin-left: 12px"
-                        @click="beginUpdateDepartment"
+                      text
+                      style="margin-left: 12px"
+                      @click="beginUpdateDepartment"
                     >
                       <el-text class="button-text"> 修改 </el-text>
                     </el-button>
@@ -1050,16 +1031,16 @@ onMounted(async () => {
                   <el-col :span="12" style="flex-direction: row">
                     <div v-if="localUpdateStatus.user_position">
                       <el-input
-                          ref="positionRef"
-                          v-model="localUserInfo.user_position"
-                          @change="updateUserPosition"
-                          @blur="localUpdateStatus.user_position = false"
+                        ref="positionRef"
+                        v-model="localUserInfo.user_position"
+                        @change="updateUserPosition"
+                        @blur="localUpdateStatus.user_position = false"
                       />
                     </div>
                     <div
-                        v-else
-                        class="user-info-meta-value"
-                        :class="{
+                      v-else
+                      class="user-info-meta-value"
+                      :class="{
                         'user-info-meta-value-disabled': userInfoStore.userInfo?.user_account_type == '企业账号'
                       }"
                     >
@@ -1070,10 +1051,10 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="!localUpdateStatus.user_position && userInfoStore.userInfo?.user_account_type == '个人账号'"
-                        text
-                        style="margin-left: 12px"
-                        @click="beginUpdatePosition()"
+                      v-if="!localUpdateStatus.user_position && userInfoStore.userInfo?.user_account_type == '个人账号'"
+                      text
+                      style="margin-left: 12px"
+                      @click="beginUpdatePosition"
                     >
                       <el-text class="button-text"> 修改 </el-text>
                     </el-button>
@@ -1088,20 +1069,20 @@ onMounted(async () => {
                   <el-col :span="12">
                     <div v-if="localUpdateStatus.user_area">
                       <el-cascader
-                          v-model="localUserInfo.user_area"
-                          clearable
-                          :show-all-levels="false"
-                          placeholder="选择国家/地区"
-                          :options="areaOptions"
-                          filterable
-                          style="width: 100%"
-                          @change="updateUserArea"
+                        v-model="localUserInfo.user_area"
+                        clearable
+                        :show-all-levels="false"
+                        placeholder="选择国家/地区"
+                        :options="areaOptions"
+                        filterable
+                        style="width: 100%"
+                        @change="updateUserArea"
                       />
                     </div>
                     <div
-                        v-else
-                        class="user-info-meta-value"
-                        :class="{
+                      v-else
+                      class="user-info-meta-value"
+                      :class="{
                         'user-info-meta-value-disabled': userInfoStore.userInfo?.user_account_type == '企业账号'
                       }"
                     >
@@ -1112,10 +1093,10 @@ onMounted(async () => {
                   </el-col>
                   <el-col :span="6">
                     <el-button
-                        v-if="!localUpdateStatus.user_area && userInfoStore.userInfo?.user_account_type == '个人账号'"
-                        text
-                        style="margin-left: 12px"
-                        @click="beginUpdateArea"
+                      v-if="!localUpdateStatus.user_area && userInfoStore.userInfo?.user_account_type == '个人账号'"
+                      text
+                      style="margin-left: 12px"
+                      @click="beginUpdateArea"
                     >
                       <el-text class="button-text"> 修改 </el-text>
                     </el-button>
@@ -1126,9 +1107,9 @@ onMounted(async () => {
           </el-scrollbar>
         </el-tab-pane>
         <el-tab-pane
-            v-if="userInfoStore.userInfo?.user_role?.includes('next_console_admin')"
-            name="platform"
-            label="系统设置"
+          v-if="userInfoStore.userInfo?.user_role?.includes('next_console_admin')"
+          name="platform"
+          label="系统设置"
         >
           <SystemConfig />
         </el-tab-pane>
@@ -1140,13 +1121,13 @@ onMounted(async () => {
 
   <el-dialog v-model="localUpdateStatus.password" :width="resetWidth" top="35vh" style="max-width: 500px">
     <el-form
-        id="reset-form-inner"
-        ref="resetFormRef"
-        label-position="top"
-        style="width: 100%"
-        :model="localUserInfo"
-        status-icon
-        :rules="passwordRules"
+      id="reset-form-inner"
+      ref="resetFormRef"
+      label-position="top"
+      style="width: 100%"
+      :model="localUserInfo"
+      status-icon
+      :rules="passwordRules"
     >
       <el-form-item label="新密码" prop="password">
         <el-input v-model="localUserInfo.password" placeholder="请输入新密码" type="password" show-password />
@@ -1167,12 +1148,12 @@ onMounted(async () => {
     </el-form>
   </el-dialog>
   <el-dialog
-      v-model="localUpdateStatus.user_email"
-      :width="resetWidth"
-      title="绑定邮箱"
-      draggable
-      top="35vh"
-      style="max-width: 500px"
+    v-model="localUpdateStatus.user_email"
+    :width="resetWidth"
+    title="绑定邮箱"
+    draggable
+    top="35vh"
+    style="max-width: 500px"
   >
     <el-form ref="emailBindFormRef" :model="emailBindForm" :rules="emailBindRules">
       <el-form-item prop="user_email">
@@ -1195,12 +1176,12 @@ onMounted(async () => {
     </template>
   </el-dialog>
   <el-dialog
-      v-model="localUpdateStatus.phone"
-      :width="resetWidth"
-      title="绑定手机"
-      draggable
-      top="35vh"
-      style="max-width: 500px"
+    v-model="localUpdateStatus.phone"
+    :width="resetWidth"
+    title="绑定手机"
+    draggable
+    top="35vh"
+    style="max-width: 500px"
   >
     <el-form ref="phoneBindFormRef" :model="localUserInfo" :rules="phoneBindRules">
       <el-form-item prop="user_phone">
@@ -1225,12 +1206,12 @@ onMounted(async () => {
     </template>
   </el-dialog>
   <el-dialog
-      v-model="localUpdateStatus.user_wx"
-      title="绑定微信"
-      :width="resetWidth"
-      draggable
-      top="35vh"
-      style="max-width: 500px"
+    v-model="localUpdateStatus.user_wx"
+    title="绑定微信"
+    :width="resetWidth"
+    draggable
+    top="35vh"
+    style="max-width: 500px"
   >
     <div class="std-middle-box" style="flex-direction: column">
       <div id="wx_login_container" />
@@ -1245,19 +1226,19 @@ onMounted(async () => {
     </div>
   </el-dialog>
   <el-dialog
-      v-model="localUpdateStatus.close_account"
-      title="注销账号"
-      :width="resetWidth"
-      draggable
-      top="35vh"
-      style="max-width: 500px"
+    v-model="localUpdateStatus.close_account"
+    title="注销账号"
+    :width="resetWidth"
+    draggable
+    top="35vh"
+    style="max-width: 500px"
   >
     <div class="std-middle-box" style="flex-direction: column">
       <div>
         <el-result
-            title="注销账号"
-            sub-title="注销账号后，您的账号将无法再次登录，且无法找回，请谨慎操作"
-            icon="warning"
+          title="注销账号"
+          sub-title="注销账号后，您的账号将无法再次登录，且无法找回，请谨慎操作"
+          icon="warning"
         />
       </div>
 
@@ -1270,11 +1251,11 @@ onMounted(async () => {
   <UserInviteDialog :mode="showInviteDialogFlag" @update:mode="args => (showInviteDialogFlag = args)" />
   <el-dialog v-model="showAccountTransaction" :width="resetWidth" title="账户交易记录" draggable top="35vh">
     <el-table
-        v-loading="accountTransactionLoading"
-        :data="accountTransactionData"
-        border
-        style="width: 100%"
-        element-loading-text="加载中"
+      v-loading="accountTransactionLoading"
+      :data="accountTransactionData"
+      border
+      style="width: 100%"
+      element-loading-text="加载中"
     >
       <el-table-column prop="transaction_id" label="交易ID" width="180" />
       <el-table-column prop="create_time" label="发生时间" width="180" />
@@ -1284,14 +1265,14 @@ onMounted(async () => {
       <el-table-column prop="order_id" label="订单ID" width="180" />
     </el-table>
     <el-pagination
-        :page-sizes="[10, 20, 50, 100]"
-        size="small"
-        :page-size="currentPageSize"
-        :current-page="currentPageNum"
-        layout="prev, pager, next, jumper, ->, total"
-        :total="currentTransactionCnt"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+      :page-sizes="[10, 20, 50, 100]"
+      size="small"
+      :page-size="currentPageSize"
+      :current-page="currentPageNum"
+      layout="prev, pager, next, jumper, ->, total"
+      :total="currentTransactionCnt"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
     />
     <template #footer>
       <div class="std-middle-box">
@@ -1303,14 +1284,14 @@ onMounted(async () => {
     <div class="std-middle-box" style="flex-direction: column; gap: 12px">
       <el-form-item label-position="left" label="失效日期">
         <el-date-picker
-            v-model="localUserInfo.expire_time"
-            type="datetime"
-            placeholder="选择失效日期"
-            :shortcuts="shortcuts"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            date-format="MMM DD, YYYY"
-            time-format="HH:mm"
+          v-model="localUserInfo.expire_time"
+          type="datetime"
+          placeholder="选择失效日期"
+          :shortcuts="shortcuts"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          date-format="MMM DD, YYYY"
+          time-format="HH:mm"
         />
       </el-form-item>
       <div>

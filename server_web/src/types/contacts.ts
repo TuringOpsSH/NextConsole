@@ -1,4 +1,5 @@
-export interface Company{
+
+export interface ICompany {
   id: number;
   parent_company_id: number | null;
   company_code: string;
@@ -19,7 +20,7 @@ export interface Company{
   update_time: string;
   user_count: number | null;
 }
-export interface Department{
+export interface IDepartment {
   id: number;
   company_id: number | null;
   parent_department_id: number | null;
@@ -31,7 +32,7 @@ export interface Department{
   update_time: string;
   user_count: number | null;
 }
-export interface Colleague{
+export interface IColleague {
   user_id: number;
   user_nick_name: string;
   user_email: string;
@@ -43,7 +44,7 @@ export interface Colleague{
   user_name: string;
   roles?: any;
 }
-export interface Friend{
+export interface IFriend {
   user_id: number;
   user_nick_name: string;
   user_nick_name_py: string;
@@ -55,9 +56,9 @@ export interface Friend{
   user_department: string;
   user_company: string;
   user_account_type: string;
-  rel_status?: FriendRelation;
+  rel_status?: IFriendRelation;
 }
-export interface FriendRelation{
+export interface IFriendRelation {
   id: number;
   user_id: number;
   friend_id: number;

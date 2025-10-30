@@ -251,7 +251,11 @@ async function preCheckWorkflow() {
     });
   }
   if (!appInfoStore.currentApp.app_code) {
-    return;
+    newWorkflowAlters.push({
+      id: 'alter4',
+      title: `应用信息获取异常，请重新进入该页面`,
+      type: 'error'
+    });
   }
   const res = await workflowCheck({
     app_code: appInfoStore.currentApp.app_code,
@@ -884,7 +888,7 @@ defineExpose({
                     </el-icon>
                   </div>
                   <div class="std-middle-box">
-                    <el-text style="color: #409eff"> 添加节点 </el-text>
+                    <el-text style="color: #409eff; min-width: 70px"> 添加节点 </el-text>
                   </div>
                 </div>
                 <template #dropdown>
@@ -1025,7 +1029,7 @@ defineExpose({
                   </el-icon>
                 </div>
                 <div class="std-middle-box">
-                  <el-text size="large" style="color: green"> 试运行 </el-text>
+                  <el-text size="large" style="color: green; min-width: 60px"> 试运行 </el-text>
                 </div>
               </div>
             </div>

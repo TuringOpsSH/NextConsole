@@ -16,7 +16,7 @@ import {
   resource_share_update_access_list
 } from '@/api/resource-api';
 import { ElMessage } from 'element-plus';
-import { init_share_resource_tree } from '../resource_panel/panel';
+import { init_share_resource_tree } from '@/components/resource/resource-panel/panel';
 
 export const share_selector_vis_flag = ref(false);
 export const current_share_resource = ref<ResourceItem>(null);

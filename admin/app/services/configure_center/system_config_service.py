@@ -79,10 +79,15 @@ def init_system_configs():
             },
             "embedding": {
                 "llm_code": "",
+                "enable": False,
+                "threshold": 0.5,
+                "topK": 10
             },
             "rerank": {
                 "enable": False,
                 "llm_code": "",
+                "threshold": 0.2,
+                "topK": 10
             },
             "stt": {
                 "provider": "讯飞",

@@ -1,7 +1,18 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowRight, Close, QuestionFilled, Search, SuccessFilled } from '@element-plus/icons-vue';
+import {
+  ArrowDown,
+  ArrowRight,
+  Close,
+  QuestionFilled,
+  Search,
+  SuccessFilled,
+  Upload,
+  Plus
+} from '@element-plus/icons-vue';
 import { nextTick, ref } from 'vue';
 import { nodeUpdate } from '@/api/app-center-api';
+import { domainGet } from '@/api/base';
+import JsonSchemaForm from '@/components/app-center/app-manage/JsonSchemaForm.vue';
 import TemplateEditor from '@/components/app-center/app-manage/TemplateEditor.vue';
 import ResourcesSearch from '@/components/app-center/app-preview/ResourcesSearch.vue';
 
@@ -87,6 +98,62 @@ async function commitAddChooseResources() {
   resourceSearchDialogShow.value = false;
   await nextTick();
 }
+async function routerServerResourceCenter() {
+  const res = await domainGet();
+  const serverDomain = res.result.server_domain;
+  window.open(serverDomain + '/next-console/resources/resource_list', '_blank');
+  return;
+}
+function addParamsResource(isArray = false) {
+  if (isArray) {
+    workflowStore.currentNodeDetail.node_rag_resources.push({
+      type: 'param',
+      id: 'param_' + new Date().getTime(),
+      schema: {
+        type: 'object',
+        properties: {
+          resource_list: {
+            type: 'array',
+            typeName: 'array',
+            description: '资源ID列表',
+            items: {
+              type: 'number',
+              typeName: 'number',
+              description: '资源ID',
+              attrFixed: true,
+              typeFixed: true
+            },
+            attrFixed: true,
+            typeFixed: true
+          }
+        },
+        ncOrders: ['resource_list'],
+        required: ['resource_list']
+      }
+    });
+    updateNodeRagConfig();
+    return;
+  }
+  workflowStore.currentNodeDetail.node_rag_resources.push({
+    type: 'param',
+    id: 'param_' + new Date().getTime(),
+    schema: {
+      type: 'object',
+      properties: {
+        resource_id: {
+          type: 'number',
+          typeName: 'number',
+          description: '资源ID',
+          attrFixed: true,
+          typeFixed: true
+        }
+      },
+      ncOrders: ['resource_id'],
+      required: ['resource_id']
+    }
+  });
+  updateNodeRagConfig();
+}
 </script>
 
 <template>
@@ -104,7 +171,7 @@ async function commitAddChooseResources() {
         <el-text> 知识库选择 </el-text>
       </div>
       <div>
-        <el-tooltip content="配置知识来源">
+        <el-tooltip content="配置知识来源" placement="top">
           <el-icon>
             <QuestionFilled />
           </el-icon>
@@ -124,36 +191,55 @@ async function commitAddChooseResources() {
               @update:value="newValue => handleTemplateChange(newValue, 'node_rag_query_template')"
             />
           </el-form-item>
-          <el-form-item label="召回知识库" style="padding: 0 12px">
+          <el-form-item label="内置知识库" style="padding: 0 12px">
+
             <div class="rag-area">
-              <div class="rag-title">
-                <el-button :icon="Search" round style="width: 100%" @click="resourceSearchDialogShow = true">
-                  搜索知识库
-                </el-button>
-              </div>
+              <el-button-group>
+                <el-button :icon="Search" round @click="resourceSearchDialogShow = true"> 搜索知识库 </el-button>
+                <el-button :icon="Upload" round @click="routerServerResourceCenter"> 上传文档 </el-button>
+                <el-button :icon="Plus" round @click="addParamsResource(false)"> 添加文档变量 </el-button>
+                <el-button :icon="Plus" round @click="addParamsResource(true)"> 添加文档列表变量 </el-button>
+              </el-button-group>
               <div class="rag-body">
-                <div
-                  v-for="item in workflowStore.currentNodeDetail?.node_rag_resources"
-                  :key="item.id"
-                  class="resource-item"
-                >
-                  <div class="resource-item-left">
-                    <div class="resource-status">
-                      <el-icon style="color: green">
-                        <SuccessFilled />
-                      </el-icon>
+                <div v-for="(item, idx) in workflowStore.currentNodeDetail?.node_rag_resources" :key="idx">
+                  <div v-if="!item?.type" :key="item.id" class="resource-item">
+                    <div class="resource-item-left">
+                      <div class="resource-status">
+                        <el-icon style="color: green">
+                          <SuccessFilled />
+                        </el-icon>
+                      </div>
+                      <div class="resource-icon">
+                        <el-image :src="fixResourceIcon(item?.resource_icon)" />
+                      </div>
+                      <el-tooltip :content="item?.resource_desc" placement="top" :show-after="800">
+                        <div class="resource-title">
+                          <el-text truncated>
+                            {{ item?.resource_name }}
+                          </el-text>
+                        </div>
+                      </el-tooltip>
                     </div>
-                    <div class="resource-icon">
-                      <el-image :src="fixResourceIcon(item?.resource_icon)" />
-                    </div>
-                    <div class="resource-title">
-                      <el-text truncated>
-                        {{ item?.resource_name }}
-                      </el-text>
+                    <div class="resource-remove">
+                      <el-button :icon="Close" round @click="removeResource(item?.id)" />
                     </div>
                   </div>
-                  <div class="resource-remove">
-                    <el-button :icon="Close" round @click="removeResource(item?.id)" />
+                  <div v-else-if="item.type == 'param'" class="resource-item">
+                    <JsonSchemaForm
+                      :json-schema="item.schema"
+                      :is-parent="false"
+                      :value-define="true"
+                      :node-upstream="workflowStore.currentNodeDetail?.node_upstream"
+                      @update:schema="
+                        newSchema => {
+                          item.schema = newSchema;
+                          updateNodeRagConfig();
+                        }
+                      "
+                    />
+                    <div class="resource-remove">
+                      <el-button :icon="Close" round @click="removeResource(item?.id)" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -177,7 +263,7 @@ async function commitAddChooseResources() {
         <el-text> 召回设置 </el-text>
       </div>
       <div>
-        <el-tooltip content="调用向量模型匹配最佳参考知识">
+        <el-tooltip content="调用向量模型匹配最佳参考知识" placement="top">
           <el-icon>
             <QuestionFilled />
           </el-icon>
@@ -186,7 +272,7 @@ async function commitAddChooseResources() {
     </div>
     <div v-show="showRagConfigFlag" class="config-area">
       <el-form :model="workflowStore.currentNodeDetail" label-position="top">
-        <el-form-item label="相似度度量方法" style="padding: 0 12px">
+        <el-form-item label="相似度度量方法" class="rag-config-item">
           <el-select
             v-model="workflowStore.currentNodeDetail.node_rag_recall_config.recall_similarity"
             @change="updateNodeRagConfig"
@@ -195,7 +281,7 @@ async function commitAddChooseResources() {
             <el-option value="cosine" label="余弦相似度" />
           </el-select>
         </el-form-item>
-        <el-form-item label="召回阈值" style="padding: 0 12px">
+        <el-form-item label="召回阈值" class="rag-config-item">
           <el-slider
             v-model="workflowStore.currentNodeDetail.node_rag_recall_config.recall_threshold"
             show-input
@@ -206,11 +292,17 @@ async function commitAddChooseResources() {
             @change="updateNodeRagConfig"
           />
         </el-form-item>
-        <el-form-item label="最大召回数" style="padding: 0 12px">
+        <el-form-item label="最大召回数" class="rag-config-item">
           <el-input-number
             v-model="workflowStore.currentNodeDetail.node_rag_recall_config.recall_k"
             :min="1"
             :max="500"
+            @change="updateNodeRagConfig"
+          />
+        </el-form-item>
+        <el-form-item label="结果去重" class="rag-config-item">
+          <el-switch
+            v-model="workflowStore.currentNodeDetail.node_rag_recall_config.recall_deduplication"
             @change="updateNodeRagConfig"
           />
         </el-form-item>
@@ -231,7 +323,7 @@ async function commitAddChooseResources() {
         <el-text> 重排序设置 </el-text>
       </div>
       <div>
-        <el-tooltip content="调用重排序模型对召回结果进行精排序">
+        <el-tooltip content="调用重排序模型对召回结果进行精排序" placement="top">
           <el-icon>
             <QuestionFilled />
           </el-icon>
@@ -300,7 +392,7 @@ async function commitAddChooseResources() {
         <el-text class="config-head-text"> 联网搜索设置 </el-text>
       </div>
       <div>
-        <el-tooltip content="调用搜索引擎补充实时网页数据">
+        <el-tooltip content="调用搜索引擎补充实时网页数据" placement="top">
           <el-icon>
             <QuestionFilled />
           </el-icon>
@@ -416,5 +508,8 @@ async function commitAddChooseResources() {
 .resource-icon {
   width: 24px;
   height: 24px;
+}
+.rag-config-item {
+  padding: 0 12px
 }
 </style>

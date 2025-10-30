@@ -17,8 +17,8 @@ import {
 } from '@/components/next-console/messages-flow/message_flow';
 import { msgFlowRef } from '@/components/next-console/messages-flow/message_flow';
 import { session_history_top5 } from '@/components/next-console/messages-flow/sessions';
-import { current_resource_list, resourceDetailRef } from '@/components/resource/resource_list/resource_list';
-import { current_resource_list as current_resource_shortcut_list } from '@/components/resource/resource_shortcut/resource_shortcut';
+import { current_resource_list, resourceDetailRef } from '@/components/resource/resource-list/resource_list';
+import { current_resource_list as current_resource_shortcut_list } from '@/components/resource/resource-shortcut/resource_shortcut';
 import { currentPathTree } from '@/components/resource/resource-view/resource-viewer';
 import router from '@/router';
 import { useSessionStore } from '@/stores/sessionStore';

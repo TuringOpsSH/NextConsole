@@ -8,10 +8,10 @@ import {
   search_resource_tags,
   update_resource_object
 } from '@/api/resource-api';
-import { search_all_resource_object } from '@/components/resource/resource_list/resource_list';
-import { init_my_resource_tree, refresh_panel_count } from '@/components/resource/resource_panel/panel';
-import { search_resource_by_tags } from '@/components/resource/resource_shortcut/resource_shortcut';
-import { search_all_resource_share_object } from '@/components/resource/share_resources/share_resources';
+import { search_all_resource_object } from '@/components/resource/resource-list/resource_list';
+import { init_my_resource_tree, refresh_panel_count } from '@/components/resource/resource-panel/panel';
+import { search_resource_by_tags } from '@/components/resource/resource-shortcut/resource_shortcut';
+import { search_all_resource_share_object } from '@/components/resource/resource-share/share_resources';
 import router from '@/router';
 import { useUserInfoStore } from '@/stores/user-info-store';
 import { ResourceItem, ResourceTag } from '@/types/resource-type';

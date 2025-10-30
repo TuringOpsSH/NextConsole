@@ -2,11 +2,11 @@ import { ElMessage } from 'element-plus';
 import { reactive, ref } from 'vue';
 import { create_session, search_session } from '@/api/next-console';
 import router from '@/router';
-import { session_item } from '@/types/next-console';
+import { ISessionItem } from '@/types/next-console';
 import { emitter, eventKeys } from '@/utils/eventBus';
 
-export const session_history_top5 = ref<session_item[]>([]);
-export const current_session = reactive<session_item>({
+export const session_history_top5 = ref<ISessionItem[]>([]);
+export const current_session = reactive<ISessionItem>({
   session_shop_assistant_avatar: null,
   session_shop_assistant_desc: null,
   session_shop_assistant_id: null,
@@ -90,7 +90,7 @@ export async function getLastedSession() {
   const data = await search_session(params);
   session_history_top5.value = data.result;
 }
-export async function changeCurrentSession(targetSession: session_item, event: any) {
+export async function changeCurrentSession(targetSession: ISessionItem, event: any) {
   if (targetSession.is_edit) {
     return;
   }

@@ -185,7 +185,7 @@ function countDownStart() {
                 <el-text> 我们向 </el-text>
                 <el-text style="font-size: 14px; font-weight: 600; line-height: 20px; color: #101828">
                   {{ resetForm.user_account }}
-                  ><br />
+                  <br />
                   <el-text> 发送了一封含验证码的短信，请查收并输入验证码 </el-text>
                   <br />
                   <el-text> 该验证码将在5分钟后失效 </el-text>

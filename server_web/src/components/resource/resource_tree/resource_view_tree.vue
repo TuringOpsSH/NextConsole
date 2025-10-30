@@ -31,7 +31,7 @@ import {
   cancel_upload_folder,
   confirm_upload_folder
 } from '@/components/resource/resource_tree/resource_tree';
-import { get_resource_icon } from '@/components/resource/resource_list/resource_list';
+import { get_resource_icon } from '@/components/resource/resource-list/resource_list';
 import { ref } from 'vue';
 
 const dialog_width = ref(window.innerWidth < 768 ? '90%' : '600px');

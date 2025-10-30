@@ -4,7 +4,7 @@ import VueJsonPretty from 'vue-json-pretty';
 import WebOfficeSDK from '@/components/global/wps/web-office-sdk-solution-v2.0.7.es.js';
 import { add_copy_button_event } from '@/components/next-console/messages-flow/message_flow';
 import { useUserInfoStore } from '@/stores/user-info-store';
-import { ResourceItem } from '@/types/resource-type';
+import { IResourceItem } from '@/types/resource-type';
 import 'vue-json-pretty/lib/styles.css';
 import { clientFingerprint, getFingerPrint } from '@/components/global/web_socket';
 import { resource_view_meta_get } from '@/api/resource-api';
@@ -27,41 +27,38 @@ const props = defineProps({
   }
 });
 const userInfoStore = useUserInfoStore();
-const currentViewResource = reactive<ResourceItem>(
-  // @ts-ignore
-  {
-    sub_rag_file_cnt: 0,
-    id: null,
-    resource_parent_id: null,
-    user_id: null,
-    resource_name: null,
-    resource_type: null,
-    resource_desc: null,
-    resource_icon: null,
-    resource_format: null,
-    resource_path: null,
-    resource_size_in_MB: null,
-    resource_status: null,
-    rag_status: null,
-    create_time: null,
-    update_time: null,
-    delete_time: null,
-    show_buttons: null,
-    resource_parent_name: null,
-    resource_is_selected: null,
-    sub_resource_dir_cnt: null,
-    sub_resource_file_cnt: null,
-    resource_feature_code: '',
-    resource_is_supported: false,
-    resource_show_url: '',
-    resource_source_url: '',
-    resource_title: '',
-    resource_source: 'resource_center',
-    ref_text: null,
-    rerank_score: null,
-    view_config: {}
-  }
-);
+const currentViewResource = reactive<IResourceItem>({
+  sub_rag_file_cnt: 0,
+  id: null,
+  resource_parent_id: null,
+  user_id: null,
+  resource_name: null,
+  resource_type: null,
+  resource_desc: null,
+  resource_icon: null,
+  resource_format: null,
+  resource_path: null,
+  resource_size_in_MB: null,
+  resource_status: null,
+  rag_status: null,
+  create_time: null,
+  update_time: null,
+  delete_time: null,
+  show_buttons: null,
+  resource_parent_name: null,
+  resource_is_selected: null,
+  sub_resource_dir_cnt: null,
+  sub_resource_file_cnt: null,
+  resource_feature_code: '',
+  resource_is_supported: false,
+  resource_show_url: '',
+  resource_source_url: '',
+  resource_title: '',
+  resource_source: 'resource_center',
+  ref_text: null,
+  rerank_score: null,
+  view_config: {}
+});
 const resourceViewerLoading = ref(false);
 const WPSInstance = ref(null);
 const wpsContainer = ref<HTMLDivElement | null>(null);
@@ -141,7 +138,7 @@ const customTableStyle = `
     </style>
 `;
 document.head.insertAdjacentHTML('beforeend', customTableStyle);
-mdAnswer.renderer.rules.image = function (tokens, idx, options, env, self) {
+mdAnswer.renderer.rules.image = function (tokens, idx, options, env) {
   const token = tokens[idx];
   const src = token.attrGet('src');
   const alt = token.content;

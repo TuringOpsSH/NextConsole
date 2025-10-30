@@ -5,7 +5,7 @@ import ConsoleInput from '@/components/next-console/messages-flow/ConsoleInput.v
 import MessageFlowV2 from '@/components/next-console/messages-flow/MessageFlowV2.vue';
 import { consoleInputRef } from '@/components/next-console/messages-flow/console_input';
 import { msgFlowRef } from '@/components/next-console/messages-flow/message_flow';
-import { close_upload_manager } from '@/components/resource/resource_upload/resource_upload';
+import { close_upload_manager } from '@/components/resource/resource-upload/resource-upload';
 import router from '@/router';
 const props = defineProps({
   sessionCode: {

@@ -310,7 +310,7 @@ onMounted(async () => {
               </div>
               <div class="card-body">
                 <div class="std-middle-box">
-                  <el-text>{{ llm.llm_desc }}</el-text>
+                  <el-text :line-clamp="3">{{ llm.llm_desc }}</el-text>
                 </div>
               </div>
               <div class="card-foot">

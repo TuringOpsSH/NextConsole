@@ -333,7 +333,8 @@ def rag_query_v3(params):
         "recall_threshold": 0.3,
         "recall_k": 30,
         "recall_similarity": "ip",
-        "rerank_enabled": True,
+        "recall_deduplication": True,
+        "rerank_enabled": False,
         "max_chunk_per_doc": 1024,
         "overlap_tokens": 80,
         "rerank_threshold": 0.6,
@@ -352,7 +353,7 @@ def rag_query_v3(params):
     }
     if config:
         inner_config = deep_merge(inner_config, config)
-    rerank_enabled = inner_config.get("rerank_enabled", True)
+    rerank_enabled = inner_config.get("rerank_enabled", False)
     web_search_result = {
         "ref_ids": [],
         "webpage_resource_ids": []
@@ -430,7 +431,6 @@ def rag_query_v3(params):
     embedding_begin_time = time.time()
     all_ref_chunks = recall_ref_chunks(ref_ids, query_embedding, inner_config)
     query_log["time_usage"]["embedding_time"] = time.time() - embedding_begin_time
-
     if rerank_enabled and all_ref_chunks:
         all_recall_chunks = rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log)
         if isinstance(all_recall_chunks, list):
@@ -505,6 +505,7 @@ def recall_ref_chunks(ref_ids, query_embedding, inner_config):
     获取所有参考信息的嵌入向量
         支持多参考信息
         返回嵌入向量列表和chunk_id，用于后续的查询和计算
+        新增去重逻辑
     :param ref_ids: 参考信息ID列表
     :param query_embedding: 查询的嵌入向量
     :param inner_config: 内部配置参数
@@ -513,9 +514,10 @@ def recall_ref_chunks(ref_ids, query_embedding, inner_config):
     metric = inner_config.get("recall_similarity", "ip")
     recall_threshold = inner_config.get("recall_threshold", 0.3)
     recall_k = inner_config.get("recall_k", 30)
+    recall_deduplication = inner_config.get("recall_deduplication", True)
     all_ref_chunks = []
     if not ref_ids:
-        return all_ref_chunks
+        return []
     if metric == "cosine":
         all_ref_chunks = RagRefInfo.query.filter(
             RagRefInfo.id.in_(ref_ids),
@@ -553,17 +555,27 @@ def recall_ref_chunks(ref_ids, query_embedding, inner_config):
             ResourceChunkInfo.chunk_embedding_content,
             (ResourceChunkInfo.chunk_embedding.max_inner_product(query_embedding) * -1).label("recall_score"),
         ).limit(recall_k).all()
+    else:
+        return []
     if not all_ref_chunks:
         return []
-    all_ref_chunks = [{
-        "id": chunk.id,
-        "resource_id": chunk.resource_id,
-        "chunk_raw_content": chunk.chunk_raw_content,
-        "chunk_embedding_content": chunk.chunk_embedding_content,
-        "recall_score": chunk.recall_score if chunk.recall_score is not None else 0.0,
-        "rerank_score": 0,
-    } for chunk in all_ref_chunks]
-    return all_ref_chunks
+    # 去重处理
+    raw_content_set = set()
+    all_ref_chunks_res = []
+    for chunk in all_ref_chunks:
+        if recall_deduplication:
+            if chunk.chunk_raw_content in raw_content_set:
+                continue
+            raw_content_set.add(chunk.chunk_raw_content)
+        all_ref_chunks_res.append({
+            "id": chunk.id,
+            "resource_id": chunk.resource_id,
+            "chunk_raw_content": chunk.chunk_raw_content,
+            "chunk_embedding_content": chunk.chunk_embedding_content,
+            "recall_score": chunk.recall_score if chunk.recall_score is not None else 0.0,
+            "rerank_score": 0,
+    })
+    return all_ref_chunks_res
 
 
 def rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log):
@@ -874,8 +886,10 @@ def get_parse_resource_chunks_service(params):
             "chunk_embedding_content": chunk.chunk_embedding_content,
             "chunk_embedding_type": chunk.chunk_embedding_type,
             "chunk_hit_counts": chunk.chunk_hit_counts,
-            "chunk_embedding": chunk.chunk_embedding.tolist() if chunk.chunk_embedding is not None and chunk.chunk_embedding.any() else None,
-            "chunk_embedding_length": len(chunk.chunk_embedding) if chunk.chunk_embedding is not None and chunk.chunk_embedding.any() is not None else 0,
+            "chunk_embedding": chunk.chunk_embedding.tolist()
+            if chunk.chunk_embedding is not None and chunk.chunk_embedding.any() else None,
+            "chunk_embedding_length": len(chunk.chunk_embedding)
+            if chunk.chunk_embedding is not None and chunk.chunk_embedding.any() is not None else 0,
             "status": chunk.status
         } for chunk in all_resource_chunks
     ]

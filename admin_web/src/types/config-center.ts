@@ -55,6 +55,7 @@ export interface ILLMInstance {
     user_nick_name_py?: string;
   };
   access?: string[];
+  schema_type?: string;
 }
 export interface ISupplier {
   id: number;

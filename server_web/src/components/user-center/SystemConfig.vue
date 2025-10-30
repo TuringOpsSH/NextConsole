@@ -2,15 +2,16 @@
 import { Connection, DocumentRemove, Plus, TopRight } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { computed, onMounted, reactive, ref } from 'vue';
+import { domainGet } from '@/api/base';
 import { api as resourceApi } from '@/api/resource-api';
 import { llmInstanceSearch, systemConfigGet, systemConfigUpdate } from '@/api/user-center';
 import { useUserConfigStore } from '@/stores/user-config-store';
 import { useUserInfoStore } from '@/stores/user-info-store';
-import { ISystemConfig } from '@/types/user-center';
+import { ILLMInstance, ISystemConfig } from '@/types/user-center';
 const userInfoStore = useUserInfoStore();
 const userConfigStore = useUserConfigStore();
 const localSystemConfig = reactive<Partial<ISystemConfig>>({});
-const availAbleModels = ref([]);
+const availAbleModels = ref<ILLMInstance[]>([]);
 const embeddingModels = computed(() => availAbleModels.value.filter(item => item.llm_type === '向量模型'));
 const rerankModels = computed(() => availAbleModels.value.filter(item => item.llm_type === '排序模型'));
 const aiRef = ref(null);
@@ -23,6 +24,28 @@ const aiFormRules = {
     {
       required: true,
       message: '请选择默认模型',
+      trigger: 'change'
+    }
+  ],
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  'xiaoyi.name': [
+    {
+      required: true,
+      message: '请输入助手名称',
+      trigger: 'blur'
+    },
+    {
+      min: 2,
+      max: 20,
+      message: '助手名称长度在2-20个字符之间',
+      trigger: 'blur'
+    }
+  ],
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  'xiaoyi.avatar_url': [
+    {
+      required: true,
+      message: '请上传助手图标',
       trigger: 'change'
     }
   ],
@@ -63,6 +86,7 @@ const toolsFormRules = {
   ]
 };
 const opsFormRules = {};
+const adminDomain = ref('');
 async function handleChangeUpdate(configKey: string) {
   const refMap = {
     ai: aiRef,
@@ -127,7 +151,21 @@ async function handleUploadFullLogoSuccess(res: any) {
   }
 }
 async function toLLMCreate() {
-  window.open('/next-console/app-center/llm-create', '_blank');
+  const res = await domainGet({});
+  if (!res.error_status) {
+    adminDomain.value = res.result.admin_domain;
+  }
+  if (adminDomain.value) {
+    window.open(`${adminDomain.value}/next-console/app-center/llm-create`, '_blank');
+    return;
+  }
+  ElMessage.info('请先配置系统域名');
+}
+async function handleUploadXiaoyiAvatarSuccess(res: any) {
+  if (!res.error_status) {
+    localSystemConfig.ai.xiaoyi.avatar_url = res.result.url;
+    handleChangeUpdate('ai');
+  }
 }
 onMounted(async () => {
   getSystemConfigs();
@@ -147,15 +185,9 @@ onMounted(async () => {
             <el-text class="form-label-text">AI组件</el-text>
           </div>
           <div class="form-area-body">
-            <el-form
-                ref="aiRef"
-                label-width="auto"
-                :model="localSystemConfig.ai"
-                :rules="aiFormRules"
-                @change="handleChangeUpdate('ai')"
-            >
+            <el-form ref="aiRef" label-width="auto" :model="localSystemConfig.ai" :rules="aiFormRules">
               <div class="sub-title">
-                <el-text>小亦AI助手</el-text>
+                <el-text>内置官方AI助手</el-text>
               </div>
               <el-form-item label="默认模型:" label-position="left" prop="xiaoyi.llm_code">
                 <el-select v-model="localSystemConfig.ai.xiaoyi.llm_code" @change="handleChangeUpdate('ai')">
@@ -163,9 +195,9 @@ onMounted(async () => {
                     <div class="llm-instance-item">
                       <div class="std-middle-box">
                         <el-avatar
-                            :src="getLLMIcon(label)"
-                            style="width: 20px; height: 20px; background-color: white"
-                            fit="contain"
+                          :src="getLLMIcon(label)"
+                          style="width: 20px; height: 20px; background-color: white"
+                          fit="contain"
                         />
                       </div>
                       <div class="std-middle-box" style="justify-content: flex-start">
@@ -185,23 +217,48 @@ onMounted(async () => {
                       </div>
                     </div>
                   </el-option>
-                  <el-option value="">
-                    <el-button :icon="TopRight" @click="toLLMCreate">前往模型配置 </el-button>
-                  </el-option>
+                  <el-button class="to-llm-button" :icon="TopRight" @click="toLLMCreate">前往模型配置 </el-button>
                 </el-select>
+              </el-form-item>
+              <el-form-item label="助手名称：" label-position="left" prop="xiaoyi.name">
+                <el-input v-model="localSystemConfig.ai.xiaoyi.name" @change="handleChangeUpdate('ai')" />
+              </el-form-item>
+              <el-form-item label="助手头像：" label-position="left" prop="xiaoyi.avatar_url">
+                <div style="display: flex; gap: 12px">
+                  <el-image
+                    v-if="localSystemConfig.ai.xiaoyi.avatar_url"
+                    :src="localSystemConfig.ai.xiaoyi.avatar_url"
+                    class="assistant-avatar"
+                  />
+                  <el-upload
+                    v-model="localSystemConfig.ai.xiaoyi.avatar_url"
+                    list-type="picture-card"
+                    :limit="1"
+                    accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
+                    name="data"
+                    :headers="userInfoStore.userHeader"
+                    :action="resourceApi.upload_resource"
+                    :on-success="handleUploadXiaoyiAvatarSuccess"
+                  >
+                    <el-icon><Plus /></el-icon>
+                  </el-upload>
+                </div>
               </el-form-item>
               <div class="sub-title">
                 <el-text>向量化模型</el-text>
               </div>
-              <el-form-item label="默认模型:" label-position="left" prop="embedding.llm_code">
+              <el-form-item label="启用" label-position="left" prop="embedding.enable">
+                <el-switch v-model="localSystemConfig.ai.embedding.enable" @change="handleChangeUpdate('ai')" />
+              </el-form-item>
+              <el-form-item label="默认模型" label-position="left" prop="embedding.llm_code">
                 <el-select v-model="localSystemConfig.ai.embedding.llm_code" @change="handleChangeUpdate('ai')">
                   <template #label="{ label }">
                     <div class="llm-instance-item">
                       <div class="std-middle-box">
                         <el-avatar
-                            :src="getLLMIcon(label)"
-                            style="width: 20px; height: 20px; background-color: white"
-                            fit="contain"
+                          :src="getLLMIcon(label)"
+                          style="width: 20px; height: 20px; background-color: white"
+                          fit="contain"
                         />
                       </div>
                       <div class="std-middle-box" style="justify-content: flex-start">
@@ -221,23 +278,43 @@ onMounted(async () => {
                       </div>
                     </div>
                   </el-option>
-                  <el-option value="">
-                    <el-button :icon="TopRight" @click="toLLMCreate">前往模型配置 </el-button>
-                  </el-option>
+                  <el-button class="to-llm-button" :icon="TopRight" @click="toLLMCreate">前往模型配置 </el-button>
                 </el-select>
+              </el-form-item>
+              <el-form-item label="阈值" label-position="left" prop="embedding.threshold">
+                <el-slider
+                  v-model="localSystemConfig.ai.embedding.threshold"
+                  :max="1"
+                  :min="0"
+                  :step="0.1"
+                  show-input
+                  @change="handleChangeUpdate('ai')"
+                />
+              </el-form-item>
+              <el-form-item label="Top-K" label-position="left" prop="embedding.topK">
+                <el-input-number
+                  v-model="localSystemConfig.ai.embedding.topK"
+                  :max="100"
+                  :min="1"
+                  :step="1"
+                  @change="handleChangeUpdate('ai')"
+                />
               </el-form-item>
               <div class="sub-title">
                 <el-text>重排序模型</el-text>
               </div>
-              <el-form-item label="默认模型:" label-position="left" prop="rerank.llm_code">
+              <el-form-item label="启用" label-position="left" prop="rerank.enable">
+                <el-switch v-model="localSystemConfig.ai.rerank.enable" @change="handleChangeUpdate('ai')" />
+              </el-form-item>
+              <el-form-item label="默认模型" label-position="left" prop="rerank.llm_code">
                 <el-select v-model="localSystemConfig.ai.rerank.llm_code" @change="handleChangeUpdate('ai')">
                   <template #label="{ label }">
                     <div class="llm-instance-item">
                       <div class="std-middle-box">
                         <el-avatar
-                            :src="getLLMIcon(label)"
-                            style="width: 20px; height: 20px; background-color: white"
-                            fit="contain"
+                          :src="getLLMIcon(label)"
+                          style="width: 20px; height: 20px; background-color: white"
+                          fit="contain"
                         />
                       </div>
                       <div class="std-middle-box" style="justify-content: flex-start">
@@ -257,28 +334,50 @@ onMounted(async () => {
                       </div>
                     </div>
                   </el-option>
-                  <el-option value="">
-                    <el-button :icon="TopRight" @click="toLLMCreate">前往模型配置 </el-button>
-                  </el-option>
+                  <el-button class="to-llm-button" :icon="TopRight" @click="toLLMCreate">前往模型配置 </el-button>
                 </el-select>
+              </el-form-item>
+              <el-form-item label="阈值" label-position="left" prop="rerank.threshold">
+                <el-slider
+                  v-model="localSystemConfig.ai.rerank.threshold"
+                  :max="1"
+                  :min="-1"
+                  :step="0.1"
+                  show-input
+                  @change="handleChangeUpdate('ai')"
+                />
+              </el-form-item>
+              <el-form-item label="Top-K" label-position="left" prop="rerank.topK">
+                <el-input-number
+                  v-model="localSystemConfig.ai.rerank.topK"
+                  :max="100"
+                  :min="1"
+                  :step="1"
+                  @change="handleChangeUpdate('ai')"
+                />
               </el-form-item>
               <div class="sub-title">
                 <el-text>语音识别</el-text>
               </div>
               <el-form-item label="供应商:" label-position="left">
-                <el-select v-model="localSystemConfig.ai.stt.provider" />
+                <el-select v-model="localSystemConfig.ai.stt.provider" @change="handleChangeUpdate('ai')" />
               </el-form-item>
               <el-form-item label="访问地址:" label-position="left" prop="stt.xf_api">
-                <el-input v-model="localSystemConfig.ai.stt.xf_api" />
+                <el-input v-model="localSystemConfig.ai.stt.xf_api" @change="handleChangeUpdate('ai')" />
               </el-form-item>
               <el-form-item label="应用id:" label-position="left">
-                <el-input v-model="localSystemConfig.ai.stt.xf_api_id" />
+                <el-input v-model="localSystemConfig.ai.stt.xf_api_id" @change="handleChangeUpdate('ai')" />
               </el-form-item>
               <el-form-item label="应用公钥:" label-position="left">
-                <el-input v-model="localSystemConfig.ai.stt.xf_api_key" />
+                <el-input v-model="localSystemConfig.ai.stt.xf_api_key" @change="handleChangeUpdate('ai')" />
               </el-form-item>
               <el-form-item label="应用秘钥:" label-position="left">
-                <el-input v-model="localSystemConfig.ai.stt.xf_api_secret" show-password type="password" />
+                <el-input
+                  v-model="localSystemConfig.ai.stt.xf_api_secret"
+                  show-password
+                  type="password"
+                  @change="handleChangeUpdate('ai')"
+                />
               </el-form-item>
             </el-form>
           </div>
@@ -289,10 +388,10 @@ onMounted(async () => {
           </div>
           <div class="form-area-body">
             <el-form
-                ref="connectorsRef"
-                label-width="auto"
-                :model="localSystemConfig.connectors"
-                :rules="connectorsFormRules"
+              ref="connectorsRef"
+              label-width="auto"
+              :model="localSystemConfig.connectors"
+              :rules="connectorsFormRules"
             >
               <div class="sub-title">
                 <el-text>微信</el-text>
@@ -309,8 +408,8 @@ onMounted(async () => {
                       <el-icon><Connection /></el-icon>
                       <span>微信连接器 #{{ idx + 1 }}</span>
                       <span
-                          v-if="userConfigStore.systemConfig?.connectors.weixin.includes(item)"
-                          class="status-indicator"
+                        v-if="userConfigStore.systemConfig?.connectors.weixin.includes(item)"
+                        class="status-indicator"
                       >
                         已配置
                       </span>
@@ -345,11 +444,11 @@ onMounted(async () => {
           </div>
           <div class="form-area-body">
             <el-form
-                ref="toolsRef"
-                label-width="auto"
-                :model="localSystemConfig.tools"
-                :rules="toolsFormRules"
-                @change="handleChangeUpdate('tools')"
+              ref="toolsRef"
+              label-width="auto"
+              :model="localSystemConfig.tools"
+              :rules="toolsFormRules"
+              @change="handleChangeUpdate('tools')"
             >
               <div class="sub-title">
                 <el-text>搜索引擎</el-text>
@@ -421,11 +520,11 @@ onMounted(async () => {
           </div>
           <div class="form-area-body">
             <el-form
-                ref="opsRef"
-                label-width="auto"
-                :model="localSystemConfig.ops"
-                :rules="opsFormRules"
-                @change="handleChangeUpdate('ops')"
+              ref="opsRef"
+              label-width="auto"
+              :model="localSystemConfig.ops"
+              :rules="opsFormRules"
+              @change="handleChangeUpdate('ops')"
             >
               <div class="sub-title">
                 <el-text>自主品牌</el-text>
@@ -439,21 +538,21 @@ onMounted(async () => {
               <el-form-item label="品牌小图标:" label-position="left">
                 <div style="display: flex; gap: 12px">
                   <el-image
-                      v-if="userConfigStore.systemConfig.ops.brand.logo_url"
-                      :src="userConfigStore.systemConfig.ops.brand.logo_url"
-                      :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_url]"
-                      class="icon-preview"
-                      show-progress
+                    v-if="userConfigStore.systemConfig.ops.brand.logo_url"
+                    :src="userConfigStore.systemConfig.ops.brand.logo_url"
+                    :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_url]"
+                    class="assistant-avatar"
+                    show-progress
                   />
                   <el-upload
-                      v-model="localSystemConfig.ops.brand.logo_url"
-                      list-type="picture-card"
-                      :limit="1"
-                      accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
-                      name="data"
-                      :headers="userInfoStore.userHeader"
-                      :action="resourceApi.upload_resource"
-                      :on-success="handleUploadLogoSuccess"
+                    v-model="localSystemConfig.ops.brand.logo_url"
+                    list-type="picture-card"
+                    :limit="1"
+                    accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
+                    name="data"
+                    :headers="userInfoStore.userHeader"
+                    :action="resourceApi.upload_resource"
+                    :on-success="handleUploadLogoSuccess"
                   >
                     <el-icon><Plus /></el-icon>
                   </el-upload>
@@ -462,21 +561,21 @@ onMounted(async () => {
               <el-form-item label="品牌完整图标:" label-position="left">
                 <div style="display: flex; gap: 12px">
                   <el-image
-                      v-if="userConfigStore.systemConfig.ops.brand.logo_full_url"
-                      :src="userConfigStore.systemConfig.ops.brand.logo_full_url"
-                      :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_full_url]"
-                      show-progress
-                      class="icon-preview"
+                    v-if="userConfigStore.systemConfig.ops.brand.logo_full_url"
+                    :src="userConfigStore.systemConfig.ops.brand.logo_full_url"
+                    :preview-src-list="[userConfigStore.systemConfig.ops.brand.logo_full_url]"
+                    show-progress
+                    class="assistant-avatar"
                   />
                   <el-upload
-                      v-model="localSystemConfig.ops.brand.logo_full_url"
-                      list-type="picture-card"
-                      :limit="1"
-                      accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
-                      name="data"
-                      :headers="userInfoStore.userHeader"
-                      :action="resourceApi.upload_resource"
-                      :on-success="handleUploadFullLogoSuccess"
+                    v-model="localSystemConfig.ops.brand.logo_full_url"
+                    list-type="picture-card"
+                    :limit="1"
+                    accept=".png, .jpg, .jpeg, .svg, .gif, .bmp, .webp"
+                    name="data"
+                    :headers="userInfoStore.userHeader"
+                    :action="resourceApi.upload_resource"
+                    :on-success="handleUploadFullLogoSuccess"
                   >
                     <el-icon><Plus /></el-icon>
                   </el-upload>
@@ -491,6 +590,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.std-middle-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
 .user_info_main {
   display: flex;
   flex-direction: column;
@@ -680,9 +785,16 @@ onMounted(async () => {
   margin-right: 10px;
   cursor: pointer;
 }
-.icon-preview {
+.assistant-avatar {
   width: 148px;
   height: 148px;
-  border-radius: 40px;
+  border-radius: 12px;
+}
+.to-llm-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  width: 100%;
 }
 </style>

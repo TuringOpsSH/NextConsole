@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import NextConsoleLeftMenu from '@/components/global/NextConsoleLeftMenu.vue';
 import ConsolePanel from '@/components/next-console/ConsolePanel.vue';
-import WelcomeHome from '@/components/next-console/WelcomeHome.vue';
+import WelcomeHome from '@/components/next-console/messages-flow/WelcomeHome.vue';
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { format_resource_size, get_resource_icon } from '@/components/resource/resource_list/resource_list';
+import { format_resource_size, get_resource_icon } from '@/components/resource/resource-list/resource_list';
 import {
   all_resource_tags,
   before_leave_check,

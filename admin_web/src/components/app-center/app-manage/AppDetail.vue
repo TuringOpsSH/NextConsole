@@ -415,6 +415,7 @@ async function updateCurrentApp() {
   if (!res.error_status) {
     appInfoStore.updateAppMetaArea(res.result);
     ElMessage.success('更新成功');
+    metaDialogFlag.value = false;
   }
 }
 async function openSubPage(page: ISubPage) {
@@ -866,12 +867,14 @@ onMounted(async () => {
                         v-show="
                           workflowStore.currentEditSession?.id == session.id && workflowStore.currentEditSession?.id
                         "
-                        class="std-middle-box session-more-button"
+                        class="session-more-button"
                       >
                         <el-popover ref="sessionButtonsRef" trigger="click">
                           <template #reference>
                             <div class="std-middle-box">
-                              <el-image src="/images/dot_list_grey.svg" />
+                              <el-icon size="12">
+                                <MoreFilled />
+                              </el-icon>
                             </div>
                           </template>
                           <div id="session-manage-box">
@@ -1304,7 +1307,7 @@ onMounted(async () => {
   flex-direction: row;
   gap: 8px;
   align-items: center;
-  width: 100%;
+  width: calc(100% - 24px);
 }
 .session-item-box {
   display: flex;
@@ -1392,5 +1395,8 @@ onMounted(async () => {
   font-size: 18px;
   color: #666;
   margin-bottom: 30px;
+}
+.session-more-button {
+  width: 20px;
 }
 </style>

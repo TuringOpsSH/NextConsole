@@ -1198,6 +1198,7 @@ def init_llm_node(new_node):
     初始化LLM节点
     """
     new_node.node_result_format = 'json'
+    new_node.node_llm_system_prompt_template = '你是一个ai助手'
     new_node.node_result_params_json_schema = {
         "type": "object",
         "properties": {
@@ -1313,12 +1314,14 @@ def init_rag_node(new_node):
             "resource_ready": True,
             "resource_icon": "/images/node_rag.svg",
             "resource_name": "消息附件",
+            "resource_desc": "用户在当前请求中上传的所有附件"
         },
         {
             "id": "session_attachments",
             "resource_ready": True,
             "resource_icon": "/images/node_rag.svg",
             "resource_name": "会话附件",
+            "resource_desc": "用户在本次会话中上传的所有附件"
         },
     ]
     new_node.node_rag_recall_config = {
@@ -1334,7 +1337,7 @@ def init_rag_node(new_node):
         "rerank_k": 10,
     }
     new_node.node_rag_web_search_config = {
-        "search_engine_enhanced": True,
+        "search_engine_enhanced": False,
         "gl": "cn",
         "hl": "zh-cn",
         "location": "China",

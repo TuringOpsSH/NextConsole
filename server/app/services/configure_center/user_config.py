@@ -15,6 +15,13 @@ def init_user_config(user_id):
             "message_layout": "",
             "search_engine_language": "en",
             "search_engine_resource": "search",
+            "session_resources_list": [
+              {
+                "resource_id": -1,
+                "resource_icon": 'all_resource.svg',
+                "resource_name": '全部资源'
+              }
+            ]
         },
         "resources": {
             "auto_rag": True,

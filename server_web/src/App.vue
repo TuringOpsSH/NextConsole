@@ -1,38 +1,20 @@
 <template>
   <el-scrollbar>
-    <div id="app" @click="closeMenu">
+    <div id="app">
       <router-view />
     </div>
   </el-scrollbar>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted } from 'vue';
 import { versionGet } from '@/api/base';
-import { clientFingerprint, getFingerPrint } from '@/components/global/web_socket';
-import { resource_list_context_menu_flag } from '@/components/resource/resource_list/resource_context_menu/context_menu';
-
-// 导入样式
-import '@/styles/global.css';
-import { resource_shortcut_context_menu_flag } from '@/components/resource/resource_shortcut/resource_context_menu/context_menu';
-import { resource_share_context_menu_flag } from '@/components/resource/share_resources/context_menu/context_menu';
-import { useUserConfigStore } from '@/stores/user-config-store';
 import { systemConfigLoad } from '@/api/user-center';
+import { clientFingerprint, getFingerPrint } from '@/components/global/web_socket';
+import '@/styles/global.css';
+import { useUserConfigStore } from '@/stores/user-config-store';
 const userConfigStore = useUserConfigStore();
 let versionCheckInterval = null;
-
-function closeMenu(event) {
-  // 关闭菜单
-  if (
-    event.target.id !== 'resource_list_menu_box' &&
-    event.target.id !== 'resource_shortcut_menu_box' &&
-    event.target.id !== 'resource_share_menu_box'
-  ) {
-    resource_shortcut_context_menu_flag.value = false;
-    resource_list_context_menu_flag.value = false;
-    resource_share_context_menu_flag.value = false;
-  }
-}
 async function getVersion() {
   try {
     const res = await versionGet();

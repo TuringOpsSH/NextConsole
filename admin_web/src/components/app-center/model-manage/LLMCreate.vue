@@ -339,6 +339,7 @@ function translateMaxTokens(maxTokens: number) {
 function handleModelChange(val) {
   newLLMForm.llm_label = val.llm_label;
   newLLMForm.llm_name = val.llm_name;
+  newLLMForm.is_std_openai = true;
   if (val.llm_type) {
     newLLMForm.llm_type = val.llm_type;
     if (val.llm_type == '排序模型') {
@@ -417,7 +418,10 @@ async function commitNewLLMInstance() {
   if (!commitRes.error_status) {
     ElMessage.success('新建模型实例成功');
     router.push({
-      name: 'llmManage'
+      name: 'llmDetail',
+      params: {
+        llmCode: commitRes.result.llm_code
+      }
     });
   }
 }

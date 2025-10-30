@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { search_session as searchSession } from '@/api/next-console';
 
 import { IWorkflowMetaInfo, IWorkflowNodeInfo, IWorkflowEdgeInfo } from '@/types/app-center-type';

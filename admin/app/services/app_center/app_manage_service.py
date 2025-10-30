@@ -683,11 +683,12 @@ def author_app_publish_user(data):
         UserInfo.user_id.in_(user_list),
         UserInfo.user_status == 1,
     ]
-    if not is_nc_admin:
-        all_conditions.append(UserInfo.user_company_id == admin_user.user_company_id)
+    # if not is_nc_admin:
+    #     all_conditions.append(UserInfo.user_company_id == admin_user.user_company_id)
     target_uses = UserInfo.query.filter(*all_conditions).all()
     if not target_uses:
-        return next_console_response(error_status=True, error_message="用户不存在！", error_code=1002)
+        app.logger.warning("用户不存在！")
+        return []
     all_user_ids = [user.user_id for user in target_uses]
     exist_user_access = AppAccessInfo.query.filter(
         AppAccessInfo.app_code == app_code,

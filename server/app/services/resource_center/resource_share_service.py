@@ -1108,16 +1108,16 @@ def search_share_resource_by_keyword(params):
     if target_user.user_account_type == '企业账号':
         # 1. 获取用户的所有公司共享资源
         res_with_auth.extend(get_all_company_share_resource(target_user))
-        app.logger.warning(f"获取用户的所有公司共享资源,{len(res_with_auth)}")
+        # app.logger.warning(f"获取用户的所有公司共享资源,{len(res_with_auth)}")
         # 2. 获取用户的所有部门共享资源
         res_with_auth.extend(get_all_department_share_resource(target_user))
-        app.logger.warning(f"获取用户的所有部门共享资源,{len(res_with_auth)}")
+        # app.logger.warning(f"获取用户的所有部门共享资源,{len(res_with_auth)}")
         # 3. 获取用户的所有同事共享资源
         res_with_auth.extend(get_all_colleague_share_resource(target_user))
-        app.logger.warning(f"获取用户的所有同事共享资源,{len(res_with_auth)}")
+        # app.logger.warning(f"获取用户的所有同事共享资源,{len(res_with_auth)}")
     # 4. 获取用户的所有好友共享资源
     res_with_auth.extend(get_all_friend_share_resource(target_user))
-    app.logger.warning(f"获取用户的所有好友共享资源,{len(res_with_auth)}")
+    # app.logger.warning(f"获取用户的所有好友共享资源,{len(res_with_auth)}")
     # 5. 获取自己共享的资源
     self_share_resources = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.user_id == user_id,
@@ -1150,7 +1150,7 @@ def search_share_resource_by_keyword(params):
     res = [item['resource'] for item in new_res]
     resource_auth_map = {item['resource'].id: item['auth_type'] for item in new_res}  # 保留权限映射
     all_parent_id = [resource.id for resource in res]
-    app.logger.warning(f"扩展至所有下级资源并添加过滤条件,begin,{len(res)},{len(all_parent_id)}")
+    # app.logger.warning(f"扩展至所有下级资源并添加过滤条件,begin,{len(res)},{len(all_parent_id)}")
     while all_parent_id:
         children_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.resource_status == '正常',
@@ -1164,9 +1164,9 @@ def search_share_resource_by_keyword(params):
             parent_auth = resource_auth_map.get(resource.resource_parent_id, 'read')
             resource_auth_map[resource.id] = parent_auth
             res.append(resource)
-        app.logger.warning(f"扩展至所有下级资源并添加过滤条件,middle,{len(res)},{len(all_parent_id)}")
+        # app.logger.warning(f"扩展至所有下级资源并添加过滤条件,middle,{len(res)},{len(all_parent_id)}")
     finally_resource_ids = [resource.id for resource in res]
-    app.logger.warning(f"扩展至所有下级资源并添加过滤条件,final,{len(finally_resource_ids)}")
+    # app.logger.warning(f"扩展至所有下级资源并添加过滤条件,final,{len(finally_resource_ids)}")
     # 构建查询条件
     all_conditions = [
         ResourceObjectMeta.resource_status == '正常',
@@ -1229,7 +1229,7 @@ def search_share_resource_by_keyword(params):
         UserInfo.user_status == 1
     ).all()
     author_info = [author.show_info() for author in all_author]
-    app.logger.warning(f"获取资源对应的作者信息,{len(author_info)}")
+    # app.logger.warning(f"获取资源对应的作者信息,{len(author_info)}")
 
     # 格式化结果，确保包含auth_type
     new_res = []
@@ -1244,7 +1244,8 @@ def search_share_resource_by_keyword(params):
         from app.services.resource_center.resource_object_service import search_rag_enhanced
         rag_res = search_rag_enhanced({
             "all_resource_id": all_resource_id,
-            "resource_keyword": resource_keyword
+            "resource_keyword": resource_keyword,
+            "resource_source": "resource_center"
         })
         for rag_item in rag_res:
             rag_id = rag_item.get("id")

@@ -11,10 +11,11 @@ import {
 } from '@/api/next-console';
 import { useUserInfoStore } from '@/stores/user-info-store';
 import { IRunningQuestionMeta, ISessionItem } from '@/types/next-console';
+import { IResourceTag } from '@/types/resource-type';
+import { IUsers } from '@/types/user-center';
 import AttachmentPreview from './AttachmentPreview.vue';
 import ResourceUploadManager from './ResourceUploadManager.vue';
 import ResourcesSearch from './ResourcesSearch.vue';
-
 const userInputRef = ref();
 const consoleInputRef = ref();
 const userInput = ref('');
@@ -23,6 +24,7 @@ const userBatchSize = ref(0);
 const runningQuestions = ref<IRunningQuestionMeta[]>([]);
 const currentSession = reactive<ISessionItem>({});
 const userInfoStore = useUserInfoStore();
+const skipUserQuestion = ref(false);
 const emit = defineEmits([
   'begin-answer',
   'update-answer',
@@ -33,6 +35,10 @@ const emit = defineEmits([
   'create-session'
 ]);
 const props = defineProps({
+  show: {
+    type: Boolean,
+    default: true
+  },
   session: {
     type: Object,
     default: {},
@@ -49,9 +55,14 @@ const props = defineProps({
   disable: {
     type: Boolean,
     default: false
+  },
+  row: {
+    type: Number,
+    default: 2
   }
 });
 const isRecording = ref(false);
+const localShow = ref(true);
 const localDisable = ref(false);
 interface IResourceItem {
   id?: number;
@@ -88,7 +99,7 @@ interface IResourceItem {
   resource_content?: string | null;
   ref_text?: string | null;
   rerank_score?: number | null;
-  resource_tags?: ResourceTag[] | null;
+  resource_tags?: IResourceTag[] | null;
   author_info?: IUsers | null;
   access_list?: string[];
   [property: string]: any;
@@ -117,7 +128,7 @@ function askQuestionPreCheck() {
     return false;
   }
   // 判断是否为空
-  if (!userInput.value || userInput.value.trim() === '') {
+  if ((!userInput.value || userInput.value.trim() === '') && !skipUserQuestion.value) {
     ElNotification.warning({
       title: '系统消息',
       message: '请输入有效问题！',
@@ -138,7 +149,7 @@ async function askQuestion() {
     return;
   }
   // 用户输入预处理：将换行符替换为两个换行符
-  let userMsgContent = userInput.value.replace(/\n/g, '\n\n');
+  let userMsgContent = userInput.value?.replace(/\n/g, '\n\n');
   let msgAbortController = new AbortController();
   // 更新数据
   let targetQuestion = {
@@ -181,29 +192,44 @@ async function askQuestion() {
       // 处理流式响应来更新消息
       const reader = data.body.getReader();
       let chunk = await reader.read();
+      let buffer = new Uint8Array(0);
       while (!chunk.done) {
-        emit('update-answer', {
-          data: chunk,
-          userQaID: targetQuestion.qa_item_idx
-        });
-
-        if (!qaId) {
-          let jsonData = new TextDecoder('utf-8').decode(chunk.value);
-          const lines = jsonData.split('\n');
-          for (const line of lines) {
-            if (line.startsWith('data:')) {
-              jsonData = line.slice(5).trim(); // 移除"data:"前缀
-              try {
-                jsonData = JSON.parse(jsonData);
-              } catch (e) {
-                break;
-              }
-              qaId = jsonData?.qa_id;
-              break;
-            }
+        // 当数据块太大时，需要拼接完整后再处理
+        // 将新收到的数据追加到缓冲区
+        const newBuffer = new Uint8Array(buffer.length + chunk.value.length);
+        newBuffer.set(buffer);
+        newBuffer.set(chunk.value, buffer.length);
+        buffer = newBuffer;
+        const chunkValue = chunk.value;
+        let endsWithNewLine = false;
+        if (chunkValue.length >= 2) {
+          const lastByte1 = chunkValue[chunkValue.length - 2]; // 倒数第二个字节
+          const lastByte2 = chunkValue[chunkValue.length - 1]; // 最后一个字节
+          if (lastByte1 === 10 && lastByte2 === 10) { // 10 是 '\n' 的 ASCII 值
+            endsWithNewLine = true;
           }
         }
-        chunk = await reader.read();
+        if (endsWithNewLine) {
+          // 发送整个缓冲区作为完整消息（包括结尾的 "\n\n"）
+          emit('update-answer', {
+            data: { value: buffer, done: false },
+            userQaID: targetQuestion.qa_item_idx
+          });
+
+          // 初始化 qaId（如果尚未设置）
+          if (!qaId) {
+            qaId = initQaIdInDelta(chunk);
+          }
+
+          // 重置缓冲区
+          buffer = new Uint8Array(0);
+
+          // 读取下一个数据块
+          chunk = await reader.read();
+        } else {
+          // 继续读取下一个数据块
+          chunk = await reader.read();
+        }
       }
     } else {
       let data = await addMessages(params, null);
@@ -223,6 +249,27 @@ async function askQuestion() {
   // 更新问题状态
   let idx = runningQuestions.value.indexOf(targetQuestion);
   runningQuestions.value.splice(idx, 1);
+}
+function initQaIdInDelta(chunk) {
+  let qaId = null;
+  let jsonData = new TextDecoder('utf-8').decode(chunk.value);
+  let jsonDataObj = {
+    qa_id: null
+  };
+  const lines = jsonData.split('\n');
+  for (const line of lines) {
+    if (line.startsWith('data:')) {
+      jsonData = line.slice(5).trim(); // 移除"data:"前缀
+      try {
+        jsonDataObj = JSON.parse(jsonData);
+        qaId = jsonDataObj?.qa_id;
+      } catch (e) {
+        break;
+      }
+      break;
+    }
+  }
+  return qaId;
 }
 async function stopQuestion(targetQuestion: IRunningQuestionMeta | null = null) {
   // 如果没有传入参数，则停止最新的问题
@@ -488,6 +535,7 @@ watch(
     if (newVal && newVal != currentSession) {
       Object.assign(currentSession, newVal);
       await initSessionAttachment();
+      skipUserQuestion.value = newVal?.session_task_params_schema?.skip_user_question;
     }
   },
   { immediate: true }
@@ -499,15 +547,23 @@ watch(
   },
   { immediate: true }
 );
+watch(
+  () => props.show,
+  newVal => {
+    localShow.value = newVal;
+  },
+  { immediate: true }
+);
 defineExpose({
   clickRecommendQuestion,
   askQuestion,
-  updateQuestion
+  updateQuestion,
+  stopQuestion
 });
 </script>
 
 <template>
-  <div id="console-input">
+  <div v-show="localShow" id="console-input">
     <div id="console-input-box" ref="consoleInputRef" :class="{ 'disabled-state': localDisable }">
       <div id="console-input-box-inner">
         <div id="console-input-box-inner-head">
@@ -526,7 +582,7 @@ defineExpose({
               input-style="box-shadow: none; border-radius: 8px; border: none;"
               class="msg-input-textarea"
               resize="none"
-              :autosize="{ minRows: 2, maxRows: 6 }"
+              :autosize="{ minRows: props.row, maxRows: 6 }"
               :disabled="localDisable"
               @keydown.enter.prevent
               @keydown="handleKeyDown"
@@ -627,7 +683,7 @@ defineExpose({
                   </div>
                 </div>
               </el-popover>
-              <div v-show="!userBatchSize" class="input-button" @click="askQuestion()">
+              <div v-show="!userBatchSize" class="input-button" @click="askQuestion">
                 <el-image src="/images/send_blue.svg" class="input-icon" />
               </div>
             </div>

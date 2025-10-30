@@ -1,6 +1,6 @@
 import { reactive, ref } from 'vue';
 import { ResourceItem } from '@/types/resource-type';
-import { get_init_resource } from '@/components/resource/resource_list/resource_list';
+import { get_init_resource } from '@/components/resource/resource-list/resource_list';
 import type Node from 'element-plus/es/components/tree/src/model/node';
 import { add_resource_object, move_resources, search_resource_object } from '@/api/resource-api';
 import { ElMessage, ElNotification } from 'element-plus';
@@ -8,8 +8,8 @@ import {
   close_upload_manager,
   folder_upload_parent_resource,
   upload_file_task_list
-} from '@/components/resource/resource_upload/resource_upload';
-import { init_my_resource_tree } from '@/components/resource/resource_panel/panel';
+} from '@/components/resource/resource-upload/resource-upload';
+import { init_my_resource_tree } from '@/components/resource/resource-panel/panel';
 
 export const props = {
   isLeaf: 'leaf',

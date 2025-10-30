@@ -11,7 +11,8 @@ import markdownItMermaid from 'markdown-it-mermaid-plugin';
 import MarkdownTasks from 'markdown-it-task-lists';
 import mermaid from 'mermaid';
 
-import { nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { nextTick, reactive, ref, watch } from 'vue';
+import VueJsonPretty from 'vue-json-pretty';
 import { getDebugInfo } from '@/api/app-center-api';
 import {
   attachment_get_detail as attachmentGetDetail,
@@ -33,13 +34,13 @@ import {
   IReferenceMap,
   ISessionItem,
   ISessionAttachment,
-  workflow_task_item as IWorkflowTaskItem,
-  workflow_task_map as IWorkflowTaskMap
+  IWorkflowTaskItem,
+  IWorkflowTaskMap,
+  ICompletionChunk
 } from '@/types/next-console';
-import { ResourceItem } from '@/types/resource_type';
+import { IResourceItem } from '@/types/resource-type';
 import SimpleProgress from './SimpleProgress.vue';
 import WelComeArea from './WelComeArea.vue';
-import VueJsonPretty from 'vue-json-pretty';
 import WorkFlowArea from './WorkFlowArea.vue';
 
 import '@/styles/katex.min.css';
@@ -392,7 +393,6 @@ function copyAnswer(item: IMsgQueueItem) {
     if (!subMsg?.msg_content) {
       continue;
     }
-    console.log(subMsg);
     if (subMsg?.msg_format == 'workflow') {
       continue;
     }
@@ -459,7 +459,7 @@ function splitReasonMarkdown(item: IMsgQueueItem) {
   if (!msgParentId) {
     return;
   }
-  for (let i = 0; i < item.qa_value.answer[msgParentId].length; i++) {
+  for (let i = 0; i < item.qa_value.answer[msgParentId]?.length; i++) {
     let msgContent = item.qa_value.answer[msgParentId]?.[i]?.reasoning_content;
     if (!msgContent) {
       continue;
@@ -521,7 +521,7 @@ function splitMarkdown(item: IMsgQueueItem) {
   if (!msgParentId) {
     return;
   }
-  for (let i = 0; i < item.qa_value.answer[msgParentId].length; i++) {
+  for (let i = 0; i < item.qa_value.answer[msgParentId]?.length; i++) {
     let msgContent = item.qa_value.answer[msgParentId]?.[i]?.msg_content;
     if (!msgContent) {
       continue;
@@ -925,6 +925,7 @@ async function beginAnswer(data) {
     // 使用方式
     await waitForLoading();
   }
+  userStopScroll.value = false;
   // 生成问答对占位
   let newQaItem = <IMsgQueueItem>{
     user_qa_id: data.userQaID,
@@ -994,65 +995,19 @@ async function updateAnswer(data) {
     let jsonDataStr = new TextDecoder('utf-8').decode(data.data.value);
     const lines = jsonDataStr.split('\n');
     for (let line of lines) {
-      if (line.startsWith('data:')) {
-        jsonDataStr = line.slice(5).trim(); // 移除"data:"前缀
-        let jsonData = {};
-        try {
-          jsonData = JSON.parse(jsonDataStr);
-        } catch (e) {
-          return;
-        }
-        let msgReasonContent = jsonData?.choices[0].delta?.reasoning_content;
-        let msgContent = jsonData?.choices[0].delta?.content;
-        let newMsgItem = generateNewMsg(jsonData);
-        if (!msgFlow.value[lastIndex]?.qa_id) {
-          msgFlow.value[lastIndex].qa_id = jsonData?.qa_id;
-          msgFlow.value[lastIndex].qa_value.question[0].msg_id = jsonData?.msg_parent_id;
-          msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id] = [newMsgItem];
-        } else {
-          let msgIdx = -1;
-          for (let i = 0; i < msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id]?.length; i++) {
-            if (msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][i]?.msg_id == jsonData?.msg_id) {
-              // 找到对应的消息
-              msgIdx = i;
-              if (msgContent !== undefined && msgContent) {
-                if (!msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].msg_content) {
-                  msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].msg_content = '';
-                }
-                msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].msg_content += msgContent;
-              }
-              if (msgReasonContent !== undefined && msgReasonContent) {
-                msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][msgIdx].reasoning_content +=
-                  msgReasonContent;
-              }
-              break;
-            }
-          }
-          if (msgIdx == -1) {
-            // 没找到则插入到msg_id比自己大的消息前面
-            for (let i = 0; i < msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id]?.length; i++) {
-              if (msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id][i]?.msg_id > jsonData?.msg_id) {
-                msgIdx = i;
-                break;
-              }
-            }
-            if (msgIdx == -1) {
-              msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id]?.push(newMsgItem);
-            } else {
-              msgFlow.value[lastIndex].qa_value.answer[jsonData?.msg_parent_id].splice(msgIdx, 0, newMsgItem);
-            }
-          }
-        }
-        splitMarkdown(msgFlow.value[lastIndex]);
-        splitReasonMarkdown(msgFlow.value[lastIndex]);
-        scrollToBottom();
+      if (!line.startsWith('data:')) {
+        continue;
       }
+      updateAnswerStreaming(line);
+      splitMarkdown(msgFlow.value[lastIndex]);
+      splitReasonMarkdown(msgFlow.value[lastIndex]);
+      scrollToBottom();
     }
   } else {
     updateAnswerDefault(data, lastIndex);
   }
 }
-function generateNewMsg(jsonData) {
+function generateNewMsg(jsonData: ICompletionChunk) {
   let msgReasonContent = jsonData?.choices[0].delta?.reasoning_content;
   let msgContent = jsonData?.choices[0].delta?.content;
   let msgFormat = jsonData?.choices[0].delta?.msg_format;
@@ -1116,6 +1071,62 @@ function generateNewMsg(jsonData) {
   }
   return newMsgItem;
 }
+function updateAnswerStreaming(line) {
+  // 流式更新回答
+  let lastIndex = msgFlow.value.length - 1;
+  let jsonDataStr = line.slice(5).trim(); // 移除"data:"前缀
+  let msgData = {} as ICompletionChunk;
+  try {
+    msgData = JSON.parse(jsonDataStr) as ICompletionChunk;
+  } catch (e) {
+    return;
+  }
+  let msgReasonContent = msgData?.choices[0].delta?.reasoning_content;
+  let msgContent = msgData?.choices[0].delta?.content;
+  let newMsgItem = generateNewMsg(msgData) as IMsgItem;
+  if (!msgFlow.value[lastIndex]?.qa_id) {
+    msgFlow.value[lastIndex].qa_id = msgData?.qa_id;
+    msgFlow.value[lastIndex].qa_value.question[0].msg_id = msgData?.msg_parent_id;
+    if (msgReasonContent) {
+      newMsgItem.msgReasonContentShow = true;
+    }
+    msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id] = [newMsgItem];
+  } else {
+    let msgIdx = -1;
+    for (let i = 0; i < msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id]?.length; i++) {
+      if (msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][i]?.msg_id != msgData?.msg_id) {
+        continue;
+      }
+      // 找到对应的消息
+      msgIdx = i;
+      if (!msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][msgIdx].msg_content) {
+        msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][msgIdx].msg_content = '';
+      }
+      if (msgContent !== undefined && msgContent !== null && msgContent) {
+        msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][msgIdx].msg_content += msgContent;
+      }
+      if (msgReasonContent !== undefined && msgReasonContent) {
+        msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][msgIdx].reasoning_content += msgReasonContent;
+      }
+      break;
+    }
+
+    if (msgIdx == -1) {
+      // 没找到则插入到msg_id比自己大的消息前面
+      for (let i = 0; i < msgFlow.value[lastIndex].qa_value.answer[msgContent?.msg_parent_id]?.length; i++) {
+        if (msgFlow.value[lastIndex].qa_value.answer[msgContent?.msg_parent_id][i]?.msg_id > msgContent?.msg_id) {
+          msgIdx = i;
+          break;
+        }
+      }
+      if (msgIdx == -1) {
+        msgFlow.value[lastIndex].qa_value.answer[msgContent?.msg_parent_id]?.push(newMsgItem);
+      } else {
+        msgFlow.value[lastIndex].qa_value.answer[msgContent?.msg_parent_id].splice(msgIdx, 0, newMsgItem);
+      }
+    }
+  }
+}
 function updateAnswerDefault(data, lastIndex) {
   msgFlow.value[lastIndex].qa_id = data.data?.qa_id;
   msgFlow.value[lastIndex].qa_value.question[0].msg_id = data.data?.msg_parent_id;
@@ -1149,6 +1160,11 @@ async function finishAnswer(data) {
       qaItem.qa_finished = true;
       qaItem.qa_workflow_open = false;
       msgParentId = qaItem.qa_value.question[0].msg_id;
+      qaItem.qa_value.answer[msgParentId]?.forEach(answerItem => {
+        if (answerItem?.reasoning_content) {
+          answerItem.msgReasonContentShow = false;
+        }
+      });
       break;
     }
   }
@@ -1242,7 +1258,7 @@ async function getTargetReference(msgId: number) {
     }
   }
 }
-function getResourceIcon(resource: ResourceItem) {
+function getResourceIcon(resource: IResourceItem) {
   // 获取资源图标
   if (resource.resource_icon) {
     if (
@@ -1382,9 +1398,6 @@ async function showFullTaskResult(item, col = 'task_result') {
   }
   loadingFullTaskResult.value = false;
 }
-onMounted(async () => {
-
-});
 const emit = defineEmits(['update:text', 'click-recommend-question', 'select-msg', 'add-quote', 'ready']);
 defineExpose({
   getSelectMsg,
@@ -1513,7 +1526,7 @@ watch(
                           <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
                             <div class="std-middle-box">
                               <el-image
-                                :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
+                                :src="getResourceIcon({ resource_icon: attachment.resource_icon } as IResourceItem)"
                                 class="attachment-item-img"
                               />
                             </div>
@@ -1538,7 +1551,7 @@ watch(
                           <div v-else class="attachment-item" @click="downloadAttachment(attachment)">
                             <div class="std-middle-box">
                               <el-image
-                                :src="getResourceIcon({ resource_icon: attachment.resource_icon } as ResourceItem)"
+                                :src="getResourceIcon({ resource_icon: attachment.resource_icon } as IResourceItem)"
                                 class="attachment-item-img"
                               />
                             </div>
@@ -1659,28 +1672,29 @@ watch(
                     />
                     <div class="msg-flow-answer-inner" :class="{ 'msg-flow-answer-inner-short': item?.short_answer }">
                       <div
-                        v-for="(sub_finish_msg, idx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]"
+                        v-for="(sub_finish_msg, subIdx) in item.qa_value.answer[item.qa_value.question[0]?.msg_id]"
+                        :key="subIdx"
                         style="width: 100%"
                       >
                         <div v-show="sub_finish_msg?.msg_reason_content_finish_html?.length" class="reason-container">
                           <div class="reason-header">
                             <el-button
-                              v-if="!sub_finish_msg?.msg_reason_content_hide"
+                              v-if="sub_finish_msg?.msgReasonContentShow"
                               :icon="ArrowUp"
-                              @click="sub_finish_msg.msg_reason_content_hide = true"
+                              @click="sub_finish_msg.msgReasonContentShow = false"
                             >
                               收起推理过程
                             </el-button>
                             <el-button
-                              v-if="sub_finish_msg?.msg_reason_content_hide"
+                              v-if="!sub_finish_msg?.msgReasonContentShow"
                               :icon="ArrowDown"
-                              @click="sub_finish_msg.msg_reason_content_hide = false"
+                              @click="sub_finish_msg.msgReasonContentShow = true"
                             >
                               展开推理过程
                             </el-button>
                           </div>
                           <Transition name="slide">
-                            <div v-show="!sub_finish_msg?.msg_reason_content_hide" class="reason-box">
+                            <div v-show="sub_finish_msg?.msgReasonContentShow" class="reason-box">
                               <div
                                 v-for="(sub_finish_msg_content, idx) in sub_finish_msg?.msg_reason_content_finish_html"
                                 :key="idx"
@@ -2615,9 +2629,9 @@ sup {
   /* 盒子内文字字体 */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   /* 盒子内文字大小 */
-  font-size: 16px;
+  font-size: 14px;
   /* 盒子内文字行高 */
-  line-height: 1.6;
+  line-height: 1;
   /* 盒子的阴影效果，水平偏移 0px，垂直偏移 2px，模糊半径 5px，颜色为浅灰色半透明 */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   border-left: 4px solid #007bff; /* 在引用块左侧添加蓝色边框 */
@@ -2842,5 +2856,21 @@ sup {
     padding: 8px;
     gap: 6px;
   }
+}
+:deep(think) {
+  display: block;
+  background-color: #f0f9ff;
+  border-left: 4px solid #3b82f6;
+  color: #666;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  border-radius: 0 4px 4px 0;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+/* 你也可以添加一些悬停效果 */
+:deep(think):hover {
+  background-color: #e0f2fe;
 }
 </style>
