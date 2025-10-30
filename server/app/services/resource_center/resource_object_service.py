@@ -2456,8 +2456,10 @@ def search_by_resource_keyword(params):
     if rag_enhance:
         rag_res = search_rag_enhanced({
             "user_id": user_id,
-            "resource_keyword": resource_keyword
+            "resource_keyword": resource_keyword,
+            "resource_source": "resource_center",
         })
+
         # merge 入 new_res
         for rag_item in rag_res:
             if rag_item.get("id") not in all_resource_id:
@@ -2522,11 +2524,13 @@ def search_rag_enhanced(params):
     user_id = int(params.get("user_id", 0))
     resource_keyword = params.get("resource_keyword")
     all_resource_id = params.get("all_resource_id", [])
+    resource_source = params.get("resource_source")
     all_conditions = [RagRefInfo.ref_status == "成功"]
     if user_id:
         all_conditions.append(RagRefInfo.user_id == user_id)
     if all_resource_id:
         all_conditions.append(RagRefInfo.resource_id.in_(all_resource_id))
+
     all_rag_ref = RagRefInfo.query.filter(*all_conditions).all()
     if not all_rag_ref:
         return []
@@ -2552,12 +2556,16 @@ def search_rag_enhanced(params):
             ResourceObjectMeta.id.in_(all_resource_id),
             ResourceObjectMeta.resource_status == "正常"
         ).all()
-        all_md_resource_ids = list(set([i.resource_parent_id for i in all_md_resources]))
+        all_md_resource_ids = list(set([i.resource_parent_id for i in all_md_resources if i.resource_parent_id]))
         md_map = {resource.id: resource.resource_parent_id for resource in all_md_resources}
-        all_ref_resources = ResourceObjectMeta.query.filter(
+        all_resources_conditions = [
             ResourceObjectMeta.id.in_(all_md_resource_ids),
-            ResourceObjectMeta.resource_status == "正常"
-        ).all()
+            ResourceObjectMeta.resource_status == "正常",
+            ResourceObjectMeta.resource_type != 'folder'
+        ]
+        if resource_source:
+            all_resources_conditions.append(ResourceObjectMeta.resource_source == resource_source)
+        all_ref_resources = ResourceObjectMeta.query.filter(*all_resources_conditions).all()
         res = []
         for resource in all_ref_resources:
             # 从detail中获取rerank_score最高的 text
@@ -2673,6 +2681,11 @@ def simple_upload_resource(params, data):
 
     """
     user_id = int(params.get("user_id"))
+    auto_index = params.get("auto_index")
+    try:
+        resource_parent_id = int(params.get("resource_parent_id"))
+    except Exception:
+        resource_parent_id = None
     filename = data.filename
     resource_type, resource_format = guess_resource_type(filename)
     new_resource_path = generate_new_path(
@@ -2688,8 +2701,17 @@ def simple_upload_resource(params, data):
         file_path=new_resource_path,
         suffix=resource_format,
     ).json.get("result")
+    if not resource_parent_id:
+        user_folder = ResourceObjectMeta.query.filter(
+            ResourceObjectMeta.user_id == user_id,
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_status == "正常",
+            ResourceObjectMeta.resource_source == "resource_center"
+        ).first()
+        resource_parent_id = user_folder.id
     new_resource = ResourceObjectMeta(
         user_id=user_id,
+        resource_parent_id=resource_parent_id,
         resource_name=filename,
         resource_type=resource_type,
         resource_format=resource_format,
@@ -2702,6 +2724,16 @@ def simple_upload_resource(params, data):
     )
     db.session.add(new_resource)
     db.session.commit()
+    # 满足条件后，提交自动构建任务
+    user_config = get_user_config(user_id).json.get("result")
+    if auto_index is True or (auto_index is None and user_config and user_config["resources"]["auto_rag"]):
+        # 判断类型是否支持构建
+        if check_rag_is_support(new_resource):
+            build_params = {
+                "user_id": user_id,
+                "resource_id": new_resource.id
+            }
+            auto_build_resource_ref_v2.delay(build_params)
     return next_console_response(result={
         "id": new_resource.id,
         "name": new_resource.resource_name,

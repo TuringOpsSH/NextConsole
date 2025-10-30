@@ -68,14 +68,6 @@ function selectAttr(key) {
     attrKeyPath: key,
     schemaCode: localSchemaCode.value
   });
-  console.log({
-    attrName: key,
-    attrNameCursor: localSchemaCode.value,
-    attrType: localSchema.value?.properties[key]?.type,
-    attrTypeName: localSchema.value?.properties[key]?.typeName,
-    attrKeyPath: key,
-    schemaCode: localSchemaCode.value
-  });
 }
 function handleClickAttr(selectAttr) {
   // 更新attrKeyPath: 添加父节点的属性名称
@@ -93,7 +85,7 @@ function handleClickAttr(selectAttr) {
       newSelectAttr.attrType = 'array';
       newSelectAttr.attrTypeName = 'array[' + selectAttr.attrType + ']';
     }
-    console.log('handleClickAttr', newSelectAttr);
+
     emits('click:attr', newSelectAttr);
   }
 }

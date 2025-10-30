@@ -48,6 +48,7 @@ def next_console_search_messages(params):
             if current_qa_id not in all_qas:
                 continue
             res_msgs.append({
+                "session_id": msg["session_id"],
                 "qa_id": current_qa_id,
                 "qa_status": all_qas[current_qa_id]["qa_status"],  # "清除
                 "qa_topic": all_qas[current_qa_id]["qa_topic"],
@@ -98,20 +99,28 @@ def next_console_search_messages(params):
                 msg.pop("msg_llm_type")
     # 剔除无效数据：
     new_res_msgs = []
+    all_test_sessions = NextConsoleSession.query.filter(
+        NextConsoleSession.id.in_(all_session_ids),
+        NextConsoleSession.session_status == "测试"
+    ).with_entities(
+        NextConsoleSession.id,
+        NextConsoleSession.session_status
+    ).all()
+    all_test_session_ids = [s.id for s in all_test_sessions]
     for msg_item in res_msgs:
-        # 删除了问题，但是答案还在
-        if not msg_item["qa_value"]["question"]:
-            continue
-        # 删除了答案，但是问题还在
-        valid_questions = []
-        for question in msg_item["qa_value"]["question"]:
-            if question["msg_id"] in msg_item["qa_value"]["answer"]:
-                valid_questions.append(question)
-        msg_item["qa_value"]["question"] = valid_questions
-        if not valid_questions:
-            continue
-        # 新增qa_is_cut_off 字段，表示当前对话是否被截断
-        msg_item["qa_is_cut_off"] = all_qas[msg_item["qa_id"]].get("qa_is_cut_off", False)
+        #测试会话不用删除
+        if msg_item["session_id"] not in all_test_session_ids:
+            # 删除了问题，但是答案还在,
+            if not msg_item["qa_value"]["question"]:
+                continue
+            # 删除了答案，但是问题还在
+            valid_questions = []
+            for question in msg_item["qa_value"]["question"]:
+                if question["msg_id"] in msg_item["qa_value"]["answer"]:
+                    valid_questions.append(question)
+            msg_item["qa_value"]["question"] = valid_questions
+            if not valid_questions:
+                continue
         new_res_msgs.append(msg_item)
     # 增加附件搜索
     return next_console_response(result=new_res_msgs)

@@ -72,6 +72,7 @@ export interface IMsgItem {
   msg_prompt: string | null;
   msg_content: string | null;
   msg_content_finish_html: string[] | null;
+  msg_reason_content_finish_html: string[] | null;
   msg_token_used: number | null;
   msg_time_used: number | null;
   msg_remark: number | null;
@@ -88,7 +89,9 @@ export interface IMsgItem {
   assistant_title?: string | null;
   assistant_desc?: string | null;
   assistant_tags?: string[] | null;
-  msg_reason_content_finish_html?: string[] | null;
+  msg_is_cut_off?: boolean | null;
+  reasoning_content?: string | null;
+  msgReasonContentShow?: boolean | null;
 }
 export interface IMsgQueueItem {
   qa_id: number;
@@ -110,6 +113,7 @@ export interface IMsgQueueItem {
   qa_assistant?: assistant | null;
   qa_is_last?: boolean | null;
   session_id?: number | null;
+  user_qa_id?: string | null;
 }
 export interface IReferenceItem {
   resource_id: string | number;
@@ -141,7 +145,7 @@ export interface IRunningQuestionMeta {
   status: string | null;
   abort_controller: AbortController | null;
 }
-export interface workflow_task_item {
+export interface IWorkflowTaskItem {
   session_id?: number;
   qa_id: number | null;
   msg_id: number | null;
@@ -163,10 +167,10 @@ export interface workflow_task_item {
   task_end_time: string | null;
   task_status: string | null;
 }
-export interface workflow_task_map {
-  [key: number]: workflow_task_item[];
+export interface IWorkflowTaskMap {
+  [key: number]: IWorkflowTaskItem[];
 }
-export interface session_attachment_relation {
+export interface ISessionAttachmentRelation {
   id: number;
   session_id: number;
   qa_id: number;
@@ -194,4 +198,25 @@ export interface ISessionAttachment {
   resource_status: string;
   create_time: string;
   update_time: string;
+  resource_download_url?: string;
+  resource_show_url?: string;
+  resource_size_in_MB?: number;
+}
+export interface ICompletionChunk {
+  choices: [];
+  create_time: string;
+  id: string;
+  model: string;
+  msg_id: number;
+  msg_parent_id: number | null;
+  object: string;
+  qa_id: number;
+  service_tier?: string;
+  session_id: number;
+  system_fingerprint?: string;
+  usage?: {
+    completion_tokens: number;
+    prompt_tokens: number;
+    total_tokens: number;
+  };
 }

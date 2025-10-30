@@ -138,5 +138,7 @@ app.logger.setLevel(app.config['LOG_LEVEL'])
 
 from app.sub_apps.whzy.whzy import blueprint as whzy_blueprint
 from app.sub_apps.shyh.shyh import blueprint as shyh_blueprint
+from app.sub_apps.spdb.spdb import blueprint as spdb_blueprint
 app.register_blueprint(whzy_blueprint)
 app.register_blueprint(shyh_blueprint)
+app.register_blueprint(spdb_blueprint)

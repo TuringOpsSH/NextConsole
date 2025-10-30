@@ -8,7 +8,7 @@ import ResourceEditor from '@/components/resource/resource-view/ResourceEditor.v
 import ResourceParser from '@/components/resource/resource-view/ResourceParser.vue';
 import ResourcePreviewer from '@/components/resource/resource-view/ResourcePreviewer.vue';
 import { currentPathTree } from '@/components/resource/resource-view/resource-viewer';
-import { show_resource_list } from '@/components/resource/resource_list/resource_list';
+import { show_resource_list } from '@/components/resource/resource-list/resource_list';
 import ResourceViewTree from '@/components/resource/resource_tree/resource_view_tree.vue';
 import 'vue-json-pretty/lib/styles.css';
 

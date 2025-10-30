@@ -188,6 +188,7 @@ def web_connection_check(data):
         "msg": "模型URL网络连通性测试通过！"
     })
 
+
 def llm_dry_run(data):
     """
     模型干跑,
@@ -202,6 +203,7 @@ def llm_dry_run(data):
     model = data.get("model", {})
     llm_company = model.get("llm_company", "")
     llm_type = model.get("llm_type", "")
+    schema_type = model.get("schema_type", "nc")
     check_result = {
         "llm_type": llm_type,
         "llm_company": llm_company,
@@ -215,14 +217,18 @@ def llm_dry_run(data):
     from app.services.app_center.node_params_service import load_properties
     extra_headers_schema = model.get("extra_headers", {})
     extra_body_schema = model.get("extra_body", {})
-    try:
-        extra_headers = load_properties(extra_headers_schema.get('properties', {}), {})
-    except Exception as e:
-        extra_headers = {}
-    try:
-        extra_body = load_properties(extra_body_schema.get('properties', {}), {})
-    except Exception as e:
-        extra_body = {}
+    if schema_type == 'nc':
+        try:
+            extra_headers = load_properties(extra_headers_schema.get('properties', {}), {})
+        except Exception as e:
+            extra_headers = {}
+        try:
+            extra_body = load_properties(extra_body_schema.get('properties', {}), {})
+        except Exception as e:
+            extra_body = {}
+    else:
+        extra_headers = extra_headers_schema
+        extra_body = extra_body_schema
     model["extra_headers"] = extra_headers
     model["extra_body"] = extra_body
     begin_time = time.time()

@@ -3,23 +3,23 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import AgentApp from '@/components/app-center/AgentApp.vue';
 import ContactsPage from '@/components/contacts/ContactsPage.vue';
 import CompanyStructure from '@/components/contacts/company-structure/company_structure.vue';
-import friends from '@/components/contacts/friends/friends.vue';
+import Friends from '@/components/contacts/friends/Friends.vue';
 import groupsChat from '@/components/contacts/groups_chat/groups_chat.vue';
 import consoleMain from '@/components/next-console/ConsoleMain.vue';
-import sessionHistory from '@/components/next-console/SessionHistory.vue';
-import NextConsoleWelcomeHome from '@/components/next-console/WelcomeHome.vue';
+import sessionHistory from '@/components/next-console/messages-flow/SessionHistory.vue';
+import NextConsoleWelcomeHome from '@/components/next-console/messages-flow/WelcomeHome.vue';
 import messageFlow from '@/components/next-console/messages-flow/MessageFlowMain.vue';
+import ResourceMain from '@/components/resource/ResourceMain.vue';
+import ResourceList from '@/components/resource/resource-list/ResourceList.vue';
+import ResourceShare from '@/components/resource/resource-share/ResourceShare.vue';
+import ResourceShortcut from '@/components/resource/resource-shortcut/ResourceShortcut.vue';
+import { parseResourceType, parseTagId } from '@/components/resource/resource-shortcut/resource_shortcut';
 import ResourceViewer from '@/components/resource/resource-view/ResourceViewer.vue';
 import ResourceCooling from '@/components/resource/resource_cooling/resource_cooling.vue';
-import ResourceList from '@/components/resource/resource_list/resource_list.vue';
-import ResourceMain from '@/components/resource/resource_main.vue';
-import { parseResourceType, parseTagId } from '@/components/resource/resource_shortcut/resource_shortcut';
-import ResourceShortcut from '@/components/resource/resource_shortcut/resource_shortcut.vue';
 import MyFavorite from '@/components/resource/resources_favorite/my_resource_favorite.vue';
-import ShareResources from '@/components/resource/share_resources/share_resources.vue';
 import UserInfo from '@/components/user-center/UserInfo.vue';
 import WxLoginCheck from '@/components/user-center/WxLoginCheck.vue';
-import AgentAppV2 from '@/components/workbenches/AgentApp.vue';
+import AgentAppV2 from '@/components/next-console/workbenches/AgentApp.vue';
 import AppCenter from '@/pages/AppCenter.vue';
 import Contract from '@/pages/Contract.vue';
 import DefaultPage from '@/pages/DefaultPage.vue';
@@ -178,7 +178,7 @@ const routes: RouteRecordRaw[] = [
           {
             path: 'resource_share/:resource_id?',
             name: 'resource_share',
-            component: ShareResources,
+            component: ResourceShare,
             meta: { requiresAuth: true },
             strict: true,
             props: route => ({
@@ -245,7 +245,7 @@ const routes: RouteRecordRaw[] = [
           {
             name: 'friends',
             path: 'friends',
-            component: friends,
+            component: Friends,
             meta: { requiresAuth: true },
             strict: true
           },

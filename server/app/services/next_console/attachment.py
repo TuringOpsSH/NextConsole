@@ -595,7 +595,8 @@ def search_resources(params):
         return next_console_response(error_status=True, error_message="用户不存在！")
     all_conditions = [
         ResourceObjectMeta.user_id == user_id,
-        ResourceObjectMeta.resource_status == "正常"
+        ResourceObjectMeta.resource_status == "正常",
+        ResourceObjectMeta.resource_source == "resource_center",
     ]
 
     if resource_keyword:
@@ -707,7 +708,8 @@ def search_resources_by_rag(params):
         return next_console_response(error_status=True, error_message="用户不存在！")
     resource_conditions = [
         ResourceObjectMeta.user_id == user_id,
-        ResourceObjectMeta.resource_status == "正常"
+        ResourceObjectMeta.resource_status == "正常",
+        ResourceObjectMeta.resource_source == "resource_center",
     ]
     if resource_formats:
         resource_conditions.append(ResourceObjectMeta.resource_format.in_(resource_formats))
@@ -871,7 +873,8 @@ def search_resources_by_recent(params):
     if not target_user:
         return next_console_response(error_status=True, error_message="用户不存在！")
     all_conditions = [
-        ResourceObjectMeta.resource_status == "正常"
+        ResourceObjectMeta.resource_status == "正常",
+        ResourceObjectMeta.resource_source == "resource_center",
     ]
     if resource_keyword:
         or_conditions = [ResourceObjectMeta.resource_name.like(f"%{resource_keyword}%"),

@@ -235,7 +235,7 @@ def pymupdf_to_markdown(resource, task_params):
     if not os.path.exists(target_new_path):
         return f"转换后的文件不存在: {target_new_path}"
     return save_new_resource_meta(
-        'markdown', target_new_path, '', resource,
+        'markdown', target_new_path, target_new_media_path, resource,
         resource_source=task_params.get('resource_source', 'knowledge_center')
     )
 
@@ -527,6 +527,7 @@ def add_media_resource(media_dir, resource, content, resource_source="knowledge_
     from app.utils.oss.oss_client import generate_download_url
     media_files = os.listdir(media_dir)
     if not media_files:
+        app.logger.warning(f"No media files found in directory: {media_dir}")
         return content
     for media_file in media_files:
         media_path = os.path.join(media_dir, media_file)

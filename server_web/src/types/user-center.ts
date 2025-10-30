@@ -1,3 +1,5 @@
+import { ResourceItem } from '@/types/resource-type';
+
 export interface IUsers {
   user_id?: string | number;
   user_code?: string;
@@ -111,6 +113,7 @@ export interface IUserConfig {
     message_layout: string;
     search_engine_language: string;
     search_engine_resource: string;
+    session_resources_list: Array<ResourceItem>;
   };
   resources: {
     auto_rag: boolean;
@@ -133,15 +136,16 @@ export interface ISystemConfig {
       avatar_url: string;
     };
     embedding: {
-      embedding_endpoint: string;
-      embedding_api_key: string;
-      embedding_model: string;
+      enable: boolean;
+      llm_code: string;
+      threshold: number;
+      topK: number;
     };
     rerank: {
       enable: boolean;
-      rerank_endpoint: string;
-      rerank_api_key: string;
-      rerank_model: string;
+      llm_code: string;
+      threshold: number;
+      topK: number;
     };
     stt: {
       provider: string;

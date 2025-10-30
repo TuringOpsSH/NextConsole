@@ -1,6 +1,6 @@
 import { assistant } from '@/types/assistant';
 
-export interface session_item {
+export interface ISessionItem {
   id: number;
   session_code?: string | null;
   user_id?: number;
@@ -47,7 +47,7 @@ export interface session_item {
   session_task_params?: Record<string, unknown>;
   app_icon?: string;
 }
-export interface qa_item {
+export interface IQaItem {
   qa_id: number;
   user_id: number;
   session_id: number;
@@ -57,7 +57,7 @@ export interface qa_item {
   create_time: string;
   update_time: string;
 }
-export interface msg_item {
+export interface IMsgItem {
   msg_id: number | null;
   user_id: number | null;
   session_id: number | null;
@@ -78,7 +78,7 @@ export interface msg_item {
   msg_version: number | null;
   msg_parent_id: number | null;
   msg_reference_finish: boolean | null;
-  attachment_list?: SessionAttachment[] | null;
+  attachment_list?: ISessionAttachment[] | null;
   create_time: string | null;
   update_time: string | null;
   assistant_avatar?: string | null;
@@ -89,16 +89,16 @@ export interface msg_item {
   assistant_tags?: string[] | null;
   msg_is_cut_off?: boolean | null;
   reasoning_content?: string | null;
-  msg_reason_content_hide?: boolean | null;
+  msgReasonContentShow?: boolean | null;
 }
-export interface msg_queue_item {
+export interface IMsgQueueItem {
   qa_id: number;
   user_qa_id?: string;
   qa_status?: string;
   qa_value: {
-    question: msg_item[];
+    question: IMsgItem[];
     answer: {
-      [key: number]: msg_item[];
+      [key: number]: IMsgItem[];
     };
   };
   qa_topic?: string;
@@ -123,7 +123,7 @@ export interface IReferenceItem {
   showAll?: boolean;
   resource_source_url?: string;
 }
-export interface recommend_question_item {
+export interface IRecommendQuestionItem {
   id: number;
   msg_id: number;
   msg_content: string;
@@ -132,20 +132,20 @@ export interface recommend_question_item {
   create_time: string;
   update_time: string;
 }
-export interface reference_map {
+export interface IReferenceMap {
   [key: number]: IReferenceItem[];
 }
-export interface recommend_question_map {
-  [key: number]: recommend_question_item[];
+export interface IRecommendQuestionMap {
+  [key: number]: IRecommendQuestionItem[];
 }
-export interface running_question_meta {
+export interface IRunningQuestionMeta {
   qa_item_idx: number | string;
   begin_time: number;
   end_time: number | null;
   status: string | null;
   abort_controller: AbortController | null;
 }
-export interface workflow_task_item {
+export interface IWorkflowTaskItem {
   session_id?: number;
   qa_id: number | null;
   msg_id: number | null;
@@ -167,10 +167,10 @@ export interface workflow_task_item {
   task_end_time: string | null;
   task_status: string | null;
 }
-export interface workflow_task_map {
-  [key: number]: workflow_task_item[];
+export interface IWorkflowTaskMap {
+  [key: number]: IWorkflowTaskItem[];
 }
-export interface session_attachment_relation {
+export interface ISessionAttachmentRelation {
   id: number;
   session_id: number;
   qa_id: number;
@@ -181,7 +181,7 @@ export interface session_attachment_relation {
   create_time: string;
   update_time: string;
 }
-export interface SessionAttachment {
+export interface ISessionAttachment {
   session_id?: number;
   qa_id?: number;
   msg_id?: number;
@@ -202,4 +202,22 @@ export interface SessionAttachment {
   resource_show_url?: string;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   resource_size_in_MB?: number;
+}
+export interface ICompletionChunk {
+  choices: [];
+  create_time: string;
+  id: string;
+  model: string;
+  msg_id: number;
+  msg_parent_id: number | null;
+  object: string;
+  qa_id: number;
+  service_tier?: string;
+  session_id: number;
+  system_fingerprint?: string;
+  usage?: {
+    completion_tokens: number;
+    prompt_tokens: number;
+    total_tokens: number;
+  };
 }

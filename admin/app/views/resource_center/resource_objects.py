@@ -433,3 +433,15 @@ def resource_search_by_resource_keyword():
 
 
 
+@app.route('/next_console_admin/resources/upload', methods=['GET', 'POST'])
+@jwt_required()
+def resource_upload():
+    """
+    上传资源对象,form-data
+    :return:
+    """
+    params = request.form.to_dict()
+    user_id = get_jwt_identity()
+    params["user_id"] = int(user_id)
+    data = request.files.get("data")
+    return simple_upload_resource(params, data)

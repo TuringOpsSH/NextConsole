@@ -128,7 +128,7 @@ export async function search_new_friends_list() {
   const res = await search_stranger(params);
   if (!res.error_status) {
     if (res.result) {
-      current_new_friend.value = [res.result];
+      current_new_friend.value = res.result;
     } else {
       ElMessage.info('未找到该用户！');
       current_new_friend.value = [];

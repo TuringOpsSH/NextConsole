@@ -5,7 +5,7 @@ import {
   reference_drawer_data, retry_get_icon,
   show_reference_drawer
 } from "@/components/next_console/messages_flow/reference_drawer";
-import {ResourceItem} from "@/types/resource_type";
+import {ResourceItem} from "@/types/resource-type";
 import {ref} from "vue";
 const drawer_width = ref(window.innerWidth < 768 ? '60vw': '15vw');
 function getResourceIcon(resource: ResourceItem) {

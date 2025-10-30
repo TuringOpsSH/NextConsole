@@ -1,4 +1,4 @@
-import { ISearchByKeywordsParams } from '@/types/resource_type';
+import { ISearchByKeywordsParams } from '@/types/resource-type';
 import { ServerResponse } from '@/types/response';
 import request from '@/utils/request';
 

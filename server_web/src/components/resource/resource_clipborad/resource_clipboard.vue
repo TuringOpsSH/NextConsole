@@ -5,7 +5,7 @@ import {
   current_resource_clipboard, init_clipboard, paste_resource, paste_resource_confirm, paste_resource_dialog,
   remove_copy_resource, resource_clipboard
 } from "@/components/resource/resource_clipborad/resource_clipboard";
-import {get_resource_icon} from "@/components/resource/resource_list/resource_list";
+import {get_resource_icon} from "@/components/resource/resource-list/resource_list";
 import {onMounted} from "vue";
 onMounted(() => {
   init_clipboard()

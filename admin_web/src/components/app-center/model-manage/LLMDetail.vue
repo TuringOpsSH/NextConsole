@@ -13,7 +13,14 @@ import { ElMessage } from 'element-plus';
 import { cloneDeep } from 'lodash-es';
 import { watch, ref, reactive, type CSSProperties, onMounted, nextTick } from 'vue';
 import VueJsonPretty from 'vue-json-pretty';
-import { api, llmHealthCheck, llmInstanceGet, llmInstanceUpdate, llmSupplierSearch } from '@/api/config-center';
+import {
+  api,
+  llmHealthCheck,
+  llmInstanceGet,
+  llmInstanceRemoveAccess,
+  llmInstanceUpdate,
+  llmSupplierSearch
+} from '@/api/config-center';
 import { getModelRunIndex } from '@/api/dashboard';
 import JsonSchemaForm from '@/components/app-center/app-manage/JsonSchemaForm.vue';
 import AuthorSelector from '@/components/app-center/model-manage/AuthorSelector.vue';
@@ -96,7 +103,8 @@ const currentLLM = reactive<Partial<ILLMInstance>>({
   extra_headers: {},
   extra_body: {},
   llm_tags: [],
-  user_id: 0
+  user_id: 0,
+  schema_type: 'data'
 });
 const editLLM = reactive<ILLMInstance>({
   create_time: '',
@@ -657,6 +665,8 @@ function getAccessIcon(access) {
     return '/images/app-center/colleague.svg';
   } else if (access.structure_type == 'friend') {
     return '/images/app-center/friend.svg';
+  } else if (access.structure_type == 'user') {
+    return '/images/app-center/friend.svg';
   } else {
     return '/images/app-center/unknown.svg';
   }
@@ -696,6 +706,8 @@ function getAccessName(access) {
     return access.user_nick_name;
   } else if (access.structure_type == 'friend') {
     return access.user_nick_name;
+  }  else if (access.structure_type == 'user') {
+    return access.user_name || access.user_nick_name;
   } else {
     return '';
   }
@@ -901,6 +913,16 @@ async function commitUpdateLLMAccess() {
     refreshCurrentModel();
   }
 }
+async function removeAccess(access) {
+  const res = await llmInstanceRemoveAccess({
+    llm_code: currentLLM.llm_code,
+    access_id: access.access_id
+  });
+  if (!res.error_status) {
+    ElMessage.success('移除访问权限成功');
+    refreshCurrentModel();
+  }
+}
 watch(
   () => props.llmCode,
   newVal => {
@@ -931,7 +953,6 @@ onMounted(async () => {
     currentTab.value = 'base';
   }
   await nextTick();
-  await handleTabChange();
 });
 </script>
 
@@ -1019,7 +1040,7 @@ onMounted(async () => {
                       <el-button
                         v-if="
                           currentLLM.access.includes('edit') &&
-                          ['文本生成', '推理模型', '全模态'].includes(currentLLM.llm_type)
+                          ['文本生成', '推理模型', '全模态', '图片理解'].includes(currentLLM.llm_type)
                         "
                         type="primary"
                         @click="beginUpdateRunConfig"
@@ -1096,7 +1117,11 @@ onMounted(async () => {
                       </div>
                       <template #footer>
                         <div class="access-foot">
-                          <el-popconfirm title="是否取消授权？" confirm-button-type="danger">
+                          <el-popconfirm
+                            title="是否取消授权？"
+                            confirm-button-type="danger"
+                            @confirm="removeAccess(access)"
+                          >
                             <template #reference>
                               <el-button :disabled="access.access == 'own'" size="small" :icon="Delete" />
                             </template>
@@ -1561,6 +1586,7 @@ onMounted(async () => {
           style="height: 100%"
           @update-access-list="
             newList => {
+              console.log('newList', newList);
               editLLM.llm_authors = newList;
             }
           "

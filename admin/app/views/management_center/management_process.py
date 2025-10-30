@@ -314,7 +314,7 @@ def user_status_update_admin():
 
 
 @app.route('/next_console_admin/management_center/management/user/updateuseraccounttypeadmin', methods=['POST'])
-@roles_required(["admin", "super_admin", "next_console_admin", "next_console_reader_admin"])
+@roles_required(["super_admin", "next_console_admin"])
 @jwt_required()
 def user_company_update_admin():
     """
@@ -481,3 +481,37 @@ def twadmin_update_department():
     if not department_id:
         return next_console_response(error_status=True, error_code=1004, error_message="部门ID不能为空！")
     return update_department_twadmin(params)
+
+
+@app.route('/next_console_admin/management_center/management/user/close', methods=['POST'])
+@roles_required(["super_admin", "next_console_admin"])
+@jwt_required()
+def admin_user_close():
+    """
+    新增用户
+    :return:
+    """
+    params = request.get_json()
+    user_id = get_jwt_identity()
+    params["user_id"] = user_id
+    user_code = params.get("user_code")
+    if not user_code:
+        return next_console_response(error_status=True, error_code=1004, error_message="用户编号不能为空！")
+    return admin_close_user_service(params)
+
+
+@app.route('/next_console_admin/management_center/management/user/update', methods=['POST'])
+@roles_required(["super_admin", "next_console_admin"])
+@jwt_required()
+def admin_user_update():
+    """
+    新增用户
+    :return:
+    """
+    params = request.get_json()
+    user_id = get_jwt_identity()
+    params["user_id"] = user_id
+    user_code = params.get("user_code")
+    if not user_code:
+        return next_console_response(error_status=True, error_code=1004, error_message="用户编号不能为空！")
+    return admin_update_user_service(params)

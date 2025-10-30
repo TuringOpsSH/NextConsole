@@ -745,3 +745,108 @@ def create_user(params):
     return next_console_response(result=new_user.to_dict())
 
 
+def admin_close_user_service(params):
+    """
+    彻底删除用户
+    """
+    user_id = int(params.get("user_id"))
+    user_code = params.get("user_code")
+    admin_user = UserInfo.query.filter(UserInfo.user_id == user_id).first()
+    target_user = UserInfo.query.filter(
+        UserInfo.user_code == user_code
+    ).first()
+    if not target_user:
+        return next_console_response(error_status=True, error_message="用户不存在！")
+    # 检查权限
+    if target_user.user_company_id != admin_user.user_company_id:
+        request_user_roles = UserRoleInfo.query.filter(
+            UserRoleInfo.user_id == user_id,
+            UserRoleInfo.rel_status == 1
+        ).join(
+            RoleInfo, RoleInfo.role_id == UserRoleInfo.role_id
+        ).filter(
+            RoleInfo.status == 1
+        ).with_entities(
+            RoleInfo
+        ).all()
+        request_user_role_name = [role.role_name for role in request_user_roles]
+        if "next_console_admin" not in request_user_role_name:
+            return next_console_response(error_status=True, error_message="权限不足！")
+    from app.services.user_center.users import close_user
+    close_user(target_user.to_dict())
+    app.logger.warning(f"管理员：{admin_user.user_id}，彻底删除用户:{target_user}")
+    return next_console_response(result="用户已删除！")
+
+
+def admin_update_user_service(params):
+    """
+    管理员更新用户服务信息
+    """
+    user_id = int(params.get("user_id"))
+    user_code = params.get("user_code")
+    user_name = params.get("user_name")
+    user_company_id = params.get("user_company_id")
+    user_department_id = params.get("user_department_id")
+    user_resource_limit = params.get("user_resource_limit")
+    new_password = params.get("new_password")
+    admin_user = UserInfo.query.filter(UserInfo.user_id == user_id).first()
+    is_nc_admin = False
+    target_user = UserInfo.query.filter(
+        UserInfo.user_code == user_code
+    ).first()
+    if not target_user:
+        return next_console_response(error_status=True, error_message="用户不存在！")
+    # 检查权限
+    if target_user.user_company_id != admin_user.user_company_id:
+        request_user_roles = UserRoleInfo.query.filter(
+            UserRoleInfo.user_id == user_id,
+            UserRoleInfo.rel_status == 1
+        ).join(
+            RoleInfo, RoleInfo.role_id == UserRoleInfo.role_id
+        ).filter(
+            RoleInfo.status == 1
+        ).with_entities(
+            RoleInfo
+        ).all()
+        request_user_role_name = [role.role_name for role in request_user_roles]
+        if "next_console_admin" not in request_user_role_name:
+            return next_console_response(error_status=True, error_message="权限不足！")
+        is_nc_admin = True
+    try:
+        if user_name and user_name != target_user.user_name:
+            target_user.user_name = user_name
+        if user_resource_limit and user_resource_limit != target_user.user_resource_limit:
+            target_user.user_resource_limit = user_resource_limit
+        if user_company_id and user_company_id != target_user.user_company_id and (
+                target_user.user_company_id == admin_user.user_company_id or is_nc_admin):
+            # 公司只能改成正常状态的公司
+            target_company = CompanyInfo.query.filter(
+                CompanyInfo.id == user_company_id,
+                CompanyInfo.company_status == "正常"
+            ).first()
+            if not target_company:
+                return next_console_response(error_status=True, error_message="目标公司不存在或非正常状态！")
+            target_user.user_company_id = user_company_id
+        if user_department_id and user_department_id != target_user.user_department_id:
+            # 部门只能改成本企业的部门
+            target_user_company_id = target_user.user_company_id
+            if user_company_id:
+                target_user_company_id = user_company_id
+            target_department = DepartmentInfo.query.filter(
+                DepartmentInfo.id == user_department_id,
+                DepartmentInfo.company_id == target_user_company_id,
+                DepartmentInfo.department_status == "正常"
+            ).first()
+            if not target_department:
+                return next_console_response(error_status=True, error_message="目标部门不存在或非正常状态！")
+            target_user.user_department_id = user_department_id
+        if new_password:
+            hashed_password = generate_password_hash(new_password)
+            target_user.user_password = hashed_password
+        db.session.add(target_user)
+        db.session.commit()
+        app.logger.warning(f"管理员：{admin_user.user_id}，更新用户服务信息:{target_user}")
+        return next_console_response(result=target_user.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return next_console_response(error_status=True, error_code=2001, error_message=f"更新用户服务信息失败！{e}")

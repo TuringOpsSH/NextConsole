@@ -227,10 +227,32 @@ def search_generate_rag_question(user_id, session_id, qa_id, msg_id, question_co
         "ref_ids": all_ref_ids,
         "rerank_threshold": 0.4,
         "config": {
+            "recall_threshold": 0.3,
+            "recall_k": 30,
+            "rerank_enabled": False,
+            "rerank_threshold": 0.6,
+            "rerank_k": 10,
             "search_engine_enhanced": search_engine_enhanced,
             "search_engine_config": search_engine_config,
         }
     }
+    # embedding & rerank 配置
+    from app.models.configure_center.system_config import SystemConfig
+    system_config = SystemConfig.query.filter(
+        SystemConfig.config_key == 'ai',
+        SystemConfig.config_status == 1,
+    ).first()
+    if system_config:
+        embedding_config = system_config.config_value.get("embedding")
+        rerank_config = system_config.config_value.get("rerank")
+        if not embedding_config or not embedding_config["enable"]:
+            return ''
+        rag_params["config"]["recall_threshold"] = embedding_config.get("threshold")
+        rag_params["config"]["recall_k"] = rerank_config.get("topK")
+        rag_params["config"]["rerank_enabled"] = rerank_config.get("enable")
+        rag_params["config"]["rerank_threshold"] = rerank_config.get("threshold")
+        rag_params["config"]["rerank_k"] = rerank_config.get("topK")
+    # 参考文献配置
     if (current_session.session_local_resource_switch or current_session.session_attachment_file_switch
             or current_session.session_attachment_webpage_switch):
         all_ref_ids, all_qa_ids = get_all_ref_ids(user_id, session_id, qa_id, msg_id, assistant_id, model_name)

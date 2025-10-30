@@ -1,5 +1,4 @@
-import {ref} from 'vue';
-import {ResourceItem} from '@/types/resource-type';
+import { ref } from 'vue';
+import { IResourceItem } from '@/types/resource-type';
 
-export const currentPathTree = ref<ResourceItem[]>([]);
-
+export const currentPathTree = ref<IResourceItem[]>([]);

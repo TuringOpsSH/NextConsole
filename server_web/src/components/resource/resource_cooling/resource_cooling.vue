@@ -5,7 +5,7 @@ import {
   init_cooling_record, update_cooling_limit
 } from "@/components/resource/resource_cooling/resource_cooling";
 import {onMounted} from "vue";
-import {get_resource_icon} from "@/components/resource/resource_list/resource_list";
+import {get_resource_icon} from "@/components/resource/resource-list/resource_list";
 const props = defineProps(
     {
       cooling_id: {

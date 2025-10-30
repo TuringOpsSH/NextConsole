@@ -2263,6 +2263,7 @@ CREATE TABLE "next_console"."llm_instance_authorize_info"
  "auth_friend_id" integer ,
  "auth_department_id" integer ,
  "auth_company_id" integer ,
+ "auth_user_id" integer ,
  "auth_type" varchar(255) NOT NULL ,
  "auth_status" varchar(255) NOT NULL ,
  "create_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP ,
@@ -2280,6 +2281,7 @@ COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_colleague_i
 COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_friend_id" IS '被授权联系人id';
 COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_department_id" IS '被授权部门id';
 COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_company_id" IS '被授权公司id';
+COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_user_id" IS '被授权用户id';
 COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_type" IS '授权类型';
 COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."auth_status" IS '授权状态';
 COMMENT ON COLUMN "next_console"."llm_instance_authorize_info"."create_time" IS '创建时间';

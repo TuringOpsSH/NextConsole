@@ -1,8 +1,8 @@
 import { UploadRawFile } from 'element-plus';
+import { IColleague, ICompany, IDepartment, IFriend } from '@/types/contacts';
 import { IUsers } from '@/types/user-center';
-import { Colleague, Company, Department, Friend } from '@/types/contacts';
 
-export interface ResourceItem {
+export interface IResourceItem {
   id?: number;
   resource_parent_id?: number;
   user_id?: number;
@@ -37,12 +37,12 @@ export interface ResourceItem {
   resource_content?: string | null;
   ref_text?: string | null;
   rerank_score?: number | null;
-  resource_tags?: ResourceTag[] | null;
+  resource_tags?: IResourceTag[] | null;
   author_info?: IUsers | null;
   access_list?: string[];
   [property: string]: any;
 }
-export interface ResourceUploadItem {
+export interface IResourceUploadItem {
   id: number | null;
   resource_parent_id: number | null;
   resource_id: number | null;
@@ -62,7 +62,7 @@ export interface ResourceUploadItem {
   task_error_msg?: string | null;
   uid?: number;
 }
-export interface ResourceShortCut {
+export interface IResourceShortCut {
   id: number;
   user_id: number;
   resource_id: number;
@@ -72,13 +72,13 @@ export interface ResourceShortCut {
   create_time: string;
   update_time: string;
 }
-export interface ResourceType {
+export interface IResourceType {
   icon: string;
   title: string;
   type: string;
   show: boolean;
 }
-export interface ResourceTag {
+export interface IResourceTag {
   id: number | null;
   user_id?: number | null;
   tag_name: string | null;
@@ -94,16 +94,16 @@ export interface ResourceTag {
   tag_count?: number | null;
   tag_active?: boolean | null;
 }
-export interface ResourceAccess {
+export interface IResourceAccess {
   type: string;
   id: number;
   auth_type: string;
-  meta?: Friend | Company | Department | Colleague;
+  meta?: IFriend | ICompany | IDepartment | IColleague;
 }
 /**
  * resource_download_cooling_record，资源下载冷却记录表
  */
-export interface ResourceDownloadCoolingRecord {
+export interface IResourceDownloadCoolingRecord {
   /**
    * 作者是否允许继续下载，作者是否允许继续下载
    */

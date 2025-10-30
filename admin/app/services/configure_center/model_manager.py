@@ -1,6 +1,6 @@
 from app.app import app, db
 import uuid
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from app.models.configure_center.llm_kernel import LLMInstance, LLMInstanceAuthorizeInfo
 from app.services.configure_center.response_utils import next_console_response
 from sqlalchemy import distinct
@@ -72,8 +72,10 @@ def model_instance_get(params):
             LLMInstanceAuthorizeInfo.model_id == llm_instance.id,
             LLMInstanceAuthorizeInfo.auth_status == '正常'
         ).all()
-        company_ids = [author.auth_company_id for author in llm_authors if author.auth_company_id]
-        company_access_map = {author.auth_company_id: author.auth_type for author in llm_authors
+        # 公司，当前仅支持一个公司授权，
+        company_ids = [author.auth_company_id for author in llm_authors
+                       if author.auth_company_id and author.auth_department_id == 0]
+        company_access_map = {author.auth_company_id: author for author in llm_authors
                               if author.auth_company_id}
         if company_ids:
             companies = CompanyInfo.query.filter(
@@ -90,10 +92,11 @@ def model_instance_get(params):
                     "department_name": None,
                     "user_id": None,
                     "user_nick_name": None,
-                    "access": company_access_map.get(company.id, "read")
+                    "access": company_access_map.get(company.id).auth_type,
+                    "access_id": company_access_map.get(company.id).id
                 })
         department_ids = [author.auth_department_id for author in llm_authors if author.auth_department_id]
-        department_access_map = {author.auth_department_id: author.auth_type for author in llm_authors
+        department_access_map = {author.auth_department_id: author for author in llm_authors
                                  if author.auth_department_id}
         if department_ids:
             departments = DepartmentInfo.query.filter(
@@ -110,10 +113,11 @@ def model_instance_get(params):
                     "parent_department_id": department.parent_department_id,
                     "user_id": None,
                     "user_nick_name": None,
-                    "access": department_access_map.get(department.id, "read")
+                    "access": department_access_map.get(department.id).auth_type,
+                    "access_id": department_access_map.get(department.id).id
                 })
         colleague_ids = [author.auth_colleague_id for author in llm_authors if author.auth_colleague_id]
-        colleague_access_map = {author.auth_colleague_id: author.auth_type for author in llm_authors
+        colleague_access_map = {author.auth_colleague_id: author for author in llm_authors
                                 if author.auth_colleague_id}
         if colleague_ids:
             users = UserInfo.query.filter(
@@ -133,13 +137,14 @@ def model_instance_get(params):
                     "user_name": user.user_name,
                     "user_avatar": user.user_avatar,
                     "user_nick_name_py": user.user_nick_name_py,
-                    "access": colleague_access_map.get(user.user_id, "read")
+                    "access": colleague_access_map.get(user.user_id).auth_type,
+                    "access_id": colleague_access_map.get(user.user_id).id
                 })
 
         friend_ids = [author.auth_friend_id for author in llm_authors if
-                      author.auth_friend_id and author.auth_friend_id != -1]
-        friend_access_map = {author.auth_friend_id: author.auth_type for author in llm_authors
-                             if author.auth_friend_id and author.auth_friend_id != -1}
+                      author.auth_friend_id and author.auth_friend_id != 0]
+        friend_access_map = {author.auth_friend_id: author for author in llm_authors
+                             if author.auth_friend_id and author.auth_friend_id != 0}
         if friend_ids:
             users = UserInfo.query.filter(
                 UserInfo.user_id.in_(friend_ids),
@@ -156,21 +161,36 @@ def model_instance_get(params):
                     "user_nick_name": user.user_nick_name,
                     "user_avatar": user.user_avatar,
                     "user_nick_name_py": user.user_nick_name_py,
-                    "access": friend_access_map.get(user.user_id, "read")
+                    "access": friend_access_map.get(user.user_id).auth_type,
+                    "access_id": friend_access_map.get(user.user_id).id
                 })
         # 处理所有联系人
-        if any([author.auth_friend_id == -1 for author in llm_authors]):
-            result['llm_authors'].append({
-                "structure_type": "friend",
-                "company_id": None,
-                "company_name": None,
-                "department_id": None,
-                "department_name": None,
-                "user_id": -1,
-                "user_nick_name": "所有联系人",
-                "access": "read"
-            })
-
+        for author in llm_authors:
+            if author.auth_friend_id == 0:
+                result['llm_authors'].append({
+                    "structure_type": "friend",
+                    "company_id": None,
+                    "company_name": None,
+                    "department_id": None,
+                    "department_name": None,
+                    "user_id": 0,
+                    "user_nick_name": "所有好友",
+                    "access": "read",
+                    "access_id": author.id
+                })
+            # 处理全平台用户
+            if author.auth_user_id == 0:
+                result['llm_authors'].append({
+                    "structure_type": "user",
+                    "company_id": None,
+                    "company_name": None,
+                    "department_id": None,
+                    "department_name": None,
+                    "user_id": 0,
+                    "user_nick_name": "全平台用户",
+                    "access": "read",
+                    "access_id": author.id
+                })
     return next_console_response(result=result)
 
 
@@ -249,12 +269,14 @@ def model_instance_add(params):
                 auth_status='正常',
             )
             if llm_author.get('structure_type') == 'colleague':
-                new_author.auth_colleague_id = llm_author.get('user_id')
+                new_author.auth_colleague_id = llm_author.get('colleague_id')
             elif llm_author.get('structure_type') == 'department':
                 new_author.auth_company_id = llm_author.get('company_id')
                 new_author.auth_department_id = llm_author.get('department_id')
             elif llm_author.get('structure_type') == 'friend':
-                new_author.auth_friend_id = llm_author.get('user_id')
+                new_author.auth_friend_id = llm_author.get('friend_id')
+            elif llm_author.get('structure_type') == 'user':
+                new_author.auth_user_id = llm_author.get('auth_user_id')
             if llm_author.get('access'):
                 new_author.auth_type = llm_author.get('access')
             db.session.add(new_author)
@@ -420,11 +442,14 @@ def model_instance_update(params):
                     auth_status='正常',
                 )
                 if llm_author.get('structure_type') == 'colleague':
-                    new_author.auth_colleague_id = llm_author.get('user_id')
+                    new_author.auth_colleague_id = llm_author.get('colleague_id')
                 elif llm_author.get('structure_type') == 'department':
+                    new_author.auth_company_id = llm_author.get('company_id')
                     new_author.auth_department_id = llm_author.get('department_id')
                 elif llm_author.get('structure_type') == 'friend':
-                    new_author.auth_friend_id = llm_author.get('user_id')
+                    new_author.auth_friend_id = llm_author.get('friend_id')
+                elif llm_author.get('structure_type') == 'user':
+                    new_author.auth_user_id = llm_author.get('auth_user_id')
                 if llm_author.get('access'):
                     new_author.auth_type = llm_author.get('access')
                 db.session.add(new_author)
@@ -570,9 +595,11 @@ def check_model_authorize(user_id, model_list=None, required_access=None, show_a
     """
     检查用户是否有模型使用权限,如果有权限，返回有权限的模型列表
     1. 用户自己创建的模型
-    2. 用户被授权的模型
-    3. 用户所在部门被授权的模型
-    4. 用户所在公司的模型
+    2. 全平台公开 （auth_user_id = 0），
+    3. 用户被明确授权的模型（好友,同事,用户）
+    4. 用户所在部门被授权的模型
+    5. 用户所在公司的模型
+    6. 用户好友的全部好友类型
     :param required_access:
     :param show_access:
     :param user_id:
@@ -619,15 +646,45 @@ def check_model_authorize(user_id, model_list=None, required_access=None, show_a
             ).first()
             if target_department:
                 all_department_ids.append(target_department.id)
-
+    # 泛授权类型（全部好友）
+    from app.models.user_center.user_info import UserFriendsRelation
+    friends_relations = UserFriendsRelation.query.filter(
+        UserFriendsRelation.rel_status >= 1,
+        or_(
+            and_(
+                UserFriendsRelation.user_id == user_id,
+                UserFriendsRelation.rel_status.in_([1, 2])
+            ),
+            and_(
+                UserFriendsRelation.friend_id == user_id,
+                UserFriendsRelation.rel_status.in_([1, 3])
+            )
+        ),
+    ).all()
+    friend_ids = []
+    for friends_relation in friends_relations:
+        if friends_relation.user_id != user_id:
+            friend_ids.append(friends_relation.friend_id)
+        if friends_relation.friend_id != user_id:
+            friend_ids.append(friends_relation.friend_id)
+    friend_ids = list(set(friend_ids))
     filter_conditions = [
         LLMInstanceAuthorizeInfo.auth_status == '正常',
         or_(
-            LLMInstanceAuthorizeInfo.auth_colleague_id == user_id,
+            LLMInstanceAuthorizeInfo.user_id == user_id,
+            LLMInstanceAuthorizeInfo.auth_user_id == 0,
+            LLMInstanceAuthorizeInfo.auth_user_id == user_id,
             LLMInstanceAuthorizeInfo.auth_friend_id == user_id,
-            LLMInstanceAuthorizeInfo.auth_friend_id == -1,
-            LLMInstanceAuthorizeInfo.auth_company_id.in_(all_company_ids),
-            LLMInstanceAuthorizeInfo.auth_department_id.in_(all_department_ids)
+            and_(
+                LLMInstanceAuthorizeInfo.user_id.in_(friend_ids),
+                LLMInstanceAuthorizeInfo.auth_friend_id == 0
+            ),
+            LLMInstanceAuthorizeInfo.auth_colleague_id == user_id,
+            LLMInstanceAuthorizeInfo.auth_department_id.in_(all_department_ids),
+            and_(
+                LLMInstanceAuthorizeInfo.auth_company_id.in_(all_company_ids),
+                LLMInstanceAuthorizeInfo.auth_department_id == 0
+            )
         )
     ]
     if model_list:
@@ -656,3 +713,36 @@ def check_model_authorize(user_id, model_list=None, required_access=None, show_a
                 access_map[model.id] = all_access_type
         return results, access_map
     return results
+
+
+def remove_access_service(params):
+    """
+    移除模型访问权限
+    :return:
+    """
+    user_id = int(params.get("user_id"))
+    llm_code = params.get("llm_code")
+    access_id = params.get("access_id")
+    target_llm_instance = LLMInstance.query.filter(
+        LLMInstance.llm_code == llm_code,
+        LLMInstance.llm_status != "已删除"
+    ).first()
+    if not target_llm_instance:
+        return next_console_response(error_status=True, error_message="模型不存在")
+    required_access = 'manage'
+    _, access_info = check_model_authorize(
+        user_id, [target_llm_instance], required_access=required_access, show_access=True)
+    if not access_info:
+        return next_console_response(error_status=True, error_message="无权限修改")
+    target_access = LLMInstanceAuthorizeInfo.query.filter(
+        LLMInstanceAuthorizeInfo.id == access_id,
+        LLMInstanceAuthorizeInfo.model_id == target_llm_instance.id
+    ).first()
+    if not target_access:
+        return next_console_response(error_status=True, error_message="授权信息不存在")
+    target_access.auth_status = "已移除"
+    db.session.add(target_access)
+    db.session.commit()
+    return next_console_response(result="移除成功")
+
+

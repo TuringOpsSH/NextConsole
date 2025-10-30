@@ -45,15 +45,5 @@ def app_add_message():
     app_code = data.get("app_code")
     if not app_code:
         return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
-    messages = data.get("messages")
-    if not messages:
-        return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
-    # 倒着找到最后一个role 为user 的消息
-    last_user_message = None
-    for message in messages:
-        if message.get("role") == "user":
-            last_user_message = message.get("content")
-    if not last_user_message:
-        return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
-    data["message"] = last_user_message
+
     return agent_add_message(data)

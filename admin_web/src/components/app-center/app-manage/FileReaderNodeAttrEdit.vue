@@ -432,7 +432,10 @@ async function handleFileReaderModeChange(val: string) {
     <div class="config-area">
       <el-form :model="workflowStore.currentNodeDetail" label-position="top">
         <el-form-item prop="mode" label="模式" style="padding: 0 12px">
-          <el-radio-group v-model="workflowStore.currentNodeDetail.node_file_reader_config.mode" @change="handleFileReaderModeChange">
+          <el-radio-group
+            v-model="workflowStore.currentNodeDetail.node_file_reader_config.mode"
+            @change="handleFileReaderModeChange"
+          >
             <el-radio value="single">单文件</el-radio>
             <el-radio value="list">文件列表</el-radio>
           </el-radio-group>

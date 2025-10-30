@@ -436,7 +436,7 @@ def start_task_info(params):
     target_users = [i for i in target_users if i.user_email not in all_subscribe_emails]
     if not target_users:
         return next_console_response(error_status=True, error_message="未找到通知对象！", error_code=1001)
-    # 创建任务数据
+    # 创建任务实例数据
     task_list = []
     for i in target_users:
         try:
@@ -456,6 +456,7 @@ def start_task_info(params):
             task_celery_id="",
             notice_params={
                 "user_email": i.user_email,
+                "user_phone": i.user_phone,
                 "subject": target_task.task_name,
                 "admin_id": user_id,
                 "user_id": receive_user_id,
@@ -474,15 +475,18 @@ def start_task_info(params):
     target_task.task_instance_total = len(task_list)
     db.session.add(target_task)
     db.session.commit()
-    # 提交任务
+    # 提交任务实例
     batch_list = []
     if target_task.run_now:
         for task_instance in task_list:
             batch_list.append(task_instance)
+            # 达到批量大小，提交任务
             if len(batch_list) == target_task.task_instance_batch_size:
                 sub_params = [i.to_dict() for i in batch_list]
                 if target_task.notice_type == "邮件":
                     result = notice_user_by_email.delay(sub_params)
+                elif target_task.notice_type == "短信":
+                    result = notice_user_by_sms.delay(sub_params)
                 else:
                     result = notice_user_by_message.delay(sub_params)
                 for i in batch_list:
@@ -494,6 +498,8 @@ def start_task_info(params):
             sub_params = [i.to_dict() for i in batch_list]
             if target_task.notice_type == "邮件":
                 result = notice_user_by_email.delay(sub_params)
+            elif target_task.notice_type == "短信":
+                result = notice_user_by_sms.delay(sub_params)
             else:
                 result = notice_user_by_message.delay(sub_params)
             for i in batch_list:
@@ -508,6 +514,8 @@ def start_task_info(params):
                 sub_params = [i.to_dict() for i in batch_list]
                 if target_task.notice_type == "邮件":
                     result = notice_user_by_email.apply_async(args=[sub_params], eta=plan_begin_time)
+                elif target_task.notice_type == "短信":
+                    result = notice_user_by_sms.apply_async(args=[sub_params], eta=plan_begin_time)
                 else:
                     result = notice_user_by_message.apply_async(args=[sub_params], eta=plan_begin_time)
                 for i in batch_list:
@@ -519,6 +527,8 @@ def start_task_info(params):
             sub_params = [i.to_dict() for i in batch_list]
             if target_task.notice_type == "邮件":
                 result = notice_user_by_email.apply_async(args=[sub_params], eta=plan_begin_time)
+            elif target_task.notice_type == "短信":
+                result = notice_user_by_sms.apply_async(args=[sub_params], eta=plan_begin_time)
             else:
                 result = notice_user_by_message.apply_async(args=[sub_params], eta=plan_begin_time)
             for i in batch_list:

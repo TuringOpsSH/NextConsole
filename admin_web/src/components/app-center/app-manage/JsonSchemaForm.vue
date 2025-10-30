@@ -737,7 +737,11 @@ watch(
   </div>
   <el-dialog v-model="showFileEnumFlag" title="可上传的文件类型">
     <el-form style="margin-top: 20px">
-      <el-form-item label="文件类型" label-position="top">
+      <el-form-item
+        v-if="currentKey && typeof localSchema.properties[currentKey]?.enum === 'object'"
+        label="文件类型"
+        label-position="top"
+      >
         <el-select
           v-model="localSchema.properties[currentKey].enum"
           multiple

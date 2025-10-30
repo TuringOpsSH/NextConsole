@@ -1,4 +1,4 @@
-import {ResourceItem} from "@/types/resource_type";
+import {ResourceItem} from "@/types/resource-type";
 
 export interface SupportTicket{
     actions_token?: string;

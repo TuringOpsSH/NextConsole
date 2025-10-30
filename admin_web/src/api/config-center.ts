@@ -12,6 +12,7 @@ export const api = {
   llm_icon_upload: envUrl + '/next_console_admin/config_center/llm_instance/icon/upload',
   llm_instance_del: envUrl + '/next_console_admin/config_center/llm_instance/del',
   llm_instance_get: envUrl + '/next_console_admin/config_center/llm_instance/get',
+  llm_instance_remove_access: envUrl + '/next_console_admin/config_center/llm_instance/remove_access',
   llm_instance_update: envUrl + '/next_console_admin/config_center/llm_instance/update',
   llm_supplier_search: envUrl + '/next_console_admin/config_center/llm_supplier/search',
   llm_supplier_detail: envUrl + '/next_console_admin/config_center/llm_supplier/detail',
@@ -111,6 +112,14 @@ export async function llmSupplierDetail(params: object): Promise<ServerResponse>
 export async function llmHealthCheck(params: object): Promise<ServerResponse> {
   return request({
     url: api.llm_health_check,
+    data: params,
+    responseType: 'json'
+  });
+}
+
+export async function llmInstanceRemoveAccess(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.llm_instance_remove_access,
     data: params,
     responseType: 'json'
   });

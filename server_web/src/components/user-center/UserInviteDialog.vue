@@ -93,6 +93,10 @@ async function copyInviteQrcode() {
     });
   } catch (error) {
     console.error('复制失败', error);
+    ElMessage({
+      message: '复制失败，请使用保存功能',
+      type: 'info'
+    });
   }
 }
 async function saveInviteQrcode() {

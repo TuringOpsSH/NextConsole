@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus';
 import { nextTick, onMounted, ref, watch } from 'vue';
 import { attachment_get_all_resource_formats, attachment_search_resources } from '@/api/next-console';
 import { useUserInfoStore } from '@/stores/user-info-store';
-import { ResourceItem } from '@/types/resource_type';
+import { ResourceItem } from '@/types/resource-type';
 
 const props = defineProps({
   model: {
@@ -373,6 +373,8 @@ defineExpose({
                   search_type_name: '全部',
                   search_type_active: true
                 });
+              } else {
+                searchResourceKeyword();
               }
             }
           "

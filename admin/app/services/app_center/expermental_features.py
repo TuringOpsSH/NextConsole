@@ -164,3 +164,134 @@ def single_llm_sub_node_execute(llm_client, workflow_node_llm_params, task_recor
                 msg_content = '对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~'
             return msg_content, reasoning_content, msg_token_used, answer_msg
 
+
+def parallel_rag_node_execute(params, task_record, global_params):
+    # 获取节点信息
+    from app.models.configure_center.system_config import SystemConfig
+    parallel_attr = task_record.workflow_node_run_model_config.get("parallel_attr", "")
+    if not parallel_attr or not isinstance(params[parallel_attr], list):
+        raise ValueError("parallel_attr must be a list of attributes to parallelize.")
+    system_tool_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "tools",
+        SystemConfig.config_status == 1
+    ).first()
+    sub_results = []
+    for item in params[parallel_attr]:
+        new_sub_params = {k: params[k] for k in params if k not in params[parallel_attr]}
+        new_sub_params[parallel_attr] = [item]
+        future = global_params["executor"].submit(single_rag_node_execute, new_sub_params,
+                                                  task_record.to_dict(), global_params,
+                                                  system_tool_config.config_value.get("search_engine", {}))
+        # 添加回调确保子任务完成（可选）
+        future.add_done_callback(
+            lambda f: print(f"🎯agent_run_workflow:result: {f.result()}") if f.exception() is None
+            else print(f"agent_run_workflow:❌error: {f.exception()}"))
+        sub_results.append(future)
+    # 等待所有子任务完成
+    wait(sub_results)
+    final_result = {
+        "details": [],
+        'reference_texts': []
+    }
+    for future in sub_results:
+        try:
+            sub_rag_response = future.result()
+            if sub_rag_response:
+                details = sub_rag_response.get("details")
+                reference_texts = sub_rag_response.get("reference_texts")
+                final_result["details"] += details
+                final_result["reference_texts"] += reference_texts
+        except Exception as e:
+            app.logger.error(f"执行 RAG 子节点时发生异常：{str(e)}")
+            pass
+    # 去重和限制逻辑
+    if task_record.workflow_node_run_model_config.get("result_merge_model") == "set":
+        tmp_results = []
+        for item in final_result["reference_texts"]:
+            if item not in tmp_results:
+                tmp_results.append(item)
+        final_result["reference_texts"] = tmp_results
+    task_record.task_result = json.dumps(final_result)
+    task_record.end_time = datetime.now()
+    task_record.task_status = "已完成"
+    db.session.add(task_record)
+    db.session.commit()
+    return True
+
+
+def single_rag_node_execute(params, task_record, global_params, search_engine_config):
+    with app.app_context():
+        from app.services.app_center.node_params_service import render_template_with_params
+        from app.services.app_center.app_run_service import get_all_resource_ref_ids
+        from app.services.app_center.node_params_service import load_properties
+        query = str(render_template_with_params(task_record.get("workflow_node_rag_query_template"), params))
+        if not query:
+            return
+        # 获取知识ref
+        all_resource_ids = []
+        for resource in task_record.get("workflow_node_rag_resources"):
+            if resource.get("id") == "message_attachments":
+                if global_params.get("MessageAttachmentList"):
+                    all_resource_ids.extend(
+                        [attachment.id for attachment in global_params.get("MessageAttachmentList")])
+            elif resource.get("id") == "session_attachments":
+                if global_params.get("SessionAttachmentList"):
+                    all_resource_ids.extend(
+                        [attachment.id for attachment in global_params.get("SessionAttachmentList")])
+            elif resource.get("type") == "param":
+                params_ids = load_properties(resource.get("schema", {}).get("properties"), global_params)
+                if params_ids.get('resource_list'):
+                    for param_id in params_ids.get('resource_list'):
+                        try:
+                            param_id = int(param_id)
+                        except Exception as e:
+                            print(e)
+                            continue
+                        all_resource_ids.append(param_id)
+                elif params_ids.get('resource_id'):
+                    try:
+                        params_id = int(params_ids.get('resource_id'))
+                    except Exception as e:
+                        print(e)
+                        continue
+                    all_resource_ids.append(params_id)
+            else:
+                all_resource_ids.append(resource.get("id"))
+        all_resource_ids = list(set(all_resource_ids))
+        all_ref_ids = get_all_resource_ref_ids(all_resource_ids, global_params)
+        if not all_ref_ids and not task_record.get("workflow_node_rag_web_search_config").get("search_engine_enhanced"):
+            return
+
+        rag_params = {
+            "user_id": task_record.get("user_id"),
+            "session_id": task_record.get("session_id"),
+            "msg_id": task_record.get("msg_id"),
+            "task_id": task_record.get("id"),
+            "query": query,
+            "ref_ids": all_ref_ids,
+            "config": {
+                "recall_threshold": task_record.get("workflow_node_rag_recall_config").get("recall_threshold", 0.3),
+                "recall_k": task_record.get("workflow_node_rag_recall_config").get("recall_k", 30),
+                "recall_similarity": task_record.get("workflow_node_rag_recall_config").get(
+                    "recall_similarity", "cosine"),
+                "rerank_enabled": task_record.get("workflow_node_rag_rerank_config").get("rerank_enabled", True),
+                "max_chunk_per_doc": task_record.get("workflow_node_rag_rerank_config").get("max_chunk_per_doc", 1024),
+                "overlap_tokens": task_record.get("workflow_node_rag_rerank_config").get("overlap_tokens", 80),
+                "rerank_threshold": task_record.get("workflow_node_rag_rerank_config").get("rerank_threshold", 0.3),
+                "rerank_k": task_record.get("workflow_node_rag_rerank_config").get("rerank_k", 10),
+                "search_engine_enhanced": task_record.get("workflow_node_rag_web_search_config").get(
+                    "search_engine_enhanced", False),
+                "search_engine_config": {
+                    "api": search_engine_config.get("endpoint"),
+                    "key": search_engine_config.get("key"),
+                    "gl": "cn",
+                    "hl": "zh-cn",
+                    "location": "China",
+                    "num": task_record.get("workflow_node_rag_web_search_config").get("num", 20),
+                    "timeout": task_record.get("workflow_node_rag_web_search_config").get("timeout", 30),
+                },
+            }
+        }
+        from app.services.knowledge_center.rag_service_v3 import rag_query_v3
+        rag_response = rag_query_v3(rag_params).json.get("result", {})
+        return rag_response

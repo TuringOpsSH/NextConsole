@@ -30,7 +30,8 @@ const props = defineProps({
 const agentAppRef = ref(null);
 const currentSession = ref({
   session_code: '',
-  session_source: ''
+  session_source: '',
+  session_task_params_schema: {}
 });
 const agentAppWidth = ref(500);
 const showAgentApp = ref(false);
@@ -39,8 +40,11 @@ const isResizing = ref(false);
 const startX = ref(0);
 const startWidth = ref(0);
 const streaming = ref(true);
-const currentApp = ref({});
+const currentApp = ref({
+  app_config: {}
+});
 const sessionParamsRef = ref(null);
+const skipUserInput = ref(false);
 async function initTestSession(newVal, keepSession = false) {
   const params = {
     app_code: newVal,
@@ -55,11 +59,12 @@ async function initTestSession(newVal, keepSession = false) {
   if (!data.error_status) {
     if (currentSession.value?.session_code != data.result?.session_code) {
       currentSession.value = data.result;
+      skipUserInput.value = data.result?.session_task_params_schema?.skip_user_question;
+      console.log('初始化测试会话：', data.result, skipUserInput.value);
     } else {
       msgFlowRef.value?.refreshMsgFlow();
     }
   }
-
   return data.result;
 }
 function handleOverAgentApp() {
@@ -119,6 +124,7 @@ async function changeTestSession(appCode: string, sessionCode: string) {
   });
   if (!data.error_status) {
     currentSession.value = data.result[0];
+    skipUserInput.value = data.result[0]?.session_task_params_schema?.skip_user_question;
     return data.result[0];
   }
 }
@@ -186,6 +192,8 @@ defineExpose({
       :session="currentSession"
       :title="currentApp.app_config?.params?.title"
       style="width: 100%"
+      @begin-workflow="consoleInputRef?.askQuestion"
+      @stop-workflow="consoleInputRef?.stopQuestion"
     />
     <MessageFlowV2
       ref="msgFlowRef"
@@ -199,11 +207,13 @@ defineExpose({
     />
     <ConsoleInput
       ref="consoleInputRef"
+      :show="!skipUserInput"
       :session="currentSession"
       style="width: 100%"
       :streaming="streaming"
       :socket="socket"
       :disable="sessionParamsRef && !sessionParamsRef?.schemaReady"
+      :row="1"
       @begin-answer="data => handleBeginAnswer(data)"
       @update-answer="newMsg => msgFlowRef.updateAnswer(newMsg)"
       @finish-answer="args => msgFlowRef?.finishAnswer(args)"

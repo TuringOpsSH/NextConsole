@@ -86,8 +86,8 @@ const dialogWidth = phoneView ? '90vw' : '600px';
                   clearable
                   style="width: 100%"
                   @focus="current_model = 'add'"
-                  @blur="auto_handle_add_blur()"
-                  @keydown.enter="search_new_friends_list()"
+                  @blur="auto_handle_add_blur"
+                  @keydown.enter="search_new_friends_list"
                 >
                   <template #prefix>
                     <el-icon style="cursor: pointer" @click="search_new_friends_list">
@@ -96,7 +96,7 @@ const dialogWidth = phoneView ? '90vw' : '600px';
                   </template>
                 </el-input>
               </div>
-              <div class="std-middle-box" style="cursor: pointer" @click="exit_add_model()">
+              <div class="std-middle-box" style="cursor: pointer" @click="exit_add_model">
                 <el-text style="width: 30px"> 取消</el-text>
               </div>
             </div>

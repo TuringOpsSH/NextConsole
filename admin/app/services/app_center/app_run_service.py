@@ -9,7 +9,7 @@ from flask_jwt_extended import (
 from gevent import Timeout
 from sqlalchemy.orm.attributes import flag_modified
 from app.models.app_center.app_info_model import *
-from app.services.app_center.expermental_features import parallel_llm_node_execute
+from app.services.app_center.expermental_features import parallel_llm_node_execute, parallel_rag_node_execute
 from app.services.app_center.file_reader import file_reader_node_execute, file_splitter_node_execute
 from app.services.app_center.llm_node_service import llm_node_execute
 from app.services.app_center.node_params_service import *
@@ -104,6 +104,8 @@ def get_app_session_service(params):
         session_task_params_schema = {}
         if target_start_node:
             session_task_params_schema = target_start_node.node_input_params_json_schema or {}
+        session_task_params_schema['skip_user_question'] = target_start_node.node_run_model_config.get(
+            "skip_user_question", False)
         result = add_session({
             "user_id": user_id,
             "session_topic": f"{target_app.app_name} 会话",
@@ -112,6 +114,7 @@ def get_app_session_service(params):
             "session_task_id": workflow_code,
             "session_task_params_schema": session_task_params_schema,
         }).json.get("result")
+    result["app_icon"] = target_app.app_icon
     return next_console_response(result=result)
 
 
@@ -177,7 +180,6 @@ def agent_add_message(params):
     user_id = int(params.get("user_id"))
     app_code = params.get("app_code")
     session_code = params.get("session_code")
-    message = params.get("message")
     question_id = params.get("msg_id")
     attachments = params.get("attachments")
     is_stream = params.get("stream", True)
@@ -199,7 +201,20 @@ def agent_add_message(params):
     ).first()
     if not target_app:
         return next_console_response(error_status=True, error_message="应用不存在！", error_code=1002)
+    if not current_session.get("session_task_params_schema", {}).get("skip_user_question", False):
+        messages = params.get("messages")
+        if not messages:
+            return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
+        # 倒着找到最后一个role 为user 的消息
+        last_user_message = None
+        for message in messages:
+            if message.get("role") == "user":
+                last_user_message = message.get("content")
+        if not last_user_message:
+            return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
+        params["message"] = last_user_message
     # 保存问题
+    message = params.get("message", '')
     if not question_id:
         question = save_user_question({
             "user_id": user_id,
@@ -247,6 +262,7 @@ def agent_add_message(params):
     global_params = {
         "app_code": app_code,
         "session_code": session_code,
+        "user_id": user_id,
         "message_queue": message_queue,
         "task_queue": task_queue,
         "executor": executor,
@@ -350,6 +366,9 @@ def workflow_messages_stream_generate(message_queue, global_params):
             if all_done:
                 # 退出循环
                 end_node = global_params.get("end_node_instance")
+                if not end_node:
+                    yield "data: [DONE]\n\n"
+                    break
                 end_node_instance = WorkFlowNodeInstance.query.filter(
                     WorkFlowNodeInstance.id == end_node.id
                 ).first()
@@ -662,7 +681,11 @@ def agent_run_node(task_record_id, global_params=None):
                 elif task_record.workflow_node_type == "tool":
                     tool_node_execute(task_params, task_record, global_params)
                 elif task_record.workflow_node_type == "rag":
-                    rag_node_execute(task_params, task_record, global_params)
+                    if task_record.workflow_node_run_model_config.get("node_run_model") == "parallel":
+                        # 并发执行
+                        parallel_rag_node_execute(task_params, task_record, global_params)
+                    else:
+                        rag_node_execute(task_params, task_record, global_params)
                 elif task_record.workflow_node_type == "end":
                     end_node_execute(task_params, task_record, global_params)
                 elif task_record.workflow_node_type == "file_reader":
@@ -767,10 +790,13 @@ def start_node_execute(task_params, task_record, global_params):
         })
     task_result["MessageAttachmentList"] = MessageAttachmentList
     task_result["SessionAttachmentList"] = SessionAttachmentList
+    for key in global_params["session_task_params"]:
+        task_result[key] = global_params["session_task_params"][key]
     task_result.update(task_params)
     task_record.task_result = json.dumps(task_result)
     task_record.task_status = "已完成"
     task_record.end_time = datetime.now()
+    task_record.task_params = global_params["session_task_params"]
     db.session.add(task_record)
     db.session.commit()
 
@@ -853,7 +879,7 @@ def rag_node_execute(params, task_record, global_params):
     :return:
     """
     # 获取节点信息
-    query = render_template_with_params(task_record.workflow_node_rag_query_template, params)
+    query = str(render_template_with_params(task_record.workflow_node_rag_query_template, params))
     if not query:
         task_record.task_status = "异常"
         task_record.task_trace_log = "检索query为空"
@@ -863,14 +889,33 @@ def rag_node_execute(params, task_record, global_params):
     # 获取知识ref
     all_resource_ids = []
     for resource in task_record.workflow_node_rag_resources:
-        if resource.get("id") == "message_attachments" and global_params.get("MessageAttachmentList"):
-            all_resource_ids.extend([attachment.id for attachment in global_params.get("MessageAttachmentList")])
-        elif resource.get("id") == "session_attachments" and global_params.get("SessionAttachmentList"):
-            all_resource_ids.extend([attachment.id for attachment in global_params.get("SessionAttachmentList")])
+        if resource.get("id") == "message_attachments":
+            if global_params.get("MessageAttachmentList"):
+                all_resource_ids.extend([attachment.id for attachment in global_params.get("MessageAttachmentList")])
+        elif resource.get("id") == "session_attachments":
+            if global_params.get("SessionAttachmentList"):
+                all_resource_ids.extend([attachment.id for attachment in global_params.get("SessionAttachmentList")])
+        elif resource.get("type") == "param":
+            params_ids = load_properties(resource.get("schema", {}).get("properties"), global_params)
+            if params_ids.get('resource_list'):
+                for param_id in params_ids.get('resource_list'):
+                    try:
+                        param_id = int(param_id)
+                    except Exception as e:
+                        print(e)
+                        continue
+                    all_resource_ids.append(param_id)
+            elif params_ids.get('resource_id'):
+                try:
+                    params_id = int(params_ids.get('resource_id'))
+                except Exception as e:
+                    print(e)
+                    continue
+                all_resource_ids.append(params_id)
         else:
             all_resource_ids.append(resource.get("id"))
     all_resource_ids = list(set(all_resource_ids))
-    all_ref_ids = get_all_resource_ref_ids(all_resource_ids)
+    all_ref_ids = get_all_resource_ref_ids(all_resource_ids, global_params)
     if not all_ref_ids and not task_record.workflow_node_rag_web_search_config.get("search_engine_enhanced"):
         task_record.task_status = "已完成"
         task_record.task_trace_log = "关联知识为空"
@@ -892,6 +937,8 @@ def rag_node_execute(params, task_record, global_params):
             "recall_threshold": task_record.workflow_node_rag_recall_config.get("recall_threshold", 0.3),
             "recall_k": task_record.workflow_node_rag_recall_config.get("recall_k", 30),
             "recall_similarity": task_record.workflow_node_rag_recall_config.get("recall_similarity", "cosine"),
+            "recall_deduplication": task_record.workflow_node_rag_recall_config.get(
+                "recall_deduplication", True),
             "rerank_enabled": task_record.workflow_node_rag_rerank_config.get("rerank_enabled", True),
             "max_chunk_per_doc": task_record.workflow_node_rag_rerank_config.get("max_chunk_per_doc", 1024),
             "overlap_tokens": task_record.workflow_node_rag_rerank_config.get("overlap_tokens", 80),
@@ -1084,14 +1131,15 @@ def workflow_node_execute(task_params, task_record, global_params):
         return True
 
 
-def get_all_resource_ref_ids(all_resource_ids):
+def get_all_resource_ref_ids(all_resource_ids, global_params):
     """
-    获取所有资源对应的索引列表
+    获取所有资源对应的索引列表, 保证具有read权限的资源
+    :param global_params:
     :param all_resource_ids:
     :return:
     """
     res = all_resource_ids
-    all_parent_id = [id for id in res]
+    all_parent_id = [resource_id for resource_id in res]
     while all_parent_id:
         children_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.resource_status == '正常',
@@ -1101,6 +1149,8 @@ def get_all_resource_ref_ids(all_resource_ids):
         for resource in children_resource:
             all_parent_id.append(resource.id)
             res.append(resource.id)
+    # 检查权限
+    all_resource_ids = check_resource_permission(all_resource_ids, global_params.get("user_id"))
     all_ref_ids = []
     file_refs = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.id.in_(all_resource_ids),
@@ -1588,3 +1638,35 @@ def check_has_role(user_id, role_name):
     if role_name in user_roles:
         return True
     return False
+
+
+def check_resource_permission(resource_list, user_id):
+    """
+    根据资源列表检查，返回有权限的资源列表
+        应用所有者，发起调用者，对资源有读权限
+    :param user_id:
+    :param app_code:
+    :param resource_list:
+    :return:
+    """
+    result = []
+    resource_created = ResourceObjectMeta.query.filter(
+        ResourceObjectMeta.id.in_(resource_list),
+        ResourceObjectMeta.resource_status == '正常',
+        ResourceObjectMeta.user_id == user_id
+    ).all()
+    resource_created_ids = [resource.id for resource in resource_created]
+    result.extend(resource_created_ids)
+    # 共享资源权限鉴定
+    resource_shared_ids = [resource_id for resource_id in resource_list if resource_id not in resource_created_ids]
+    if resource_shared_ids:
+        from app.services.resource_center.resource_share_service import search_share_resource_by_keyword
+        user_shared_resources = search_share_resource_by_keyword({
+            "user_id": user_id,
+            "resource_keyword": "",
+            "resource_ids": resource_shared_ids,
+        }).json.get("result", {}).get("data", [])
+        for resource in user_shared_resources:
+            if resource.get("id") not in result:
+                result.append(resource.get("id"))
+    return result

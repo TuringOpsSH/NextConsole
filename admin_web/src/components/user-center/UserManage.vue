@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { Search, Setting } from '@element-plus/icons-vue';
+import { Search, Setting, MoreFilled, OfficeBuilding, Lock, Unlock, DeleteFilled, Key } from '@element-plus/icons-vue';
+import CryptoJS from 'crypto-js';
 import { ElMessage } from 'element-plus';
 import { onMounted, ref, watch, reactive } from 'vue';
-
 import { getAllCompany as getAllCompany, sendRequest, TRequestParams } from '@/api/dashboard';
 import {
   adminArchiveUser,
+  adminCloseUser,
   adminSearchUserAPI,
   adminUpdateRole,
+  adminUpdateUserAPI,
   createUser,
   searchRole,
   twadminSearchUser,
@@ -59,7 +61,8 @@ const newUserRules = {
     { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' }
   ],
   user_phone: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }],
-  user_email: [{ type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }]
+  user_email: [{ type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur', required: true }],
+  user_password: [{ message: '请输入密码', trigger: 'blur', required: true }]
 };
 const createLoading = ref(false);
 const userRoleList = ref([]);
@@ -68,7 +71,6 @@ interface IDepartTree {
   label: string;
   children: IDepartTree[];
 }
-
 const CurrentUserTotal = ref(0);
 const CurrentUserPageSize = ref(100);
 const CurrentUserPageNum = ref(1);
@@ -119,6 +121,7 @@ const registerTimeRangeShortCuts = [
 const viewField = ref([
   '用户ID',
   '用户编号',
+  '用户姓名',
   '用户昵称',
   '用户头像',
   '账户类型',
@@ -127,24 +130,72 @@ const viewField = ref([
   '手机',
   '邮箱',
   '用户角色',
-  '用户归档'
+  '操作'
 ]);
-
+const adminDeleteConfirm = ref(false);
+const adminUpdateUser = ref(false);
+const updateUserForm = reactive<Partial<IUsers>>({
+  user_code: '',
+  user_name: '',
+  user_company_id: null,
+  user_department_id: null,
+  user_resource_limit: null
+});
+const updateUserFormRef = ref(null);
+const updateUserRoles = {
+  user_name: [
+    { required: true, message: '请输入真实姓名', trigger: 'blur' },
+    { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' }
+  ],
+  user_resource_limit: [
+    { required: true, message: '请输入资源空间大小', trigger: 'blur' },
+    {
+      pattern: /^[1-9]\d*$/,
+      message: '资源空间大小必须为正整数，单位MB',
+      trigger: 'blur'
+    }
+  ]
+};
+const adminResetPassword = ref(false);
+const resetPasswordForm = reactive({
+  newPassword: '',
+  confirmPassword: ''
+});
+const resetPasswordFormRef = ref(null);
+const resetPasswordRules = {
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请再次输入新密码', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== resetPasswordForm.newPassword) {
+          callback(new Error('两次输入的密码不一致'));
+        } else {
+          callback();
+        }
+      },
+      trigger: 'blur'
+    }
+  ]
+};
+const userDetailLoading = ref(false);
 async function getCompanyInfo() {
   const res = await getAllCompany({});
   if (!res.error_status) {
     companyList.value = res.result;
   }
 }
-
 function buildDepartTree(data: any[]): IDepartTree[] {
   // 创建哈希映射表
   const map = new Map<string, IDepartTree>();
 
   // 第一次遍历：创建所有节点的映射
   data.forEach(item => {
-    map.set(item.id.toString(), {
-      value: item.id.toString(),
+    map.set(item.id, {
+      value: item.id,
       label: item.department_name,
       children: []
     });
@@ -153,19 +204,18 @@ function buildDepartTree(data: any[]): IDepartTree[] {
   // 第二次遍历：建立父子关系
   const tree: IDepartTree[] = [];
   data.forEach(item => {
-    const currentNode = map.get(item.id.toString())!;
+    const currentNode = map.get(item.id)!;
 
     if (item.parent_department_id === null) {
       tree.push(currentNode);
     } else {
-      const parentNode = map.get(item.parent_department_id.toString());
+      const parentNode = map.get(item.parent_department_id);
       parentNode?.children.push(currentNode);
     }
   });
 
   return tree;
 }
-
 async function getDepartInfo() {
   const params: TRequestParams = {
     url: 'lookupbyadmin',
@@ -179,16 +229,15 @@ async function getDepartInfo() {
   if (!res.error_status) {
     departList.value = res.result?.data ?? [];
     departTree.value = buildDepartTree(departList.value);
+    console.log(departTree.value);
   }
 }
-
 async function handleUpgrade(row: any) {
   userId.value = row.user_id;
   await getCompanyInfo();
   await getDepartInfo();
   showUpgradeDialog.value = true;
 }
-
 async function submitForm() {
   if (!companyInfo.value) {
     ElMessage.error('请选择企业名称');
@@ -213,18 +262,15 @@ async function submitForm() {
     await adminSearchUser();
   }
 }
-
 function resetForm() {
   clearCompanyInfo();
   showUpgradeDialog.value = false;
 }
-
 function clearCompanyInfo() {
   companyInfo.value = undefined;
   departInfo.value = undefined;
   departTree.value = [];
 }
-
 async function showAddUserFormFunc() {
   if (userInfoStore.userInfo?.user_role?.includes('next_console_admin')) {
     await getCompanyInfo();
@@ -303,8 +349,8 @@ async function getAllRoleOptions() {
 async function handleUserArchiveChange() {
   const params = {
     update_user_id: targetUser.value.user_id,
-    orig_is_archive: targetUser.value.is_archive ? 0 : 1,
-    dest_is_archive: targetUser.value.is_archive ? 1 : 0
+    orig_is_archive: targetUser.value.is_archive ? 1 : 0,
+    dest_is_archive: targetArchive.value ? 1 : 0
   };
   const res = await adminArchiveUser(params);
   if (!res.error_status) {
@@ -473,7 +519,87 @@ function formatDateToUTC8(date) {
     .replace(/\//g, '-')
     .replace(/,/g, '');
 }
-
+function beginArchive(row) {
+  adminChangeRoleConfirm.value = true;
+  targetUser.value = row;
+  targetArchive.value = true;
+}
+function beginRestore(row) {
+  adminChangeRoleConfirm.value = true;
+  targetUser.value = row;
+  targetArchive.value = false;
+}
+function beginDelete(row) {
+  adminDeleteConfirm.value = true;
+  targetUser.value = row;
+}
+async function deleteUser() {
+  const res = await adminCloseUser({ user_code: targetUser.value.user_code });
+  if (!res.error_status) {
+    ElMessage.success('删除用户成功');
+    adminDeleteConfirm.value = false;
+    await adminSearchUser();
+  }
+}
+async function beginUpdate(row) {
+  adminUpdateUser.value = true;
+  userDetailLoading.value = true;
+  Object.assign(updateUserForm, row);
+  await getCompanyInfo();
+  await getDepartInfo();
+  await changeNewUserCompany(row.user_company_id);
+  userDetailLoading.value = false;
+}
+async function submitEditUserInfo() {
+  try {
+    const res = await updateUserFormRef.value?.validate();
+    if (!res) {
+      return;
+    }
+  } catch (e) {
+    console.log(e);
+    return;
+  }
+  const updateRes = await adminUpdateUserAPI({
+    user_code: updateUserForm.user_code,
+    user_name: updateUserForm.user_name,
+    user_company_id: updateUserForm.user_company_id,
+    user_department_id: updateUserForm.user_department_id,
+    user_resource_limit: updateUserForm.user_resource_limit
+  });
+  if (!updateRes.error_status) {
+    ElMessage.success('修改用户信息成功');
+    adminUpdateUser.value = false;
+    await adminSearchUser();
+  }
+}
+async function beginResetPassword(row) {
+  adminResetPassword.value = true;
+  targetUser.value = row;
+  resetPasswordForm.newPassword = '';
+  resetPasswordForm.confirmPassword = '';
+}
+async function submitResetPassword() {
+  try {
+    const res = await resetPasswordFormRef.value?.validate();
+    if (!res) {
+      return;
+    }
+  } catch (e) {
+    console.log(e);
+    return;
+  }
+  const resetRes = await adminUpdateUserAPI({
+    user_code: targetUser.value.user_code,
+    new_password: CryptoJS.SHA256(resetPasswordForm.newPassword.trim()).toString()
+  });
+  if (!resetRes.error_status) {
+    ElMessage.success('重置密码成功');
+    adminResetPassword.value = false;
+    resetPasswordForm.newPassword = '';
+    resetPasswordForm.confirmPassword = '';
+  }
+}
 onMounted(async () => {
   await adminSearchUser();
   await getAllRoleOptions();
@@ -491,418 +617,335 @@ watch(
 <template>
   <el-container style="height: calc(100vh - 60px)">
     <el-main>
-      <div style="height: calc(100vh - 120px)">
-        <el-scrollbar>
-          <div
-            class="next-console-div"
-            style="
-              flex-direction: row;
-              justify-content: space-between;
-              border-bottom: 1px solid #d0d5dd;
-              padding: 12px 16px;
-            "
-          >
-            <div class="next-console-div" style="width: 60px">
-              <el-text class="next-console-font-bold" style="width: 60px; color: #101828"> 用户列表</el-text>
+      <div style="height: calc(100vh - 140px)">
+        <div
+          class="next-console-div"
+          style="
+            flex-direction: row;
+            justify-content: space-between;
+            border-bottom: 1px solid #d0d5dd;
+            padding: 6px 12px;
+            gap: 40px;
+          "
+        >
+          <div class="next-console-div" style="width: 60px">
+            <el-text class="next-console-font-bold" style="width: 60px; color: #101828"> 用户列表</el-text>
+          </div>
+          <div class="user-conditions">
+            <div v-if="userInfoStore.userInfo.user_role.includes('next_console_admin')">
+              <el-select
+                v-model="userAccountType"
+                style="width: 100px"
+                multiple
+                clearable
+                placeholder="账户类型"
+                @change="adminSearchUser"
+              >
+                <el-option
+                  v-for="(accountType, idx) in userAccountTypeList"
+                  :key="idx"
+                  :value="accountType"
+                  :label="accountType"
+                />
+              </el-select>
             </div>
-            <div class="next-console-div">
-              <div v-if="userInfoStore.userInfo.user_role.includes('next_console_admin')">
-                <el-select
-                  v-model="userAccountType"
-                  style="width: 100px"
-                  multiple
-                  clearable
-                  placeholder="账户类型"
-                  @change="adminSearchUser"
-                >
-                  <el-option
-                    v-for="(accountType, idx) in userAccountTypeList"
-                    :key="idx"
-                    :value="accountType"
-                    :label="accountType"
-                  />
-                </el-select>
-              </div>
-              <div v-if="userInfoStore.userInfo.user_role.includes('next_console_admin')">
-                <el-select
-                  v-model="userCompany"
-                  style="width: 100px"
-                  value-key="id"
-                  multiple
-                  clearable
-                  placeholder="所属公司"
-                  @change="adminSearchUser"
-                >
-                  <el-option
-                    v-for="(company, idx) in userCompanyList"
-                    :key="idx"
-                    :value="company.id"
-                    :label="company.company_name"
-                  />
-                </el-select>
-              </div>
-              <div>
-                <el-select
-                  v-model="userIsArchive"
-                  style="width: 100px"
-                  clearable
-                  placeholder="归档状态"
-                  @change="adminSearchUser"
-                >
-                  <el-option :value="1" label="归档" />
-                  <el-option :value="0" label="未归档" />
-                </el-select>
-              </div>
-              <div>
-                <el-select
-                  v-model="userDepartment"
-                  style="width: 100px"
-                  value-key="id"
-                  multiple
-                  clearable
-                  placeholder="所属部门"
-                  @change="adminSearchUser"
-                >
-                  <el-option
-                    v-for="(department, idx) in userDepartmentList"
-                    :key="idx"
-                    :value="department.id"
-                    :label="department.department_name"
-                  />
-                </el-select>
-              </div>
-              <div>
-                <el-select
-                  v-model="userRole"
-                  style="width: 100px"
-                  multiple
-                  clearable
-                  placeholder="拥有角色"
-                  @change="adminSearchUser"
-                >
-                  <el-option v-for="(role, idx) in userRoleList" :key="idx" :value="role" :label="role" />
-                </el-select>
-              </div>
-              <div style="width: 380px">
-                <el-date-picker
-                  v-model="userRegisterTimeRange"
-                  style="width: 350px"
-                  type="datetimerange"
-                  :shortcuts="registerTimeRangeShortCuts"
-                  range-separator="至"
-                  start-placeholder="开始时间"
-                  end-placeholder="截止时间"
-                  @change="adminSearchUser"
+            <div v-if="userInfoStore.userInfo.user_role.includes('next_console_admin')">
+              <el-select
+                v-model="userCompany"
+                style="width: 100px"
+                value-key="id"
+                multiple
+                clearable
+                placeholder="所属公司"
+                @change="adminSearchUser"
+              >
+                <el-option
+                  v-for="(company, idx) in userCompanyList"
+                  :key="idx"
+                  :value="company.id"
+                  :label="company.company_name"
                 />
-              </div>
-              <div style="width: 200px">
-                <el-input
-                  v-model="userSearchText"
-                  placeholder="可搜索用户ID,昵称,手机"
-                  :prefix-icon="Search"
-                  clearable
-                  @change="adminSearchUser"
+              </el-select>
+            </div>
+            <div>
+              <el-select
+                v-model="userIsArchive"
+                style="width: 100px"
+                clearable
+                placeholder="归档状态"
+                @change="adminSearchUser"
+              >
+                <el-option :value="1" label="归档" />
+                <el-option :value="0" label="未归档" />
+              </el-select>
+            </div>
+            <div>
+              <el-select
+                v-model="userDepartment"
+                style="width: 100px"
+                value-key="id"
+                multiple
+                clearable
+                placeholder="所属部门"
+                @change="adminSearchUser"
+              >
+                <el-option
+                  v-for="(department, idx) in userDepartmentList"
+                  :key="idx"
+                  :value="department.id"
+                  :label="department.department_name"
                 />
-              </div>
-              <div>
-                <el-popover trigger="click" placement="bottom" width="300">
-                  <template #reference>
-                    <el-button size="small" :icon="Setting" circle />
-                  </template>
-                  <el-checkbox-group v-model="viewField">
-                    <el-checkbox
-                      v-for="item in [
-                        '用户ID',
-                        '用户编号',
-                        '用户姓名',
-                        '用户昵称',
-                        '用户头像',
-                        '账户类型',
-                        '部门',
-                        '公司',
-                        '注册时间',
-                        '上次登录时间',
-                        '手机',
-                        '邮箱',
-                        '微信id',
-                        '用户角色',
-                        '用户归档'
-                      ]"
-                      :key="item"
-                      :value="item"
-                    >
-                      {{ item }}
-                    </el-checkbox>
-                  </el-checkbox-group>
-                </el-popover>
-              </div>
-              <div>
-                <el-dropdown trigger="click" size="small">
-                  <div class="user-add-area">
-                    <el-image src="/images/user_plus_white.svg" style="width: 20px; height: 20px" />
-                  </div>
+              </el-select>
+            </div>
+            <div>
+              <el-select
+                v-model="userRole"
+                style="width: 100px"
+                multiple
+                clearable
+                placeholder="拥有角色"
+                @change="adminSearchUser"
+              >
+                <el-option v-for="(role, idx) in userRoleList" :key="idx" :value="role" :label="role" />
+              </el-select>
+            </div>
+            <div style="width: 380px">
+              <el-date-picker
+                v-model="userRegisterTimeRange"
+                style="width: 350px"
+                type="datetimerange"
+                :shortcuts="registerTimeRangeShortCuts"
+                range-separator="至"
+                start-placeholder="开始时间"
+                end-placeholder="截止时间"
+                @change="adminSearchUser"
+              />
+            </div>
+            <div style="width: 200px">
+              <el-input
+                v-model="userSearchText"
+                placeholder="可搜索用户ID,昵称,手机"
+                :prefix-icon="Search"
+                clearable
+                @change="adminSearchUser"
+              />
+            </div>
+            <div>
+              <el-popover trigger="click" placement="bottom" width="300">
+                <template #reference>
+                  <el-button :icon="Setting" />
+                </template>
+                <el-checkbox-group v-model="viewField">
+                  <el-checkbox
+                    v-for="item in [
+                      '用户ID',
+                      '用户编号',
+                      '用户姓名',
+                      '用户昵称',
+                      '用户头像',
+                      '账户类型',
+                      '部门',
+                      '公司',
+                      '注册时间',
+                      '上次登录时间',
+                      '手机',
+                      '邮箱',
+                      '微信id',
+                      '用户角色',
+                      '资源空间',
+                      '操作'
+                    ]"
+                    :key="item"
+                    :value="item"
+                  >
+                    {{ item }}
+                  </el-checkbox>
+                </el-checkbox-group>
+              </el-popover>
+            </div>
+            <div>
+              <el-dropdown trigger="click" size="small">
+                <el-button type="primary">
+                  <el-image src="/images/user_plus_white.svg" style="width: 20px; height: 20px" />
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-item @click="showAddUserFormFunc">添加用户</el-dropdown-item>
+                  <el-dropdown-item @click="showAddUserDialog">批量导入用户</el-dropdown-item>
+                </template>
+              </el-dropdown>
+            </div>
+          </div>
+        </div>
+        <div class="next-console-div">
+          <el-table
+            v-loading="loading"
+            :data="userTableData"
+            stripe
+            border
+            element-loading-text="加载中"
+            height="calc(100vh - 200px)"
+          >
+            <el-table-column type="selection" width="55" />
+            <el-table-column v-if="viewField.includes('用户ID')" prop="user_id" label="用户ID" sortable width="100" />
+            <el-table-column
+              v-if="viewField.includes('用户编号')"
+              prop="user_code"
+              label="用户编号"
+              sortable
+              width="300"
+            />
+            <el-table-column
+              v-if="viewField.includes('用户姓名')"
+              prop="user_name"
+              label="用户姓名"
+              sortable
+              width="110"
+            />
+            <el-table-column v-if="viewField.includes('用户昵称')" prop="user_nick_name" label="用户昵称" width="110" />
+            <el-table-column v-if="viewField.includes('用户头像')" prop="user_avatar" label="用户头像" width="110">
+              <template #default="{ row }">
+                <el-avatar v-if="row.user_avatar" :src="row.user_avatar" />
+                <el-avatar v-else style="background: #d1e9ff">
+                  <el-text style="font-weight: 600; color: #1570ef">
+                    {{ row.user_nick_name_py }}
+                  </el-text>
+                </el-avatar>
+              </template>
+            </el-table-column>
+            <el-table-column
+              v-if="userInfoStore.userInfo.user_role.includes('next_console_admin') && viewField.includes('账户类型')"
+              prop="user_account_type"
+              label="账户类型"
+              sortable
+              width="110"
+            />
+            <el-table-column
+              v-if="userInfoStore.userInfo.user_role.includes('next_console_admin') && viewField.includes('公司')"
+              prop="user_company"
+              label="公司"
+              sortable
+              width="120"
+            />
+            <el-table-column
+              v-if="viewField.includes('部门')"
+              prop="user_department"
+              label="部门"
+              sortable
+              width="120"
+            />
+            <el-table-column
+              v-if="viewField.includes('注册时间')"
+              prop="create_time"
+              label="注册时间"
+              sortable
+              width="120"
+            />
+            <el-table-column
+              v-if="viewField.includes('上次登录时间')"
+              prop="last_login_time"
+              label="上次登录时间"
+              sortable
+              width="140"
+            />
+            <el-table-column v-if="viewField.includes('手机')" prop="user_phone" label="手机" sortable width="140" />
+            <el-table-column v-if="viewField.includes('邮箱')" prop="user_email" label="邮箱" sortable width="140" />
+            <el-table-column v-if="viewField.includes('微信id')" prop="user_wx_openid" label="微信id" sortable />
+            <el-table-column
+              v-if="viewField.includes('用户角色')"
+              prop="user_role"
+              label="用户角色"
+              sortable
+              min-width="300"
+            >
+              <template #default="{ row }">
+                <el-select
+                  v-model="row.user_role_list"
+                  multiple
+                  collapse-tags
+                  collapse-tags-tooltip
+                  placeholder="用户角色"
+                  style="width: 240px"
+                  :disabled="checkRoleChangeAvailable(row)"
+                  @change="handleUserRoleChange(row)"
+                >
+                  <el-option
+                    v-for="(item, idx) in userRoleList"
+                    :key="idx"
+                    class="role-desc"
+                    :label="item"
+                    :value="item"
+                  />
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column
+              v-if="viewField.includes('资源空间')"
+              prop="user_resource_limit"
+              label="资源空间(MB)"
+              sortable
+              width="140"
+            />
+            <el-table-column
+              v-if="viewField.includes('操作')"
+              prop="is_archive"
+              label="操作"
+              sortable
+              width="160px"
+              fixed="right"
+            >
+              <template #default="{ row }">
+                <el-button text type="primary" @click="beginUpdate(row)">修改</el-button>
+                <el-dropdown trigger="click" placement="bottom">
+                  <el-button :icon="MoreFilled" />
                   <template #dropdown>
-                    <el-dropdown-item @click="showAddUserFormFunc">添加用户</el-dropdown-item>
-                    <el-dropdown-item @click="showAddUserDialog">批量导入用户</el-dropdown-item>
+                    <el-dropdown-menu>
+                      <el-dropdown-item text type="primary" :icon="Key" @click="beginResetPassword(row)">
+                        重置密码
+                      </el-dropdown-item>
+                      <el-dropdown-item
+                        v-if="
+                          row.user_account_type === '个人账号' &&
+                          userInfoStore.userInfo.user_role.includes('next_console_admin')
+                        "
+                        text
+                        type="primary"
+                        :icon="OfficeBuilding"
+                        @click="handleUpgrade(row)"
+                      >
+                        升级
+                      </el-dropdown-item>
+                      <el-dropdown-item
+                        v-if="!row.is_archive"
+                        text
+                        type="warning"
+                        :icon="Lock"
+                        @click="beginArchive(row)"
+                      >
+                        归档
+                      </el-dropdown-item>
+                      <el-dropdown-item v-if="row.is_archive" text :icon="Unlock" @click="beginRestore(row)">
+                        恢复
+                      </el-dropdown-item>
+                      <el-dropdown-item
+                        v-if="
+                          userInfoStore?.userInfo.user_role?.includes('super_admin') ||
+                          userInfoStore?.userInfo.user_role?.includes('next_console_admin')
+                        "
+                        text
+                        type="danger"
+                        :icon="DeleteFilled"
+                        @click="beginDelete(row)"
+                      >
+                        删除
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
                   </template>
                 </el-dropdown>
-              </div>
-            </div>
-          </div>
-          <div class="next-console-div">
-            <el-table :data="userTableData" stripe border element-loading-text="加载中" height="calc(100vh - 200px)">
-              <el-table-column type="selection" width="55" />
-              <el-table-column v-if="viewField.includes('用户ID')" prop="user_id" label="用户ID" sortable width="100" />
-              <el-table-column
-                v-if="viewField.includes('用户编号')"
-                prop="user_code"
-                label="用户编号"
-                sortable
-                width="300"
-              />
-              <el-table-column
-                v-if="viewField.includes('用户姓名')"
-                prop="user_name"
-                label="用户姓名"
-                sortable
-                width="110"
-              />
-              <el-table-column
-                v-if="viewField.includes('用户昵称')"
-                prop="user_nick_name"
-                label="用户昵称"
-                width="110"
-              />
-              <el-table-column v-if="viewField.includes('用户头像')" prop="user_avatar" label="用户头像" width="110">
-                <template #default="{ row }">
-                  <el-avatar v-if="row.user_avatar" :src="row.user_avatar" />
-                  <el-avatar v-else style="background: #d1e9ff">
-                    <el-text style="font-weight: 600; color: #1570ef">
-                      {{ row.user_nick_name_py }}
-                    </el-text>
-                  </el-avatar>
-                </template>
-              </el-table-column>
-              <el-table-column
-                v-if="userInfoStore.userInfo.user_role.includes('next_console_admin') && viewField.includes('账户类型')"
-                prop="user_account_type"
-                label="账户类型"
-                sortable
-                width="110"
-              >
-                <template #default="{ row }">
-                  <div class="user-account-type">
-                    <el-text>{{ row.user_account_type }}</el-text>
-                    <el-tag v-if="row.user_account_type === '个人账号'" class="btn-upgrade" @click="handleUpgrade(row)">
-                      升级
-                    </el-tag>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                v-if="viewField.includes('部门')"
-                prop="user_department"
-                label="部门"
-                sortable
-                width="120"
-              />
-              <el-table-column
-                v-if="userInfoStore.userInfo.user_role.includes('next_console_admin') && viewField.includes('公司')"
-                prop="user_company"
-                label="公司"
-                sortable
-                width="120"
-              />
-              <el-table-column
-                v-if="viewField.includes('注册时间')"
-                prop="create_time"
-                label="注册时间"
-                sortable
-                width="120"
-              />
-              <el-table-column
-                v-if="viewField.includes('上次登录时间')"
-                prop="last_login_time"
-                label="上次登录时间"
-                sortable
-                width="140"
-              />
-              <el-table-column v-if="viewField.includes('手机')" prop="user_phone" label="手机" sortable width="140" />
-              <el-table-column v-if="viewField.includes('邮箱')" prop="user_email" label="邮箱" sortable width="140" />
-              <el-table-column v-if="viewField.includes('微信id')" prop="user_wx_openid" label="微信id" sortable />
-              <el-table-column
-                v-if="viewField.includes('用户角色')"
-                prop="user_role"
-                label="用户角色"
-                sortable
-                min-width="300"
-              >
-                <template #default="{ row }">
-                  <el-select
-                    v-model="row.user_role_list"
-                    multiple
-                    collapse-tags
-                    collapse-tags-tooltip
-                    placeholder="用户角色"
-                    style="width: 240px"
-                    :disabled="checkRoleChangeAvailable(row)"
-                    @change="handleUserRoleChange(row)"
-                  >
-                    <el-option
-                      v-for="(item, idx) in userRoleList"
-                      :key="idx"
-                      class="role-desc"
-                      :label="item"
-                      :value="item"
-                    />
-                  </el-select>
-                </template>
-              </el-table-column>
-              <el-table-column
-                v-if="viewField.includes('用户归档')"
-                prop="is_archive"
-                label="用户归档"
-                sortable
-                min-width="200px"
-              >
-                <template #default="{ row }">
-                  <el-switch
-                    v-model="row.is_archive"
-                    active-color="#FF4949"
-                    inactive-color="#13CE66"
-                    active-text="已归档"
-                    inactive-text="未归档"
-                    @change="
-                      adminChangeRoleConfirm = true;
-                      targetUser = row;
-                      targetArchive = row.is_archive;
-                    "
-                  />
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-dialog
-              v-model="adminChangeRoleConfirm"
-              title="请确认当前变更操作"
-              max-width="480"
-              @closed="adminSearchUser"
-            >
-              <el-result
-                v-if="targetArchive"
-                title="归档用户"
-                sub-title="归档用户后，该用户不可再登录使用平台，是否确认？"
-                icon="error"
-              />
-              <el-result
-                v-else
-                title="解除归档"
-                sub-title="解除归档用户后，该用户可再登录使用平台，是否确认？"
-                icon="success"
-              />
-              <template #footer>
-                <div class="next-console-div">
-                  <div style="width: 100%">
-                    <el-button style="width: 100%; background-color: #175cd3" @click="handleUserArchiveChange">
-                      <el-text style="color: white"> 确认 </el-text>
-                    </el-button>
-                  </div>
-                  <div style="width: 100%">
-                    <el-button
-                      style="width: 100%"
-                      @click="
-                        targetUser.is_archive = !targetUser.is_archive;
-                        adminChangeRoleConfirm = false;
-                      "
-                    >
-                      取消
-                    </el-button>
-                  </div>
-                </div>
               </template>
-            </el-dialog>
-          </div>
-        </el-scrollbar>
+            </el-table-column>
+          </el-table>
+        </div>
       </div>
-      <UserUploadExcel v-model="showAddUserDialogFlag" @refresh="adminSearchUser" />
-      <el-dialog v-model="showAddUserForm" title="添加用户">
-        <el-form
-          ref="newUserFormRef"
-          v-loading="createLoading"
-          :model="newUserForm"
-          :rules="newUserRules"
-          label-position="right"
-          label-width="140px"
-          element-loading-text="创建中..."
-        >
-          <el-form-item prop="user_name" label="用户姓名" required>
-            <el-input v-model="newUserForm.user_name" placeholder="请输入用户姓名" />
-          </el-form-item>
-          <el-form-item prop="user_nickname" label="用户昵称">
-            <el-input v-model="newUserForm.user_nickname" placeholder="请输入用户昵称" />
-          </el-form-item>
-          <el-form-item prop="user_phone" label="用户手机">
-            <el-input v-model="newUserForm.user_phone" placeholder="请输入用户手机" />
-          </el-form-item>
-          <el-form-item prop="user_email" label="用户邮箱">
-            <el-input v-model="newUserForm.user_email" placeholder="请输入用户邮箱" clearable />
-          </el-form-item>
-          <el-form-item prop="user_password" label="用户密码">
-            <el-input
-              v-model="newUserForm.user_password"
-              placeholder="请输入用户密码"
-              show-password
-              type="password"
-              clearable
-            />
-          </el-form-item>
-          <el-form-item prop="user_gender" label="用户性别">
-            <el-radio-group v-model="newUserForm.user_gender">
-              <el-radio value="男">男</el-radio>
-              <el-radio value="女">女</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item prop="user_resource_limit" label="用户资源空间(MB)">
-            <el-input-number v-model="newUserForm.user_resource_limit" />
-          </el-form-item>
-          <el-form-item prop="user_position" label="岗位">
-            <el-input v-model="newUserForm.user_position" />
-          </el-form-item>
-          <el-form-item
-            v-if="userInfoStore.userInfo.user_role.includes('next_console_admin')"
-            prop="user_company_id"
-            label="所属公司"
-          >
-            <el-select
-              v-model="newUserForm.user_company_id"
-              value-key="id"
-              placeholder="请选择用户所属公司"
-              clearable
-              :disabled="!userInfoStore.userInfo?.user_role.includes('next_console_admin')"
-              @change="changeNewUserCompany"
-            >
-              <el-option
-                v-for="company in companyList"
-                :key="company.id"
-                :label="company.company_name"
-                :value="company.id"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item prop="user_department_id" label="所属部门">
-            <el-tree-select
-              v-model="newUserForm.user_department_id"
-              :disabled="!newUserForm.user_company_id"
-              :data="departTree"
-              check-strictly
-              :render-after-expand="false"
-            />
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <el-button text @click="showAddUserForm = false"> 取消 </el-button>
-          <el-button type="primary" @click="addNewUser"> 确定 </el-button>
-        </template>
-      </el-dialog>
     </el-main>
     <el-footer height="40px">
       <div class="kg-pagination">
@@ -956,6 +999,212 @@ watch(
       </el-form>
     </el-dialog>
   </div>
+  <el-dialog v-model="adminChangeRoleConfirm" title="请确认当前变更操作" max-width="480" @closed="adminSearchUser">
+    <el-result
+      v-if="targetArchive"
+      title="归档用户"
+      sub-title="归档用户后，该用户不可再登录使用平台，是否确认？"
+      icon="error"
+    />
+    <el-result v-else title="解除归档" sub-title="解除归档用户后，该用户可再登录使用平台，是否确认？" icon="success" />
+    <template #footer>
+      <div class="next-console-div">
+        <div style="width: 100%">
+          <el-button style="width: 100%; background-color: #175cd3" @click="handleUserArchiveChange">
+            <el-text style="color: white"> 确认 </el-text>
+          </el-button>
+        </div>
+        <div style="width: 100%">
+          <el-button
+            style="width: 100%"
+            @click="
+              targetUser.is_archive = !targetUser.is_archive;
+              adminChangeRoleConfirm = false;
+            "
+          >
+            取消
+          </el-button>
+        </div>
+      </div>
+    </template>
+  </el-dialog>
+  <el-dialog v-model="adminDeleteConfirm" title="彻底删除用户">
+    <el-result
+      title="删除用户"
+      sub-title="删除用户后，该用户所有数据将被彻底删除且不可恢复，是否确认？"
+      icon="danger"
+    />
+    <template #footer>
+      <div class="next-console-div">
+        <div style="width: 100%">
+          <el-button style="width: 100%; background-color: #175cd3" @click="deleteUser">
+            <el-text style="color: white"> 确认 </el-text>
+          </el-button>
+        </div>
+        <div style="width: 100%">
+          <el-button style="width: 100%" @click="adminDeleteConfirm = false"> 取消 </el-button>
+        </div>
+      </div>
+    </template>
+  </el-dialog>
+  <el-dialog v-model="showAddUserForm" title="添加用户">
+    <el-form
+      ref="newUserFormRef"
+      v-loading="createLoading"
+      :model="newUserForm"
+      :rules="newUserRules"
+      label-position="right"
+      label-width="140px"
+      element-loading-text="创建中..."
+    >
+      <el-form-item prop="user_name" label="用户姓名" required>
+        <el-input v-model="newUserForm.user_name" placeholder="请输入用户姓名" />
+      </el-form-item>
+      <el-form-item prop="user_nickname" label="用户昵称">
+        <el-input v-model="newUserForm.user_nickname" placeholder="请输入用户昵称" />
+      </el-form-item>
+      <el-form-item prop="user_phone" label="用户手机">
+        <el-input v-model="newUserForm.user_phone" placeholder="请输入用户手机" />
+      </el-form-item>
+      <el-form-item prop="user_email" label="用户邮箱" required>
+        <el-input v-model="newUserForm.user_email" placeholder="请输入用户邮箱" clearable />
+      </el-form-item>
+      <el-form-item prop="user_password" label="用户密码" required>
+        <el-input
+          v-model="newUserForm.user_password"
+          placeholder="请输入用户密码"
+          show-password
+          type="password"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item prop="user_gender" label="用户性别">
+        <el-radio-group v-model="newUserForm.user_gender">
+          <el-radio value="男">男</el-radio>
+          <el-radio value="女">女</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item prop="user_resource_limit" label="用户资源空间(MB)">
+        <el-input-number v-model="newUserForm.user_resource_limit" />
+      </el-form-item>
+      <el-form-item prop="user_position" label="岗位">
+        <el-input v-model="newUserForm.user_position" />
+      </el-form-item>
+      <el-form-item
+        v-if="userInfoStore.userInfo.user_role.includes('next_console_admin')"
+        prop="user_company_id"
+        label="所属公司"
+      >
+        <el-select
+          v-model="newUserForm.user_company_id"
+          value-key="id"
+          placeholder="请选择用户所属公司"
+          clearable
+          :disabled="!userInfoStore.userInfo?.user_role.includes('next_console_admin')"
+          @change="changeNewUserCompany"
+        >
+          <el-option
+            v-for="company in companyList"
+            :key="company.id"
+            :label="company.company_name"
+            :value="company.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item prop="user_department_id" label="所属部门">
+        <el-tree-select
+          v-model="newUserForm.user_department_id"
+          :disabled="!newUserForm.user_company_id"
+          :data="departTree"
+          check-strictly
+          :render-after-expand="false"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button text @click="showAddUserForm = false"> 取消 </el-button>
+      <el-button type="primary" @click="addNewUser"> 确定 </el-button>
+    </template>
+  </el-dialog>
+  <UserUploadExcel v-model="showAddUserDialogFlag" @refresh="adminSearchUser" />
+  <el-dialog v-model="adminUpdateUser" title="修改用户信息" width="600px">
+    <el-form
+      v-loading="userDetailLoading"
+      ref="updateUserFormRef"
+      label-width="140px"
+      element-loading-text="加载中..."
+      :model="updateUserForm"
+      :rules="updateUserRoles"
+    >
+      <el-form-item label="用户姓名" prop="user_name">
+        <el-input v-model="updateUserForm.user_name" placeholder="请输入用户姓名" />
+      </el-form-item>
+      <el-form-item
+        v-if="userInfoStore.userInfo.user_role.includes('next_console_admin')"
+        prop="user_company_id"
+        label="所属公司"
+      >
+        <el-select
+          v-model="updateUserForm.user_company_id"
+          value-key="id"
+          placeholder="请选择用户所属公司"
+          clearable
+          :disabled="!userInfoStore.userInfo?.user_role.includes('next_console_admin')"
+          @change="changeNewUserCompany(updateUserForm.user_company_id)"
+        >
+          <el-option
+            v-for="company in companyList"
+            :key="company.id"
+            :label="company.company_name"
+            :value="company.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item prop="user_department_id" label="所属部门">
+        <el-tree-select
+          v-model="updateUserForm.user_department_id"
+          :disabled="!updateUserForm.user_company_id"
+          :data="departTree"
+          node-key="value"
+          check-strictly
+          :render-after-expand="false"
+        />
+      </el-form-item>
+      <el-form-item prop="user_resource_limit" label="用户资源空间(MB)">
+        <el-input-number v-model="updateUserForm.user_resource_limit" :min="0" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button type="primary" @click="submitEditUserInfo"> 确定 </el-button>
+      <el-button @click="adminUpdateUser = false">取消</el-button>
+    </template>
+  </el-dialog>
+  <el-dialog v-model="adminResetPassword" title="重置用户密码" width="400px">
+    <el-form ref="resetPasswordFormRef" label-width="120px" :model="resetPasswordForm" :rules="resetPasswordRules">
+      <el-form-item label="新密码" prop="newPassword">
+        <el-input
+          v-model="resetPasswordForm.newPassword"
+          placeholder="请输入新密码"
+          show-password
+          type="password"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item label="确认新密码" prop="confirmPassword">
+        <el-input
+          v-model="resetPasswordForm.confirmPassword"
+          placeholder="请再次输入新密码"
+          show-password
+          type="password"
+          clearable
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button type="primary" @click="submitResetPassword"> 确定 </el-button>
+      <el-button @click="adminResetPassword = false">取消</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <style lang="scss">
@@ -1003,5 +1252,12 @@ watch(
   border: 1px solid #1570ef;
   align-items: center;
   justify-content: center;
+}
+.user-conditions {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 </style>

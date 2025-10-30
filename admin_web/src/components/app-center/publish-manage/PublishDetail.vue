@@ -15,6 +15,7 @@ import { getAllCompany, searchDepartments } from '@/api/dashboard';
 import { adminSearchUserAPI, twadminSearchUser } from '@/api/user-manage';
 import router from '@/router';
 import { useUserInfoStore } from '@/stores/user-info-store';
+import {searchFriends} from "@/api/contacts";
 const prop = defineProps({
   appCode: {
     type: String,
@@ -84,6 +85,17 @@ const searchNewCompanyData = ref([]);
 const searchNewCompanyLoading = ref(false);
 const searchNewCompanyRef = ref(null);
 const currentTimeRange = ref(60 * 24);
+const currentNewUserSource = ref('colleague');
+const newUserOptions = [
+  {
+    label: '同事',
+    value: 'colleague',
+  },
+  {
+    label: '好友',
+    value: 'friend',
+  }
+]
 let userCountGraph = null;
 let sessionCountGraph = null;
 let qaCountGraph = null;
@@ -219,18 +231,27 @@ async function closeSearchNewUser() {
   showSearchNewUser.value = false;
 }
 async function searchNewAccessUser() {
-  const params = {
-    is_archive: 0,
-    search_text: searchNewUserKeyword.value,
-    page_num: searchNewUserPageNum.value,
-    page_size: searchNewUserPageSize.value
-  };
   searchNewUserLoading.value = true;
   let res = null;
-  if (userInfoStore.userInfo?.user_role?.includes('next_console_admin')) {
-    res = await twadminSearchUser(params);
-  } else {
-    res = await adminSearchUserAPI(params);
+  if (currentNewUserSource.value == 'colleague') {
+    const params = {
+      is_archive: 0,
+      search_text: searchNewUserKeyword.value,
+      page_num: searchNewUserPageNum.value,
+      page_size: searchNewUserPageSize.value
+    };
+    if (userInfoStore.userInfo?.user_role?.includes('next_console_admin')) {
+      res = await twadminSearchUser(params);
+    } else {
+      res = await adminSearchUserAPI(params);
+    }
+  } else if (currentNewUserSource.value == 'friend') {
+    const params = {
+      search_text: searchNewUserKeyword.value,
+      page_num: searchNewUserPageNum.value,
+      page_size: searchNewUserPageSize.value
+    };
+    res = await searchFriends(params);
   }
   if (res && !res?.error_status) {
     searchNewUserData.value = res.result.data;
@@ -548,11 +569,11 @@ onMounted(async () => {
 
 <template>
   <el-container>
-    <el-main style="height: calc(100vh - 130px)">
+    <el-main style="height: calc(100vh - 100px)">
       <el-tabs :model-value="currentViewType" tab-position="left" @tab-change="handleChangeModel">
         <el-tab-pane label="基本信息" name="base" />
         <el-tab-pane label="发布历史" name="history">
-          <el-table :data="currentPublishList" stripe border style="width: 100%" height="calc(100vh - 230px)">
+          <el-table :data="currentPublishList" stripe border style="width: 100%" height="calc(100vh - 140px)">
             <el-table-column prop="id" label="发布ID" width="120" sortable />
             <el-table-column prop="publish_code" label="发布编号" width="320" />
             <el-table-column prop="user_id" label="发布者" width="120" sortable />
@@ -655,7 +676,7 @@ onMounted(async () => {
                 stripe
                 border
                 style="width: 100%"
-                height="calc(100vh - 320px)"
+                height="calc(100vh - 300px)"
               >
                 <el-table-column type="selection" width="55" />
                 <el-table-column prop="id" label="授权ID" width="120" sortable />
@@ -780,7 +801,7 @@ onMounted(async () => {
         </el-tab-pane>
       </el-tabs>
     </el-main>
-    <el-footer height="40px">
+    <el-footer height="20px">
       <el-pagination
         v-show="currentViewType == 'history'"
         background
@@ -814,15 +835,18 @@ onMounted(async () => {
   </el-dialog>
   <el-dialog v-model="showSearchNewUser" title="搜索待授权用户" width="80vw">
     <div class="search-new-user">
-      <el-input
-        v-model="searchNewUserKeyword"
-        :prefix-icon="Search"
-        placeholder="搜索待授权用户"
-        clearable
-        @click="searchNewAccessUser"
-        @clear="searchNewAccessUser"
-        @keydown.enter.prevent="searchNewAccessUser"
-      />
+      <div>
+        <el-input
+          v-model="searchNewUserKeyword"
+          :prefix-icon="Search"
+          placeholder="搜索待授权用户"
+          clearable
+          @click="searchNewAccessUser"
+          @clear="searchNewAccessUser"
+          @keydown.enter.prevent="searchNewAccessUser"
+        />
+        <el-segmented v-model="currentNewUserSource" :options="newUserOptions" @change="searchNewAccessUser" />
+      </div>
       <el-table ref="searchNewUserRef" v-loading="searchNewUserLoading" :data="searchNewUserData" border height="40vh">
         <el-table-column type="selection" width="55" />
         <el-table-column prop="user_id" label="用户ID" width="120" sortable />

@@ -151,7 +151,7 @@ const routes: RouteRecordRaw[] = [
         },
         component: UserInfo,
         props: route => ({
-          tab: route.query.tab || 'info'
+          tab: route.query.tab || 'base'
         })
       },
       {

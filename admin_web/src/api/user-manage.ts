@@ -35,7 +35,9 @@ export const api = {
   twadmin_get_user_template: envUrl + '/next_console_admin/management_center/management/user/add_user_by_excel_twadmin',
   admin_create_user_by_excel: envUrl + '/next_console_admin/management_center/management/user/add_user_by_excel_corp',
   twadmin_create_user_by_excel:
-    envUrl + '/next_console_admin/management_center/management/user/add_user_by_excel_twadmin'
+    envUrl + '/next_console_admin/management_center/management/user/add_user_by_excel_twadmin',
+  admin_close_user: envUrl + '/next_console_admin/management_center/management/user/close',
+  admin_update_user: envUrl + '/next_console_admin/management_center/management/user/update',
 };
 
 export async function createUserByExcel(params: object, method: string) {
@@ -172,6 +174,22 @@ export async function twadminUpdateRole(params: object): Promise<ServerResponse>
 export async function adminArchiveUser(params: object): Promise<ServerResponse> {
   return request({
     url: api.admin_archive_user,
+    data: params,
+    responseType: 'json'
+  });
+}
+
+export async function adminCloseUser(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.admin_close_user,
+    data: params,
+    responseType: 'json'
+  });
+}
+
+export async function adminUpdateUserAPI(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.admin_update_user,
     data: params,
     responseType: 'json'
   });

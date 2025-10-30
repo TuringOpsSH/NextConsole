@@ -18,7 +18,7 @@ const newPublish = reactive({
         desc: '智能应用将会可以在NextConsole智能体服务平台上进行直接使用~',
         status: '已授权',
         type: 'connector',
-        picked: false,
+        picked: true,
         able: true
       },
       {
@@ -282,7 +282,7 @@ async function createNewPublish() {
   max-width: 600px;
   width: 100%;
   margin-top: 40px;
-  height: 100%;
+  max-height: calc(100vh - 200px);
 }
 .connectors-area {
   display: flex;

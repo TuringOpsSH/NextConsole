@@ -21,28 +21,28 @@ def models_search():
     return model_instance_search(params)
 
 
-@app.route('/next_console/config_center/llm_instance/add', methods=['POST'])
-@jwt_required()
-def models_add():
-    """
-    搜索助手
-    """
-    params = request.json
-    user_id = get_jwt_identity()
-    params["user_id"] = int(user_id)
-    return model_instance_add(params)
-
-
-@app.route('/next_console/config_center/llm_instance/del', methods=['POST'])
-@jwt_required()
-def models_del():
-    """
-    搜索助手
-    """
-    params = request.json
-    user_id = get_jwt_identity()
-    params["user_id"] = int(user_id)
-    return model_instance_delete(params)
+# @app.route('/next_console/config_center/llm_instance/add', methods=['POST'])
+# @jwt_required()
+# def models_add():
+#     """
+#     搜索助手
+#     """
+#     params = request.json
+#     user_id = get_jwt_identity()
+#     params["user_id"] = int(user_id)
+#     return model_instance_add(params)
+#
+#
+# @app.route('/next_console/config_center/llm_instance/del', methods=['POST'])
+# @jwt_required()
+# def models_del():
+#     """
+#     搜索助手
+#     """
+#     params = request.json
+#     user_id = get_jwt_identity()
+#     params["user_id"] = int(user_id)
+#     return model_instance_delete(params)
 
 
 @app.route('/next_console/config_center/llm_instance/get', methods=['POST'])
@@ -57,16 +57,16 @@ def models_get():
     return model_instance_get(params)
 
 
-@app.route('/next_console/config_center/llm_instance/update', methods=['POST'])
-@jwt_required()
-def models_update():
-    """
-    搜索助手
-    """
-    params = request.json
-    user_id = get_jwt_identity()
-    params["user_id"] = int(user_id)
-    return model_instance_update(params)
+# @app.route('/next_console/config_center/llm_instance/update', methods=['POST'])
+# @jwt_required()
+# def models_update():
+#     """
+#     搜索助手
+#     """
+#     params = request.json
+#     user_id = get_jwt_identity()
+#     params["user_id"] = int(user_id)
+#     return model_instance_update(params)
 
 
 

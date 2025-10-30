@@ -132,3 +132,16 @@ def llm_supplier_model_health_check():
     if not model or step not in [0, 1, 2]:
         return next_console_response(error_status=True, error_message="参数错误！", error_code=1002)
     return model_health_check_service(data)
+
+
+@app.route('/next_console_admin/config_center/llm_instance/remove_access', methods=['POST'])
+@roles_required(["admin", "super_admin", "next_console_admin"])
+@jwt_required()
+def model_instance_remove_access():
+    """
+    移除模型实例的授权信息
+    """
+    params = request.json
+    user_id = get_jwt_identity()
+    params["user_id"] = int(user_id)
+    return remove_access_service(params)

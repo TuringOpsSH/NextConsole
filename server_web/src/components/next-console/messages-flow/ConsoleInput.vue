@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Microphone, Picture as IconPicture, VideoPause, TopRight } from '@element-plus/icons-vue';
+import { Microphone, Picture as IconPicture, TopRight, VideoPause } from '@element-plus/icons-vue';
 import {
   ElMessage,
   ElNotification,
@@ -11,7 +11,6 @@ import {
 } from 'element-plus';
 import { v4 as uuidv4 } from 'uuid';
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
-import { llmInstanceSearch } from '@/api/user-center';
 import {
   add_messages,
   attachment_add_into_session,
@@ -25,8 +24,9 @@ import {
   search_session,
   update_session
 } from '@/api/next-console';
+import { llmInstanceSearch } from '@/api/user-center';
 import { isRecording, startRecording, stopRecording } from '@/components/app-center/ts/agent_console';
-import ResourcesSearch from '@/components/next-console/ResourcesSearch.vue';
+import ResourcesSearch from '@/components/next-console/messages-flow/ResourcesSearch.vue';
 import {
   calculateMD5,
   calculateSHA256,
@@ -36,13 +36,13 @@ import {
   upload_file_content,
   upload_file_task_list,
   upload_size
-} from '@/components/resource/resource_upload/resource_upload';
-import ResourceUploadManager from '@/components/resource/resource_upload/resource_upload_manager.vue';
+} from '@/components/resource/resource-upload/resource-upload';
+import ResourceUploadManager from '@/components/resource/resource-upload/ResourceUploadManager.vue';
 import router from '@/router';
 import { useUserConfigStore } from '@/stores/user-config-store';
+import { IRunningQuestionMeta, ISessionItem } from '@/types/next-console';
+import { IResourceItem, IResourceUploadItem } from '@/types/resource-type';
 import { ILLMInstance, ISearchResourceType } from '@/types/user-center';
-import { running_question_meta, session_item } from '@/types/next-console';
-import { ResourceItem, ResourceUploadItem } from '@/types/resource-type';
 
 const userConfigStore = useUserConfigStore();
 const urlDialogWidth = ref(window.innerWidth < 768 ? '80vw' : '40vw');
@@ -52,10 +52,10 @@ const consoleInputRef = ref();
 const userInput = ref('');
 const userComposition = ref(false);
 const userBatchSize = ref(0);
-const runningQuestions = ref<running_question_meta[]>([]);
+const runningQuestions = ref<IRunningQuestionMeta[]>([]);
 const showConsoleInnerHead = ref(false);
 const modelListRef = ref(null);
-const currentSession = reactive<session_item>({});
+const currentSession = reactive<ISessionItem>({});
 const attachmentImagesViewList = computed(() => {
   return uploadImgResourceList.value.map(item => item?.resource_show_url);
 });
@@ -88,8 +88,8 @@ const consoleInnerType = ref('ai_search');
 const searchEngineLanguageEn = ref(true);
 const uploadWebpageDialogVisible = ref(false);
 const uploadWebpageDialogRef = ref(null);
-const uploadWebpageResourceList = ref<ResourceItem[]>([]);
-const uploadWebpageNewResources = reactive<{ new_urls: ResourceItem[] }>({
+const uploadWebpageResourceList = ref<IResourceItem[]>([]);
+const uploadWebpageNewResources = reactive<{ new_urls: IResourceItem[] }>({
   new_urls: [
     {
       id: null,
@@ -98,17 +98,17 @@ const uploadWebpageNewResources = reactive<{ new_urls: ResourceItem[] }>({
       resource_icon: 'html.svg',
       rag_status: null,
       resource_source_url: ''
-    } as ResourceItem
+    } as IResourceItem
   ]
 });
 const uploadWebpageNewResourceFormRef = ref(null);
 const uploadImgList = ref<UploadUserFile[]>([]);
-const uploadImgResourceList = ref<ResourceItem[]>([]);
+const uploadImgResourceList = ref<IResourceItem[]>([]);
 const uploadImgRef = ref(null);
 const uploadImgRepeatCnt = ref(0);
 const uploadFileList = ref<UploadUserFile[]>([]);
 const uploadFileRef = ref(null);
-const uploadFileResourceList = ref<ResourceItem[]>([]);
+const uploadFileResourceList = ref<IResourceItem[]>([]);
 const uploadFileRepeatCnt = ref(0);
 const resourceSearchDialogShow = ref(false);
 const availableSearchResourceType = ref<ISearchResourceType[]>([
@@ -128,7 +128,7 @@ const availableSearchResourceType = ref<ISearchResourceType[]>([
     resource_active: false
   }
 ]);
-const sessionResourcesList = ref<ResourceItem[]>([]);
+const sessionResourcesList = ref<IResourceItem[]>([]);
 const resourcesSearchRef = ref(null);
 const firstImage = ref();
 const firstFile = ref();
@@ -319,7 +319,7 @@ async function askQuestion(src = null) {
   let idx = runningQuestions.value.indexOf(targetQuestion);
   runningQuestions.value.splice(idx, 1);
 }
-async function stopQuestion(targetQuestion: running_question_meta | null = null) {
+async function stopQuestion(targetQuestion: IRunningQuestionMeta | null = null) {
   // 如果没有传入参数，则停止最新的问题
   if (!targetQuestion) {
     if (runningQuestions.value.length === 0) {
@@ -614,7 +614,7 @@ async function switchOffWebpageSearch() {
     session_attachment_webpage_switch: false
   });
 }
-function getResourceIcon(resource: ResourceItem) {
+function getResourceIcon(resource: IResourceItem) {
   // 获取资源图标
   if (resource.resource_icon) {
     if (
@@ -695,7 +695,7 @@ function addNewWebpageResource() {
     resource_icon: 'html.svg',
     rag_status: null,
     resource_source_url: ''
-  } as ResourceItem);
+  } as IResourceItem);
 }
 function switchOffNewWebpage() {
   // 关闭新的网页资源输入框
@@ -713,13 +713,13 @@ function switchOffNewWebpage() {
       resource_title: '',
       rag_status: null,
       resource_source_url: ''
-    } as ResourceItem);
+    } as IResourceItem);
   }
   if (!currentSession?.id) {
     return;
   }
 }
-function checkWebpageSupportStatus(resource: ResourceItem): boolean {
+function checkWebpageSupportStatus(resource: IResourceItem): boolean {
   // 检查是否支持
   if (resource?.rag_status == '异常' || resource?.rag_status == '失败') {
     return false;
@@ -797,7 +797,7 @@ async function commitAddNewWebpages() {
       resource_icon: 'html.svg',
       rag_status: null,
       resource_source_url: ''
-    } as ResourceItem
+    } as IResourceItem
   ];
   await router.push({
     name: 'message_flow',
@@ -867,19 +867,19 @@ async function getAllSessionAttachments() {
         if (i.attachment_source == 'images') {
           uploadImgResourceList.value.push({
             id: i.id
-          } as ResourceItem);
+          } as IResourceItem);
         } else if (i.attachment_source == 'files') {
           uploadFileResourceList.value.push({
             id: i.id
-          } as ResourceItem);
+          } as IResourceItem);
         } else if (i.attachment_source == 'webpage') {
           uploadWebpageResourceList.value.push({
             id: i.id
-          } as ResourceItem);
+          } as IResourceItem);
         } else if (i.attachment_source == 'resources') {
           sessionResourcesList.value.push({
             id: i.id
-          } as ResourceItem);
+          } as IResourceItem);
         }
       }
     }
@@ -890,7 +890,7 @@ async function getAllSessionAttachments() {
           resource_id: -1,
           resource_icon: 'all_resource.svg',
           resource_name: '全部资源'
-        } as ResourceItem
+        } as IResourceItem
       );
     }
     // 更新会话附件标签
@@ -986,7 +986,7 @@ async function switchOnImgSearch() {
     }
   }
 }
-function checkImgSupportStatus(imgResource: ResourceItem) {
+function checkImgSupportStatus(imgResource: IResourceItem) {
   // 基于图像类型进行预检查
   // 格式支持png，gif，jpg，jpeg,webp
   // 每张图片不能超过20Mb
@@ -1072,9 +1072,9 @@ async function prepareUploadImage(uploadFile: UploadRawFile) {
       resource_name: uploadFile.name,
       resource_format: resourceFormat,
       resource_size_in_MB: resourceSize
-    } as ResourceItem),
+    } as IResourceItem),
     resource_feature_code: fileSHA256
-  } as ResourceItem;
+  } as IResourceItem;
   // 如果有则覆盖，如果没有则更新
   let findFlag = false;
   let repeatFlag = false;
@@ -1114,7 +1114,7 @@ async function prepareUploadImage(uploadFile: UploadRawFile) {
     return false;
   }
   let resourceParentId = initRes.result.id;
-  upload_file_task_list.value.push(<ResourceUploadItem>{
+  upload_file_task_list.value.push(<IResourceUploadItem>{
     id: null,
     resource_parent_id: resourceParentId,
     resource_id: null,
@@ -1133,7 +1133,7 @@ async function prepareUploadImage(uploadFile: UploadRawFile) {
 }
 async function uploadImgSuccess(response: any, uploadFile: UploadFile, uploadFiles: UploadFiles) {
   // 上传成功后，添加附件与会话消息
-  let imgResource = response.result as ResourceUploadItem;
+  let imgResource = response.result as IResourceUploadItem;
   let resourceId = response.result?.resource_id;
   if (!resourceId) {
     return;
@@ -1282,7 +1282,7 @@ async function switchOffFileSearch() {
     session_attachment_file_switch: false
   });
 }
-function checkFileSupportStatus(fileResource: ResourceItem) {
+function checkFileSupportStatus(fileResource: IResourceItem) {
   let allSupportFormats = [
     // 文档
     'doc',
@@ -1473,9 +1473,9 @@ async function prepareUploadFile(uploadFile: UploadRawFile) {
       resource_name: uploadFile.name,
       resource_format: resourceFormat,
       resource_size_in_MB: resourceSize
-    } as ResourceItem),
+    } as IResourceItem),
     resource_feature_code: fileSHA256
-  } as ResourceItem;
+  } as IResourceItem;
   let findFlag = false;
   let repeatFlag = false;
   for (let i = 0; i < uploadFileResourceList.value.length; i++) {
@@ -1518,7 +1518,7 @@ async function prepareUploadFile(uploadFile: UploadRawFile) {
     return false;
   }
   let resourceParentId = initRes.result.id;
-  upload_file_task_list.value.push(<ResourceUploadItem>{
+  upload_file_task_list.value.push(<IResourceUploadItem>{
     id: null,
     resource_parent_id: resourceParentId,
     resource_id: null,
@@ -1537,7 +1537,7 @@ async function prepareUploadFile(uploadFile: UploadRawFile) {
 }
 async function uploadFileSuccess(response: any, uploadFile: UploadFile, uploadFiles: UploadFiles) {
   // 上传成功后，添加附件与会话消息
-  let fileResource = response.result as ResourceUploadItem;
+  let fileResource = response.result as IResourceUploadItem;
   let resourceId = response.result?.resource_id;
   if (!resourceId) {
     return;
@@ -1590,7 +1590,7 @@ async function switchOnResourceSearch() {
         resource_id: -1,
         resource_icon: 'all_resource.svg',
         resource_name: '全部资源'
-      } as ResourceItem
+      } as IResourceItem
     ];
     return;
   }
@@ -1645,14 +1645,7 @@ async function hideAiResourceConfigArea() {
   }
 }
 async function cleanResourceList() {
-  sessionResourcesList.value = [
-    //@ts-ignore
-    {
-      resource_id: -1,
-      resource_icon: 'all_resource.svg',
-      resource_name: '全部资源'
-    } as ResourceItem
-  ];
+  setDefaultResources();
   currentSession.session_local_resource_switch = true;
   currentSession.session_local_resource_use_all = true;
   if (!currentSession?.id) {
@@ -1670,7 +1663,7 @@ async function cleanResourceList() {
     session_local_resource_use_all: true
   });
 }
-async function removeResourceItem(resource: ResourceItem) {
+async function removeResourceItem(resource: IResourceItem) {
   // 删除资源
   const indexToRemove = sessionResourcesList.value.findIndex(item => item.id === resource.id);
   if (indexToRemove !== -1) {
@@ -1712,7 +1705,6 @@ async function commitAddChooseResources() {
     }
     await attachment_add_resources_into_session(params);
   }
-  resourceSearchDialogShow.value = false;
   await router.push({
     name: 'message_flow',
     params: { session_code: currentSession.session_code },
@@ -1722,6 +1714,13 @@ async function commitAddChooseResources() {
 }
 async function toLLMConfigArea() {
   router.push({ name: 'next_console_user_info', query: { tab: 'setting' } });
+}
+async function setDefaultResources() {
+  resourceSearchDialogShow.value = false;
+  // 为空时从配置中读取资源列表
+  if (!sessionResourcesList.value.length) {
+    sessionResourcesList.value = userConfigStore.userConfig.workbench.session_resources_list;
+  }
 }
 onMounted(async () => {
   if (window.innerWidth >= 768) {
@@ -2145,7 +2144,7 @@ defineExpose({
                 </div>
               </el-scrollbar>
               <div id="ai_image_body_right">
-                <el-button text type="primary" @click="cleanTmpWebpageList()"> 重置 </el-button>
+                <el-button text type="primary" @click="cleanTmpWebpageList"> 重置 </el-button>
               </div>
             </div>
           </div>
@@ -2411,14 +2410,16 @@ defineExpose({
                 </div>
               </div>
               <div id="ai_image_head_right">
-                <el-tooltip v-if="!simpleVis" effect="light" placement="top">
+                <el-tooltip
+                  v-if="!simpleVis"
+                  effect="dark"
+                  placement="top"
+                  content="会自动从资源中检索相关知识，提高助手回复的准确性。"
+                >
                   <template #default>
                     <div class="std-middle-box">
                       <el-image src="/images/tooltip.svg" class="rag-icon" />
                     </div>
-                  </template>
-                  <template #content>
-                    <el-text> 会自动从资源库中检索相关知识，并在整个会话中保持记忆 </el-text>
                   </template>
                 </el-tooltip>
                 <el-divider direction="vertical" />
@@ -2473,7 +2474,7 @@ defineExpose({
                 </div>
               </el-scrollbar>
               <div id="ai_image_body_right">
-                <el-button text type="primary" @click="cleanResourceList()"> 重置 </el-button>
+                <el-button text type="primary" @click="cleanResourceList"> 重置 </el-button>
               </div>
             </div>
           </div>
@@ -2656,7 +2657,7 @@ defineExpose({
     ref="resourcesSearchRef"
     :model="resourceSearchDialogShow"
     :session-resources="sessionResourcesList"
-    @close="resourceSearchDialogShow = false"
+    @close="setDefaultResources"
     @commit="
       args => {
         commitAddChooseResources();

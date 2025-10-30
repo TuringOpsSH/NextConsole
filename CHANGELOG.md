@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.  
 Format adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.2.8] - 2025-10-31
+ 
+### New Features
+ 
+1. Enhanced knowledge Q&A node functionality (dynamic parameter passing, parallel processing, result deduplication, jump to upload resources)
+2. Support for configuring workspace RAG search parameters
+3. Workflows can be configured to start via forms
+4. Support for editing user information and organization information in the user center
+5. Support for user deletion
+ 
+### Fixes & Optimizations
+ 
+1. Fixed abnormal session auto-naming when the default model is an inference model
+2. Optimized configuration data loading timing
+3. Improved experience for workspace resource search and resource library search
+4. Fixed abnormal direct resource upload interface
+5. Optimized rendering of private inference model results
+6. Fixed and improved the creation and management process of model instances
+7. Fixed PDF parsing abnormalities
+8. Optimized user center layout
+9. Fixed abnormal search and add friend functionality
+10. Optimized some front-end code standards
+11. Fixed truncation issue with overly long custom messages
+12. Optimized results in the inference area
+13. Fixed issue where abnormal messages in test sessions were not fully rendered
+14. Fixed abnormal issue with folder resource uploads
+15. Fixed abnormal user token copying issue
+16. Fixed incomplete execution result saving in start nodes
+17. Fixed application authorization friend issue
+18. Fixed abnormal batch notification in internal messages
+19. Fixed reference exception issue for format-restricted file parameters in start nodes
 
 ## [0.2.7] - 2025-09-26
 

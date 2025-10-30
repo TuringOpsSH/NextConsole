@@ -2515,6 +2515,7 @@ def search_rag_enhanced(params):
         all_conditions.append(RagRefInfo.user_id == user_id)
     if all_resource_id:
         all_conditions.append(RagRefInfo.resource_id.in_(all_resource_id))
+
     all_rag_ref = RagRefInfo.query.filter(*all_conditions).all()
     if not all_rag_ref:
         return []
@@ -2525,10 +2526,10 @@ def search_rag_enhanced(params):
         "ref_ids": all_rag_ref_ids,
         "config": {
             "search_engine_enhanced": False,
+            "rerank_enabled": False,
         }
     }
     try:
-        t1 = time.time()
         rag_response = rag_query_v3(rag_params).json.get("result", {})
         details = rag_response.get("details", [])
         if not details:
@@ -2543,7 +2544,8 @@ def search_rag_enhanced(params):
         md_map = {resource.id: resource.resource_parent_id for resource in all_md_resources}
         all_ref_resources = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.id.in_(all_md_resource_ids),
-            ResourceObjectMeta.resource_status == "正常"
+            ResourceObjectMeta.resource_status == "正常",
+            ResourceObjectMeta.resource_type != 'folder'
         ).all()
         res = []
         for resource in all_ref_resources:
@@ -2558,7 +2560,8 @@ def search_rag_enhanced(params):
             res.append(resource_dict)
         return res
     except Exception as e:
-        print(e)
+        print('search_rag_enhanced', e)
+        app.logger.error(f"RAG增强搜索异常：{e}")
         return []
 
 
@@ -2647,3 +2650,74 @@ def create_new_document(params):
         return next_console_response(error_status=True, error_message="新建模板文件异常")
     return next_console_response(result=new_resource.show_info())
 
+
+def simple_upload_resource(params, data):
+    """
+    简单上传资源
+    Parameters
+    ----------
+    params
+
+    Returns
+    -------
+
+    """
+    user_id = int(params.get("user_id"))
+    auto_index = params.get("auto_index")
+    try:
+        resource_parent_id = int(params.get("resource_parent_id"))
+    except Exception:
+        resource_parent_id = None
+    filename = data.filename
+    resource_type, resource_format = guess_resource_type(filename)
+    new_resource_path = generate_new_path(
+        module_name='resource_center',
+        user_id=user_id,
+        suffix=resource_format
+    ).json.get("result")
+    with open(new_resource_path, "wb") as f:
+        f.write(data.read())
+    # # 生成下载链接
+    resource_show_url = generate_download_url(
+        module_name="resource_center",
+        file_path=new_resource_path,
+        suffix=resource_format,
+    ).json.get("result")
+    if not resource_parent_id:
+        user_folder = ResourceObjectMeta.query.filter(
+            ResourceObjectMeta.user_id == user_id,
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_status == "正常",
+            ResourceObjectMeta.resource_source == "resource_center"
+        ).first()
+        resource_parent_id = user_folder.id
+    new_resource = ResourceObjectMeta(
+        user_id=user_id,
+        resource_parent_id=resource_parent_id,
+        resource_name=filename,
+        resource_type=resource_type,
+        resource_format=resource_format,
+        resource_size_in_MB=os.path.getsize(new_resource_path) / 1024 / 1024,
+        resource_path=new_resource_path,
+        resource_source_url=resource_show_url,
+        resource_show_url=resource_show_url,
+        resource_status="正常",
+        resource_source='resource_center'
+    )
+    db.session.add(new_resource)
+    db.session.commit()
+    # 满足条件后，提交自动构建任务
+    user_config = get_user_config(user_id).json.get("result")
+    if auto_index is True or (auto_index is None and user_config and user_config["resources"]["auto_rag"]):
+        # 判断类型是否支持构建
+        if check_rag_is_support(new_resource):
+            build_params = {
+                "user_id": user_id,
+                "resource_id": new_resource.id
+            }
+            auto_build_resource_ref_v2.delay(build_params)
+    return next_console_response(result={
+        "id": new_resource.id,
+        "name": new_resource.resource_name,
+        "url": new_resource.resource_show_url
+    })
