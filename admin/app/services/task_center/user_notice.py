@@ -102,6 +102,7 @@ def notice_user_by_message(data_list):
     """
     with app.app_context():
         # 发送站内信
+        app.logger.warning(f"开始发送站内信通知:{len(data_list)}")
         flag = False
         for data in data_list:
             task_instance_id = data.get("id")

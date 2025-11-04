@@ -577,13 +577,14 @@ defineExpose({
             <div id="node-detail-head-right">
               <div class="std-middle-box">
                 <el-tooltip content="测试运行" effect="light" placement="top">
-                  <el-button
-                    v-if="workflowStore.currentNodeDetail?.node_status == '运行中'"
-                    text
-                    :icon="VideoPause"
-                    disabled
-                  />
-                  <el-button v-else text :icon="VideoPlay" disabled />
+                  <div>
+                    <div v-if="workflowStore.currentNodeDetail?.node_status == '运行中'">
+                      <el-button text :icon="VideoPause" disabled />
+                    </div>
+                    <div v-else>
+                      <el-button text :icon="VideoPlay" disabled />
+                    </div>
+                  </div>
                 </el-tooltip>
               </div>
               <div class="std-middle-box">
@@ -613,12 +614,16 @@ defineExpose({
         <div v-if="!['tool', 'end'].includes(workflowStore.currentNodeDetail?.node_type)" class="config-item">
           <div class="config-head">
             <div class="std-middle-box">
-              <el-icon v-if="showInputParamsFlag" class="config-arrow" @click="showInputParamsFlag = false">
-                <ArrowDown />
-              </el-icon>
-              <el-icon v-else class="config-arrow" @click="showInputParamsFlag = true">
-                <ArrowRight />
-              </el-icon>
+              <div v-if="showInputParamsFlag">
+                <el-icon class="config-arrow" @click="showInputParamsFlag = false">
+                  <ArrowDown />
+                </el-icon>
+              </div>
+              <div v-else>
+                <el-icon class="config-arrow" @click="showInputParamsFlag = true">
+                  <ArrowRight />
+                </el-icon>
+              </div>
             </div>
             <div class="std-middle-box">
               <el-text> 输入参数 </el-text>
@@ -682,12 +687,16 @@ defineExpose({
         <div class="config-item">
           <div class="config-head">
             <div class="std-middle-box">
-              <el-icon v-if="showOutputParamsFlag" class="config-arrow" @click="showOutputParamsFlag = false">
-                <ArrowDown />
-              </el-icon>
-              <el-icon v-else class="config-arrow" @click="showOutputParamsFlag = true">
-                <ArrowRight />
-              </el-icon>
+              <div v-if="showOutputParamsFlag">
+                <el-icon class="config-arrow" @click="showOutputParamsFlag = false">
+                  <ArrowDown />
+                </el-icon>
+              </div>
+              <div v-else>
+                <el-icon class="config-arrow" @click="showOutputParamsFlag = true">
+                  <ArrowRight />
+                </el-icon>
+              </div>
             </div>
             <div class="std-middle-box">
               <el-text> 输出设置 </el-text>
@@ -722,7 +731,7 @@ defineExpose({
                 </el-select>
               </el-form-item>
               <el-form-item
-                v-show="workflowStore.currentNodeDetail?.node_result_format == 'table'"
+                v-if="workflowStore.currentNodeDetail?.node_result_format == 'table'"
                 prop="node_result_extract_separator"
                 label="分隔符"
               >
@@ -733,7 +742,7 @@ defineExpose({
                 />
               </el-form-item>
               <el-form-item
-                v-show="workflowStore.currentNodeDetail?.node_result_format == 'table'"
+                v-if="workflowStore.currentNodeDetail?.node_result_format == 'table'"
                 prop="node_result_extract_quote"
                 label="引用符"
               >
@@ -744,7 +753,7 @@ defineExpose({
                 />
               </el-form-item>
               <el-form-item
-                v-show="workflowStore.currentNodeDetail?.node_result_format == 'table'"
+                v-if="workflowStore.currentNodeDetail?.node_result_format == 'table'"
                 prop="node_result_extract_columns"
                 label="列名"
               >
@@ -803,7 +812,7 @@ defineExpose({
                 />
               </el-form-item>
               <el-form-item
-                v-show="!['start'].includes(workflowStore.currentNodeDetail?.node_type)"
+                v-if="!['start'].includes(workflowStore.currentNodeDetail?.node_type)"
                 prop="node_enable_message"
                 label="输出至消息流（用户可见）"
                 label-position="left"
@@ -856,12 +865,16 @@ defineExpose({
         <div class="config-item">
           <div class="config-head">
             <div class="std-middle-box">
-              <el-icon v-if="showRunParamsFlag" class="config-arrow" @click="showRunParamsFlag = false">
-                <ArrowDown />
-              </el-icon>
-              <el-icon v-else class="config-arrow" @click="showRunParamsFlag = true">
-                <ArrowRight />
-              </el-icon>
+              <div v-if="showRunParamsFlag">
+                <el-icon class="config-arrow" @click="showRunParamsFlag = false">
+                  <ArrowDown />
+                </el-icon>
+              </div>
+              <div v-else>
+                <el-icon class="config-arrow" @click="showRunParamsFlag = true">
+                  <ArrowRight />
+                </el-icon>
+              </div>
             </div>
             <div class="std-middle-box">
               <el-text> 运行设置 </el-text>
@@ -893,7 +906,7 @@ defineExpose({
                 </el-radio-group>
               </el-form-item>
               <el-form-item
-                v-show="workflowStore.currentNodeDetail.node_run_model_config.node_run_model == 'parallel'"
+                v-if="workflowStore.currentNodeDetail.node_run_model_config.node_run_model == 'parallel'"
                 label="并行属性"
                 prop="parallel_attr"
               >
@@ -911,7 +924,7 @@ defineExpose({
                 </el-select>
               </el-form-item>
               <el-form-item
-                v-show="workflowStore.currentNodeDetail.node_run_model_config.node_run_model == 'parallel'"
+                v-if="workflowStore.currentNodeDetail.node_run_model_config.node_run_model == 'parallel'"
                 label="结果汇总模式"
                 prop="result_merge_model"
               >
@@ -936,7 +949,7 @@ defineExpose({
                   @change="updateNodeRunConfig"
                 >
                   <el-radio-button
-                    v-show="workflowStore.currentNodeDetail.node_type != 'end'"
+                    v-if="workflowStore.currentNodeDetail.node_type != 'end'"
                     label="重试"
                     value="retry"
                   />
@@ -946,7 +959,7 @@ defineExpose({
                 </el-radio-group>
               </el-form-item>
               <el-form-item
-                v-show="workflowStore.currentNodeDetail.node_failed_solution == 'retry'"
+                v-if="workflowStore.currentNodeDetail.node_failed_solution == 'retry'"
                 label="最大重试次数"
               >
                 <el-input-number
@@ -957,7 +970,7 @@ defineExpose({
                 />
               </el-form-item>
               <el-form-item
-                v-show="workflowStore.currentNodeDetail.node_failed_solution == 'retry'"
+                v-if="workflowStore.currentNodeDetail.node_failed_solution == 'retry'"
                 label="重试间隔（毫秒）"
               >
                 <el-input-number
@@ -966,7 +979,7 @@ defineExpose({
                   @change="updateNodeRunConfig"
                 />
               </el-form-item>
-              <el-form-item v-show="workflowStore.currentNodeDetail.node_failed_solution == 'retry'" label="重试后策略">
+              <el-form-item v-if="workflowStore.currentNodeDetail.node_failed_solution == 'retry'" label="重试后策略">
                 <el-radio-group
                   v-model="workflowStore.currentNodeDetail.node_retry_model"
                   @change="updateNodeRunConfig"
@@ -977,7 +990,7 @@ defineExpose({
                 </el-radio-group>
               </el-form-item>
               <el-form-item
-                v-show="workflowStore.currentNodeDetail.node_failed_solution == 'catch'"
+                v-if="workflowStore.currentNodeDetail.node_failed_solution == 'catch'"
                 label="异常输出结果"
               >
                 <TemplateEditor

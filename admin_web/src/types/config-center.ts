@@ -56,6 +56,10 @@ export interface ILLMInstance {
   };
   access?: string[];
   schema_type?: string;
+  think_attr?: {
+    begin: string;
+    end: string;
+  };
 }
 export interface ISupplier {
   id: number;

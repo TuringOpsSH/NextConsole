@@ -17,8 +17,7 @@ import {
   upload_file_list,
   upload_parent_resource
 } from '@/components/resource/resource-upload/resource-upload';
-import {check_resource_rag_support} from '@/components/resource/resource_main';
-import {turn_on_share_selector} from '@/components/resource/resource_share_selector/resource_share_selector';
+import {turn_on_share_selector} from '@/components/resource/resource-share-selector/resource_share_selector';
 import {init_my_resource_tree} from '@/components/resource/resource-panel/panel';
 
 export const upload_file_Ref = ref(null);
@@ -225,11 +224,6 @@ export async function rebuild_resource() {
   // 检查资源状态
   if (current_row_item.resource_status != '正常') {
     ElMessage.warning('资源无法构建索引!');
-    return;
-  }
-  // console.log(current_row_item)
-  if (!check_resource_rag_support(current_row_item)) {
-    ElMessage.warning(`暂时不支持'${current_row_item.resource_format}'格式构建索引!`);
     return;
   }
 

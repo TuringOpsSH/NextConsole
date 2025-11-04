@@ -1126,11 +1126,11 @@ watch(
       <el-button type="primary" @click="addNewUser"> 确定 </el-button>
     </template>
   </el-dialog>
-  <UserUploadExcel v-model="showAddUserDialogFlag" @refresh="adminSearchUser" />
+  <UserUploadExcel :model="showAddUserDialogFlag" @refresh="adminSearchUser" />
   <el-dialog v-model="adminUpdateUser" title="修改用户信息" width="600px">
     <el-form
-      v-loading="userDetailLoading"
       ref="updateUserFormRef"
+      v-loading="userDetailLoading"
       label-width="140px"
       element-loading-text="加载中..."
       :model="updateUserForm"

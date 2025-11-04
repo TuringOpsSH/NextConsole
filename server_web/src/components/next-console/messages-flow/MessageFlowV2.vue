@@ -1049,12 +1049,10 @@ function updateAnswerStreaming(line) {
   let msgReasonContent = msgData?.choices[0].delta?.reasoning_content;
   let msgContent = msgData?.choices[0].delta?.content;
   let newMsgItem = generateNewMsg(msgData) as IMsgItem;
+  newMsgItem.msgReasonContentShow = true;
   if (!msgFlow.value[lastIndex]?.qa_id) {
     msgFlow.value[lastIndex].qa_id = msgData?.qa_id;
     msgFlow.value[lastIndex].qa_value.question[0].msg_id = msgData?.msg_parent_id;
-    if (msgReasonContent) {
-      newMsgItem.msgReasonContentShow = true;
-    }
     msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id] = [newMsgItem];
   } else {
     let msgIdx = -1;
@@ -1071,25 +1069,23 @@ function updateAnswerStreaming(line) {
         msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][msgIdx].msg_content += msgContent;
       }
       if (msgReasonContent !== undefined && msgReasonContent) {
-        if (!msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][msgIdx].reasoning_content) {
-          msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][msgIdx].msgReasonContentShow = true;
-        }
         msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][msgIdx].reasoning_content += msgReasonContent;
       }
       break;
     }
+
     if (msgIdx == -1) {
       // 没找到则插入到msg_id比自己大的消息前面
-      for (let i = 0; i < msgFlow.value[lastIndex].qa_value.answer[msgContent?.msg_parent_id]?.length; i++) {
-        if (msgFlow.value[lastIndex].qa_value.answer[msgContent?.msg_parent_id][i]?.msg_id > msgContent?.msg_id) {
+      for (let i = 0; i < msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id]?.length; i++) {
+        if (msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id][i]?.msg_id > msgContent?.msg_id) {
           msgIdx = i;
           break;
         }
       }
       if (msgIdx == -1) {
-        msgFlow.value[lastIndex].qa_value.answer[msgContent?.msg_parent_id]?.push(newMsgItem);
+        msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id]?.push(newMsgItem);
       } else {
-        msgFlow.value[lastIndex].qa_value.answer[msgContent?.msg_parent_id].splice(msgIdx, 0, newMsgItem);
+        msgFlow.value[lastIndex].qa_value.answer[msgData?.msg_parent_id].splice(msgIdx, 0, newMsgItem);
       }
     }
   }

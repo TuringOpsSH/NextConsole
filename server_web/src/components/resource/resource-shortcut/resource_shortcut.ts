@@ -1,7 +1,7 @@
-import { useSessionStorage } from '@vueuse/core';
-import { ElMessage, ElNotification } from 'element-plus';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
+import {useSessionStorage} from '@vueuse/core';
+import {ElMessage, ElNotification} from 'element-plus';
+import {storeToRefs} from 'pinia';
+import {computed, ref} from 'vue';
 import {
   batch_delete_resource_object,
   batch_download_resources,
@@ -17,25 +17,24 @@ import {
   search_resource_by_resource_type,
   search_resource_in_recycle
 } from '@/api/resource-api';
-import { md_answer } from '@/components/next-console/messages-flow/message_flow';
-import { push_to_clipboard } from '@/components/resource/resource_clipborad/resource_clipboard';
-import { check_resource_rag_support } from '@/components/resource/resource_main';
-import { turn_on_resource_meta } from '@/components/resource/resource_meta/resource_meta';
-import { refresh_panel_count } from '@/components/resource/resource-panel/panel';
-import { turn_on_share_selector } from '@/components/resource/resource_share_selector/resource_share_selector';
+import {md_answer} from '@/components/next-console/messages-flow/message_flow';
+import {push_to_clipboard} from '@/components/resource/resource_clipborad/resource_clipboard';
+import {turn_on_resource_meta} from '@/components/resource/resource_meta/resource_meta';
+import {refresh_panel_count} from '@/components/resource/resource-panel/panel';
+import {turn_on_share_selector} from '@/components/resource/resource-share-selector/resource_share_selector';
 import {
   current_resource_tags,
   current_resource_types,
   resource_types_name_map,
   show_search_config_area
 } from '@/components/resource/resource-shortcut/resource_shortcut_head/resource_shortcut_head';
-import { show_move_dialog_multiple } from '@/components/resource/resource_tree/resource_tree';
+import {show_move_dialog_multiple} from '@/components/resource/resource_tree/resource_tree';
 import router from '@/router';
-import { useResourceStore } from '@/stores/resourceStore';
-import { useUserInfoStore } from '@/stores/user-info-store';
-import { IResourceTag, IResourceItem } from '@/types/resource-type';
-import { sortResourceList } from '@/utils/common';
-import { RESOURCE_FORMATS } from '@/utils/constant';
+import {useResourceStore} from '@/stores/resourceStore';
+import {useUserInfoStore} from '@/stores/user-info-store';
+import {IResourceItem, IResourceTag} from '@/types/resource-type';
+import {sortResourceList} from '@/utils/common';
+import {RESOURCE_FORMATS} from '@/utils/constant';
 
 const currentResourceValues = useSessionStorage('currentResourceValues', []);
 const resourceFormats = computed(() => {
@@ -870,7 +869,7 @@ export async function batch_rebuild() {
   };
 
   for (const item of multiple_selection.value) {
-    if (item?.id && item.resource_status == '正常' && check_resource_rag_support(item)) {
+    if (item?.id && item.resource_status == '正常') {
       params.resource_list.push(item.id);
     }
   }
@@ -1003,11 +1002,6 @@ export async function rebuild_resource(resource: IResourceItem) {
     ElMessage.warning('资源无法构建索引!');
     return;
   }
-  if (!check_resource_rag_support(resource)) {
-    ElMessage.warning('资源无法构建索引!');
-    return;
-  }
-
   const params = {
     resource_list: [resource.id]
   };

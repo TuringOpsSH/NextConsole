@@ -104,7 +104,11 @@ const currentLLM = reactive<Partial<ILLMInstance>>({
   extra_body: {},
   llm_tags: [],
   user_id: 0,
-  schema_type: 'data'
+  schema_type: 'data',
+  think_attr: {
+    begin: '',
+    end: ''
+  }
 });
 const editLLM = reactive<ILLMInstance>({
   create_time: '',
@@ -135,7 +139,11 @@ const editLLM = reactive<ILLMInstance>({
   extra_headers: {},
   extra_body: {},
   llm_tags: [],
-  user_id: 0
+  user_id: 0,
+  think_attr: {
+    begin: '',
+    end: ''
+  }
 });
 const showUpdateLLMForm = ref(false);
 const currentLLMFormRef = ref(null);
@@ -706,7 +714,7 @@ function getAccessName(access) {
     return access.user_nick_name;
   } else if (access.structure_type == 'friend') {
     return access.user_nick_name;
-  }  else if (access.structure_type == 'user') {
+  } else if (access.structure_type == 'user') {
     return access.user_name || access.user_nick_name;
   } else {
     return '';
@@ -736,7 +744,6 @@ async function checkModelConfig() {
       step: step
     });
     modelTestResult.value[step] = res.result;
-    console.log(res.result?.status);
     if (res.result?.status != '成功') {
       modelTestStatus.value = 'error';
       modelTesting.value = false;
@@ -1084,6 +1091,11 @@ onMounted(async () => {
                           :show-icon="true"
                           :show-select-controller="true"
                         />
+                      </el-descriptions-item>
+                      <el-descriptions-item v-if="currentLLM?.think_attr?.begin" label="推理标签">
+                        <div class="std-middle-box" style="gap: 4px; justify-content: flex-start">
+                          <el-tag v-for="tag in currentLLM.think_attr" :key="tag"> {{ tag }} </el-tag>
+                        </div>
                       </el-descriptions-item>
                     </div>
                     <div v-else>
@@ -1566,6 +1578,12 @@ onMounted(async () => {
                 "
               />
             </el-form-item>
+            <el-form-item prop="think_attr.begin" label="推理开始标签" style="height: 80px">
+              <el-input v-model="editLLM.think_attr.begin" placeholder="请输入推理开始标签，如<think>" clearable />
+            </el-form-item>
+            <el-form-item prop="think_attr.end" label="推理关闭标签" style="height: 80px">
+              <el-input v-model="editLLM.think_attr.end" placeholder="请输入推理结束标签,如</think>" clearable />
+            </el-form-item>
           </el-form>
         </div>
       </div>
@@ -1586,7 +1604,6 @@ onMounted(async () => {
           style="height: 100%"
           @update-access-list="
             newList => {
-              console.log('newList', newList);
               editLLM.llm_authors = newList;
             }
           "

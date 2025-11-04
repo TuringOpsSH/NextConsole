@@ -20,7 +20,8 @@ const props = defineProps({
 const localSchema = ref({
   ncOrders: [],
   required: [],
-  properties: {}
+  properties: {},
+  skip_user_question: false
 });
 const localParams = ref({});
 const localSessionId = ref(0);
@@ -28,7 +29,7 @@ const schemaReady = ref(false);
 const formShow = ref(true);
 const sessionFormRef = ref(null);
 const localTitle = ref('应用参数');
-const emits = defineEmits(['begin-workflow']);
+const emits = defineEmits(['begin-workflow', 'stop-workflow']);
 async function updateParams() {
   const res = await update_session({
     session_id: localSessionId.value,
@@ -214,16 +215,6 @@ defineExpose({
                         <el-radio :value="true">是</el-radio>
                         <el-radio :value="false">否</el-radio>
                       </el-radio-group>
-                      <el-input-tag
-                        v-else-if="localSchema.properties?.[item]?.type == 'array'"
-                        v-model="localParams[item]"
-                        clearable
-                        draggable
-                        placeholder="请输入"
-                        tag-type="primary"
-                        tag-effect="light"
-                        @change="updateParams"
-                      />
                       <div v-else-if="localSchema.properties?.[item]?.typeName == 'file'" style="width: 100%">
                         <SingleFileUpload
                           :session-id="localSessionId"
@@ -245,6 +236,16 @@ defineExpose({
                           @update:file="file => handleMultipleFileUpdate(file, item)"
                         />
                       </div>
+                      <el-input-tag
+                        v-else-if="localSchema.properties?.[item]?.type == 'array'"
+                        v-model="localParams[item]"
+                        clearable
+                        draggable
+                        placeholder="请输入"
+                        tag-type="primary"
+                        tag-effect="light"
+                        @change="updateParams"
+                      />
                     </el-form-item>
                     <el-form-item v-if="localSchema?.skip_user_question">
                       <div class="std-middle-box">

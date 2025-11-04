@@ -25,6 +25,7 @@ class LLMClient(ABC):
         self.llm_client = None
         self.is_std_openai = config.get('is_std_openai', True)
         self.is_nc = config.get('is_nc', False)
+        self.think_attr = config.get('think_attr', {})
 
     @abstractmethod
     def chat(self, config):
@@ -52,6 +53,7 @@ class NextConsoleLLMClient(LLMClient):
                 self.base_url = llm_config.llm_base_url
                 self.api_key = llm_config.llm_api_secret_key
                 self.max_tokens = llm_config.max_tokens
+                self.think_attr = llm_config.think_attr
         if self.is_nc:
             self.init_nc_instance()
         elif self.is_std_openai:

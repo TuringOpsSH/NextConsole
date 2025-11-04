@@ -8,70 +8,69 @@
       :data-placeholder="placeholder"
       @input="handleInput"
       @blur="handleBlur"
-    ></div>
+    />
+    <div
+      v-show="showParamsListFlag"
+      ref="paramsBox"
+      class="input-params-box"
+      :style="{ left: divLeft + 'px', top: divTop + 'px' }"
+      @blur="showParamsListFlag = false"
+    >
+      <el-scrollbar style="width: 100%">
+        <div class="input-param-list">
+          <el-divider>
+            <el-text>输入变量</el-text>
+          </el-divider>
+          <div
+            v-for="key in localNodeDetail?.node_input_params_json_schema?.ncOrders"
+            :key="key"
+            class="input-param"
+            @click="clickParams(key, $event)"
+          >
+            <div>
+              <el-text>
+                {{ key }}
+              </el-text>
+            </div>
+            <div>
+              <el-tag type="primary">
+                {{ localNodeDetail?.node_input_params_json_schema?.properties[key].type }}
+              </el-tag>
+            </div>
+          </div>
+          <el-divider>
+            <el-text>输出变量</el-text>
+          </el-divider>
+          <div
+            v-for="key in localNodeDetail?.node_result_params_json_schema?.ncOrders"
+            :key="key"
+            class="input-param"
+            @click="clickParams(key, $event)"
+          >
+            <div>
+              <el-text>
+                {{ key }}
+              </el-text>
+            </div>
+            <div>
+              <el-tag type="primary">
+                {{ localNodeDetail?.node_result_params_json_schema?.properties[key].type }}
+              </el-tag>
+            </div>
+          </div>
+          <div
+            v-show="
+              !localNodeDetail?.node_input_params_json_schema?.properties ||
+              !Object.keys(localNodeDetail?.node_input_params_json_schema?.properties)
+            "
+            class="std-middle-box"
+          >
+            <el-empty description="暂无输入变量，请先配置" />
+          </div>
+        </div>
+      </el-scrollbar>
+    </div>
   </el-scrollbar>
-
-  <div
-    v-show="showParamsListFlag"
-    ref="paramsBox"
-    class="input-params-box"
-    :style="{ left: divLeft + 'px', top: divTop + 'px' }"
-    @blur="showParamsListFlag = false"
-  >
-    <el-scrollbar style="width: 100%">
-      <div class="input-param-list">
-        <el-divider>
-          <el-text>输入变量</el-text>
-        </el-divider>
-        <div
-          v-for="key in localNodeDetail?.node_input_params_json_schema?.ncOrders"
-          :key="key"
-          class="input-param"
-          @click="clickParams(key, $event)"
-        >
-          <div>
-            <el-text>
-              {{ key }}
-            </el-text>
-          </div>
-          <div>
-            <el-tag type="primary">
-              {{ localNodeDetail?.node_input_params_json_schema?.properties[key].type }}
-            </el-tag>
-          </div>
-        </div>
-        <el-divider>
-          <el-text>输出变量</el-text>
-        </el-divider>
-        <div
-          v-for="key in localNodeDetail?.node_result_params_json_schema?.ncOrders"
-          :key="key"
-          class="input-param"
-          @click="clickParams(key, $event)"
-        >
-          <div>
-            <el-text>
-              {{ key }}
-            </el-text>
-          </div>
-          <div>
-            <el-tag type="primary">
-              {{ localNodeDetail?.node_result_params_json_schema?.properties[key].type }}
-            </el-tag>
-          </div>
-        </div>
-        <div
-          v-show="
-            !localNodeDetail?.node_input_params_json_schema?.properties ||
-            !Object.keys(localNodeDetail?.node_input_params_json_schema?.properties)
-          "
-          class="std-middle-box"
-        >
-          <el-empty description="暂无输入变量，请先配置" />
-        </div>
-      </div>
-    </el-scrollbar>
-  </div>
 </template>
 
 <script setup>
@@ -122,7 +121,7 @@ function handleBlur() {
       endOffset: range.endOffset
     };
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
 }
 const handleInput = () => {

@@ -6,7 +6,6 @@ import {useResourceListStore} from '@/stores/resourceListStore';
 import {ISearchByKeywordsParams, ResourceItem, TResourceListStatus} from '@/types/resource-type';
 import {
   current_resource as currentResource,
-  get_init_resource as getInitResource,
   multiple_selection as multipleSelection,
   new_dir_resource_item as newDirResourceItem,
   resource_view_model as resourceViewModel,
@@ -20,6 +19,7 @@ import {sortResourceList} from '@/utils/common';
 
 import router from '@/router';
 import {useSessionStorage} from "@vueuse/core";
+import {getInitResource} from "@/components/resource/utils/common";
 
 export const resource_head_height = ref(60);
 export const current_path_tree = ref<ResourceItem[]>([]);

@@ -282,7 +282,7 @@ async function exportTargetWorkflow(workflow: IWorkflowMetaInfo) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${appInfoStore.currentApp.app_code}_${workflow.workflow_code}.json`;
+    a.download = `${appInfoStore.currentApp.app_name}_${workflow.workflow_name}.json`;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();

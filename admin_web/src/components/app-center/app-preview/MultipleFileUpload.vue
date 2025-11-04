@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import {onMounted, ref, watch, nextTick} from 'vue';
-import ResourceUploadManager from "./ResourceUploadManager.vue";
-import {genFileId, UploadRawFile, UploadUserFile ,   UploadFile,
-  UploadFiles,} from "element-plus";
-import AttachmentPreview, {IAttachmentDetail} from "./AttachmentPreview.vue";
-import {attachment_remove_from_session as attachmentRemoveFromSession} from "@/api/next-console";
-import {UploadFilled} from "@element-plus/icons-vue";
+import { UploadFilled } from '@element-plus/icons-vue';
+import { UploadUserFile } from 'element-plus';
+import { nextTick, ref, watch } from 'vue';
+import { attachment_remove_from_session as attachmentRemoveFromSession } from '@/api/next-console';
+import AttachmentPreview, { IAttachmentDetail } from './AttachmentPreview.vue';
+import ResourceUploadManager from './ResourceUploadManager.vue';
+
 const props = defineProps({
   sessionId: {
     type: Number,
@@ -15,7 +15,7 @@ const props = defineProps({
   fileList: {
     type: Array,
     required: true,
-    default: () => ([])
+    default: () => []
   },
   accept: {
     type: String,
@@ -31,7 +31,7 @@ const localSessionId = ref(0);
 const currentFileList = ref<IAttachmentDetail[]>([]);
 const currentSession = ref({
   id: localSessionId.value
-})
+});
 const localAccept = ref('*');
 const localAcceptDesc = ref('所有');
 const localAcceptFormat = ref([]);
@@ -48,13 +48,12 @@ async function handleRemoveAttachment(attachment: IAttachmentDetail) {
 }
 async function handleUploadSuccess(data) {
   currentFileList.value.push(data);
-
 }
 async function handleUploadFinished() {
-  emits('update:file',  currentFileList.value);
+  emits('update:file', currentFileList.value);
 }
-function getFileIcon(format:string) {
-  let icon_format_map = {
+function getFileIcon(format: string) {
+  const iconFormatMap = {
     // 文档类型
     doc: 'doc.svg',
     docx: 'docx.svg',
@@ -82,6 +81,7 @@ function getFileIcon(format:string) {
     wmv: 'wmv.svg',
     webm: 'webm.svg',
     mpg: 'mpg.svg',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     '3gp': '3gp.svg',
     mpeg: 'mpeg.svg',
     // 音频类型
@@ -141,6 +141,7 @@ function getFileIcon(format:string) {
     plsql: 'plsql.svg',
     hs: 'hs.svg',
     hsc: 'hsc.svg',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Dockerfile: 'Dockerfile.svg',
     dart: 'dart.svg',
     pm: 'pm.svg',
@@ -150,6 +151,7 @@ function getFileIcon(format:string) {
     // 压缩包
     zip: 'zip.svg',
     rar: 'rar.svg',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     '7z': '7z.svg',
     gz: 'gz.svg',
     tar: 'tar.svg',
@@ -167,106 +169,103 @@ function getFileIcon(format:string) {
     bin: 'bin.svg',
     iso: 'iso.svg'
   };
-  const formatIcon = icon_format_map[format] || 'file_format_other.svg';
+  const formatIcon = iconFormatMap[format] || 'file_format_other.svg';
   return '/images/' + formatIcon;
 }
 watch(
-    () => props.fileList,
-    async newVal => {
-      currentFileList.value = [];
-      if (newVal?.length > 0) {
-        for (let i = 0; i < newVal.length; i++) {
-          currentFileList.value.push({
-            resource_id: newVal[i]?.id,
-            resource_name: newVal[i]?.name,
-            resource_size: newVal[i]?.size,
-            resource_icon: newVal[i]?.icon
-          });
-        }
-
+  () => props.fileList,
+  async newVal => {
+    currentFileList.value = [];
+    if (newVal?.length > 0) {
+      for (let i = 0; i < newVal.length; i++) {
+        currentFileList.value.push({
+          resource_id: newVal[i]?.id,
+          resource_name: newVal[i]?.name,
+          resource_size: newVal[i]?.size,
+          resource_icon: newVal[i]?.icon
+        });
       }
-    },
-    { immediate: true }
-);
-watch (
-    () => props.sessionId,
-    async newVal => {
-      localSessionId.value = newVal;
-      currentSession.value.id = newVal;
-    },
-    { immediate: true }
+    }
+  },
+  { immediate: true }
 );
 watch(
-    () => props.accept,
-    async newVal => {
-      if (!newVal) {
-        localAccept.value = '*';
-        return;
-      }
-      if (typeof newVal === 'object'  ) {
-        if (newVal.includes('all')) {
-          localAccept.value = '*';
-          localAcceptDesc.value = '所有';
-          return;
-        }
-        localAccept.value = '';
-        localAcceptDesc.value = '';
-        localAcceptFormat.value = [];
-        for (const item of newVal) {
-          localAccept.value += "." + item + ',';
-          localAcceptDesc.value +=  item + "/";
-          localAcceptFormat.value.push(getFileIcon(item));
-        }
-        // 去除最后一个字符
-        localAccept.value = localAccept.value.slice(0, -1);
-        localAcceptDesc.value = localAcceptDesc.value.slice(0, -1);
-        return;
-      }
-      localAccept.value = newVal;
-    },
-    { immediate: true }
+  () => props.sessionId,
+  async newVal => {
+    localSessionId.value = newVal;
+    currentSession.value.id = newVal;
+  },
+  { immediate: true }
 );
-
+watch(
+  () => props.accept,
+  async newVal => {
+    if (!newVal) {
+      localAccept.value = '*';
+      return;
+    }
+    if (typeof newVal === 'object') {
+      if (newVal.includes('all')) {
+        localAccept.value = '*';
+        localAcceptDesc.value = '所有';
+        return;
+      }
+      localAccept.value = '';
+      localAcceptDesc.value = '';
+      localAcceptFormat.value = [];
+      for (const item of newVal) {
+        localAccept.value += '.' + item + ',';
+        localAcceptDesc.value += item + '/';
+        localAcceptFormat.value.push(getFileIcon(item));
+      }
+      // 去除最后一个字符
+      localAccept.value = localAccept.value.slice(0, -1);
+      localAcceptDesc.value = localAcceptDesc.value.slice(0, -1);
+      return;
+    }
+    localAccept.value = newVal;
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <el-upload
-      ref="uploadFileRef"
-      v-model:file-list="uploadFileList"
-      action=""
-      :show-file-list="false"
-      :auto-upload="true"
-      name="chunk_content"
-      :accept="localAccept"
-      drag
-      multiple
-      :before-upload="resourceUploadManagerRef?.prepareUploadFile"
-      :http-request="resourceUploadManagerRef?.uploadFileContent"
-      :on-success="resourceUploadManagerRef?.uploadFileSuccess"
+    ref="uploadFileRef"
+    v-model:file-list="uploadFileList"
+    action=""
+    :show-file-list="false"
+    :auto-upload="true"
+    name="chunk_content"
+    :accept="localAccept"
+    drag
+    multiple
+    :before-upload="resourceUploadManagerRef?.prepareUploadFile"
+    :http-request="resourceUploadManagerRef?.uploadFileContent"
+    :on-success="resourceUploadManagerRef?.uploadFileSuccess"
   >
-    <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+    <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
     <div>
-      <el-image v-for="format in localAcceptFormat" :src="format"></el-image>
+      <el-image v-for="format in localAcceptFormat" :key="format" :src="format" />
     </div>
-    <div class="el-upload__text">
-      拖拽文件至此或者 <em>点击上传</em>
-    </div>
+    <div class="el-upload__text">拖拽文件至此或者 <em>点击上传</em></div>
     <template #tip>
-      <div class="el-upload__tip">
-        可接受的文件类型：{{ localAcceptDesc }}
-      </div>
+      <div class="el-upload__tip">可接受的文件类型：{{ localAcceptDesc }}</div>
     </template>
   </el-upload>
-  <AttachmentPreview v-if="currentFileList?.length" :attachment-list="currentFileList"
-                     @remove-attachment="args => handleRemoveAttachment(args)" />
+  <AttachmentPreview
+    v-if="currentFileList?.length"
+    :attachment-list="currentFileList"
+    @remove-attachment="args => handleRemoveAttachment(args)"
+  />
   <div id="upload-box">
     <ResourceUploadManager
-        ref="resourceUploadManagerRef"
-        v-model:file-list="uploadFileList"
-        v-model:current-session="currentSession"
-        @upload-success="data => handleUploadSuccess(data)"
-        @upload-finished="handleUploadFinished"
-        source="session-params"
+      ref="resourceUploadManagerRef"
+      v-model:file-list="uploadFileList"
+      v-model:current-session="currentSession"
+      source="session-params"
+      @upload-success="data => handleUploadSuccess(data)"
+      @upload-finished="handleUploadFinished"
     />
   </div>
 </template>

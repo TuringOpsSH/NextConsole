@@ -19,7 +19,7 @@ const props = defineProps({
     default: null
   },
   refValue: {
-    type: Object as () => Record<string, any>,
+    type: [Object, String] as () => Record<string, any> | string,
     default: () => ({})
   },
   disabled: {
@@ -161,7 +161,9 @@ function handleClickAttr(node, selectAttr) {
       for (let k of Object.keys(localRef.value.properties)) {
         localRef.value.properties[k].valueFixed = true;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log(e);
+    }
   }
   emits('update:ref', localRef.value);
 }
@@ -235,50 +237,52 @@ defineExpose({
         </el-popover>
       </template>
     </el-input>
-    <el-popover v-show="isObject(localRef)" ref="popRef" width="340px" :hide-after="0" placement="top">
-      <template #reference>
-        <div v-if="isObject(localRef)" class="ref-obj-reference">
-          <div class="std-left-box">
-            <el-image :src="localRef?.nodeIcon" style="width: 12px; height: 12px" />
-          </div>
-          <div class="std-left-box-node">
+    <div v-show="isObject(localRef)">
+      <el-popover ref="popRef" width="340px" :hide-after="0" placement="top">
+        <template #reference>
+          <div v-if="isObject(localRef)" class="ref-obj-reference">
             <div class="std-left-box">
-              <el-text truncated>{{ localRef?.nodeName }}</el-text>
+              <el-image :src="localRef?.nodeIcon" style="width: 12px; height: 12px" />
             </div>
-
-            <el-divider direction="vertical" />
             <div class="std-left-box-node">
-              <el-text truncated>{{ getShowRefPath(localRef?.refAttrPath) }}</el-text>
-            </div>
-          </div>
-          <div v-if="!props.disabled" @click="clearInput">
-            <el-icon>
-              <Close />
-            </el-icon>
-          </div>
-        </div>
-      </template>
-      <div class="ref-obj">
-        <div class="std-left-box" style="gap: 4px">
-          <div class="std-left-box">
-            <el-image :src="localRef?.nodeIcon" style="width: 12px; height: 12px" />
-          </div>
-          <div class="std-left-box-node">
-            <div class="std-left-box">
-              <el-text truncated>{{ localRef?.nodeName }}</el-text>
-            </div>
+              <div class="std-left-box">
+                <el-text truncated>{{ localRef?.nodeName }}</el-text>
+              </div>
 
-            <el-divider direction="vertical" />
-            <div class="fixed-width-div">
-              {{ getShowRefPath(localRef?.refAttrPath) }}
+              <el-divider direction="vertical" />
+              <div class="std-left-box-node">
+                <el-text truncated>{{ getShowRefPath(localRef?.refAttrPath) }}</el-text>
+              </div>
+            </div>
+            <div v-if="!props.disabled" @click="clearInput">
+              <el-icon>
+                <Close />
+              </el-icon>
             </div>
           </div>
+        </template>
+        <div class="ref-obj">
+          <div class="std-left-box" style="gap: 4px">
+            <div class="std-left-box">
+              <el-image :src="localRef?.nodeIcon" style="width: 12px; height: 12px" />
+            </div>
+            <div class="std-left-box-node">
+              <div class="std-left-box">
+                <el-text truncated>{{ localRef?.nodeName }}</el-text>
+              </div>
+
+              <el-divider direction="vertical" />
+              <div class="fixed-width-div">
+                {{ getShowRefPath(localRef?.refAttrPath) }}
+              </div>
+            </div>
+          </div>
+          <div class="std-left-box">
+            <el-tag type="primary" size="small">{{ localRef?.refAttrType }}</el-tag>
+          </div>
         </div>
-        <div class="std-left-box">
-          <el-tag type="primary" size="small">{{ localRef?.refAttrType }}</el-tag>
-        </div>
-      </div>
-    </el-popover>
+      </el-popover>
+    </div>
   </div>
 </template>
 

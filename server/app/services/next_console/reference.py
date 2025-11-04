@@ -64,10 +64,21 @@ def search_reference(params):
         ResourceObjectMeta.resource_download_url
     ).all()
     chunk_info_map = {chunk.id: chunk for chunk in all_chunks}
+    chunk_resources_ids = list(set([chunk.resource_id for chunk in all_chunks]))
+    md_resources = ResourceObjectMeta.query.filter(
+        ResourceObjectMeta.id.in_(chunk_resources_ids)
+    ).all()
+    raw_resources_ids = [res.resource_parent_id for res in md_resources if res.resource_parent_id]
+    raw_resources = ResourceObjectMeta.query.filter(
+        ResourceObjectMeta.id.in_(raw_resources_ids),
+        ResourceObjectMeta.resource_type != 'folder'
+    ).all()
+    md_raw_map = {res.id: res.resource_parent_id for res in md_resources}
+    raw_resource_map = {res.id: res for res in raw_resources}
     for msg_id, result in msg_reference_results:
         if msg_id not in msg_reference_rel_all:
             msg_reference_rel_all[msg_id] = []
-        for chunk in result.get("final_result",{}).get("chunks", []):
+        for chunk in result.get("final_result", {}).get("chunks", []):
             recall_score = 0
             for recall_item in result["recall_result"]:
                 if recall_item[0] == chunk:
@@ -81,17 +92,20 @@ def search_reference(params):
             chunk_info = chunk_info_map.get(chunk)
             if not chunk_info:
                 continue
+            raw_resource = raw_resource_map.get(md_raw_map.get(chunk_info.resource_id))
+            if not raw_resource:
+                continue
             msg_reference_rel_all[msg_id].append({
                 "ref_text": chunk_info.chunk_raw_content,
                 "recall_score": recall_score,
                 "rerank_score": rerank_score,
-                "source_type": chunk_info.resource_type,
-                "resource_id": chunk_info.resource_id,
-                "resource_icon": chunk_info.resource_icon,
-                "resource_name": chunk_info.resource_name,
-                "resource_title": chunk_info.resource_title or chunk_info.resource_name,
-                "resource_source_url": chunk_info.resource_source_url or "",
-                "resource_download_url": chunk_info.resource_download_url
+                "source_type": raw_resource.resource_type,
+                "resource_id": raw_resource.id,
+                "resource_icon": raw_resource.resource_icon,
+                "resource_name": raw_resource.resource_name,
+                "resource_title": raw_resource.resource_title or raw_resource.resource_name,
+                "resource_source_url": raw_resource.resource_source_url or "",
+                "resource_download_url": raw_resource.resource_download_url
             })
     return next_console_response(result=msg_reference_rel_all)
 

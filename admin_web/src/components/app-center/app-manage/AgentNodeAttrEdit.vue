@@ -314,14 +314,14 @@ watch(
                 @change="updateNodeLLMConfig"
               />
             </el-form-item>
-            <el-form-item v-show="workflowStore.currentNodeDetail.node_llm_params.support_vis" label="视觉能力">
+            <el-form-item v-if="workflowStore.currentNodeDetail.node_llm_params.support_vis" label="视觉能力">
               <el-switch
                 v-model="workflowStore.currentNodeDetail.node_llm_params.enable_visual"
                 @change="updateNodeLLMConfig"
               />
             </el-form-item>
             <el-form-item
-              v-show="
+              v-if="
                 workflowStore.currentNodeDetail.node_llm_params.support_vis &&
                 workflowStore.currentNodeDetail.node_llm_params?.enable_visual
               "
@@ -337,14 +337,14 @@ watch(
                 @update:schema="updateNodeLLMConfig"
               />
             </el-form-item>
-            <el-form-item v-show="workflowStore.currentNodeDetail.node_llm_params.support_file" label="文件阅读能力">
+            <el-form-item v-if="workflowStore.currentNodeDetail.node_llm_params.support_file" label="文件阅读能力">
               <el-switch
                 v-model="workflowStore.currentNodeDetail.node_llm_params.enable_file"
                 @change="updateNodeLLMConfig"
               />
             </el-form-item>
             <el-form-item
-              v-show="
+              v-if="
                 workflowStore.currentNodeDetail.node_llm_params.support_file &&
                 workflowStore.currentNodeDetail.node_llm_params?.enable_file
               "

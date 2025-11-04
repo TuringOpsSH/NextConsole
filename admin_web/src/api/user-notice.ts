@@ -1,136 +1,133 @@
-import request from '@/utils/request'
+import { ServerResponse } from '@/types/response';
+import request from '@/utils/request';
 
-
-import {ServerResponse} from "@/types/response";
-
-let env_url = ''
+const envUrl = '';
 
 export const api = {
-    list_task: env_url + '/next_console_admin/user_center/user_notice_service/list',
-    search_task: env_url + '/next_console_admin/user_center/user_notice_service/search',
-    delete_task: env_url + '/next_console_admin/user_center/user_notice_service/del',
-    get_task_detail: env_url + '/next_console_admin/user_center/user_notice_service/detail',
-    init_task: env_url + '/next_console_admin/user_center/user_notice_service/init',
-    update_task: env_url + '/next_console_admin/user_center/user_notice_service/update',
-    search_notice_company: env_url + '/next_console_admin/user_center/user_notice_service/search_notice_company',
-    search_notice_department: env_url + '/next_console_admin/user_center/user_notice_service/search_notice_department',
-    search_notice_user: env_url + '/next_console_admin/user_center/user_notice_service/search_notice_user',
-    start_task: env_url + '/next_console_admin/user_center/user_notice_service/start',
-    pause_task: env_url + '/next_console_admin/user_center/user_notice_service/pause',
-    resume_task: env_url + '/next_console_admin/user_center/user_notice_service/resume',
-    stop_task: env_url + '/next_console_admin/user_center/user_notice_service/stop',
-    list_task_instance: env_url + '/next_console_admin/user_center/user_notice_service/list_instance',
+  list_task: envUrl + '/next_console_admin/user_center/user_notice_service/list',
+  search_task: envUrl + '/next_console_admin/user_center/user_notice_service/search',
+  delete_task: envUrl + '/next_console_admin/user_center/user_notice_service/del',
+  get_task_detail: envUrl + '/next_console_admin/user_center/user_notice_service/detail',
+  init_task: envUrl + '/next_console_admin/user_center/user_notice_service/init',
+  update_task: envUrl + '/next_console_admin/user_center/user_notice_service/update',
+  search_notice_company: envUrl + '/next_console_admin/user_center/user_notice_service/search_notice_company',
+  search_notice_department: envUrl + '/next_console_admin/user_center/user_notice_service/search_notice_department',
+  search_notice_user: envUrl + '/next_console_admin/user_center/user_notice_service/search_notice_user',
+  start_task: envUrl + '/next_console_admin/user_center/user_notice_service/start',
+  pause_task: envUrl + '/next_console_admin/user_center/user_notice_service/pause',
+  resume_task: envUrl + '/next_console_admin/user_center/user_notice_service/resume',
+  stop_task: envUrl + '/next_console_admin/user_center/user_notice_service/stop',
+  list_task_instance: envUrl + '/next_console_admin/user_center/user_notice_service/list_instance'
+};
+
+export async function listTask(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.list_task,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function list_task(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.list_task,
-        method: 'post',
-        data: params
-    })
+export async function searchTask(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.search_task,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function search_task(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.search_task,
-        method: 'post',
-        data: params
-    })
+export async function deleteTask(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.delete_task,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function delete_task(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.delete_task,
-        method: 'post',
-        data: params
-    })
+export async function getTaskDetail(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.get_task_detail,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function get_task_detail(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.get_task_detail,
-        method: 'post',
-        data: params
-    })
+export async function initTask(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.init_task,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function init_task(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.init_task,
-        method: 'post',
-        data: params
-    })
+export async function updateTask(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.update_task,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function update_task(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.update_task,
-        method: 'post',
-        data: params
-    })
+export async function searchNoticeCompany(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.search_notice_company,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function search_notice_company(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.search_notice_company,
-        method: 'post',
-        data: params
-    })
+export async function searchNoticeDepartment(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.search_notice_department,
+    method: 'post',
+    data: params
+  });
 }
 
-
-export async function search_notice_department(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.search_notice_department,
-        method: 'post',
-        data: params
-    })
+export async function searchNoticeUser(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.search_notice_user,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function search_notice_user(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.search_notice_user,
-        method: 'post',
-        data: params
-    })
+export async function startTask(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.start_task,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function start_task(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.start_task,
-        method: 'post',
-        data: params
-    })
+export async function pauseTask(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.pause_task,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function pause_task(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.pause_task,
-        method: 'post',
-        data: params
-    })
+export async function resumeTask(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.resume_task,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function resume_task(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.resume_task,
-        method: 'post',
-        data: params
-    })
+export async function stopTask(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.stop_task,
+    method: 'post',
+    data: params
+  });
 }
 
-export async function stop_task(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.stop_task,
-        method: 'post',
-        data: params
-    })
-}
-
-export async function list_task_instance(params:object) :Promise<ServerResponse> {
-    return request({
-        url: api.list_task_instance,
-        method: 'post',
-        data: params
-    })
+export async function listTaskInstance(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.list_task_instance,
+    method: 'post',
+    data: params
+  });
 }

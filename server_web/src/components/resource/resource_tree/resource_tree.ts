@@ -1,6 +1,6 @@
 import { reactive, ref } from 'vue';
 import { ResourceItem } from '@/types/resource-type';
-import { get_init_resource } from '@/components/resource/resource-list/resource_list';
+import {getInitResource} from "@/components/resource/utils/common";
 import type Node from 'element-plus/es/components/tree/src/model/node';
 import { add_resource_object, move_resources, search_resource_object } from '@/api/resource-api';
 import { ElMessage, ElNotification } from 'element-plus';
@@ -220,7 +220,7 @@ export async function confirm_mv_resource() {
 // 新建文件夹
 export function show_add_new_dir_dialog(current_tree_ref: any) {
   add_new_dir_dialog_flag.value = true;
-  Object.assign(new_resource_dir, get_init_resource());
+  Object.assign(new_resource_dir, getInitResource());
   new_resource_dir.resource_type = 'folder';
   current_tree_Ref.value = current_tree_ref;
 }

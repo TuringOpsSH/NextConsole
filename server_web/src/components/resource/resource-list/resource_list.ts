@@ -3,14 +3,10 @@ import {IResourceItem} from '@/types/resource-type';
 import {reactive, ref} from 'vue';
 import {
   add_resource_object,
-  batch_delete_resource_object,
   batch_download_resources,
-  build_resource_object_ref,
-  delete_resource_object_api,
   download_resource_object,
   get_resource_object,
   get_resource_object_path,
-  move_resources,
   search_resource_object
 } from '@/api/resource-api';
 import {
@@ -20,16 +16,14 @@ import {
   new_dir_form_Ref,
   new_dir_form_valid
 } from '@/components/resource/resource-list/resource_head/resource_head';
-import {ElMessage, ElNotification} from 'element-plus';
+import {ElMessage} from 'element-plus';
 import {show_move_dialog_multiple} from '@/components/resource/resource_tree/resource_tree';
-import {push_to_clipboard} from '@/components/resource/resource_clipborad/resource_clipboard';
-import {turn_on_resource_meta} from '@/components/resource/resource_meta/resource_meta';
-import {init_my_resource_tree, refresh_panel_count} from '@/components/resource/resource-panel/panel';
-import {check_resource_rag_support} from '@/components/resource/resource_main';
-import {turn_on_share_selector} from '@/components/resource/resource_share_selector/resource_share_selector';
+import {init_my_resource_tree} from '@/components/resource/resource-panel/panel';
+import {turn_on_share_selector} from '@/components/resource/resource-share-selector/resource_share_selector';
 import {show_share_resources} from '@/components/resource/resource-share/share_resources';
 import {sortResourceList} from '@/utils/common';
-import { useUserInfoStore } from '@/stores/user-info-store';
+import {useUserInfoStore} from '@/stores/user-info-store';
+
 export const resource_list_Ref = ref(null);
 export const resource_view_model = ref('list');
 export const current_resource = reactive<IResourceItem>({
@@ -105,7 +99,6 @@ export const resource_list_buttons_Ref = ref();
 export const multiple_selection = ref<IResourceItem[]>([]);
 export const show_multiple_button = ref(false);
 export const show_delete_flag = ref(false);
-export const delete_dialog_title = ref('删除资源');
 export const resource_list_card_buttons_Ref = ref();
 export const current_page_num = ref(1);
 export const current_page_size = ref(50);
@@ -121,31 +114,6 @@ export const new_document_form_Ref = ref(null);
 
 export const resourceDetailRef = ref(null);
 
-export function get_init_resource() {
-  return <IResourceItem>{
-    id: null,
-    resource_parent_id: null,
-    user_id: null,
-    resource_name: null,
-    resource_type: null,
-    resource_desc: null,
-    resource_icon: null,
-    resource_format: null,
-    resource_path: null,
-    resource_size_in_MB: null,
-    resource_status: null,
-    rag_status: null,
-    create_time: null,
-    update_time: null,
-    delete_time: null,
-    show_buttons: null,
-    resource_parent_name: null,
-    resource_is_selected: null,
-    sub_resource_dir_cnt: null,
-    sub_resource_file_cnt: null,
-    sub_rag_file_cnt: 0
-  };
-}
 
 export async function show_resource_list(item: IResourceItem | null = null) {
   // 面板跳转
@@ -380,90 +348,36 @@ export function click_resource_card(resource: IResourceItem, event: MouseEvent) 
 }
 
 
-
-export function onDragStart(event) {
-  // // console.log('start', event)
-  // 设置拖拽时的样式
-  const target = event.target as HTMLElement;
-  // // console.log(target)
-  target.classList.add('dragging');
-
-  // 设置拖拽数据（可选）
-  let resource_id = target.getAttribute('id');
-  event.dataTransfer.setData('resource_id', resource_id);
-  event.dataTransfer.effectAllowed = 'move';
-}
-
-export function onDragEnd(event) {
-  // // console.log('end',event)
-  // 移除拖拽时的样式
-  const target = event.target as HTMLElement;
-  target.classList.remove('dragging');
-}
-
-export async function onDropFunction(event) {
-  // 停止事件传播
-  event.preventDefault();
-  event.stopPropagation();
-  const data = event.dataTransfer?.getData('resource_id');
-  let data_int = parseInt(data);
-  // console.log('Dropped data:', data);
-  const target = event.target as HTMLElement;
-  let resource_id = target.getAttribute('id');
-  // console.log('target', target, resource_id)
-  // 如果目标是目录，则进行移动操作
-  let resource_id_int = parseInt(resource_id);
-  // // console.log(data_int, resource_id, resource_id_int)
-  if (resource_id_int && data_int && resource_id_int != data_int) {
-    let target_resource_obj = current_resource_list.value.find(item => item.id == resource_id_int);
-    if (target_resource_obj.resource_type != 'folder') {
-      ElMessage.error('只能移动到目录中');
-      return;
-    }
-    // console.log(data_int, resource_id_int)
-    let params = {
-      resource_id_list: [data_int],
-      target_resource_id: resource_id_int
-    };
-
-    let res = await move_resources(params);
-    if (!res.error_status) {
-      ElMessage.success('移动成功');
-      search_all_resource_object();
-    }
-  }
-}
-
-export function format_resource_size(size_num: number | null) {
+export function format_resource_size(sizeNum: number | null) {
   // 格式化文件大小,保留两位小数,输入为mb单位的数字
   // // console.log(size_num)
-  if (size_num === null) {
+  if (sizeNum === null) {
     return '';
   }
-  let size = size_num;
-  let size_str = '';
+  let size = sizeNum;
+  let sizeStr = '';
 
   // kb单位
   if (size < 1) {
     size = size * 1024;
-    size_str = size.toFixed(2) + 'KB';
+    sizeStr = size.toFixed(2) + 'KB';
   } else if (size < 1024) {
-    size_str = size.toFixed(2) + 'MB';
+    sizeStr = size.toFixed(2) + 'MB';
   } else if (size < 1024 * 1024) {
     size = size / 1024;
-    size_str = size.toFixed(2) + 'GB';
+    sizeStr = size.toFixed(2) + 'GB';
   } else if (size < 1024 * 1024 * 1024) {
     size = size / 1024 / 1024;
-    size_str = size.toFixed(2) + 'TB';
+    sizeStr = size.toFixed(2) + 'TB';
   } else if (size < 1024 * 1024 * 1024 * 1024) {
     size = size / 1024 / 1024 / 1024;
-    size_str = size.toFixed(2) + 'PB';
+    sizeStr = size.toFixed(2) + 'PB';
   } else {
     size = size / 1024 / 1024 / 1024 / 1024;
-    size_str = size.toFixed(2) + 'EB';
+    sizeStr = size.toFixed(2) + 'EB';
   }
 
-  return size_str;
+  return sizeStr;
 }
 
 export function sort_resource_size(a, b) {
@@ -505,102 +419,6 @@ export function cancel_multiple_selection() {
   resource_list_Ref.value?.clearSelection();
 }
 
-export function batch_move_select_resources() {
-  let selected_resources = [];
-  for (let resource of current_resource_list.value) {
-    if (resource.resource_is_selected && resource.id && resource.resource_status == '正常') {
-      selected_resources.push(resource.id);
-    }
-  }
-  show_move_dialog_multiple(selected_resources, search_all_resource_object);
-}
-export function batch_copy_select_resources() {
-  let selected_resources = [];
-  if (resource_view_model.value == 'list') {
-    for (let resource of multiple_selection.value) {
-      if (resource.id && resource.resource_status == '正常') {
-        selected_resources.push(resource.id);
-      }
-    }
-  } else {
-    for (let resource of current_resource_list.value) {
-      if (resource.resource_is_selected && resource.id && resource.resource_status == '正常') {
-        selected_resources.push(resource.id);
-      }
-    }
-  }
-  push_to_clipboard(selected_resources);
-}
-export async function batch_download_select_resource() {
-  let params = {
-    resource_list: []
-  };
-
-  for (let item of multiple_selection.value) {
-    if (item.id && item.resource_status == '正常') {
-      params.resource_list.push(item.id);
-    }
-  }
-  resource_loading.value = true;
-  let res = await batch_download_resources(params);
-  resource_loading.value = false;
-  if (!res.error_status) {
-    if (!res.result?.length) {
-      ElMessage.info('无可下载资源,请检查资源对应权限!');
-      return;
-    }
-    ElMessage.success('批量下载启动成功！');
-    for (let link_item of res.result) {
-      // 创建一个隐藏的 <a> 标签
-      const link = document.createElement('a');
-      link.href = link_item.download_url + '?filename=' + encodeURIComponent(link_item.resource_name);
-      link.download = link_item.resource_name; // 设置下载文件的名称
-      link.style.display = 'none';
-
-      // 将 <a> 标签添加到文档中
-      document.body.appendChild(link);
-
-      // 触发点击事件
-      link.click();
-
-      // 移除 <a> 标签
-      document.body.removeChild(link);
-    }
-  }
-}
-export async function batch_delete_resources() {
-  show_delete_flag.value = false;
-  const params = {
-    resource_list: []
-  };
-  for (const item of current_resource_list.value) {
-    if (item.resource_is_selected && item?.id) {
-      params.resource_list.push(item.id);
-    }
-  }
-  if (!params.resource_list.length) {
-    ElNotification({
-      title: '系统通知',
-      message: `所选资源均已删除!`,
-      type: 'info',
-      duration: 5000
-    });
-    return;
-  }
-  const res = await batch_delete_resource_object(params);
-  if (!res.error_status) {
-    ElNotification({
-      title: '系统通知',
-      message: `共成功删除${res.result.delete_cnt}个资源!`,
-      type: 'success',
-      duration: 5000
-    });
-    // 刷新文档树
-    await init_my_resource_tree();
-  }
-  await search_all_resource_object();
-  refresh_panel_count();
-}
 
 export async function preview_resource(resource: IResourceItem) {
   // 预览资源
@@ -624,17 +442,7 @@ export async function preview_resource(resource: IResourceItem) {
     }
   });
 }
-export async function show_resource_detail(resource: IResourceItem) {
-  if (!resource?.id) {
-    ElMessage.warning('资源不存在!');
-    return;
-  }
-  if (resource.resource_status == '删除') {
-    ElMessage.warning('资源已删除，请恢复后查看!');
-    return;
-  }
-  turn_on_resource_meta(resource.id);
-}
+
 
 export async function download_resource(resource: IResourceItem) {
   // 下载资源
@@ -677,82 +485,7 @@ export async function download_resource(resource: IResourceItem) {
     document.body.removeChild(link);
   }
 }
-export async function move_resource(resource: IResourceItem) {
-  if (!resource?.id) {
-    ElMessage.warning('资源不存在!');
-    return;
-  }
-  if (resource.resource_status == '删除') {
-    ElMessage.warning('资源已删除，请先恢复后再操作!');
-    return;
-  }
-  // 移动资源
-  show_move_dialog_multiple([resource.id], search_all_resource_object);
-}
 
-export async function rebuild_resource(resource: IResourceItem) {
-  if (!resource?.id) {
-    ElMessage.warning('资源不存在!');
-    return;
-  }
-  if (resource.resource_status == '删除') {
-    ElMessage.warning('资源已删除，请先恢复后再操作!');
-    return;
-  }
-  // 检查资源状态
-  if (resource.resource_status != '正常') {
-    ElMessage.warning('资源无法构建索引!');
-    return;
-  }
-  if (!check_resource_rag_support(resource)) {
-    ElMessage.warning('资源无法构建索引!');
-    return;
-  }
-
-  let params = {
-    resource_list: [resource.id]
-  };
-  const res = await build_resource_object_ref(params);
-  if (!res.error_status) {
-    ElMessage.success('提交重建任务成功!');
-  }
-  search_all_resource_object();
-
-}
-export async function delete_resource(resource: IResourceItem) {
-  if (!resource?.id) {
-    ElMessage.warning('资源不存在!');
-    return;
-  }
-  if (resource.resource_status == '删除') {
-    ElMessage.warning('资源已删除!');
-    return;
-  }
-  // 删除资源
-  const params = {
-    resource_id: resource.id
-  };
-  const res = await delete_resource_object_api(params);
-  if (!res.error_status) {
-    ElMessage.success('删除成功!');
-    await search_all_resource_object();
-    // 刷新文档树
-    await init_my_resource_tree();
-  }
-  // 关闭popover
-  if (resource_list_card_buttons_Ref.value) {
-    for (let item of resource_list_card_buttons_Ref.value) {
-      item?.hide();
-    }
-  }
-  if (resource_list_buttons_Ref.value) {
-    resource_list_buttons_Ref.value?.hide();
-  }
-  refresh_panel_count();
-}
-export function handleDragOver(event) {
-  event.preventDefault();
-}
 
 export async function share_resource(resource: IResourceItem) {
   // 分享资源
