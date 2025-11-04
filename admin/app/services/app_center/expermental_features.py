@@ -72,6 +72,7 @@ def single_llm_sub_node_execute(llm_client, workflow_node_llm_params, task_recor
     执行单个 LLM 子节点
     """
     with app.app_context():
+        from app.services.app_center.llm_node_service import extract_think_chunk, check_is_think_chunk
         msg_content = ""
         reasoning_content = ""
         msg_token_used = 0
@@ -115,6 +116,14 @@ def single_llm_sub_node_execute(llm_client, workflow_node_llm_params, task_recor
                             chunk_res["qa_id"] = task_record.get("qa_id"),
                             chunk_res["msg_parent_id"] = task_record.get("msg_id"),
                             chunk_res["msg_id"] = answer_msg.msg_id
+                            # 自定义推理标签
+                            if llm_client.think_attr and llm_client.think_attr.get("begin"):
+                                # 判断当前content中是否包含推理标签的结束符
+                                if check_is_think_chunk(content, msg_content, llm_client.think_attr):
+                                    reasoning_content += content
+                                    content = ''
+                            chunk_res["choices"][0]["delta"]["content"] = content
+                            chunk_res["choices"][0]["delta"]["reasoning_content"] = reasoning_content
                             global_params["message_queue"].put(chunk_res)
             except GeneratorExit:
                 pass
@@ -146,6 +155,11 @@ def single_llm_sub_node_execute(llm_client, workflow_node_llm_params, task_recor
                         global_params["message_queue"].put(except_result)
             finally:
                 if output_flag:
+                    # 自定义推理标签
+                    if llm_client.think_attr and llm_client.think_attr.get("begin"):
+                        new_reason_chunk, new_msg_chunk = extract_think_chunk(msg_content, llm_client.think_attr)
+                        reasoning_content += new_reason_chunk
+                        msg_content = new_msg_chunk
                     answer_msg.msg_content = msg_content
                     answer_msg.reasoning_content = reasoning_content
                     answer_msg.msg_token_used = msg_token_used
@@ -160,6 +174,11 @@ def single_llm_sub_node_execute(llm_client, workflow_node_llm_params, task_recor
                 msg_content = res.get("choices")[0].get("message").get("content")
                 reasoning_content = res.get("choices")[0].get("reasoning_content", "")
                 msg_token_used = res.get("usage", {}).get("total_tokens", 0)
+                # 自定义推理标签
+                if llm_client.think_attr and llm_client.think_attr.get("begin"):
+                    new_reason_chunk, new_msg_chunk = extract_think_chunk(msg_content, llm_client.think_attr)
+                    reasoning_content += new_reason_chunk
+                    msg_content = new_msg_chunk
             except Exception as e:
                 msg_content = '对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~'
             return msg_content, reasoning_content, msg_token_used, answer_msg

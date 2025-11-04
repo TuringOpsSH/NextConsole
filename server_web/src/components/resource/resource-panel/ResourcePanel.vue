@@ -398,10 +398,11 @@ async function routerToRecycleBin() {
   search_resource_by_tags();
 }
 async function routerToShareResource(item: Node) {
-  if (window.innerWidth < 768) {
-    switch_panel();
-  }
-  if (item.data.resource_type == 'folder') {
+  if (!item?.data) {
+    router.push({
+      name: 'resource_share'
+    });
+  } else if (item.data.resource_type == 'folder') {
     await show_share_resources({
       id: item.data.resource_id,
       resource_type: item.data.resource_type

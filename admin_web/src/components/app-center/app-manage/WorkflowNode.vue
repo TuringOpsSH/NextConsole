@@ -119,8 +119,10 @@ async function addCopy() {
       <div class="agent-head-right">
         <div class="std-middle-box">
           <el-tooltip content="测试运行" effect="light" placement="top">
-            <VideoPause v-if="nodeData?.nodeStatus == '运行中'" class="agent-node-svg" style="" />
-            <VideoPlay v-else class="agent-node-svg" />
+            <div>
+              <VideoPause v-if="nodeData?.nodeStatus == '运行中'" class="agent-node-svg" style="" />
+              <VideoPlay v-else class="agent-node-svg" />
+            </div>
           </el-tooltip>
         </div>
         <div class="std-middle-box">

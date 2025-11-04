@@ -2166,7 +2166,8 @@ CREATE TABLE "next_console"."llm_instance_info"
  "llm_label" varchar(255) ,
  "extra_body" json ,
  "extra_headers" json ,
- "use_default" boolean
+ "use_default" boolean,
+ "think_attr" json
 )
 WITH (
     FILLFACTOR = 100,
@@ -2207,6 +2208,7 @@ COMMENT ON COLUMN "next_console"."llm_instance_info"."llm_label" IS '模型显�
 COMMENT ON COLUMN "next_console"."llm_instance_info"."extra_body" IS '额外请求头';
 COMMENT ON COLUMN "next_console"."llm_instance_info"."extra_headers" IS '额外请求体';
 COMMENT ON COLUMN "next_console"."llm_instance_info"."use_default" IS '使用默认参数';
+COMMENT ON COLUMN "next_console"."llm_instance_info"."think_attr" IS '推理标签';
 COMMENT ON TABLE "next_console"."llm_instance_info" IS '基模型实例信息表';
 
 CREATE INDEX "user_id12"

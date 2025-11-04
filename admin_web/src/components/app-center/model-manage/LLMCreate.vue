@@ -92,7 +92,11 @@ const newLLMForm = reactive<ILLMInstance>({
     properties: {},
     ncOrders: []
   },
-  llm_authors: []
+  llm_authors: [],
+  think_attr:{
+    begin: '',
+    end: ''
+  }
 });
 const newLLMRules = {
   llm_label: [
@@ -736,119 +740,135 @@ onMounted(() => {
                   </el-form-item>
                 </el-tab-pane>
                 <el-tab-pane name="run" label="运行参数">
-                  <div v-if="newLLMForm.llm_type && ['文本生成', '推理模型', '全模态'].includes(newLLMForm.llm_type)">
-                    <el-form-item prop="stream" label="流式输出" style="height: 80px">
-                      <el-switch v-model="newLLMForm.stream" />
-                    </el-form-item>
-                    <el-form-item prop="use_default" label="使用默认配置" style="height: 80px">
-                      <el-switch v-model="newLLMForm.use_default" />
-                    </el-form-item>
-                    <el-form-item prop="temperature" label="温度" style="height: 80px">
-                      <el-slider
-                        v-model="newLLMForm.temperature"
-                        :min="0"
-                        :max="2"
-                        :step="0.1"
-                        :marks="temperatureMarks"
-                        style="margin: 0 24px"
-                        show-input
-                        :show-input-controls="false"
-                        :disabled="newLLMForm.use_default"
-                      />
-                    </el-form-item>
-                    <el-form-item prop="frequency_penalty" label="频率惩罚" style="height: 80px">
-                      <el-slider
-                        v-model="newLLMForm.frequency_penalty"
-                        :min="-2"
-                        :max="2"
-                        :step="0.1"
-                        :marks="frequencyPenaltyMarks"
-                        style="margin: 0 24px"
-                        show-input
-                        :show-input-controls="false"
-                        :disabled="newLLMForm.use_default"
-                      />
-                    </el-form-item>
-                    <el-form-item prop="top_p" label="核采样" style="height: 80px">
-                      <el-slider
-                        v-model="newLLMForm.top_p"
-                        :min="0"
-                        :max="1"
-                        :step="0.1"
-                        :marks="topPMarks"
-                        style="margin: 0 24px"
-                        show-input
-                        :show-input-controls="false"
-                        :disabled="newLLMForm.use_default"
-                      />
-                    </el-form-item>
-                    <el-form-item prop="presence_penalty" label="出现惩罚" style="height: 80px">
-                      <el-slider
-                        v-model="newLLMForm.presence_penalty"
-                        :min="-2"
-                        :max="2"
-                        :step="0.1"
-                        :marks="frequencyPenaltyMarks"
-                        style="margin: 0 24px"
-                        show-input
-                        :show-input-controls="false"
-                        :disabled="newLLMForm.use_default"
-                      />
-                    </el-form-item>
-                    <el-form-item prop="extra_headers" label="额外Header参数" style="height: 80px">
-                      <el-row style="width: 100%">
-                        <el-col :span="4">
-                          <el-text type="info" size="small"> 变量名称 </el-text>
-                        </el-col>
-                        <el-col :span="4">
-                          <el-text type="info" size="small"> 变量描述 </el-text>
-                        </el-col>
-                        <el-col :span="6">
-                          <el-text type="info" size="small"> 变量类型 </el-text>
-                        </el-col>
-                        <el-col :span="6">
-                          <el-text type="info" size="small"> 变量值 </el-text>
-                        </el-col>
-                      </el-row>
-                      <JsonSchemaForm
-                        :json-schema="newLLMForm.extra_headers"
-                        :value-define="true"
-                        @update:schema="
-                          newSchema => {
-                            newLLMForm.extra_headers = newSchema;
-                          }
-                        "
-                      />
-                    </el-form-item>
-                    <el-form-item prop="extra_body" label="额外Body参数" style="height: 80px">
-                      <el-row style="width: 100%">
-                        <el-col :span="4">
-                          <el-text type="info" size="small"> 变量名称 </el-text>
-                        </el-col>
-                        <el-col :span="4">
-                          <el-text type="info" size="small"> 变量描述 </el-text>
-                        </el-col>
-                        <el-col :span="6">
-                          <el-text type="info" size="small"> 变量类型 </el-text>
-                        </el-col>
-                        <el-col :span="6">
-                          <el-text type="info" size="small"> 变量值 </el-text>
-                        </el-col>
-                      </el-row>
-                      <JsonSchemaForm
-                        :json-schema="newLLMForm.extra_body"
-                        :value-define="true"
-                        @update:schema="
-                          newSchema => {
-                            newLLMForm.extra_body = newSchema;
-                          }
-                        "
-                      />
-                    </el-form-item>
-                  </div>
-                  <div v-else>
-                    <el-empty description="当前模型类型暂无运行参数配置" />
-                  </div>
+                  <el-scrollbar>
+                    <div v-if="newLLMForm.llm_type && ['文本生成', '推理模型', '全模态'].includes(newLLMForm.llm_type)">
+                      <el-form-item prop="stream" label="流式输出" style="height: 80px">
+                        <el-switch v-model="newLLMForm.stream" />
+                      </el-form-item>
+                      <el-form-item prop="use_default" label="使用默认配置" style="height: 80px">
+                        <el-switch v-model="newLLMForm.use_default" />
+                      </el-form-item>
+                      <el-form-item prop="temperature" label="温度" style="height: 80px">
+                        <el-slider
+                          v-model="newLLMForm.temperature"
+                          :min="0"
+                          :max="2"
+                          :step="0.1"
+                          :marks="temperatureMarks"
+                          style="margin: 0 24px"
+                          show-input
+                          :show-input-controls="false"
+                          :disabled="newLLMForm.use_default"
+                        />
+                      </el-form-item>
+                      <el-form-item prop="frequency_penalty" label="频率惩罚" style="height: 80px">
+                        <el-slider
+                          v-model="newLLMForm.frequency_penalty"
+                          :min="-2"
+                          :max="2"
+                          :step="0.1"
+                          :marks="frequencyPenaltyMarks"
+                          style="margin: 0 24px"
+                          show-input
+                          :show-input-controls="false"
+                          :disabled="newLLMForm.use_default"
+                        />
+                      </el-form-item>
+                      <el-form-item prop="top_p" label="核采样" style="height: 80px">
+                        <el-slider
+                          v-model="newLLMForm.top_p"
+                          :min="0"
+                          :max="1"
+                          :step="0.1"
+                          :marks="topPMarks"
+                          style="margin: 0 24px"
+                          show-input
+                          :show-input-controls="false"
+                          :disabled="newLLMForm.use_default"
+                        />
+                      </el-form-item>
+                      <el-form-item prop="presence_penalty" label="出现惩罚" style="height: 80px">
+                        <el-slider
+                          v-model="newLLMForm.presence_penalty"
+                          :min="-2"
+                          :max="2"
+                          :step="0.1"
+                          :marks="frequencyPenaltyMarks"
+                          style="margin: 0 24px"
+                          show-input
+                          :show-input-controls="false"
+                          :disabled="newLLMForm.use_default"
+                        />
+                      </el-form-item>
+                      <el-form-item prop="extra_headers" label="额外Header参数" style="height: 80px">
+                        <el-row style="width: 100%">
+                          <el-col :span="4">
+                            <el-text type="info" size="small"> 变量名称 </el-text>
+                          </el-col>
+                          <el-col :span="4">
+                            <el-text type="info" size="small"> 变量描述 </el-text>
+                          </el-col>
+                          <el-col :span="6">
+                            <el-text type="info" size="small"> 变量类型 </el-text>
+                          </el-col>
+                          <el-col :span="6">
+                            <el-text type="info" size="small"> 变量值 </el-text>
+                          </el-col>
+                        </el-row>
+                        <JsonSchemaForm
+                          :json-schema="newLLMForm.extra_headers"
+                          :value-define="true"
+                          @update:schema="
+                            newSchema => {
+                              newLLMForm.extra_headers = newSchema;
+                            }
+                          "
+                        />
+                      </el-form-item>
+                      <el-form-item prop="extra_body" label="额外Body参数" style="height: 80px">
+                        <el-row style="width: 100%">
+                          <el-col :span="4">
+                            <el-text type="info" size="small"> 变量名称 </el-text>
+                          </el-col>
+                          <el-col :span="4">
+                            <el-text type="info" size="small"> 变量描述 </el-text>
+                          </el-col>
+                          <el-col :span="6">
+                            <el-text type="info" size="small"> 变量类型 </el-text>
+                          </el-col>
+                          <el-col :span="6">
+                            <el-text type="info" size="small"> 变量值 </el-text>
+                          </el-col>
+                        </el-row>
+                        <JsonSchemaForm
+                          :json-schema="newLLMForm.extra_body"
+                          :value-define="true"
+                          @update:schema="
+                            newSchema => {
+                              newLLMForm.extra_body = newSchema;
+                            }
+                          "
+                        />
+                      </el-form-item>
+                      <el-form-item prop="think_attr.begin" label="推理开始标签" style="height: 80px">
+                        <el-input
+                          v-model="newLLMForm.think_attr.begin"
+                          placeholder="请输入推理开始标签，如<think>"
+                          clearable
+                        />
+                      </el-form-item>
+                      <el-form-item prop="think_attr.end" label="推理关闭标签" style="height: 80px">
+                        <el-input
+                          v-model="newLLMForm.think_attr.end"
+                          placeholder="请输入推理结束标签,如</think>"
+                          clearable
+                        />
+                      </el-form-item>
+                    </div>
+                    <div v-else>
+                      <el-empty description="当前模型类型暂无运行参数配置" />
+                    </div>
+                  </el-scrollbar>
                 </el-tab-pane>
               </el-tabs>
             </el-form>

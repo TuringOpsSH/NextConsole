@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { User, OfficeBuilding, Notification } from '@element-plus/icons-vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserInfoStore } from '@/stores/user-info-store';
 const router = useRouter();
@@ -13,7 +13,7 @@ const filteredComponents = ref([
     },
     disable: false,
     role_require: ['admin', 'super_admin', 'next_console_admin', 'next_console_reader_admin'],
-    icon: User
+    icon: markRaw(User)
   },
   {
     name: 'enterpriseManagement',
@@ -23,7 +23,7 @@ const filteredComponents = ref([
     },
     disable: false,
     role_require: ['next_console_admin', 'next_console_reader_admin'],
-    icon: OfficeBuilding
+    icon: markRaw(OfficeBuilding)
   },
   {
     name: 'user_notification_list',
@@ -33,7 +33,7 @@ const filteredComponents = ref([
     },
     disable: false,
     role_require: ['next_console_admin', 'next_console_reader_admin'],
-    icon: Notification
+    icon: markRaw(Notification)
   }
 ]);
 onMounted(async () => {

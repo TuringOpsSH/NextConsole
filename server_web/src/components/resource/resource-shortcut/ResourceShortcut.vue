@@ -75,7 +75,7 @@ import {
   upload_file_content,
   upload_file_list, upload_parent_resource
 } from '@/components/resource/resource-upload/resource-upload';
-import ResourceShareSelector from '@/components/resource/resource_share_selector/resource_share_selector.vue';
+import ResourceShareSelector from '@/components/resource/resource-share-selector/resource_share_selector.vue';
 import router from '@/router';
 import { useResourceStore } from '@/stores/resourceStore';
 import { useUserInfoStore } from '@/stores/user-info-store';

@@ -523,7 +523,7 @@ async function exportTargetVersion(publishRecord: IAppPublishRecord) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${currentAppCode.value}_${publishRecord.publish_version}.json`;
+    a.download = `${publishRecord.publish_name}_${publishRecord.publish_version}.json`;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();

@@ -118,8 +118,12 @@
               <el-text class="resource-static-label">资源统计</el-text>
             </div>
             <div class="resource-static-item-right">
-              <el-text class="resource-static-value"> 子文件夹：{{ resourceDetail?.sub_resource_dir_cnt }}个 </el-text>
-              <el-text class="resource-static-value"> 子文件：{{ resourceDetail?.sub_resource_file_cnt }} 个 </el-text>
+              <div>
+                <el-text class="resource-static-value"> 子文件夹：{{ resourceDetail?.sub_resource_dir_cnt }}个 </el-text>
+              </div>
+              <div>
+                <el-text class="resource-static-value"> 子文件：{{ resourceDetail?.sub_resource_file_cnt }} 个 </el-text>
+              </div>
             </div>
           </div>
           <div v-show="resourceDetail?.author_info" class="resource-static-item">
@@ -627,7 +631,7 @@ defineExpose({
 }
 .resource-static-item-right {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   width: 100%;

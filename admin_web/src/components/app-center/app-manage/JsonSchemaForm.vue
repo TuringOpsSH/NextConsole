@@ -502,12 +502,8 @@ watch(
         </el-icon>
       </el-tooltip>
     </div>
-    <div v-if="props.isParent" class="root-tips">
-      <el-tooltip
-        v-if="Object.keys(errorKeys).length"
-        content="参数名称必须以字母开头，且只能包含字母、数字和-或者_"
-        effect="dark"
-      >
+    <div v-if="props.isParent && Object.keys(errorKeys).length" class="root-tips">
+      <el-tooltip content="参数名称必须以字母开头，且只能包含字母、数字和-或者_" effect="dark">
         <el-icon>
           <QuestionFilled style="color: red" />
         </el-icon>
@@ -553,9 +549,8 @@ watch(
           </div>
         </el-col>
         <el-col :span="localRequireDefile ? 5 : 7">
-          <div class="attr-type">
+          <div v-if="localSchema.properties?.[key]" class="attr-type" >
             <el-select
-              v-if="localSchema.properties?.[key]"
               v-model="localSchema.properties[key].typeName"
               :disabled="localReadOnly || localSchema?.properties?.[key]?.typeFixed"
               @change="(newTypeName: string) => changeAttrType(newTypeName, key)"
@@ -567,15 +562,17 @@ watch(
         <el-col v-show="localRequireDefile && !localSchema?.properties?.[key]?.typeFixed" :span="2">
           <div class="attr-require">
             <el-tooltip content="是否必需" placement="top" effect="light">
-              <el-icon
-                v-if="!localSchema.properties?.[key]?.valueFixed"
-                :style="{ color: localSchema?.required?.includes(key) ? 'red' : 'grey' }"
-                class="icon-button"
-                size="large"
-                @click="changeRequired(key)"
-              >
-                <StarFilled />
-              </el-icon>
+              <div>
+                <el-icon
+                  v-if="!localSchema.properties?.[key]?.valueFixed"
+                  :style="{ color: localSchema?.required?.includes(key) ? 'red' : 'grey' }"
+                  class="icon-button"
+                  size="large"
+                  @click="changeRequired(key)"
+                >
+                  <StarFilled />
+                </el-icon>
+              </div>
             </el-tooltip>
             <el-popover trigger="click" title="枚举值" width="300px" placement="left">
               <template #reference>
@@ -593,49 +590,53 @@ watch(
                 </el-icon>
               </template>
               <el-form-item>
-                <el-input-tag
-                  v-if="
+                <div v-if="
                     localSchema.properties?.[key]?.type == 'string' ||
                     localSchema.properties?.[key]?.type == 'number' ||
                     localSchema.properties?.[key]?.type == 'integer'
-                  "
-                  v-model="localSchema.properties[key].enum"
-                  placeholder="请输入枚举值,enter键分隔"
-                  clearable
-                  size="large"
-                  tag-type="primary"
-                  tag-effect="light"
-                  @change="changeEnum(key)"
-                />
-                <el-select
-                  v-else-if="localSchema.properties?.[key]?.type == 'boolean'"
-                  v-model="localSchema.properties[key].enum"
-                  placeholder="请选择枚举值"
-                  clearable
-                  multiple
-                  size="large"
-                  @change="changeEnum(key)"
-                >
-                  <el-option-group>
-                    <el-option :value="true" label="true" />
-                    <el-option :value="false" label="false" />
-                  </el-option-group>
-                </el-select>
+                  ">
+                  <el-input-tag
+                    v-model="localSchema.properties[key].enum"
+                    placeholder="请输入枚举值,enter键分隔"
+                    clearable
+                    size="large"
+                    tag-type="primary"
+                    tag-effect="light"
+                    @change="changeEnum(key)"
+                  />
+                </div>
+                <div v-else-if="localSchema.properties?.[key]?.type == 'boolean'">
+                  <el-select
+                    v-model="localSchema.properties[key].enum"
+                    placeholder="请选择枚举值"
+                    clearable
+                    multiple
+                    size="large"
+                    @change="changeEnum(key)"
+                  >
+                    <el-option-group>
+                      <el-option :value="true" label="true" />
+                      <el-option :value="false" label="false" />
+                    </el-option-group>
+                  </el-select>
+                </div>
               </el-form-item>
             </el-popover>
             <el-tooltip content="允许的文件格式" effect="light" placement="top">
-              <el-icon
-                v-if="
-                  ['file', 'file-list'].includes(localSchema.properties?.[key]?.typeName) &&
-                  !localSchema.properties?.[key]?.valueFixed
-                "
-                :style="{ color: localSchema.properties?.[key]?.enum?.length > 0 ? 'blue' : 'grey' }"
-                class="icon-button"
-                size="large"
-                @click="openFileEnumDialog(key)"
-              >
-                <List />
-              </el-icon>
+              <div>
+                <el-icon
+                  v-if="
+                    ['file', 'file-list'].includes(localSchema.properties?.[key]?.typeName) &&
+                    !localSchema.properties?.[key]?.valueFixed
+                  "
+                  :style="{ color: localSchema.properties?.[key]?.enum?.length > 0 ? 'blue' : 'grey' }"
+                  class="icon-button"
+                  size="large"
+                  @click="openFileEnumDialog(key)"
+                >
+                  <List />
+                </el-icon>
+              </div>
             </el-tooltip>
           </div>
         </el-col>
@@ -734,49 +735,49 @@ watch(
         @update:schema="updateSchema"
       />
     </div>
-  </div>
-  <el-dialog v-model="showFileEnumFlag" title="可上传的文件类型">
-    <el-form style="margin-top: 20px">
-      <el-form-item
-        v-if="currentKey && typeof localSchema.properties[currentKey]?.enum === 'object'"
-        label="文件类型"
-        label-position="top"
-      >
-        <el-select
-          v-model="localSchema.properties[currentKey].enum"
-          multiple
-          allow-create
-          clearable
-          filterable
-          default-first-option
-          placeholder="请选择或者输入文件格式后缀"
-          @change="updateSchema"
+    <el-dialog v-model="showFileEnumFlag" title="可上传的文件类型">
+      <el-form style="margin-top: 20px">
+        <el-form-item
+          v-if="currentKey && typeof localSchema.properties[currentKey]?.enum === 'object'"
+          label="文件类型"
+          label-position="top"
         >
-          <el-option-group>
-            <el-option value="all" label="所有文件" />
-            <el-option value="docx" label="docx" />
-            <el-option value="doc" label="doc" />
-            <el-option value="xlsx" label="xlsx" />
-            <el-option value="xls" label="xls" />
-            <el-option value="pptx" label="pptx" />
-            <el-option value="pdf" label="pdf" />
-            <el-option value="txt" label="txt" />
-            <el-option value="md" label="markdown" />
-            <el-option value="log" label="log" />
-            <el-option value="jpg" label="jpg" />
-            <el-option value="png" label="png" />
-            <el-option value="gif" label="gif" />
-            <el-option value="mp4" label="mp4" />
-            <el-option value="mp3" label="mp3" />
-            <el-option value="zip" label="zip" />
-            <el-option value="rar" label="rar" />
-            <el-option value="tar" label="tar" />
-            <el-option value="7z" label="7z" />
-          </el-option-group>
-        </el-select>
-      </el-form-item>
-    </el-form>
-  </el-dialog>
+          <el-select
+            v-model="localSchema.properties[currentKey].enum"
+            multiple
+            allow-create
+            clearable
+            filterable
+            default-first-option
+            placeholder="请选择或者输入文件格式后缀"
+            @change="updateSchema"
+          >
+            <el-option-group>
+              <el-option value="all" label="所有文件" />
+              <el-option value="docx" label="docx" />
+              <el-option value="doc" label="doc" />
+              <el-option value="xlsx" label="xlsx" />
+              <el-option value="xls" label="xls" />
+              <el-option value="pptx" label="pptx" />
+              <el-option value="pdf" label="pdf" />
+              <el-option value="txt" label="txt" />
+              <el-option value="md" label="markdown" />
+              <el-option value="log" label="log" />
+              <el-option value="jpg" label="jpg" />
+              <el-option value="png" label="png" />
+              <el-option value="gif" label="gif" />
+              <el-option value="mp4" label="mp4" />
+              <el-option value="mp3" label="mp3" />
+              <el-option value="zip" label="zip" />
+              <el-option value="rar" label="rar" />
+              <el-option value="tar" label="tar" />
+              <el-option value="7z" label="7z" />
+            </el-option-group>
+          </el-select>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+  </div>
 </template>
 
 <style scoped>

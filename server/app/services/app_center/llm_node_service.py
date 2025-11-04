@@ -96,6 +96,12 @@ def llm_node_execute(params, task_record, global_params):
                     chunk_res["qa_id"] = task_record.qa_id
                     chunk_res["msg_parent_id"] = task_record.msg_id
                     chunk_res["msg_id"] = answer_msg.msg_id
+                    # 自定义推理标签
+                    if llm_client.think_attr and llm_client.think_attr.get("begin"):
+                        # 判断当前content中是否包含推理标签的结束符
+                        if check_is_think_chunk(content, msg_content, llm_client.think_attr):
+                            reasoning_content += content
+                            content = ''
                     chunk_res["choices"][0]["delta"]["content"] = content
                     chunk_res["choices"][0]["delta"]["reasoning_content"] = reasoning_content
                     global_params["message_queue"].put(chunk_res)
@@ -155,6 +161,11 @@ def llm_node_execute(params, task_record, global_params):
                 }]
             })
             msg_content += reference_md
+            # 自定义推理标签
+            if llm_client.think_attr and llm_client.think_attr.get("begin"):
+                new_reason_chunk, new_msg_chunk = extract_think_chunk(msg_content, llm_client.think_attr)
+                msg_reasoning_content += new_reason_chunk
+                msg_content = new_msg_chunk
             task_record.task_result = json.dumps({
                 "content": msg_content,
                 "reasoning_content": msg_reasoning_content,
@@ -189,10 +200,14 @@ def llm_node_execute(params, task_record, global_params):
             task_record.task_trace_log = str(e)
             app.logger.error(f"workflow_chat error: {e}")
             msg_content = '对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~'
-
         if task_record.workflow_node_rag_ref_show:
             reference_md = add_reference_md(task_record, global_params)
             msg_content += reference_md
+        # 自定义推理标签
+        if llm_client.think_attr and llm_client.think_attr.get("begin"):
+            new_reason_chunk, new_msg_chunk = extract_think_chunk(msg_content, llm_client.think_attr)
+            msg_reasoning_content += new_reason_chunk
+            msg_content = new_msg_chunk
         task_record.task_result = json.dumps({
                 "content": msg_content,
                 "reasoning_content": msg_reasoning_content,
@@ -377,3 +392,40 @@ def add_reference_md(task_record, global_params):
                 index += 1
     return md_content
 
+
+def extract_think_chunk(msg_content, think_attr: dict):
+    """
+    提取推理片段
+    :param msg_content:
+    :param think_attr:
+    :return:
+    """
+    begin_attr = think_attr.get("begin")
+    end_attr = think_attr.get("end")
+    if not msg_content or (not begin_attr and not end_attr):
+        return '', ''
+    if not msg_content.startswith(begin_attr) or not end_attr in msg_content:
+        return '', msg_content
+    end_index = msg_content.rfind(end_attr)
+    if end_index == -1:
+        return '', msg_content
+    reasoning_chunk = msg_content[len(begin_attr):end_index].strip()
+    message_chunk = msg_content[end_index + len(end_attr):].strip()
+    return reasoning_chunk, message_chunk
+
+
+def check_is_think_chunk(chunk, msg_content, think_attr: dict):
+    """
+    检查是否是推理片段
+    :param msg_content:
+    :param think_attr:
+    :return:
+    """
+    begin_attr = think_attr.get("begin")
+    end_attr = think_attr.get("end")
+    if not chunk or (not begin_attr and not end_attr):
+        return False
+    if not msg_content.startswith(begin_attr):
+        return False
+
+    return True

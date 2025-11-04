@@ -229,6 +229,7 @@ def model_instance_add(params):
     extra_headers_schema = params.get("extra_headers", {})
     extra_body_schema = params.get("extra_body", {})
     llm_authors = params.get("llm_authors", [])
+    think_attr = params.get("think_attr", {})
     llm_code = str(uuid.uuid4())[:20]
     from app.services.app_center.node_params_service import load_properties
     try:
@@ -256,7 +257,7 @@ def model_instance_add(params):
         frequency_penalty=frequency_penalty, max_tokens=max_tokens, n=n, presence_penalty=presence_penalty,
         response_format=response_format, stop=stop, stream=stream, temperature=temperature, top_p=top_p,
         support_vis=support_vis, support_file=support_file, is_std_openai=is_std_openai,
-        extra_headers=extra_headers, extra_body=extra_body, use_default=use_default
+        extra_headers=extra_headers, extra_body=extra_body, use_default=use_default, think_attr=think_attr
     )
     db.session.add(llm_instance)
     db.session.commit()
@@ -353,6 +354,7 @@ def model_instance_update(params):
     top_p = params.get("top_p")
     extra_headers_schema = params.get("extra_headers")
     extra_body_schema = params.get("extra_body")
+    think_attr = params.get("think_attr")
     from app.services.app_center.node_params_service import load_properties
     try:
         extra_headers = load_properties(extra_headers_schema.get('properties', {}), {})
@@ -416,6 +418,9 @@ def model_instance_update(params):
     if extra_body is not None and extra_body != target_llm_instance.extra_body:
         target_llm_instance.extra_body = extra_body
         flag_modified(target_llm_instance, "extra_body")
+    if think_attr is not None and think_attr != target_llm_instance.think_attr:
+        target_llm_instance.think_attr = think_attr
+        flag_modified(target_llm_instance, "think_attr")
     db.session.add(target_llm_instance)
     db.session.commit()
     # 更新权限

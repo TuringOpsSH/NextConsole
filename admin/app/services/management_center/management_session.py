@@ -104,8 +104,19 @@ def lookup_session_details(params):
                 session_dict["session_source"] = {
                     "app_code": "next_search",
                     "app_name": "小亦助手",
-                    "app_icon": "/images/ces_xiaoyi.svg"
+                    "app_icon": "/images/logo.svg"
                 }
+                from app.models.configure_center.system_config import SystemConfig
+                system_config = SystemConfig.query.filter(
+                    SystemConfig.config_key == "ai",
+                    SystemConfig.config_status == 1
+                ).first()
+                if system_config:
+                    xiaoyi_config = system_config.config_value.get("xiaoyi", {})
+                    if xiaoyi_config.get("avatar_url"):
+                        session_dict["session_source"]["app_icon"] = xiaoyi_config.get("avatar_url")
+                    if xiaoyi_config.get("name"):
+                        session_dict["session_source"]["app_name"] = xiaoyi_config.get("name")
             elif session.session_source == "support_ticket":
                 session_dict["session_source"] = {
                     "app_code": "support_ticket",

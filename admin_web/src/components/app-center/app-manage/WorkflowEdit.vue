@@ -265,6 +265,9 @@ async function preCheckWorkflow() {
     for (let i of res.result) {
       newWorkflowAlters.push(i);
     }
+    if (!res.result.length) {
+      newWorkflowAlters = [];
+    }
   }
   // 按照告警级别排序
   newWorkflowAlters.sort((a, b) => {
@@ -845,16 +848,20 @@ defineExpose({
           <div id="operation-panel">
             <div id="panel-left">
               <div class="std-middle-box">
-                <el-tooltip v-if="!graphLock" content="锁定画布" placement="top">
-                  <el-icon class="panel-icon" @click="switchGraphLock">
-                    <Unlock />
-                  </el-icon>
-                </el-tooltip>
-                <el-tooltip v-else content="解锁画布" placement="top">
-                  <el-icon class="panel-icon" color="#409eff" @click="switchGraphLock">
-                    <Lock />
-                  </el-icon>
-                </el-tooltip>
+                <div v-if="!graphLock">
+                  <el-tooltip content="锁定画布" placement="top">
+                    <el-icon class="panel-icon" @click="switchGraphLock">
+                      <Unlock />
+                    </el-icon>
+                  </el-tooltip>
+                </div>
+                <div v-else>
+                  <el-tooltip content="解锁画布" placement="top">
+                    <el-icon class="panel-icon" color="#409eff" @click="switchGraphLock">
+                      <Lock />
+                    </el-icon>
+                  </el-tooltip>
+                </div>
               </div>
               <div class="std-middle-box">
                 <el-popover placement="top" trigger="click" width="400" title="连线路由">
@@ -997,8 +1004,8 @@ defineExpose({
                       </el-icon>
                     </el-badge>
                   </template>
-                  <el-scrollbar v-if="workflowAlters?.length">
-                    <div class="alter-list">
+                  <el-scrollbar>
+                    <div v-if="workflowAlters?.length" class="alter-list">
                       <el-alert
                         v-for="alter in workflowAlters"
                         :key="alter.id"
@@ -1010,16 +1017,16 @@ defineExpose({
                         style="min-height: 40px"
                       />
                     </div>
+                    <div v-else>
+                      <el-alert
+                        title="工作流配置正常"
+                        description="点击试运行按钮，测试工作流是否正常运行"
+                        show-icon
+                        :closable="false"
+                        type="success"
+                      />
+                    </div>
                   </el-scrollbar>
-                  <div v-else>
-                    <el-alert
-                      title="工作流配置正常"
-                      description="点击试运行按钮，测试工作流是否正常运行"
-                      show-icon
-                      :closable="false"
-                      type="success"
-                    />
-                  </div>
                 </el-popover>
               </div>
               <div class="add-node-button" style="padding: 6px" @click="runWorkflow">
@@ -1035,32 +1042,34 @@ defineExpose({
             </div>
           </div>
         </div>
+        <WorkFlowNodeEdit ref="workflowNodeRef" />
+        <WorkFlowEdgeEdit />
+        <AgentApp
+          ref="agentAppRef"
+          :app-code="appInfoStore.currentApp.app_code"
+          :show="workflowStore.showAgentApp"
+          :workflow-code="workflowStore.currentFlow.workflow_code"
+        />
+        <el-dialog v-model="workflowStore.showDeleteNodeConfirm" title="删除节点" style="max-width: 500px">
+          <el-result
+            :title="
+              workflowStore.selectedNodes?.length > 1 ? `删除${workflowStore.selectedNodes?.length}个节点` : '删除节点'
+            "
+            :sub-title="
+              workflowStore.selectedNodes?.length > 1
+                ? '确定要删除这些节点吗？此操作不可恢复'
+                : '确定要删除该节点吗？此操作不可恢复'
+            "
+            icon="warning"
+          />
+          <template #footer>
+            <el-button text type="primary" @click="workflowStore.showDeleteNodeConfirm = false"> 取消 </el-button>
+            <el-button type="danger" @click="deleteCurrentNode"> 删除 </el-button>
+          </template>
+        </el-dialog>
       </el-scrollbar>
     </el-main>
   </el-container>
-  <WorkFlowNodeEdit ref="workflowNodeRef" />
-  <WorkFlowEdgeEdit />
-  <AgentApp
-    ref="agentAppRef"
-    :app-code="appInfoStore.currentApp.app_code"
-    :show="workflowStore.showAgentApp"
-    :workflow-code="workflowStore.currentFlow.workflow_code"
-  />
-  <el-dialog v-model="workflowStore.showDeleteNodeConfirm" title="删除节点" style="max-width: 500px">
-    <el-result
-      :title="workflowStore.selectedNodes?.length > 1 ? `删除${workflowStore.selectedNodes?.length}个节点` : '删除节点'"
-      :sub-title="
-        workflowStore.selectedNodes?.length > 1
-          ? '确定要删除这些节点吗？此操作不可恢复'
-          : '确定要删除该节点吗？此操作不可恢复'
-      "
-      icon="warning"
-    />
-    <template #footer>
-      <el-button text type="primary" @click="workflowStore.showDeleteNodeConfirm = false"> 取消 </el-button>
-      <el-button type="danger" @click="deleteCurrentNode"> 删除 </el-button>
-    </template>
-  </el-dialog>
 </template>
 
 <style scoped>

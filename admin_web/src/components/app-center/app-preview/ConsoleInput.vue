@@ -701,18 +701,18 @@ defineExpose({
         <el-text class="msg-tips-text"> 以上内容均由AI生成式模型生成，仅供参考 </el-text>
       </div>
     </div>
+    <ResourcesSearch
+      ref="resourcesSearchRef"
+      :model="resourceSearchDialogShow"
+      :session-resources="sessionResourcesList"
+      @close="resourceSearchDialogShow = false"
+      @commit="
+        args => {
+          commitAddChooseResources();
+        }
+      "
+    />
   </div>
-  <ResourcesSearch
-    ref="resourcesSearchRef"
-    :model="resourceSearchDialogShow"
-    :session-resources="sessionResourcesList"
-    @close="resourceSearchDialogShow = false"
-    @commit="
-      args => {
-        commitAddChooseResources();
-      }
-    "
-  />
 </template>
 <style scoped>
 .msg-input-textarea :deep(.el-textarea__inner::-webkit-scrollbar) {

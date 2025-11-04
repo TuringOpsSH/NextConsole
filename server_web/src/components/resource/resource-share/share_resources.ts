@@ -93,16 +93,6 @@ export async function show_share_resources(item: IResourceItem | null = null) {
   });
 }
 
-export async function get_current_share_resource(resource_id: string | number | null = null) {
-  let params = {
-    resource_id: resource_id
-  };
-  let res = await resource_share_get_meta(params);
-  if (!res.error_status) {
-    Object.assign(current_share_resource, res.result);
-  }
-}
-
 export async function search_all_resource_share_object(params?: ISearchByKeywordParams) {
   const { isLoading } = storeToRefs(useShareResourceStore());
   let search_params = {
@@ -133,86 +123,6 @@ export async function search_all_resource_share_object(params?: ISearchByKeyword
   }
   resource_share_list_Ref.value?.clearSelection();
   share_resource_loading.value = false;
-}
-
-export async function search_next_resource_share_object(scroll_position: object) {
-  if (share_resource_loading.value) {
-    console.log('资源正在加载中');
-    return;
-  }
-  if (current_total.value && current_total.value <= share_resource_list.value.length) {
-    return;
-  }
-  if (resource_view_model.value == 'card') {
-    // @ts-ignore
-    if (scroll_position.scrollTop + window.innerHeight - 120 > resource_card_scroll_Ref.value.clientHeight - 10) {
-      // 下一页
-      current_page_num.value += 1;
-      let search_params = {
-        resource_parent_id: current_share_resource.id,
-        page_num: current_page_num.value,
-        page_size: current_page_size.value
-      };
-      share_resource_loading.value = true;
-      let res = await resource_share_get_list(search_params);
-      if (!res.error_status) {
-        current_total.value = res.result.total;
-
-        for (let resource of res.result.data) {
-          // 去重添加
-          let find_flag = false;
-          for (let item of share_resource_list.value) {
-            if (item.id == resource.resource.id) {
-              find_flag = true;
-              break;
-            }
-          }
-          if (!find_flag) {
-            share_resource_list.value.push({ ...resource.resource, auth_type: resource.auth_type });
-          }
-        }
-      }
-      // @ts-ignore
-      el_scrollbar_Ref.value.setScrollTop(scroll_position.scrollTop - 20);
-      share_resource_loading.value = false;
-    }
-  } else if (resource_view_model.value == 'list') {
-    // @ts-ignore
-    if (
-      Math.floor(scroll_position.scrollTop + window.innerHeight - 128) >
-      resource_list_scroll_Ref.value.clientHeight - 10
-    ) {
-      // 下一页
-      current_page_num.value += 1;
-      let search_params = {
-        resource_parent_id: current_share_resource.id,
-        page_num: current_page_num.value,
-        page_size: current_page_size.value
-      };
-      share_resource_loading.value = true;
-      let res = await resource_share_get_list(search_params);
-      if (!res.error_status) {
-        current_total.value = res.result.total;
-        for (let resource of res.result.data) {
-          // 去重添加
-          let find_flag = false;
-          for (let item of share_resource_list.value) {
-            if (item.id == resource.resource.id) {
-              find_flag = true;
-              break;
-            }
-          }
-          if (!find_flag) {
-            share_resource_list.value.push({ ...resource.resource, auth_type: resource.auth_type });
-          }
-        }
-      }
-      // 往上滚动防止连续加载
-      // @ts-ignore
-      el_scrollbar_Ref.value.setScrollTop(scroll_position.scrollTop - 20);
-      share_resource_loading.value = false;
-    }
-  }
 }
 
 export async function get_share_parent_resource_list() {
@@ -274,26 +184,6 @@ export async function handle_selection_change(val: IResourceItem[]) {
   }));
 }
 
-export async function show_resource_detail(resource: IResourceItem) {
-  if (!resource?.id) {
-    ElMessage.warning('资源不存在!');
-    return;
-  }
-  if (resource.resource_status == '删除') {
-    ElMessage.warning('资源已删除，请恢复后查看!');
-    return;
-  }
-  turn_on_resource_meta(resource.id, '共享');
-}
-
-export async function double_click_resource_card(resource: IResourceItem) {
-  // 双击资源列表中的某一行触发
-  if (resource.resource_type === 'folder') {
-    show_share_resources(resource);
-  } else {
-    preview_share_resource(resource);
-  }
-}
 export function click_resource_card(resource: IResourceItem, event: MouseEvent) {
   // 如果点击的是多选框，则不触发单击事件
   if ((event.target as HTMLElement).closest('.resource-item-card-body-button')) {
@@ -336,60 +226,4 @@ export function batch_copy_select_resources() {
   }
   push_to_clipboard(selected_resources);
 }
-export async function batch_download_select_resource() {
-  const params = {
-    resource_list: []
-  };
 
-  for (const item of share_resource_list.value) {
-    if (item.id && item.resource_is_selected) {
-      params.resource_list.push(item.id);
-    }
-  }
-  share_resource_loading.value = true;
-  let res = await batch_download_resources(params);
-  share_resource_loading.value = false;
-  if (!res.error_status) {
-    if (!res.result?.length) {
-      ElMessage.info('无可下载资源,请检查资源对应权限!');
-      return;
-    }
-    ElMessage.success('批量下载启动成功！');
-    await handleDownLoad(res.result);
-    // for (let link_item of res.result) {
-    //   // 创建一个隐藏的 <a> 标签
-    //   const link = document.createElement('a');
-    //   link.href = link_item.download_url + '?filename=' + encodeURIComponent(link_item.resource_name);
-    //   link.download = link_item.resource_name; // 设置下载文件的名称
-    //   link.style.display = 'none';
-
-    //   // 将 <a> 标签添加到文档中
-    //   document.body.appendChild(link);
-
-    //   // 触发点击事件
-    //   link.click();
-
-    //   // 移除 <a> 标签
-    //   document.body.removeChild(link);
-    // }
-  }
-}
-
-async function handleDownLoad(data) {
-  for (const item of data) {
-    const response = await fetch(item.download_url);
-    const blob = new Blob([await response.arrayBuffer()], {
-      type: 'application/octet-stream' // 明确为二进制流
-    });
-    saveAs(blob, encodeURIComponent(item.resource_name));
-  }
-}
-
-export function cancel_multiple_selection() {
-  show_multiple_button.value = false;
-  for (let item of multiple_selection.value) {
-    item.resource_is_selected = false;
-  }
-  multiple_selection.value = [];
-  resource_share_list_Ref.value?.clearSelection();
-}

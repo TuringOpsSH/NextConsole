@@ -2590,80 +2590,80 @@ defineExpose({
         <el-text class="msg-tips-text"> 生成，仅供参考 </el-text>
       </div>
     </div>
-  </div>
-  <div id="upload-box">
-    <ResourceUploadManager />
-  </div>
-  <el-dialog
-    ref="uploadWebpageDialogRef"
-    v-model="uploadWebpageDialogVisible"
-    title="目标网页"
-    :draggable="true"
-    :modal="true"
-    style="max-width: 500px"
-    :width="urlDialogWidth"
-  >
-    <el-scrollbar>
-      <el-form
-        ref="uploadWebpageNewResourceFormRef"
-        style="max-height: 500px; margin-right: 24px"
-        :model="uploadWebpageNewResources"
-      >
-        <el-form-item
-          v-for="(item, idx) in uploadWebpageNewResources.new_urls"
-          :key="idx"
-          label="URL"
-          label-position="top"
-          :prop="'new_urls.' + idx + '.resource_source_url'"
-          :rules="[
-            { required: true, message: '请输入目标网页URL', trigger: 'blur' },
-            { type: 'url', message: '请输入正确的URL', trigger: 'blur' },
-            { validator: validateUrlRepeat, trigger: 'blur' }
-          ]"
+    <div id="upload-box">
+      <ResourceUploadManager />
+    </div>
+    <el-dialog
+      ref="uploadWebpageDialogRef"
+      v-model="uploadWebpageDialogVisible"
+      title="目标网页"
+      :draggable="true"
+      :modal="true"
+      style="max-width: 500px"
+      :width="urlDialogWidth"
+    >
+      <el-scrollbar>
+        <el-form
+          ref="uploadWebpageNewResourceFormRef"
+          style="max-height: 500px; margin-right: 24px"
+          :model="uploadWebpageNewResources"
         >
-          <el-input
-            v-model="item.resource_source_url"
-            placeholder="请输入目标网页URL"
-            @change="item.resource_source_url = item.resource_source_url.trim()"
+          <el-form-item
+            v-for="(item, idx) in uploadWebpageNewResources.new_urls"
+            :key="idx"
+            label="URL"
+            label-position="top"
+            :prop="'new_urls.' + idx + '.resource_source_url'"
+            :rules="[
+              { required: true, message: '请输入目标网页URL', trigger: 'blur' },
+              { type: 'url', message: '请输入正确的URL', trigger: 'blur' },
+              { validator: validateUrlRepeat, trigger: 'blur' }
+            ]"
           >
-            <template #append>
-              <el-button style="display: flex; flex-direction: row; gap: 6px" @click="removeNewWebpageResource(idx)">
-                <el-tooltip effect="light" placement="right">
-                  <template #content>
-                    <el-text> 删除此URL </el-text>
-                  </template>
-                  <el-image src="/images/delete_url.svg" style="width: 20px; height: 20px" />
-                </el-tooltip>
-              </el-button>
-            </template>
-          </el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-divider>
-            <el-button type="primary" @click="addNewWebpageResource()"> 添加新的URL </el-button>
-          </el-divider>
-        </el-form-item>
-        <el-form-item>
-          <div class="std-middle-box" style="width: 100%">
-            <el-button style="width: 100%" @click="switchOffNewWebpage()">取消</el-button>
-            <el-button style="width: 100%" type="primary" @click="commitAddNewWebpages()">确定</el-button>
-          </div>
-        </el-form-item>
-      </el-form>
-      <div />
-    </el-scrollbar>
-  </el-dialog>
-  <ResourcesSearch
-    ref="resourcesSearchRef"
-    :model="resourceSearchDialogShow"
-    :session-resources="sessionResourcesList"
-    @close="setDefaultResources"
-    @commit="
-      args => {
-        commitAddChooseResources();
-      }
-    "
-  />
+            <el-input
+              v-model="item.resource_source_url"
+              placeholder="请输入目标网页URL"
+              @change="item.resource_source_url = item.resource_source_url.trim()"
+            >
+              <template #append>
+                <el-button style="display: flex; flex-direction: row; gap: 6px" @click="removeNewWebpageResource(idx)">
+                  <el-tooltip effect="light" placement="right">
+                    <template #content>
+                      <el-text> 删除此URL </el-text>
+                    </template>
+                    <el-image src="/images/delete_url.svg" style="width: 20px; height: 20px" />
+                  </el-tooltip>
+                </el-button>
+              </template>
+            </el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-divider>
+              <el-button type="primary" @click="addNewWebpageResource()"> 添加新的URL </el-button>
+            </el-divider>
+          </el-form-item>
+          <el-form-item>
+            <div class="std-middle-box" style="width: 100%">
+              <el-button style="width: 100%" @click="switchOffNewWebpage()">取消</el-button>
+              <el-button style="width: 100%" type="primary" @click="commitAddNewWebpages()">确定</el-button>
+            </div>
+          </el-form-item>
+        </el-form>
+        <div />
+      </el-scrollbar>
+    </el-dialog>
+    <ResourcesSearch
+      ref="resourcesSearchRef"
+      :model="resourceSearchDialogShow"
+      :session-resources="sessionResourcesList"
+      @close="setDefaultResources"
+      @commit="
+        args => {
+          commitAddChooseResources();
+        }
+      "
+    />
+  </div>
 </template>
 
 <style scoped>

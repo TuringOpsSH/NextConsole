@@ -1,10 +1,10 @@
 import {reactive, ref} from 'vue';
 import {download_resource_object} from '@/api/resource-api';
-import {ResourceItem} from '@/types/resource-type';
+import {IResourceItem, ResourceItem} from '@/types/resource-type';
 import {ElMessage} from 'element-plus';
 import {turn_on_resource_meta} from '@/components/resource/resource_meta/resource_meta';
 import router from '@/router';
-import {turn_on_share_selector} from '@/components/resource/resource_share_selector/resource_share_selector';
+import {turn_on_share_selector} from '@/components/resource/resource-share-selector/resource_share_selector';
 import {
   current_share_resource,
   resource_share_list_Ref,
@@ -197,6 +197,6 @@ export async function share_resource() {
   await turn_on_share_selector(current_row_item);
 }
 
-export async function setCurrentRowItem(item: ResourceItem) {
+export async function setCurrentRowItem(item: IResourceItem) {
   Object.assign(current_row_item, item);
 }

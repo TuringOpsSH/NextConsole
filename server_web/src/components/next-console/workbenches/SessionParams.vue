@@ -20,7 +20,8 @@ const props = defineProps({
 const localSchema = ref({
   ncOrders: [],
   required: [],
-  properties: {}
+  properties: {},
+  skip_user_question: false
 });
 const localParams = ref({});
 const localSessionId = ref(0);
@@ -132,7 +133,7 @@ defineExpose({
       <el-col :span="2" :xs="1">
         <Transition name="dropdown">
           <div v-show="!formShow">
-            <el-tooltip :content="localTitle" placement="right" :show-after="1500">
+            <el-tooltip :content="localTitle" placement="right">
               <el-button :icon="SetUp" circle @click="formShow = !formShow" />
             </el-tooltip>
           </div>
@@ -214,16 +215,6 @@ defineExpose({
                         <el-radio :value="true">是</el-radio>
                         <el-radio :value="false">否</el-radio>
                       </el-radio-group>
-                      <el-input-tag
-                        v-else-if="localSchema.properties?.[item]?.type == 'array'"
-                        v-model="localParams[item]"
-                        clearable
-                        draggable
-                        placeholder="请输入"
-                        tag-type="primary"
-                        tag-effect="light"
-                        @change="updateParams"
-                      />
                       <div v-else-if="localSchema.properties?.[item]?.typeName == 'file'" style="width: 100%">
                         <SingleFileUpload
                           :session-id="localSessionId"
@@ -245,6 +236,16 @@ defineExpose({
                           @update:file="file => handleMultipleFileUpdate(file, item)"
                         />
                       </div>
+                      <el-input-tag
+                        v-else-if="localSchema.properties?.[item]?.type == 'array'"
+                        v-model="localParams[item]"
+                        clearable
+                        draggable
+                        placeholder="请输入"
+                        tag-type="primary"
+                        tag-effect="light"
+                        @change="updateParams"
+                      />
                     </el-form-item>
                     <el-form-item v-if="localSchema?.skip_user_question">
                       <div class="std-middle-box">

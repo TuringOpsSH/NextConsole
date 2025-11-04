@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { ArrowDown, ArrowRight } from '@element-plus/icons-vue';
 import { defineEmits, defineProps, onMounted, ref, watch } from 'vue';
-const props = defineProps<{
+const props = defineProps({
   schemaCode: {
-    type: string | null;
-    default: null;
-  };
+    type: String,
+    default: null
+  },
   jsonSchema: {
-    type: object;
-    default: Record<string, any>;
-  };
-}>();
+    type: Object,
+    required: true
+  }
+});
 const emits = defineEmits(['click:attr']);
 const localSchema = ref({
   type: 'object',

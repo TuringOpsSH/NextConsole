@@ -1,21 +1,10 @@
 <script setup lang="ts">
-import {Search} from '@element-plus/icons-vue';
-import {onMounted} from 'vue';
-import {
-  current_page_num,
-  current_page_size,
-  current_total,
-  get_notification_data,
-  handle_num_change,
-  handle_search_by_keyword,
-  handle_size_change,
-  notification_data,
-  pick_status,
-  pick_type,
-  search_keyword,
-  search_notification
-} from '@/components/user-center/user-notice/user_notification';
+import { Search } from '@element-plus/icons-vue';
+import { onMounted, ref } from 'vue';
+
+import { listTask, searchTask } from '@/api/user-notice';
 import router from '@/router';
+import { IUserNoticeTaskInfo } from '@/types/user-center';
 
 const props = defineProps({
   pageSize: {
@@ -28,10 +17,77 @@ const props = defineProps({
   }
 });
 
+const notificationData = ref<IUserNoticeTaskInfo[]>([]);
+const currentPageNum = ref(1);
+const currentPageSize = ref(10);
+const currentTotal = ref(0);
+const searchKeyword = ref('');
+const pickStatus = ref([]);
+const pickType = ref([]);
+
+async function getNotificationData() {
+  // 获取通知列表
+  // @ts-ignore
+  const res = await listTask({
+    page_num: currentPageNum.value,
+    page_size: currentPageSize.value
+  });
+  if (!res.error_status) {
+    notificationData.value = res.result.data;
+    currentTotal.value = res.result.total;
+  }
+}
+async function handleSizeChange(val: number) {
+  currentPageSize.value = val;
+  await getNotificationData();
+}
+async function handleNumChange(val: number) {
+  currentPageNum.value = val;
+  await getNotificationData();
+}
+
+async function handleSearchByKeyword() {
+  if (!searchKeyword.value) {
+    return;
+  }
+  await searchNotification();
+}
+
+async function searchNotification() {
+  const params = {
+    keyword: searchKeyword.value,
+    fetch_all: true,
+    task_status: pickStatus.value,
+    notice_type: pickType.value
+  };
+  const res = await searchTask(params);
+  if (!res.error_status) {
+    notificationData.value = res.result.data;
+    currentTotal.value = res.result.total;
+  }
+}
+function getTaskProgressStatus(status: string) {
+  switch (status) {
+    case '待执行':
+      return 'info';
+    case '执行中':
+      return 'primary';
+    case '已完成':
+      return 'success';
+    case '已暂停':
+      return 'warning';
+    case '已终止':
+      return 'warning';
+    case '异常':
+      return 'danger';
+    default:
+      return 'primary';
+  }
+}
 onMounted(async () => {
-  current_page_num.value = props.pageNum;
-  current_page_size.value = props.pageSize;
-  get_notification_data();
+  currentPageNum.value = props.pageNum;
+  currentPageSize.value = props.pageSize;
+  getNotificationData();
 });
 </script>
 
@@ -45,23 +101,23 @@ onMounted(async () => {
         <div id="notice-head-right">
           <div class="std-middle-box">
             <el-input
-              v-model="search_keyword"
+              v-model="searchKeyword"
               :prefix-icon="Search"
               placeholder="搜索名称或者描述"
               clearable
-              @keydown.enter.prevent="handle_search_by_keyword"
-              @blur="handle_search_by_keyword"
-              @clear="get_notification_data"
+              @keydown.enter.prevent="handleSearchByKeyword"
+              @blur="handleSearchByKeyword"
+              @clear="getNotificationData"
             />
           </div>
           <div class="std-middle-box" style="width: 150px">
             <el-select
-              v-model="pick_status"
+              v-model="pickStatus"
               multiple
               placeholder="全部状态"
               collapse-tags
               clearable
-              @change="search_notification"
+              @change="searchNotification"
             >
               <el-option label="新建中" value="新建中" />
               <el-option label="待执行" value="待执行" />
@@ -74,12 +130,12 @@ onMounted(async () => {
           </div>
           <div class="std-middle-box" style="width: 150px">
             <el-select
-              v-model="pick_type"
+              v-model="pickType"
               multiple
               placeholder="全部类型"
               collapse-tags
               clearable
-              @change="search_notification"
+              @change="searchNotification"
             >
               <el-option label="站内信" value="站内信" />
               <el-option label="邮件" value="邮件" />
@@ -94,7 +150,7 @@ onMounted(async () => {
     <el-main style="height: calc(100vh - 170px)">
       <el-scrollbar>
         <div id="notice-table-area">
-          <el-table :data="notification_data" border stripe show-overflow-tooltip>
+          <el-table :data="notificationData" border stripe show-overflow-tooltip>
             <el-table-column type="selection" width="55" />
             <el-table-column prop="id" label="任务ID" sortable />
             <el-table-column prop="user_id" label="创建人" sortable />
@@ -115,32 +171,16 @@ onMounted(async () => {
               </template>
             </el-table-column>
             <el-table-column prop="task_instance_total" label="通知总数" sortable min-width="100px" />
-            <el-table-column prop="task_instance_failed" label="通知失败数" sortable min-width="100px" />
+            <el-table-column prop="instance_count" label="实例总数" sortable min-width="100px" />
+            <el-table-column prop="failed_count" label="失败数" sortable min-width="100px" />
             <el-table-column prop="task_progress" label="任务进度" sortable min-width="140px">
               <template #default="{ row }">
                 <el-progress
-                  v-if="row.task_instance_failed"
                   :percentage="row.task_progress"
-                  status="exception"
+                  :status="getTaskProgressStatus(row.task_status)"
                   :text-inside="true"
                   :stroke-width="18"
                 />
-                <el-progress
-                  v-else-if="row.task_status === '已完成'"
-                  :percentage="row.task_progress"
-                  status="success"
-                  :text-inside="true"
-                  :stroke-width="18"
-                />
-
-                <el-progress
-                  v-else-if="row.task_status === '已暂停' || row.task_status === '已终止'"
-                  :percentage="row.task_progress"
-                  status="warning"
-                  :text-inside="true"
-                  :stroke-width="18"
-                />
-                <el-progress v-else :percentage="row.task_progress" :text-inside="true" :stroke-width="18" />
               </template>
             </el-table-column>
             <el-table-column prop="begin_time" label="计划启动时间" sortable />
@@ -155,7 +195,7 @@ onMounted(async () => {
                   @click="
                     router.push({
                       name: 'user_notice_detail',
-                      query: { task_id: row.id }
+                      query: { taskId: row.id }
                     })
                   "
                 >
@@ -171,12 +211,12 @@ onMounted(async () => {
       <el-pagination
         size="small"
         layout=" total, sizes, prev, pager, next"
-        :total="current_total"
+        :total="currentTotal"
         :page-sizes="[10, 20, 50, 100]"
-        :page-size="current_page_size"
-        :current-page="current_page_num"
-        @update:page-size="handle_size_change"
-        @update:current-page="handle_num_change"
+        :page-size="currentPageSize"
+        :current-page="currentPageNum"
+        @update:page-size="handleSizeChange"
+        @update:current-page="handleNumChange"
       />
     </el-footer>
   </el-container>

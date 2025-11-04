@@ -60,7 +60,6 @@ async function initTestSession(newVal, keepSession = false) {
     if (currentSession.value?.session_code != data.result?.session_code) {
       currentSession.value = data.result;
       skipUserInput.value = data.result?.session_task_params_schema?.skip_user_question;
-      console.log('初始化测试会话：', data.result, skipUserInput.value);
     } else {
       msgFlowRef.value?.refreshMsgFlow();
     }

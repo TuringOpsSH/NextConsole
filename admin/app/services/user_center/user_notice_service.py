@@ -1,6 +1,6 @@
 from app.models.user_center.user_info import *
 from app.services.configure_center.response_utils import next_console_response
-from sqlalchemy import or_
+from sqlalchemy import or_, func, case
 from datetime import datetime
 from app.models.contacts.company_model import *
 from app.models.contacts.department_model import *
@@ -23,6 +23,7 @@ def list_task_info(params):
     ).first()
     if not target_user:
         return next_console_response(error_status=True, error_message="用户不存在！", error_code=1001)
+
     all_history_data = NoticeTaskInfo.query.filter(
         NoticeTaskInfo.task_status != "已删除"
     ).order_by(
@@ -30,13 +31,32 @@ def list_task_info(params):
     )
     total = all_history_data.count()
     data = all_history_data.paginate(page=page_num, per_page=page_size, error_out=False)
-
+    all_page_task_id = [i.id for i in data.items]
+    all_task_instance_count = NoticeTaskInstance.query.filter(
+        NoticeTaskInstance.task_id.in_(all_page_task_id)
+    ).with_entities(
+        NoticeTaskInstance.task_id,
+        func.count(NoticeTaskInstance.id).label("instance_count")
+    ).group_by(
+        NoticeTaskInstance.task_id
+    ).all()
+    instance_count_dict = {i.task_id: i.instance_count for i in all_task_instance_count}
     result = {
         "page_num": page_num,
         "page_size": page_size,
         "total": total,
-        "data": [i.to_dict() for i in data.items]
+        "data": []
     }
+    for i in data:
+        sub_i = i.to_dict()
+        if i.task_instance_total:
+            sub_i["task_progress"] = round(
+                i.task_instance_success/i.task_instance_total * 100, 2
+            )
+        else:
+            sub_i["task_progress"] = 0.00
+        sub_i["instance_count"] = instance_count_dict.get(i.id, 0)
+        result["data"].append(sub_i)
     return next_console_response(result=result)
 
 
@@ -363,6 +383,82 @@ def start_task_info(params):
         return next_console_response(error_status=True, error_message="任务未设置通知模板！", error_code=1001)
 
     # 筛选出通知对象
+    target_users = filter_notice_users(target_task)
+    # 创建任务实例数据
+    task_list = []
+    for i in target_users:
+        try:
+            receive_user_id = i.user_id
+        except Exception as e:
+            receive_user_id = -1
+        if target_task.notice_type == "邮件" and not i.user_email:
+            continue
+        if target_task.notice_type == "短信" and not i.user_phone:
+            continue
+        if target_task.notice_type == "站内信" and not i.user_id:
+            continue
+        new_task = NoticeTaskInstance(
+            task_id=task_id,
+            receive_user_id=receive_user_id,
+            notice_status="排队中",
+            task_celery_id="",
+            notice_params={
+                "user_email": i.user_email,
+                "user_phone": i.user_phone,
+                "subject": target_task.task_name,
+                "admin_id": user_id,
+                "user_id": receive_user_id,
+            },
+            notice_content=target_task.notice_template,
+            notice_type=target_task.notice_type,
+        )
+        db.session.add(new_task)
+        task_list.append(new_task)
+    db.session.commit()
+    # 更新任务状态
+    if target_task.run_now:
+        target_task.task_status = "执行中"
+    else:
+        target_task.task_status = "待执行"
+    target_task.task_instance_total = len(task_list)
+    db.session.add(target_task)
+    db.session.commit()
+    # 提交任务实例
+    app.logger.warning(f"通知任务开始执行，任务ID:{target_task.id}，共通知{len(task_list)}人")
+    for i in range(0, len(task_list), target_task.task_instance_batch_size):
+        batch_list = task_list[i:i + target_task.task_instance_batch_size]
+        sub_params = [item.to_dict() for item in batch_list]
+        app.logger.warning(f"通知任务批次提交，任务ID:{target_task.id}，本批次通知{len(sub_params)}人")
+        if target_task.run_now:
+            if target_task.notice_type == "邮件":
+                result = notice_user_by_email.delay(sub_params)
+            elif target_task.notice_type == "短信":
+                result = notice_user_by_sms.delay(sub_params)
+            else:
+                result = notice_user_by_message.delay(sub_params)
+        else:
+            plan_begin_time = target_task.plan_begin_time
+            if target_task.notice_type == "邮件":
+                result = notice_user_by_email.apply_async(args=[sub_params], eta=plan_begin_time)
+            elif target_task.notice_type == "短信":
+                result = notice_user_by_sms.apply_async(args=[sub_params], eta=plan_begin_time)
+            else:
+                result = notice_user_by_message.apply_async(args=[sub_params], eta=plan_begin_time)
+        for sub_task in batch_list:
+            sub_task.task_celery_id = result.id
+            db.session.add(sub_task)
+        db.session.commit()
+    # 返回结果
+    return next_console_response(result=target_task.to_dict(),
+                                 error_message=f"任务已开始，共通知{len(task_list)}人！")
+
+
+def filter_notice_users(target_task):
+    """
+    过滤通知用户
+    :return:
+    """
+    # 筛选出通知对象
     target_users = []
     send_all_user = target_task.notice_params.get("all_user", False)
     send_all_company_user = target_task.notice_params.get("all_company_user", False)
@@ -413,7 +509,6 @@ def start_task_info(params):
             UserInfo.user_id.in_(all_user_ids)
         ).all()
         target_users.extend(all_user)
-    target_users = list(set(target_users))
     if send_all_subscribe_email:
         user_emails = [i.user_email for i in target_users]
         all_subscribe_email = SubscriptionInfo.query.filter(
@@ -436,108 +531,12 @@ def start_task_info(params):
     target_users = [i for i in target_users if i.user_email not in all_subscribe_emails]
     if not target_users:
         return next_console_response(error_status=True, error_message="未找到通知对象！", error_code=1001)
-    # 创建任务实例数据
-    task_list = []
-    for i in target_users:
-        try:
-            receive_user_id = i.user_id
-        except Exception as e:
-            receive_user_id = -1
-        if target_task.notice_type == "邮件" and not i.user_email:
-            continue
-        if target_task.notice_type == "短信" and not i.user_phone:
-            continue
-        if target_task.notice_type == "站内信" and not i.user_id:
-            continue
-        new_task = NoticeTaskInstance(
-            task_id=task_id,
-            receive_user_id=receive_user_id,
-            notice_status="排队中",
-            task_celery_id="",
-            notice_params={
-                "user_email": i.user_email,
-                "user_phone": i.user_phone,
-                "subject": target_task.task_name,
-                "admin_id": user_id,
-                "user_id": receive_user_id,
-            },
-            notice_content=target_task.notice_template,
-            notice_type=target_task.notice_type,
-        )
-        db.session.add(new_task)
-        task_list.append(new_task)
-    db.session.commit()
-    # 更新任务状态
-    if target_task.run_now:
-        target_task.task_status = "执行中"
-    else:
-        target_task.task_status = "待执行"
-    target_task.task_instance_total = len(task_list)
-    db.session.add(target_task)
-    db.session.commit()
-    # 提交任务实例
-    batch_list = []
-    if target_task.run_now:
-        for task_instance in task_list:
-            batch_list.append(task_instance)
-            # 达到批量大小，提交任务
-            if len(batch_list) == target_task.task_instance_batch_size:
-                sub_params = [i.to_dict() for i in batch_list]
-                if target_task.notice_type == "邮件":
-                    result = notice_user_by_email.delay(sub_params)
-                elif target_task.notice_type == "短信":
-                    result = notice_user_by_sms.delay(sub_params)
-                else:
-                    result = notice_user_by_message.delay(sub_params)
-                for i in batch_list:
-                    i.task_celery_id = result.id
-                    db.session.add(i)
-                db.session.commit()
-                batch_list = []
-        if batch_list:
-            sub_params = [i.to_dict() for i in batch_list]
-            if target_task.notice_type == "邮件":
-                result = notice_user_by_email.delay(sub_params)
-            elif target_task.notice_type == "短信":
-                result = notice_user_by_sms.delay(sub_params)
-            else:
-                result = notice_user_by_message.delay(sub_params)
-            for i in batch_list:
-                i.task_celery_id = result.id
-                db.session.add(i)
-            db.session.commit()
-    else:
-        plan_begin_time = target_task.plan_begin_time
-        for task_instance in task_list:
-            batch_list.append(task_instance)
-            if len(batch_list) == target_task.task_instance_batch_size:
-                sub_params = [i.to_dict() for i in batch_list]
-                if target_task.notice_type == "邮件":
-                    result = notice_user_by_email.apply_async(args=[sub_params], eta=plan_begin_time)
-                elif target_task.notice_type == "短信":
-                    result = notice_user_by_sms.apply_async(args=[sub_params], eta=plan_begin_time)
-                else:
-                    result = notice_user_by_message.apply_async(args=[sub_params], eta=plan_begin_time)
-                for i in batch_list:
-                    i.task_celery_id = result.id
-                    db.session.add(i)
-                db.session.commit()
-                batch_list = []
-        if batch_list:
-            sub_params = [i.to_dict() for i in batch_list]
-            if target_task.notice_type == "邮件":
-                result = notice_user_by_email.apply_async(args=[sub_params], eta=plan_begin_time)
-            elif target_task.notice_type == "短信":
-                result = notice_user_by_sms.apply_async(args=[sub_params], eta=plan_begin_time)
-            else:
-                result = notice_user_by_message.apply_async(args=[sub_params], eta=plan_begin_time)
-            for i in batch_list:
-                i.task_celery_id = result.id
-                db.session.add(i)
-            db.session.commit()
-    # 返回结果
-    return next_console_response(result=target_task.to_dict(),
-                                 error_message=f"任务已开始，共通知{len(task_list)}人！")
+    # 去重
+    unique_user_dict = {}
+    for user in target_users:
+        unique_user_dict[user.user_id] = user
+    target_users = list(unique_user_dict.values())
+    return target_users
 
 
 def pause_task_info(params):

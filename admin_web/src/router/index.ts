@@ -94,7 +94,7 @@ const routes: RouteRecordRaw[] = [
                 component: UserNoticeDetail,
                 props: route => ({
                   //@ts-ignore
-                  task_id: parseInt(route.query.task_id) || null
+                  taskId: parseInt(route.query.taskId) || null
                 })
               },
               {

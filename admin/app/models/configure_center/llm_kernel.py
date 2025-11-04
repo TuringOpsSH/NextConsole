@@ -39,6 +39,7 @@ class LLMInstance(db.Model):
     extra_headers = db.Column(db.JSON, comment='请求头', default={})
     extra_body = db.Column(db.JSON, comment='请求体', default={})
     use_default = db.Column(db.Boolean, default=True, comment='是否使用默认配置')
+    think_attr = db.Column(db.JSON, comment='推理标签', default={})
     create_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='创建时间')
     update_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='更新时间')
 
@@ -76,6 +77,10 @@ class LLMInstance(db.Model):
             "extra_headers": self.extra_headers,
             "extra_body": self.extra_body,
             "use_default": self.use_default,
+            "think_attr": self.think_attr or {
+                'begin': '',
+                'end': '',
+            },
         }
 
     def show_info(self):

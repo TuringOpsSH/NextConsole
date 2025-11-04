@@ -25,6 +25,7 @@ class LLMClient(ABC):
         self.llm_client = None
         self.is_std_openai = config.get('is_std_openai', True)
         self.is_nc = config.get('is_nc', False)
+        self.think_attr = config.get('think_attr', {})
 
     @abstractmethod
     def chat(self, config):
@@ -52,6 +53,7 @@ class NextConsoleLLMClient(LLMClient):
                 self.base_url = llm_config.llm_base_url
                 self.api_key = llm_config.llm_api_secret_key
                 self.max_tokens = llm_config.max_tokens
+                self.think_attr = llm_config.think_attr
         if self.is_nc:
             self.init_nc_instance()
         elif self.is_std_openai:
@@ -334,7 +336,7 @@ def llm_chat(params):
             ))
             , mimetype="text/event-stream")
     else:
-        # 同步请求
+        # 同步请求（已废弃）
         begin_time = time.time()
         chat_params = {
             "messages": messages,
@@ -401,7 +403,7 @@ def workflow_chat(params):
     temperature = params.get("temperature", 0)
     max_tokens = params.get("max_tokens", None)
     if stream:
-        # 同步流式请求
+        # 同步流式请求（已废弃）
         return Response(
             stream_with_context(workflow_generate(
                 user_id=user_id,
@@ -415,6 +417,7 @@ def workflow_chat(params):
             ))
             , mimetype="text/event-stream")
     else:
+        from app.services.app_center.llm_node_service import extract_think_chunk
         # 同步请求
         chat_params = {
             "messages": messages,
@@ -428,6 +431,9 @@ def workflow_chat(params):
             res = llm_client.chat(chat_params).model_dump_json()
             res = json.loads(res)
             msg = res.get("choices")[0].get("message").get("content")
+            # 自定义推理标签
+            if llm_client.think_attr and llm_client.think_attr.get("begin"):
+                _, msg = extract_think_chunk(msg, llm_client.think_attr)
             if new_task:
                 new_task.task_status = "finished"
                 new_task.task_result = msg
@@ -448,6 +454,7 @@ def workflow_chat(params):
 def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
              llm_client, messages, stream, response_format, temperature=0,
              max_tokens=None, create_time=None):
+    from app.services.app_center.llm_node_service import extract_think_chunk, check_is_think_chunk
     begin_time = time.time()
     reasoning_content = ""
     msg_content = ""
@@ -482,6 +489,12 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
                 chunk_res["msg_parent_id"] = msg_parent_id
                 chunk_res["msg_id"] = msg_id
                 chunk_res["create_time"] = create_time
+                # 自定义推理标签
+                if llm_client.think_attr and llm_client.think_attr.get("begin"):
+                    # 判断当前content中是否包含推理标签的结束符
+                    if check_is_think_chunk(chunk.choices[0].delta.content, msg_content, llm_client.think_attr):
+                        chunk_res["choices"][0]["delta"]["reasoning_content"] = chunk.choices[0].delta.content
+                        chunk_res["choices"][0]["delta"]["content"] = ''
                 chunk_res = json.dumps(chunk_res)
                 yield f'data: {chunk_res}\n\n'
     except GeneratorExit:
@@ -520,6 +533,10 @@ def generate(user_id, session_id, qa_id, msg_parent_id, msg_id, assistant_id,
         yield f'data: {except_result}\n\n'
     finally:
         end_time = time.time()
+        if llm_client.think_attr and llm_client.think_attr.get("begin"):
+            new_reason_chunk, new_msg_chunk = extract_think_chunk(msg_content, llm_client.think_attr)
+            reasoning_content += new_reason_chunk
+            msg_content = new_msg_chunk
         # 更新回答消息
         answer_params = {
             "user_id": user_id,
