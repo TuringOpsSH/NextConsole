@@ -7,7 +7,7 @@ app.config['admin_domain'] = "http://127.0.0.1:8082"
 app.config['bucket_size'] = 5000
 app.config['data_dir'] = "/app/data"
 app.config["download_dir"] = '/app/data/download'
-app.config['JWT_SECRET_KEY'] = 'ncddodoieo494ifo'
+app.config['JWT_SECRET_KEY'] = 'ncddodoieo4ii94ifo'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
 app.config['LOG_DIR'] = '/app/admin/logs'
 app.config['LOG_FILE'] = 'next_console.log'
