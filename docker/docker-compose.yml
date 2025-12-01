@@ -12,7 +12,7 @@ services:
       - app_network
 
   db:
-    image: nextconsole/pgvector:pg17
+    image: pgvector/pgvector:pg17
     environment:
       POSTGRES_USER: next_console
       POSTGRES_PASSWORD: ncDBPassword
