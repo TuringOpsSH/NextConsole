@@ -226,9 +226,13 @@ export interface IWorkflowNodeInfo {
   node_result_extract_quote?: string;
   node_result_extract_columns?: string;
   node_result_params_json_schema?: {
+    type: string;
+    typeName?: string;
     properties: Record<string, unknown>;
     ncOrders?: string[];
     attrFixed?: boolean;
+    typeFixed?: boolean;
+    valueFixed?: boolean;
   };
   node_tool_api_url?: string;
   node_tool_http_method?: string;
@@ -236,6 +240,15 @@ export interface IWorkflowNodeInfo {
   node_tool_http_params?: object;
   node_tool_http_body?: object;
   node_tool_http_body_type?: string;
+  node_tool_configs?: {
+    protocol: string;
+    https: {
+      verify: boolean;
+    };
+    mcp: {
+      call_data_schema: object;
+    };
+  };
   node_rag_resources?: any[];
   node_rag_web_search?: boolean;
   node_timeout?: number;
@@ -247,6 +260,11 @@ export interface IWorkflowNodeInfo {
   node_file_reader_config?: IFileReaderConfig;
   node_file_splitter_config?: IFileSplitterConfig;
   node_sub_workflow_config?: IWorkflowConfig;
+  node_variable_cast_config?: {
+    cast_type: string;
+    string_template: string;
+    cast_schema: object;
+  };
   subWorkflowOptions?: IWorkflowMetaInfo[];
   [property: string]: any;
 }

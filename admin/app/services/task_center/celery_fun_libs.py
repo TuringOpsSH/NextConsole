@@ -82,10 +82,14 @@ def send_email_by_client(subject, to_emails, body):
             SystemConfig.config_status == 1
         ).first()
         smtp_server = system_tool_config.config_value.get("email", {}).get("smtp_server")
+        smtp_ssl = system_tool_config.config_value.get("email", {}).get("smtp_ssl")
         smtp_port = system_tool_config.config_value.get("email", {}).get("smtp_port")
         smtp_user = system_tool_config.config_value.get("email", {}).get("smtp_user")
         smtp_password = system_tool_config.config_value.get("email", {}).get("smtp_password")
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        if smtp_ssl:
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_server, smtp_port)
         server.login(smtp_user, smtp_password)
         # 创建 MIMEText 对象，并设置邮件主题、发件人、收件人
         msg = MIMEText(body, 'html', 'utf-8')

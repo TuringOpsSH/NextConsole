@@ -1,7 +1,7 @@
 import { ServerResponse } from '@/types/response';
 import request from '@/utils/request';
 
-let envUrl = '';
+const envUrl = '';
 
 export const api = {
   app_detail: envUrl + '/next_console/app_center/app/detail',

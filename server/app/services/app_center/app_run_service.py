@@ -5,10 +5,6 @@ from app.services.task_center.workflow import auto_naming_session
 from app.models.app_center.app_info_model import *
 from app.models.user_center.user_info import UserInfo
 from app.services.next_console.workflow import *
-from flask_jwt_extended import (
-    create_access_token
-)
-from datetime import timedelta
 from app.models.contacts.department_model import DepartmentInfo
 from app.models.contacts.company_model import CompanyInfo
 from concurrent.futures import ThreadPoolExecutor
@@ -18,8 +14,9 @@ from app.services.app_center.file_reader import file_reader_node_execute, file_s
 from app.services.app_center.expermental_features import parallel_llm_node_execute, parallel_rag_node_execute
 from app.services.app_center.llm_node_service import llm_node_execute
 from app.services.app_center.node_params_service import *
+from app.services.app_center.tool_node_service import *
+from app.services.app_center.variable_cast_service import *
 from app.services.next_console.base import *
-import requests
 from app.models.knowledge_center.rag_ref_model import *
 from app.models.configure_center.system_config import SystemConfig
 
@@ -79,7 +76,8 @@ def get_app_session_service(params):
     user_id = params.get("user_id")
     app_code = params.get("app_code")
     session_code = params.get("session_code")
-    workflow_code = params.get("workflow_code", None)
+    task_code = params.get("task_code")
+    session_task_params = params.get("session_task_params")
     target_user = UserInfo.query.filter(
         UserInfo.user_id == user_id,
         UserInfo.user_status == 1
@@ -101,16 +99,28 @@ def get_app_session_service(params):
         ).first()
         if not target_session:
             return next_console_response(error_status=True, error_message="会话不存在！", error_code=1002)
+        if session_task_params is not None:
+            target_session.session_task_params = session_task_params
+        if task_code is not None:
+            target_session.task_code = task_code
+        db.session.add(target_session)
+        db.session.commit()
         result = target_session.to_dict()
         result["app_icon"] = target_app.app_icon
         return next_console_response(result=target_session.to_dict())
     else:
         if int(target_app.user_id) != int(user_id) and not check_user_access(target_user, app_code):
             return next_console_response(error_status=True, error_message="用户无权访问！", error_code=1002)
-        target_start_node = WorkFlowMetaInfo.query.filter(
-            WorkFlowMetaInfo.workflow_is_main == True,
+        filter_conditions = [
             WorkFlowMetaInfo.workflow_status == "正常",
             WorkFlowMetaInfo.environment == '生产'
+        ]
+        if task_code is not None:
+            filter_conditions.append(WorkFlowMetaInfo.workflow_code == task_code)
+        else:
+            filter_conditions.append(WorkFlowMetaInfo.workflow_is_main == True)
+        target_start_node = WorkFlowMetaInfo.query.filter(
+          *filter_conditions
         ).join(
             AppWorkFlowRelation,
             AppWorkFlowRelation.workflow_code == WorkFlowMetaInfo.workflow_code
@@ -138,6 +148,8 @@ def get_app_session_service(params):
             "session_status": "正常",
             "session_source": target_app.app_code,
             "session_task_params_schema": session_task_params_schema,
+            "session_task_params": session_task_params if session_task_params is not None else {},
+            "session_task_id": task_code
         }).json.get("result")
     result["app_icon"] = target_app.app_icon
     return next_console_response(result=result)
@@ -213,7 +225,8 @@ def agent_add_message(params):
     current_session_result = get_app_session_service({
         "user_id": user_id,
         "app_code": app_code,
-        "session_code": session_code
+        "session_code": session_code,
+        "task_code": task_code,
     })
     current_session = current_session_result.json.get("result")
     if not current_session:
@@ -538,6 +551,8 @@ def analysis_workflow_schema(params):
             workflow_node_file_reader_config=node_info.node_file_reader_config,
             workflow_node_file_splitter_config=node_info.node_file_splitter_config,
             workflow_node_sub_workflow_config=node_info.node_sub_workflow_config,
+            workflow_node_tool_configs=node_info.node_tool_configs,
+            workflow_node_variable_cast_config=node_info.node_variable_cast_config,
             session_id=question.get("session_id"),
             qa_id=question.get("qa_id"),
             msg_id=question.get("msg_id"),
@@ -717,6 +732,8 @@ def agent_run_node(task_record_id, global_params=None):
                     file_splitter_node_execute(task_params, task_record, global_params)
                 elif task_record.workflow_node_type == "workflow":
                     workflow_node_execute(task_params, task_record, global_params)
+                elif task_record.workflow_node_type == "variable_cast":
+                    variable_cast_node_execute(task_params, task_record, global_params)
             # 解析结果
             exec_result = load_task_result(task_record)
             task_record.task_result = json.dumps(exec_result)
@@ -822,68 +839,6 @@ def start_node_execute(task_params, task_record, global_params):
     task_record.task_params = global_params["session_task_params"]
     db.session.add(task_record)
     db.session.commit()
-
-
-def tool_node_execute(task_params, task_record, global_params):
-    """
-    工具节点执行器
-        1. 读取节点信息
-        2. 组装工具参数
-        3. 发起请求
-        4. 处理返回结果
-        5. 更新任务状态
-
-    :param task_params:
-    :param task_record:
-    :param global_params:
-    :return:
-    """
-    # 解析 header 参数
-    headers_schema = task_record.workflow_node_tool_http_header.get("properties", {})
-    headers = load_properties(headers_schema, global_params)
-    if "Authorization" not in headers:
-        access_token = create_access_token(identity=str(task_record.user_id),
-                                           expires_delta=timedelta(days=30)
-                                           )
-        headers["Authorization"] = f"Bearer {access_token}"
-    # 解析 query 参数
-    query_schema = task_record.workflow_node_tool_http_params.get("properties", {})
-    query = load_properties(query_schema, global_params)
-    # 解析 body 参数
-    body_schema = task_record.workflow_node_tool_http_body.get("properties", {})
-    data = load_properties(body_schema, global_params)
-    try:
-        if task_record.workflow_node_tool_http_body_type == "form-data":
-            res = requests.request(
-                method=task_record.workflow_node_tool_http_method,
-                url=task_record.workflow_node_tool_api_url,
-                headers=headers,
-                files=None,
-                data=data,
-                params=query,
-                timeout=task_record.workflow_node_timeout,
-            )
-        else:
-            res = requests.request(
-                method=task_record.workflow_node_tool_http_method,
-                url=task_record.workflow_node_tool_api_url,
-                headers=headers,
-                json=data,
-                params=query,
-                timeout=task_record.workflow_node_timeout,
-            )
-        task_record.task_result = res.text
-        task_record.task_status = "已完成"
-        task_record.end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        db.session.add(task_record)
-        db.session.commit()
-        return task_record.task_result
-    except Exception as e:
-        task_record.task_status = "异常"
-        task_record.task_trace_log = str(e)
-        db.session.add(task_record)
-        db.session.commit()
-        return
 
 
 def rag_node_execute(params, task_record, global_params):

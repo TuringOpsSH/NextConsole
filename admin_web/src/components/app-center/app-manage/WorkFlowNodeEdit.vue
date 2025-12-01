@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowDown, ArrowRight, MoreFilled, QuestionFilled, VideoPause, VideoPlay } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, computed } from 'vue';
 import { nodeCopy, nodeDelete, nodeUpdate, workflowSearch, workflowUpdate } from '@/api/app-center-api';
 import AgentNodeAttrEdit from '@/components/app-center/app-manage/AgentNodeAttrEdit.vue';
 import FileReaderNodeAttrEdit from '@/components/app-center/app-manage/FileReaderNodeAttrEdit.vue';
@@ -13,6 +13,7 @@ import SubWorkFlowNodeAttrEdit from '@/components/app-center/app-manage/SubWorkF
 import TemplateEditor from '@/components/app-center/app-manage/TemplateEditor.vue';
 import ToolNodeAttrEdit from '@/components/app-center/app-manage/ToolNodeAttrEdit.vue';
 
+import VariableCastNodeAttrEdit from '@/components/app-center/app-manage/VariableCastNodeAttrEdit.vue';
 import { useAppStore } from '@/stores/app-store';
 import { useWorkflowStore } from '@/stores/workflow-store';
 const appInfoStore = useAppStore();
@@ -84,6 +85,15 @@ const onMouseUp = () => {
 const onMouseLeave = () => {
   nodeDetailRef.value.style.cursor = 'default';
 };
+const nodeResultFormatFixed = computed(() => {
+  return (
+    ['start', 'rag', 'llm', 'file_reader', 'file_splitter', 'workflow', 'end', 'variable_cast'].includes(
+      workflowStore.currentNodeDetail?.node_type
+    ) ||
+    (workflowStore.currentNodeDetail?.node_type == 'tool' &&
+      workflowStore.currentNodeDetail?.node_tool_configs.protocol == 'mcp')
+  );
+});
 async function handleTemplateChange(newValue, src = '') {
   if (src == 'node_result_template') {
     workflowStore.currentNodeDetail.node_result_template = newValue;
@@ -571,7 +581,7 @@ defineExpose({
                 <el-text class="agent-node-name"> {{ workflowStore.currentNodeDetail?.node_name }} </el-text>
               </div>
               <div v-show="nodeNameEdit" class="std-middle-box">
-                <el-input v-model="workflowStore.currentNodeDetail.node_name" @blur="updateNodeName()" />
+                <el-input v-model="workflowStore.currentNodeDetail.node_name" @blur="updateNodeName" />
               </div>
             </div>
             <div id="node-detail-head-right">
@@ -611,7 +621,7 @@ defineExpose({
             <el-input v-model="workflowStore.currentNodeDetail.node_desc" @blur="updateNodeDesc" />
           </div>
         </div>
-        <div v-if="!['tool', 'end'].includes(workflowStore.currentNodeDetail?.node_type)" class="config-item">
+        <div v-if="!['end', 'tool'].includes(workflowStore.currentNodeDetail?.node_type)" class="config-item">
           <div class="config-head">
             <div class="std-middle-box">
               <div v-if="showInputParamsFlag">
@@ -684,6 +694,7 @@ defineExpose({
           @update-node-output-config="updateNodeOutputConfig"
         />
         <SubWorkFlowNodeAttrEdit />
+        <VariableCastNodeAttrEdit />
         <div class="config-item">
           <div class="config-head">
             <div class="std-middle-box">
@@ -719,11 +730,7 @@ defineExpose({
               <el-form-item prop="node_result_format" label="数据格式">
                 <el-select
                   v-model="workflowStore.currentNodeDetail.node_result_format"
-                  :disabled="
-                    ['start', 'rag', 'llm', 'file_reader', 'file_splitter', 'workflow', 'end'].includes(
-                      workflowStore.currentNodeDetail?.node_type
-                    )
-                  "
+                  :disabled="nodeResultFormatFixed"
                   @change="updateNodeOutputConfig"
                 >
                   <el-option value="text" label="text" />
@@ -786,7 +793,11 @@ defineExpose({
                   :json-schema="workflowStore.currentNodeDetail.node_result_params_json_schema"
                   :value-define="workflowStore.currentNodeDetail.node_type == 'end'"
                   :node-upstream="workflowStore.currentNodeDetail?.node_upstream"
-                  :read-only="['start', 'rag', 'file_reader'].includes(workflowStore.currentNodeDetail?.node_type)"
+                  :read-only="
+                    ['start', 'rag', 'file_reader', 'variable_cast'].includes(
+                      workflowStore.currentNodeDetail?.node_type
+                    )
+                  "
                   @update:schema="updateNodeOutputConfig"
                 />
               </el-form-item>
@@ -912,6 +923,7 @@ defineExpose({
               >
                 <el-select
                   v-model="workflowStore.currentNodeDetail.node_run_model_config.parallel_attr"
+                  placeholder="将会对选中的列表属性中每一个元素进行替换执行"
                   @change="updateNodeRunConfig"
                 >
                   <el-option
@@ -922,6 +934,19 @@ defineExpose({
                     :disabled="!value?.type?.includes('array')"
                   />
                 </el-select>
+              </el-form-item>
+              <el-form-item
+                v-if="workflowStore.currentNodeDetail.node_run_model_config.node_run_model == 'parallel'"
+                label="批次大小"
+                prop="batch_size"
+              >
+                <el-input-number
+                  v-model="workflowStore.currentNodeDetail.node_run_model_config.batch_size"
+                  :min="1"
+                  style="width: 100%"
+                  placeholder="每个并发包含的变量数"
+                  @change="updateNodeRunConfig"
+                />
               </el-form-item>
               <el-form-item
                 v-if="workflowStore.currentNodeDetail.node_run_model_config.node_run_model == 'parallel'"
@@ -958,10 +983,7 @@ defineExpose({
                   <el-radio-button value="pass">跳过</el-radio-button>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item
-                v-if="workflowStore.currentNodeDetail.node_failed_solution == 'retry'"
-                label="最大重试次数"
-              >
+              <el-form-item v-if="workflowStore.currentNodeDetail.node_failed_solution == 'retry'" label="最大重试次数">
                 <el-input-number
                   v-model="workflowStore.currentNodeDetail.node_retry_max"
                   :max="3"
@@ -989,10 +1011,7 @@ defineExpose({
                   <el-radio label="跳过" :value="3">跳过</el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item
-                v-if="workflowStore.currentNodeDetail.node_failed_solution == 'catch'"
-                label="异常输出结果"
-              >
+              <el-form-item v-if="workflowStore.currentNodeDetail.node_failed_solution == 'catch'" label="异常输出结果">
                 <TemplateEditor
                   id="node_failed_template"
                   style="width: 100%"

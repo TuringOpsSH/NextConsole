@@ -9,6 +9,7 @@ import { useSystemNoticeStore } from '@/stores/systemNoticeStore';
 import { useUserConfigStore } from '@/stores/user-config-store';
 import { useUserInfoStore } from '@/stores/user-info-store';
 import { ISystemNotice } from '@/types/user-center';
+
 const route = useRoute();
 const showButtonPop = ref();
 const noticeWidth = ref('390px');
@@ -101,9 +102,44 @@ const allSystemNotice = ref<ISystemNotice[]>([]);
 const currentPageSize = ref(50);
 const currentPageNum = ref(1);
 
+async function routerToAdmin(path: string = '/next-console') {
+  const res = await domainGet();
+  const adminDomain = res.result.admin_domain;
+  const newWindow = window.open(adminDomain + path, '_blank');
+  const targetOrigin = new URL(adminDomain).origin;
+  const readyHandler = event => {
+    if (event.origin === targetOrigin && event.data.type === 'RECEIVER_READY') {
+      // 收到准备就绪的信号，发送 token
+      newWindow.postMessage(
+        {
+          type: 'AUTH_TOKEN_TRANSFER',
+          token: userInfoStore.token
+        },
+        targetOrigin
+      );
+      console.log('Token sent after ready signal:', targetOrigin);
+      // 移除这个临时的事件监听器
+      window.removeEventListener('message', readyHandler);
+    }
+  };
+  window.addEventListener('message', readyHandler);
+  return;
+}
+
 async function chooseMenuItem(item) {
-  activeSlideBarName.value = item.rootName;
-  await router.push({ name: item.name });
+  if (item.new_window) {
+    if (item?.url) {
+      window.open(item.url, '_blank');
+      return;
+    }
+    if (item?.name == 'user_activity') {
+      await routerToAdmin(item.path);
+    }
+    window.open(router.resolve({ name: item.name }).href, '_blank');
+  } else {
+    activeSlideBarName.value = item.rootName;
+    await router.push({ name: item.name });
+  }
 }
 
 async function callUserButton(item) {
@@ -113,10 +149,7 @@ async function callUserButton(item) {
       return;
     }
     if (item?.name == 'admin_app') {
-      const res = await domainGet();
-      const adminDomain = res.result.admin_domain;
-      window.open(adminDomain, '_blank');
-      return;
+      await routerToAdmin();
     }
     window.open(router.resolve({ name: item.name }).href, '_blank');
   } else {
@@ -222,6 +255,22 @@ async function loadMoreNotice() {
   }
 }
 
+function addAdminMenu() {
+  const roles = ['admin', 'super_admin', 'next_console_admin'];
+  if (userInfoStore.userInfo.user_role?.some(v => roles.includes(v))) {
+    menuData.push({
+      icon: 'presentation_chart_02_grey.svg',
+      active_icon: 'presentation_chart_02_blue.svg',
+      text: '监控中心',
+      is_active: false,
+      name: 'user_activity',
+      path: '/next-console/dashboard/user_activity',
+      rootName: 'dashboard',
+      new_window: true
+    });
+  }
+}
+
 onMounted(async () => {
   const res = await getUser({});
   if (res.error_status) {
@@ -235,6 +284,7 @@ onMounted(async () => {
   if (window.innerWidth < 768) {
     noticeWidth.value = window.innerWidth - 80 + 'px';
   }
+  addAdminMenu();
 });
 </script>
 

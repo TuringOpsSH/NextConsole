@@ -94,13 +94,10 @@ def create_recommend_question(params):
             return []
         else:
             res = []
-            question_list = []
             # 保存推荐问题用于后续点击更新并分析用户行为
-            if len(answer) == 1:
-                # ,默认中文分割，如果解析异常则更换为英文逗号解析
-                question_list = answer[0].strip().split(",")
-                if len(question_list) == 1:
-                    question_list = answer[0].strip().split("，")
+            question_list = answer.strip().split(",")
+            if len(question_list) == 1:
+                question_list = answer.strip().split("，")
             for question in question_list:
                 if question == "" or question == "null":
                     continue

@@ -33,9 +33,11 @@ export const api = {
   init_app_session: envUrl + '/next_console_admin/app_center/app_run/init_session',
   add_app_message: envUrl + '/next_console_admin/app_center/app_run/messages/add',
   prodAppSearch: envUrl + '/next_console_admin/app_center/publish_manage/search_prod_app',
+  prodAppDetail: envUrl + '/next_console_admin/app_center/publish_manage/get_prod_app',
   publishCreate: envUrl + '/next_console_admin/app_center/publish_manage/create',
   publishSearch: envUrl + '/next_console_admin/app_center/publish_manage/search',
   publishExport: envUrl + '/next_console_admin/app_center/publish_manage/export',
+  publishUpdate: envUrl + '/next_console_admin/app_center/publish_manage/update',
   publishDelete: envUrl + '/next_console_admin/app_center/publish_manage/delete',
   accessSearch: envUrl + '/next_console_admin/app_center/publish_manage/search_access',
   accessAuthor: envUrl + '/next_console_admin/app_center/publish_manage/author',
@@ -277,6 +279,14 @@ export async function prodAppSearch(params: object): Promise<ServerResponse> {
   });
 }
 
+export async function prodAppDetail(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.prodAppDetail,
+    data: params,
+    responseType: 'json'
+  });
+}
+
 export async function publishCreate(params: object): Promise<ServerResponse> {
   return request({
     url: api.publishCreate,
@@ -307,6 +317,14 @@ export async function publishDelete(params: object): Promise<ServerResponse> {
     data: params,
     responseType: 'json'
   });
+}
+
+export async function publishUpdate(params: object): Promise<ServerResponse> {
+    return request({
+        url: api.publishUpdate,
+        data: params,
+        responseType: 'json'
+    });
 }
 export async function accessSearch(params: object): Promise<ServerResponse> {
   return request({
@@ -347,3 +365,4 @@ export async function getDebugInfo(params: object): Promise<ServerResponse> {
     responseType: 'json'
   });
 }
+

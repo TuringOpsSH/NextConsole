@@ -7,9 +7,14 @@ import { onMounted, ref, watch } from 'vue';
 import { onBeforeUnmount } from 'vue-demi';
 import { useRoute } from 'vue-router';
 import { getDashboardIndex, getAllCompany } from '@/api/dashboard';
+import UserActiveDayRank from '@/components/dashboard/UserActiveDayRank.vue';
+import UserActiveQaRank from '@/components/dashboard/UserActiveQaRank.vue';
+import UserActiveTokenRank from '@/components/dashboard/UserActiveTokenRank.vue';
+import UserLastedQuestions from '@/components/dashboard/UserLastedQuestions.vue';
 import router from '@/router';
 import { useUserInfoStore } from '@/stores/user-info-store';
 import { ICompany } from '@/types/contacts';
+
 const props = defineProps({
   tab: {
     type: String,
@@ -331,6 +336,156 @@ const echartsData = {
     }
   },
   workbench: {
+    app_rank_user: {
+      ref: null,
+      options: {
+        title: {
+          text: '应用用户数排行'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'value',
+          boundaryGap: [0, 0.01]
+        },
+        yAxis: {
+          type: 'category',
+          inverse: true,
+          data: [],
+          axisLabel: {
+            formatter: function (value) {
+              // 图表中显示缩写
+              return value.length > 10 ? value.substring(0, 8) + '...' : value;
+            }
+          }
+        },
+        series: [
+          {
+            data: [],
+            type: 'bar'
+          }
+        ],
+        toolbox: {
+          show: true,
+          feature: {
+            dataView: { readOnly: false },
+            magicType: { type: ['line', 'bar'] },
+
+            saveAsImage: {}
+          }
+        }
+      }
+    },
+    app_rank_qa: {
+      ref: null,
+      options: {
+        title: {
+          text: '应用调用数排行'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'value',
+          boundaryGap: [0, 0.01]
+        },
+        yAxis: {
+          type: 'category',
+          inverse: true,
+          data: [],
+          axisLabel: {
+            formatter: function (value) {
+              // 图表中显示缩写
+              return value.length > 10 ? value.substring(0, 8) + '...' : value;
+            }
+          }
+        },
+        series: [
+          {
+            data: [],
+            type: 'bar'
+          }
+        ],
+        toolbox: {
+          show: true,
+          feature: {
+            dataView: { readOnly: false },
+            magicType: { type: ['line', 'bar'] },
+
+            saveAsImage: {}
+          }
+        }
+      }
+    },
+    app_rank_token: {
+      ref: null,
+      options: {
+        title: {
+          text: '应用Token数排行'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'value',
+          boundaryGap: [0, 0.01]
+        },
+        yAxis: {
+          type: 'category',
+          inverse: true,
+          data: [],
+          axisLabel: {
+            formatter: function (value) {
+              // 图表中显示缩写
+              return value.length > 10 ? value.substring(0, 8) + '...' : value;
+            }
+          }
+        },
+        series: [
+          {
+            data: [],
+            type: 'bar'
+          }
+        ],
+        toolbox: {
+          show: true,
+          feature: {
+            dataView: { readOnly: false },
+            magicType: { type: ['line', 'bar'] },
+
+            saveAsImage: {}
+          }
+        }
+      }
+    },
     uv_hour: {
       ref: null,
       options: {
@@ -466,6 +621,56 @@ const echartsData = {
             type: 'line',
             smooth: true,
             name: '第30日留存用户'
+          }
+        ],
+        toolbox: {
+          show: true,
+          feature: {
+            dataView: { readOnly: false },
+            magicType: { type: ['line', 'bar'] },
+
+            saveAsImage: {}
+          }
+        }
+      }
+    },
+    qa_topic: {
+      ref: null,
+      options: {
+        title: {
+          text: '用户最关注问题'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'value',
+          boundaryGap: [0, 0.01]
+        },
+        yAxis: {
+          type: 'category',
+          inverse: true,
+          data: [],
+          axisLabel: {
+            formatter: function (value) {
+              // 图表中显示缩写
+              return value.length > 10 ? value.substring(0, 8) + '...' : value;
+            }
+          }
+        },
+        series: [
+          {
+            data: [],
+            type: 'bar'
           }
         ],
         toolbox: {
@@ -795,7 +1000,14 @@ const echartsData = {
         },
         yAxis: {
           type: 'category',
-          data: []
+          inverse: true,
+          data: [],
+          axisLabel: {
+            formatter: function (value) {
+              // 图表中显示缩写
+              return value.length > 10 ? value.substring(0, 8) + '...' : value;
+            }
+          }
         },
         series: [
           {
@@ -808,7 +1020,6 @@ const echartsData = {
           feature: {
             dataView: { readOnly: false },
             magicType: { type: ['line', 'bar'] },
-
             saveAsImage: {}
           }
         }
@@ -838,7 +1049,14 @@ const echartsData = {
         },
         yAxis: {
           type: 'category',
-          data: []
+          inverse: true,
+          data: [],
+          axisLabel: {
+            formatter: function (value) {
+              // 图表中显示缩写
+              return value.length > 10 ? value.substring(0, 8) + '...' : value;
+            }
+          }
         },
         series: [
           {
@@ -881,7 +1099,14 @@ const echartsData = {
         },
         yAxis: {
           type: 'category',
-          data: []
+          inverse: true,
+          data: [],
+          axisLabel: {
+            formatter: function (value) {
+              // 图表中显示缩写
+              return value.length > 10 ? value.substring(0, 8) + '...' : value;
+            }
+          }
         },
         series: [
           {
@@ -924,7 +1149,14 @@ const echartsData = {
         },
         yAxis: {
           type: 'category',
-          data: []
+          inverse: true,
+          data: [],
+          axisLabel: {
+            formatter: function (value) {
+              // 图表中显示缩写
+              return value.length > 10 ? value.substring(0, 8) + '...' : value;
+            }
+          }
         },
         series: [
           {
@@ -950,7 +1182,10 @@ const qaCount = ref(0);
 const sessionCount = ref(0);
 const docReadCount = ref(0);
 const docDownloadCount = ref(0);
-
+const activeDayRankRef = ref();
+const activeQaRankRef = ref();
+const activeTokenRankRef = ref();
+const userLastedQuestionsRef = ref();
 function transTimeRange() {
   //根据selectedTimeRange计算indexBeginTime，end_begin_time
   if (!selectedTimeRange.value) {
@@ -1117,8 +1352,115 @@ async function getD1Retention() {
   }
   echartsData.user.d1_retention.ref?.setOption(echartsData.user.d1_retention.options);
 }
-
+async function getAllRetention() {
+  const params = {
+    index_name: 'all_retention',
+    begin_time: indexBeginTime.value,
+    top: '',
+    company_id: targetCompany.value
+  };
+  const res = await getDashboardIndex(params);
+  if (!res.error_status) {
+    echartsData.workbench.all_retention.options.xAxis.data = [];
+    echartsData.workbench.all_retention.options.series[0].data = [];
+    for (const item of res.result.all_retention.active_user_series) {
+      echartsData.workbench.all_retention.options.xAxis.data.push(item.day);
+      echartsData.workbench.all_retention.options.series[0].data.push(item.active_user_count);
+    }
+    echartsData.workbench.all_retention.options.series[1].data = [];
+    for (const item of res.result.all_retention.retention_7) {
+      echartsData.workbench.all_retention.options.series[1].data.push(item);
+    }
+    echartsData.workbench.all_retention.options.series[2].data = [];
+    for (const item of res.result.all_retention.retention_15) {
+      echartsData.workbench.all_retention.options.series[2].data.push(item);
+    }
+    echartsData.workbench.all_retention.options.series[3].data = [];
+    for (const item of res.result.all_retention.retention_30) {
+      echartsData.workbench.all_retention.options.series[3].data.push(item);
+    }
+  }
+  if (!echartsData.workbench.all_retention.ref && document.getElementById('all_retention')) {
+    echartsData.workbench.all_retention.ref = echarts.init(document.getElementById('all_retention'), null, {
+      width: 800,
+      height: 400
+    });
+  }
+  echartsData.workbench.all_retention.ref?.setOption(echartsData.workbench.all_retention.options);
+}
 // 工作台报表
+async function getAppRankUser() {
+  const params = {
+    index_name: 'app_rank_user',
+    begin_time: indexBeginTime.value,
+    top: '',
+    company_id: targetCompany.value
+  };
+  const res = await getDashboardIndex(params);
+  if (!res.error_status) {
+    echartsData.workbench.app_rank_user.options.yAxis.data = [];
+    echartsData.workbench.app_rank_user.options.series[0].data = [];
+    for (const item of res.result.app_rank_user) {
+      echartsData.workbench.app_rank_user.options.yAxis.data.push(item.app_info.app_name);
+      echartsData.workbench.app_rank_user.options.series[0].data.push(item.user_count);
+    }
+    if (!echartsData.workbench.app_rank_user.ref && document.getElementById('app_rank_user')) {
+      echartsData.workbench.app_rank_user.ref = echarts.init(document.getElementById('app_rank_user'), null, {
+        width: 500,
+        height: 300
+      });
+    }
+    echartsData.workbench.app_rank_user.ref?.setOption(echartsData.workbench.app_rank_user.options);
+  }
+}
+async function getAppRankQa() {
+  const params = {
+    index_name: 'app_rank_qa',
+    begin_time: indexBeginTime.value,
+    top: '',
+    company_id: targetCompany.value
+  };
+  const res = await getDashboardIndex(params);
+  if (!res.error_status) {
+    echartsData.workbench.app_rank_qa.options.yAxis.data = [];
+    echartsData.workbench.app_rank_qa.options.series[0].data = [];
+    for (const item of res.result.app_rank_qa) {
+      echartsData.workbench.app_rank_qa.options.yAxis.data.push(item.app_info.app_name);
+      echartsData.workbench.app_rank_qa.options.series[0].data.push(item.qa_count);
+    }
+    if (!echartsData.workbench.app_rank_qa.ref && document.getElementById('app_rank_qa')) {
+      echartsData.workbench.app_rank_qa.ref = echarts.init(document.getElementById('app_rank_qa'), null, {
+        width: 500,
+        height: 300
+      });
+    }
+    echartsData.workbench.app_rank_qa.ref?.setOption(echartsData.workbench.app_rank_qa.options);
+  }
+}
+async function getAppRankToken() {
+  const params = {
+    index_name: 'app_rank_token',
+    begin_time: indexBeginTime.value,
+    top: '',
+    company_id: targetCompany.value
+  };
+  const res = await getDashboardIndex(params);
+  if (!res.error_status) {
+    echartsData.workbench.app_rank_token.options.yAxis.data = [];
+    echartsData.workbench.app_rank_token.options.series[0].data = [];
+    for (const item of res.result.app_rank_token) {
+      echartsData.workbench.app_rank_token.options.yAxis.data.push(item.app_info.app_name);
+      echartsData.workbench.app_rank_token.options.series[0].data.push(item.token_count);
+    }
+    if (!echartsData.workbench.app_rank_token.ref && document.getElementById('app_rank_token')) {
+      echartsData.workbench.app_rank_token.ref = echarts.init(document.getElementById('app_rank_token'), null, {
+        width: 500,
+        height: 300
+      });
+    }
+    echartsData.workbench.app_rank_token.ref?.setOption(echartsData.workbench.app_rank_token.options);
+  }
+}
 async function getUvHourData() {
   const params = {
     index_name: 'uv_hour',
@@ -1206,6 +1548,30 @@ async function getAvgQaRetention() {
     });
   }
   echartsData.workbench.avg_qa_retention.ref?.setOption(echartsData.workbench.avg_qa_retention.options);
+}
+async function getQaTopic() {
+  const params = {
+    index_name: 'qa_topic',
+    begin_time: indexBeginTime.value,
+    top: '',
+    company_id: targetCompany.value
+  };
+  const res = await getDashboardIndex(params);
+  if (!res.error_status) {
+    echartsData.workbench.qa_topic.options.yAxis.data = [];
+    echartsData.workbench.qa_topic.options.series[0].data = [];
+    for (const item of res.result.qa_topic) {
+      echartsData.workbench.qa_topic.options.yAxis.data.push(item.qa_topic);
+      echartsData.workbench.qa_topic.options.series[0].data.push(item.qa_count);
+    }
+    if (!echartsData.workbench.qa_topic.ref && document.getElementById('qa_topic')) {
+      echartsData.workbench.qa_topic.ref = echarts.init(document.getElementById('qa_topic'), null, {
+        width: 500,
+        height: 300
+      });
+    }
+    echartsData.workbench.qa_topic.ref?.setOption(echartsData.workbench.qa_topic.options);
+  }
 }
 async function getQaCntData() {
   const params = {
@@ -1308,42 +1674,6 @@ async function getAvgSessionRetention() {
     );
   }
   echartsData.workbench.avg_session_retention.ref?.setOption(echartsData.workbench.avg_session_retention.options);
-}
-async function getAllRetention() {
-  const params = {
-    index_name: 'all_retention',
-    begin_time: indexBeginTime.value,
-    top: '',
-    company_id: targetCompany.value
-  };
-  const res = await getDashboardIndex(params);
-  if (!res.error_status) {
-    echartsData.workbench.all_retention.options.xAxis.data = [];
-    echartsData.workbench.all_retention.options.series[0].data = [];
-    for (const item of res.result.all_retention.active_user_series) {
-      echartsData.workbench.all_retention.options.xAxis.data.push(item.day);
-      echartsData.workbench.all_retention.options.series[0].data.push(item.active_user_count);
-    }
-    echartsData.workbench.all_retention.options.series[1].data = [];
-    for (const item of res.result.all_retention.retention_7) {
-      echartsData.workbench.all_retention.options.series[1].data.push(item);
-    }
-    echartsData.workbench.all_retention.options.series[2].data = [];
-    for (const item of res.result.all_retention.retention_15) {
-      echartsData.workbench.all_retention.options.series[2].data.push(item);
-    }
-    echartsData.workbench.all_retention.options.series[3].data = [];
-    for (const item of res.result.all_retention.retention_30) {
-      echartsData.workbench.all_retention.options.series[3].data.push(item);
-    }
-  }
-  if (!echartsData.workbench.all_retention.ref && document.getElementById('all_retention')) {
-    echartsData.workbench.all_retention.ref = echarts.init(document.getElementById('all_retention'), null, {
-      width: 800,
-      height: 400
-    });
-  }
-  echartsData.workbench.all_retention.ref?.setOption(echartsData.workbench.all_retention.options);
 }
 async function getSessionCntData() {
   const params = {
@@ -1457,7 +1787,8 @@ async function getUserViewTopData() {
     echartsData.resource.user_view_top.options.yAxis.data = [];
     echartsData.resource.user_view_top.options.series[0].data = [];
     for (const item of res.result.user_view_resource_top) {
-      echartsData.resource.user_view_top.options.yAxis.data.push(item.user_id + ':' + item.user_name);
+      const name = item.user_name || item.user_nick_name;
+      echartsData.resource.user_view_top.options.yAxis.data.push(item.user_id + ':' + name);
       echartsData.resource.user_view_top.options.series[0].data.push(item.view_count);
     }
     if (!echartsData.resource.user_view_top.ref && document.getElementById('user_view_resource_top')) {
@@ -1518,7 +1849,8 @@ async function getUserDownloadTopData() {
     echartsData.resource.user_download_top.options.yAxis.data = [];
     echartsData.resource.user_download_top.options.series[0].data = [];
     for (const item of res.result.user_download_top) {
-      echartsData.resource.user_download_top.options.yAxis.data.push(item.user_id + ':' + item.user_name);
+      const name = item.user_name || item.user_nick_name;
+      echartsData.resource.user_download_top.options.yAxis.data.push(item.user_id + ':' + name);
       echartsData.resource.user_download_top.options.series[0].data.push(item.download_count);
     }
     if (!echartsData.resource.user_download_top.ref && document.getElementById('user_download_top')) {
@@ -1543,7 +1875,15 @@ async function handleTabChange(val: string) {
     getUvCntData();
     getD1Retention();
     getAllRetention();
+    activeDayRankRef.value?.getUserActiveDayRank(indexBeginTime.value, targetCompany.value);
+    activeQaRankRef.value?.getUserQaRank(indexBeginTime.value, targetCompany.value);
+    activeTokenRankRef.value?.getUserTokenRank(indexBeginTime.value, targetCompany.value);
   } else if (val == 'workbench') {
+    getAppRankUser();
+    getAppRankQa();
+    getAppRankToken();
+    userLastedQuestionsRef.value?.getUserLatestQuestions(indexBeginTime.value, targetCompany.value);
+    getQaTopic();
     getUvHourData();
     getUvDayData();
     getAvgQaRetention();
@@ -1666,6 +2006,15 @@ watch(
           <el-tab-pane name="user" label="用户数据">
             <el-scrollbar>
               <div class="pane-area">
+                <div id="active-day-rank" class="next-console-chart">
+                  <UserActiveDayRank ref="activeDayRankRef" :height="300" />
+                </div>
+                <div id="active-day-rank" class="next-console-chart">
+                  <UserActiveQaRank ref="activeQaRankRef" :height="300" />
+                </div>
+                <div id="active-day-rank" class="next-console-chart">
+                  <UserActiveTokenRank ref="activeTokenRankRef" :height="300" />
+                </div>
                 <div id="dnu" class="next-console-chart" />
                 <div id="dnu_sd" class="next-console-chart" />
                 <div id="uv" ref="uv" class="next-console-chart-number">
@@ -1688,22 +2037,9 @@ watch(
           <el-tab-pane name="workbench" label="AI工作台">
             <el-scrollbar>
               <div class="pane-area">
-                <div id="uv_hour" class="next-console-chart" />
-                <div id="uv_day" class="next-console-chart" />
-                <div id="avg_qa_retention" class="next-console-chart" />
-                <div id="qa_count" ref="qa" class="next-console-chart-number">
-                  <div class="std-middle-box" style="width: 100%; justify-content: flex-start">
-                    <el-text class="chart-number">总问答数</el-text>
-                  </div>
-                  <div class="std-middle-box" style="height: 100%">
-                    <el-text class="dynamic-number">
-                      {{ qaCount.toFixed(0) }}
-                    </el-text>
-                  </div>
-                </div>
-                <div id="qa_hour" class="next-console-chart" />
-                <div id="qa_day" class="next-console-chart" />
-                <div id="avg_session_retention" class="next-console-chart" />
+                <div id="app_rank_user" class="next-console-chart" />
+                <div id="app_rank_qa" class="next-console-chart" />
+                <div id="app_rank_token" class="next-console-chart" />
                 <div id="session_count" ref="session" class="next-console-chart-number">
                   <div class="std-middle-box" style="width: 100%; justify-content: flex-start">
                     <el-text class="chart-number">总会话数</el-text>
@@ -1714,6 +2050,26 @@ watch(
                     </el-text>
                   </div>
                 </div>
+                <div id="qa_count" ref="qa" class="next-console-chart-number">
+                  <div class="std-middle-box" style="width: 100%; justify-content: flex-start">
+                    <el-text class="chart-number">总问答数</el-text>
+                  </div>
+                  <div class="std-middle-box" style="height: 100%">
+                    <el-text class="dynamic-number">
+                      {{ qaCount.toFixed(0) }}
+                    </el-text>
+                  </div>
+                </div>
+                <div class="next-console-chart">
+                  <UserLastedQuestions ref="userLastedQuestionsRef" />
+                </div>
+                <div id="qa_topic" class="next-console-chart" />
+                <div id="uv_hour" class="next-console-chart" />
+                <div id="uv_day" class="next-console-chart" />
+                <div id="avg_qa_retention" class="next-console-chart" />
+                <div id="qa_hour" class="next-console-chart" />
+                <div id="qa_day" class="next-console-chart" />
+                <div id="avg_session_retention" class="next-console-chart" />
                 <div id="session_hour" class="next-console-chart" />
                 <div id="session_day" class="next-console-chart" />
               </div>

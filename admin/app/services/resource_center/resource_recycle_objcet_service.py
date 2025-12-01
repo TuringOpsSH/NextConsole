@@ -266,7 +266,7 @@ def get_resource_recycle_object(params):
         RagRefInfo.create_time.desc()
     ).first()
     if rag:
-        result["rag_status"] = rag.ref_status
+        result["ref_status"] = rag.ref_status
     # 新增Tag信息
     all_tags = ResourceTagRelation.query.filter(
         ResourceTagRelation.resource_id == resource_id,

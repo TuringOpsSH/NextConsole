@@ -2,12 +2,19 @@
 <p align="center">
   <img src="docs/logo_text.svg" width="600" alt="NextConsole Logo">
   <p align="center">释放大语言模型赋能企业的无限潜力💪</p>
+  
   <p align="center">
-    <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python Version">
+    <a href="https://docs.nextconsole.cn/" target="_blank">📚 文档</a> •
+    <a href="./README_CN.md">📖 中文</a> • 
+    <a href="./README.md">🌐 English</a>
+  </p>
+  
+  <p align="center">
+    <img src="https://img.shields.io/badge/Python-3.11%2B-blue" alt="Python Version">
     <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 License">
   </p>
 </p>
- 
+
 ## 项目简介
 NextConsole 是一款专门为企业用户精心打造的开源项目，旨在助力企业快速且高效地构建基于大语言模型的智能系统。借助 NextConsole，企业能够轻松搭建智能代理、知识库、工作流以及各类应用程序，大幅缩短开发时间、降低成本，加速企业数字化转型进程🚀。
 
@@ -86,20 +93,6 @@ vi config/admin/config_private.py
 app.config["domain"] = "http://<your_server_ip>:8080"
 app.config["admin_domain"] = "http://<your_server_ip>:8082"
 ```
-**RAG（检索增强生成）配置**：
-推荐使用 Siliconflow 免费的嵌入（embed）和重排（rerank）模型，具体配置如下：
-```python
-# 向量模型（推荐sliconflow免费的embed和rerank模型）
-app.config["EMBEDDING_ENDPOINT"] = "https://api.siliconflow.cn/v1/embeddings"
-app.config["EMBEDDING_MODEL"] = "BAAI/bge-m3"
-app.config["EMBEDDING_KEY"] = ""
-app.config["RERANK_ENDPOINT"] = "https://api.siliconflow.cn/v1/rerank"
-app.config["RERANK_MODEL"] = "BAAI/bge-reranker-v2-m3"
-app.config["RERANK_KEY"] = ""
-app.config["search_engine_endpoint"] = "https://google.serper.dev/search"
-app.config["search_engine_key"] = ""
-```
-请根据实际情况填写相应的密钥（`EMBEDDING_KEY`、`RERANK_KEY`、`search_engine_key`），若暂时没有可以先留空。
 
 ##### 3. 启动 Docker 容器
 配置完成后，使用以下命令启动 Docker 容器：
@@ -130,7 +123,7 @@ docker compose up -d
 #### 前置准备
 - 已安装 Docker 21+
 - 已安装 Node.js 16+ (用于前端构建)
-- 已安装 Python 3.10+ (用于后端服务)
+- 已安装 Python 3.11+ (用于后端服务)
 
 #### 构建步骤
 

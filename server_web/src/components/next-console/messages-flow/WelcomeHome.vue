@@ -5,10 +5,10 @@ import ConsoleInput from '@/components/next-console/messages-flow/ConsoleInput.v
 import { consoleInputRef } from '@/components/next-console/messages-flow/console_input';
 import router from '@/router';
 import { useSessionStore } from '@/stores/sessionStore';
-import {useUserInfoStore} from "@/stores/user-info-store";
+import { useUserInfoStore } from '@/stores/user-info-store';
 
 const store = useSessionStore();
-const userInfoStore = useUserInfoStore()
+const userInfoStore = useUserInfoStore();
 const recommendArea = reactive([
   {
     title: '联网搜索',
@@ -76,10 +76,10 @@ async function handleCreateSession() {
           </div>
           <div id="recommend-area">
             <div
-                v-for="item in recommendArea"
-                :key="item.title"
-                class="recommend-box"
-                @click="handleClickRecommendArea(item)"
+              v-for="item in recommendArea"
+              :key="item.title"
+              class="recommend-box"
+              @click="handleClickRecommendArea(item)"
             >
               <div>
                 <el-image :src="item.icon" class="recommend-box-icon" />
@@ -99,10 +99,10 @@ async function handleCreateSession() {
     </el-main>
     <el-footer :height="consoleInputHeight.toString() + 'px'">
       <ConsoleInput
-          ref="consoleInputRef"
-          :height="consoleInputHeight.toString() + 'px'"
-          @height-change="args => (consoleInputHeight = args.newHeight)"
-          @create-session="args => handleCreateSession()"
+        ref="consoleInputRef"
+        :height="consoleInputHeight.toString() + 'px'"
+        @height-change="args => (consoleInputHeight = args.newHeight)"
+        @create-session="args => handleCreateSession()"
       />
     </el-footer>
   </el-container>

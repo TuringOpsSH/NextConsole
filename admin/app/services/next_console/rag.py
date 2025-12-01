@@ -239,7 +239,7 @@ def search_generate_rag_question(user_id, session_id, qa_id, msg_id, question_co
     # embedding & rerank 配置
     from app.models.configure_center.system_config import SystemConfig
     system_config = SystemConfig.query.filter(
-        SystemConfig.config_key == 'ai',
+        SystemConfig.config_key == 'resources',
         SystemConfig.config_status == 1,
     ).first()
     if system_config:

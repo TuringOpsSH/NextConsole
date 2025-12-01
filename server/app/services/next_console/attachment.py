@@ -53,7 +53,9 @@ def init_attachment_base(params):
     # 创建目录
     root_resource = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.user_id == user_id,
-        ResourceObjectMeta.resource_parent_id.is_(None)
+        ResourceObjectMeta.resource_parent_id.is_(None),
+        ResourceObjectMeta.resource_status == "正常",
+        ResourceObjectMeta.resource_source == "resource_center"
     ).first()
     try:
         new_resource_path = generate_resource_path(
@@ -242,11 +244,37 @@ def search_in_session(params):
         ResourceObjectMeta
     ).all()
     res = []
+    all_resource_ids = []
+    for attachment_source, attachment in target_attachments:
+        all_resource_ids.append(attachment.id)
+    # 添加ref_status 状态
+    all_rag_refs = RagRefInfo.query.filter(
+        RagRefInfo.resource_id.in_(all_resource_ids),
+    ).group_by(RagRefInfo.resource_id).with_entities(
+        RagRefInfo.resource_id,
+        func.max(RagRefInfo.id).label('rag_id')
+    ).all()
+    all_resource_rag_maps = {resource_id: rag_id for resource_id, rag_id in all_rag_refs}
+    all_rag_ids = [item.rag_id for item in all_rag_refs]
+    all_rag_record = RagRefInfo.query.filter(
+        RagRefInfo.id.in_(all_rag_ids),
+    ).with_entities(
+        RagRefInfo.resource_id,
+        RagRefInfo.id,
+        RagRefInfo.ref_status
+    ).all()
+    all_rag_maps = {rag.id:rag for rag in all_rag_record}
     for attachment_source, attachment in target_attachments:
         sub_res = attachment.show_info()
         sub_res["attachment_source"] = attachment_source
+        rag_id = all_resource_rag_maps.get(attachment.id)
+        if rag_id:
+            rag_record = all_rag_maps.get(rag_id)
+            if rag_record:
+                sub_res["ref_status"] = rag_record.ref_status
         res.append(sub_res)
     return next_console_response(result=res)
+
 
 
 def get_attachment_detail(params):
@@ -338,7 +366,7 @@ def get_attachment_files_detail(target_resources):
     db.session.commit()
     res = [resource.show_info() for resource in target_resources]
     for resource_item in res:
-        resource_item["rag_status"] = resource_ref_dict.get(resource_item.get("id"))
+        resource_item["ref_status"] = resource_ref_dict.get(resource_item.get("id"))
     return next_console_response(result=res)
 
 
@@ -361,7 +389,7 @@ def get_attachment_webpage_detail(target_resources):
     db.session.commit()
     res = [resource.show_info() for resource in target_resources if resource.resource_type == "webpage"]
     for i in res:
-        i["rag_status"] = resource_ref_dict.get(i.get("id"))
+        i["ref_status"] = resource_ref_dict.get(i.get("id"))
     return next_console_response(result=res)
 
 

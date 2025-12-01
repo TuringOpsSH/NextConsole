@@ -216,28 +216,28 @@ function getSuccessUploadTask() {
         <div id="upload_status_icon">
           <el-image src="/images/upload_blue.svg" style="width: 20px; height: 20px" />
         </div>
-        <div v-show="upload_manager_status == 'uploading'" id="upload_status_text">
+        <div v-if="upload_manager_status == 'uploading'" id="upload_status_text">
           <el-text>上传中 {{ getSuccessUploadTask() }}/{{ upload_file_task_list.length }}</el-text>
         </div>
-        <div v-show="upload_manager_status == 'pending'" id="upload_status_text">
+        <div v-if="upload_manager_status == 'pending'" id="upload_status_text">
           <el-text>上传中 0/{{ upload_file_task_list.length }}</el-text>
         </div>
-        <div v-show="upload_manager_status == 'pause'" id="upload_status_text">
+        <div v-if="upload_manager_status == 'pause'" id="upload_status_text">
           <el-text type="warning">全部暂停</el-text>
         </div>
-        <div v-show="upload_manager_status == 'success'" id="upload_status_text">
+        <div v-if="upload_manager_status == 'success'" id="upload_status_text">
           <el-text type="success">全部上传成功</el-text>
         </div>
       </div>
       <div id="upload_header_right">
         <div class="upload_button" @click="showUploadFileDetail = !showUploadFileDetail">
           <el-image
-            v-show="showUploadFileDetail"
+            v-if="showUploadFileDetail"
             src="/images/triangle_down_blue.svg"
             style="width: 20px; height: 20px"
           />
           <el-image
-            v-show="!showUploadFileDetail"
+            v-if="!showUploadFileDetail"
             src="/images/triangle_right_grey.svg"
             style="width: 20px; height: 20px"
           />
@@ -247,27 +247,27 @@ function getSuccessUploadTask() {
         </div>
       </div>
     </div>
-    <div v-show="showUploadFileDetail" id="upload_status">
+    <div v-if="showUploadFileDetail" id="upload_status">
       <div id="upload_status_left">
-        <el-text v-show="upload_manager_status == 'pause'">
+        <el-text v-if="upload_manager_status == 'pause'">
           已上传 {{ getSuccessUploadTask() }}/{{ upload_file_task_list.length }} 个任务
         </el-text>
-        <el-text v-show="upload_manager_status == 'success'">
+        <el-text v-if="upload_manager_status == 'success'">
           已上传 {{ getSuccessUploadTask() }} 个任务, 共 {{ getSuccessUploadSize() }}MB
         </el-text>
-        <el-text v-show="upload_manager_status == 'uploading'"> 速度： {{ getUploadSpeed() }} MB/s </el-text>
+        <el-text v-if="upload_manager_status == 'uploading'"> 速度： {{ getUploadSpeed() }} MB/s </el-text>
       </div>
       <div id="upload_status_right">
-        <div v-show="upload_manager_status == 'uploading'" class="upload_button" @click="pauseAllUploadTask">
+        <div v-if="upload_manager_status == 'uploading'" class="upload_button" @click="pauseAllUploadTask">
           <el-text>全部暂停</el-text>
         </div>
-        <div v-show="upload_manager_status == 'pause'" class="upload_button" @click="continueAllUploadTask">
+        <div v-if="upload_manager_status == 'pause'" class="upload_button" @click="continueAllUploadTask">
           <el-text>全部继续</el-text>
         </div>
       </div>
     </div>
     <el-scrollbar wrap-style="width : 100%" view-style="width : 100%" style="width: 100%">
-      <div v-show="showUploadFileDetail" id="upload_queue">
+      <div v-if="showUploadFileDetail" id="upload_queue">
         <div v-for="item in upload_file_task_list" :key="item.id" class="upload-task-item">
           <div class="upload-task-left">
             <div class="upload-task-icon">
@@ -285,30 +285,30 @@ function getSuccessUploadTask() {
             </div>
           </div>
           <div class="upload-task-right">
-            <div v-show="item.task_status == 'uploading'" class="upload-task-right-button-area">
+            <div v-if="item.task_status == 'uploading'" class="upload-task-right-button-area">
               <el-progress :percentage="getUploadTaskProgress(item, 'progress')" type="circle" :width="40" />
               <div class="upload-button" @click="pauseUploadTask(item)">
                 <el-image src="/images/pause_blue.svg" class="upload-button-icon" />
               </div>
             </div>
 
-            <div v-show="item.task_status == 'success'" class="upload-task-right-button-area">
+            <div v-if="item.task_status == 'success'" class="upload-task-right-button-area">
               <el-image src="/images/success_grey.svg" class="upload-button-icon" />
             </div>
             <div
-              v-show="item.task_status != 'uploading' && item.task_status != 'success'"
+              v-if="item.task_status != 'uploading' && item.task_status != 'success'"
               class="upload-task-right-button-area"
             >
               <el-tooltip v-if="item.task_status == 'error'" content="文件为空，无法上传">
                 <el-image src="/images/notice_error_small.svg" class="upload-button-icon" />
               </el-tooltip>
-              <div v-show="item.task_status != 'success'" class="upload-button" @click="removeUploadTask(item)">
+              <div v-if="item.task_status != 'success'" class="upload-button" @click="removeUploadTask(item)">
                 <el-image src="/images/close_grey.svg" class="upload-button-icon" />
               </div>
-              <div v-show="item.task_status == 'error'" class="upload-button" @click="retryUploadTask(item)">
+              <div v-if="item.task_status == 'error'" class="upload-button" @click="retryUploadTask(item)">
                 <el-image src="/images/retry_grey.svg" class="upload-button-icon" />
               </div>
-              <div v-show="item.task_status == 'pause'" class="upload-button" @click="continueUploadTask(item)">
+              <div v-if="item.task_status == 'pause'" class="upload-button" @click="continueUploadTask(item)">
                 <el-image src="/images/continue.svg" class="upload-button-icon" />
               </div>
             </div>

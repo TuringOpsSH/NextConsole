@@ -2,20 +2,24 @@
 import { Check, Close, Search } from '@element-plus/icons-vue';
 import * as echarts from 'echarts';
 import { ElMessage } from 'element-plus';
-import { defineProps, watch, ref, onMounted } from 'vue';
+import { defineProps, watch, ref, onMounted, reactive } from 'vue';
+import VueJsonPretty from 'vue-json-pretty';
 import {
   accessAuthor,
   accessSearch,
   publishSearch,
   accessUnAuthor,
   runningStatus,
-  publishExport
+  publishExport,
+  prodAppDetail,
+  publishUpdate
 } from '@/api/app-center-api';
+import { searchFriends } from '@/api/contacts';
 import { getAllCompany, searchDepartments } from '@/api/dashboard';
 import { adminSearchUserAPI, twadminSearchUser } from '@/api/user-manage';
 import router from '@/router';
 import { useUserInfoStore } from '@/stores/user-info-store';
-import {searchFriends} from "@/api/contacts";
+import { IAppMetaInfo } from '@/types/app-center-type';
 const prop = defineProps({
   appCode: {
     type: String,
@@ -28,6 +32,10 @@ const prop = defineProps({
   accessType: {
     type: String,
     default: 'user'
+  },
+  infoType: {
+    type: String,
+    default: 'app'
   }
 });
 interface IAppPublishRecord {
@@ -45,7 +53,7 @@ interface IAppPublishRecord {
   workflow_code?: string;
   [property: string]: any;
 }
-const currentViewType = ref('history');
+const currentViewType = ref('base');
 const currentAppCode = ref('');
 const currentPublishList = ref<IAppPublishRecord[]>([]);
 const currentPageNum = ref(1);
@@ -89,17 +97,27 @@ const currentNewUserSource = ref('colleague');
 const newUserOptions = [
   {
     label: '同事',
-    value: 'colleague',
+    value: 'colleague'
   },
   {
     label: '好友',
-    value: 'friend',
+    value: 'friend'
   }
-]
+];
 let userCountGraph = null;
 let sessionCountGraph = null;
 let qaCountGraph = null;
 let attachmentCountGraph = null;
+const currentInfoType = ref('app');
+const appDetail = reactive<IAppMetaInfo>({});
+const appDetailLoading = ref(false);
+const showConfigDialog = ref(false);
+const currentSDKConfig = reactive({
+  config: {
+    domains: []
+  },
+  name: ''
+});
 async function handlePageChange(pageNum: number): Promise<void> {
   currentPageNum.value = pageNum;
   refreshPublishList();
@@ -530,6 +548,74 @@ async function exportTargetVersion(publishRecord: IAppPublishRecord) {
     URL.revokeObjectURL(url);
   }
 }
+async function initAppBaseInfo() {
+  appDetailLoading.value = true;
+  const res = await prodAppDetail({
+    app_code: currentAppCode.value
+  });
+  if (!res.error_status) {
+    Object.assign(appDetail, res.result);
+  }
+  appDetailLoading.value = false;
+}
+async function initWorkflowInfo() {
+  appDetailLoading.value = true;
+  const res = await prodAppDetail({
+    app_code: currentAppCode.value
+  });
+  if (!res.error_status) {
+    Object.assign(appDetail, res.result);
+  }
+  appDetailLoading.value = false;
+}
+async function initPublishInfo() {
+  appDetailLoading.value = true;
+  const res = await prodAppDetail({
+    app_code: currentAppCode.value
+  });
+  if (!res.error_status) {
+    Object.assign(appDetail, res.result);
+  }
+  appDetailLoading.value = false;
+}
+async function handleBaseInfoChange(tabName: string) {
+  if (tabName == 'app') {
+    await initAppBaseInfo();
+  } else if (tabName == 'workflow') {
+    await initWorkflowInfo();
+  } else if (tabName == 'publish') {
+    await initPublishInfo();
+  }
+  router.replace({
+    query: {
+      ...router.currentRoute.value.query,
+      viewTab: currentViewType.value,
+      accessType: currentInfoType.value
+    }
+  });
+}
+function beginUpdatePublishConfig(config) {
+  if (config.id != 3) {
+    return;
+  }
+  showConfigDialog.value = true;
+  Object.assign(currentSDKConfig, config);
+}
+async function updatePublishConfig() {
+  const res = await publishUpdate({
+    publish_code: appDetail.publish.publish_code,
+    publish_config: {
+      id: 3,
+      config: currentSDKConfig
+    }
+  });
+  if (!res.error_status) {
+    ElMessage.success({
+      message: '更新成功'
+    });
+  }
+  showConfigDialog.value = false;
+}
 watch(
   () => prop.appCode,
   newVal => {
@@ -553,6 +639,8 @@ watch(
       refreshAccess();
     } else if (currentViewType.value == 'running') {
       refreshRunningStatus();
+    } else if (currentViewType.value == 'base') {
+      handleBaseInfoChange(prop.infoType);
     }
   },
   { immediate: true }
@@ -571,7 +659,148 @@ onMounted(async () => {
   <el-container>
     <el-main style="height: calc(100vh - 100px)">
       <el-tabs :model-value="currentViewType" tab-position="left" @tab-change="handleChangeModel">
-        <el-tab-pane label="基本信息" name="base" />
+        <el-tab-pane label="基本信息" name="base">
+          <el-tabs
+            v-loading="appDetailLoading"
+            :model-value="currentInfoType"
+            tab-position="top"
+            type="border-card"
+            element-loading-text="加载中"
+            @tab-change="handleBaseInfoChange"
+          >
+            <el-tab-pane label="应用信息" name="app">
+              <el-scrollbar>
+                <el-descriptions border size="large" style="height: calc(100vh - 240px)">
+                  <el-descriptions-item label="应用图标">
+                    <el-image :src="appDetail.app_icon" style="width: 32px; height: 32px" />
+                  </el-descriptions-item>
+                  <el-descriptions-item label="应用编号">
+                    {{ appDetail.app_code }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="应用名称">
+                    {{ appDetail.app_name }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="开发者">
+                    <div class="std-middle-box">
+                      <div>
+                        <el-avatar
+                          v-if="appDetail?.user_info?.user_avatar"
+                          :src="appDetail.user_info.user_avatar"
+                          style="width: 32px; height: 32px"
+                        />
+                        <el-avatar v-else style="background: #d1e9ff">
+                          <el-text style="font-weight: 600; color: #1570ef">
+                            {{ appDetail?.user_info?.user_nick_name_py }}
+                          </el-text>
+                        </el-avatar>
+                      </div>
+                      <div>
+                        <el-text>{{ appDetail?.user_info?.user_nick_name }}</el-text>
+                      </div>
+                    </div>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="应用类型">
+                    {{ appDetail.app_type }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="应用状态">
+                    {{ appDetail.app_status }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="更新时间">
+                    {{ appDetail.update_time }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="应用描述">
+                    {{ appDetail.app_desc }}
+                  </el-descriptions-item>
+                </el-descriptions>
+              </el-scrollbar>
+            </el-tab-pane>
+            <el-tab-pane label="工作流信息" name="workflow">
+              <el-table
+                :data="appDetail.workflows"
+                border
+                stripe
+                highlight-current-row
+                style="width: 100%"
+                height="calc(100vh - 240px)"
+              >
+                <el-table-column prop="id" label="ID" width="80" sortable />
+                <el-table-column prop="workflow_is_main" label="主流程" sortable width="120px">
+                  <template #default="scope">
+                    <el-tag v-if="scope.row.workflow_is_main"> 主流程 </el-tag>
+                    <el-tag v-else type="info"> 子流程 </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="workflow_icon" label="图标" width="60">
+                  <template #default="scope">
+                    <el-image :src="scope.row.workflow_icon" style="width: 24px; height: 24px" />
+                  </template>
+                </el-table-column>
+                <el-table-column prop="workflow_code" label="编号" width="360px" />
+                <el-table-column prop="workflow_name" label="名称" />
+                <el-table-column prop="workflow_desc" label="描述" />
+                <el-table-column prop="version" label="版本" sortable width="80" />
+              </el-table>
+            </el-tab-pane>
+            <el-tab-pane label="发布渠道信息" name="publish">
+              <el-scrollbar>
+                <div class="publish-config-area">
+                  <el-descriptions
+                    v-for="config in appDetail?.publish?.publish_config?.connectors"
+                    :key="config.id"
+                    :title="config.name"
+                    border
+                    direction="vertical"
+                    size="large"
+                    style="width: 100%"
+                  >
+                    <template #extra>
+                      <el-button
+                        v-if="config.able && config?.config"
+                        type="primary"
+                        @click="beginUpdatePublishConfig(config)"
+                      >
+                        修改
+                      </el-button>
+                    </template>
+                    <el-descriptions-item label="渠道" width="60px">
+                      <el-image :src="config.icon" style="width: 32px; height: 32px" />
+                    </el-descriptions-item>
+                    <el-descriptions-item label="描述">
+                      {{ config.desc }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="状态" width="60px">
+                      <el-tag v-if="config.able" type="primary">支持</el-tag>
+                      <el-tag v-else type="info">敬请期待</el-tag>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="开通">
+                      <el-tag v-if="config.picked" type="success">已开通</el-tag>
+                      <el-tag v-else type="info">未开通</el-tag>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="配置">
+                      <VueJsonPretty
+                        :data="config.config"
+                        :show-length="true"
+                        :show-line-number="true"
+                        :show-icon="true"
+                        :show-select-controller="true"
+                      />
+                    </el-descriptions-item>
+                  </el-descriptions>
+                </div>
+                <el-dialog v-model="showConfigDialog" :title="currentSDKConfig.name">
+                  <el-form :model="currentSDKConfig.config">
+                    <el-form-item label="客户端域名" prop="domain">
+                      <el-input-tag v-model="currentSDKConfig.config.domains" />
+                    </el-form-item>
+                  </el-form>
+                  <template #footer>
+                    <el-button text type="primary" @click="updatePublishConfig">更新</el-button>
+                  </template>
+                </el-dialog>
+              </el-scrollbar>
+            </el-tab-pane>
+          </el-tabs>
+        </el-tab-pane>
         <el-tab-pane label="发布历史" name="history">
           <el-table :data="currentPublishList" stripe border style="width: 100%" height="calc(100vh - 140px)">
             <el-table-column prop="id" label="发布ID" width="120" sortable />
@@ -1025,5 +1254,21 @@ onMounted(async () => {
   align-content: flex-start;
   flex-wrap: wrap;
   height: calc(100vh - 230px);
+}
+.std-middle-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+.publish-config-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+  height: calc(100vh - 230px);
+  width: 100%;
 }
 </style>

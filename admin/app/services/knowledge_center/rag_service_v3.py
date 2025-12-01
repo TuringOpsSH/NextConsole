@@ -339,7 +339,7 @@ def rag_query_v3(params):
         "overlap_tokens": 80,
         "rerank_threshold": 0.6,
         "rerank_k": 10,
-        "search_engine_enhanced": True,
+        "search_engine_enhanced": False,
         "search_engine_config": {
             "api": system_tool_config.config_value.get("search_engine", {}).get("endpoint"),
             "key": system_tool_config.config_value.get("search_engine", {}).get("key"),
@@ -366,8 +366,8 @@ def rag_query_v3(params):
     if not ref_ids and not inner_config.get("search_engine_enhanced", False):
         return next_console_response(error_status=False, error_message="查询参考信息不能为空", result=result)
 
-    system_ai_config = SystemConfig.query.filter(
-        SystemConfig.config_key == "ai",
+    system_resources_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "resources",
         SystemConfig.config_status == 1
     ).first()
     query_log = {
@@ -399,16 +399,16 @@ def rag_query_v3(params):
     embedding_call_config = {
         "content": query,
         "config": {
-            "api": "",
+            "api":  "",
             'key': "",
             "model": "",
             "encoding_format": "float",
         }
     }
-    if system_ai_config.config_value.get("embedding", {}).get("llm_code"):
+    if system_resources_config.config_value.get("embedding", {}).get("llm_code"):
         from app.models.configure_center.llm_kernel import LLMInstance
         embedding_model = LLMInstance.query.filter(
-            LLMInstance.llm_code == system_ai_config.config_value.get("embedding", {}).get("llm_code", ""),
+            LLMInstance.llm_code == system_resources_config.config_value.get("embedding", {}).get("llm_code", ""),
             LLMInstance.llm_status == "正常"
         ).first()
         if embedding_model:
@@ -431,6 +431,7 @@ def rag_query_v3(params):
     embedding_begin_time = time.time()
     all_ref_chunks = recall_ref_chunks(ref_ids, query_embedding, inner_config)
     query_log["time_usage"]["embedding_time"] = time.time() - embedding_begin_time
+
     if rerank_enabled and all_ref_chunks:
         all_recall_chunks = rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log)
         if isinstance(all_recall_chunks, list):
@@ -505,7 +506,6 @@ def recall_ref_chunks(ref_ids, query_embedding, inner_config):
     获取所有参考信息的嵌入向量
         支持多参考信息
         返回嵌入向量列表和chunk_id，用于后续的查询和计算
-        新增去重逻辑
     :param ref_ids: 参考信息ID列表
     :param query_embedding: 查询的嵌入向量
     :param inner_config: 内部配置参数
@@ -574,7 +574,7 @@ def recall_ref_chunks(ref_ids, query_embedding, inner_config):
             "chunk_embedding_content": chunk.chunk_embedding_content,
             "recall_score": chunk.recall_score if chunk.recall_score is not None else 0.0,
             "rerank_score": 0,
-    })
+        })
     return all_ref_chunks_res
 
 
@@ -596,14 +596,14 @@ def rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log):
     rerank_begin_time = time.time()
     from app.models.configure_center.system_config import SystemConfig
     system_config = SystemConfig.query.filter(
-        SystemConfig.config_key == "ai",
+        SystemConfig.config_key == "resources",
         SystemConfig.config_status == 1
     ).first()
     rerank_call_config = {
         "documents": documents,
         "query": query,
         "config": {
-            "api": "",
+            "api":  "",
             'key': "",
             "model": "",
             "max_chunks_per_doc": max_chunk_per_doc,
@@ -960,17 +960,30 @@ def update_parse_resource_chunks_service(params):
         from app.services.knowledge_center.file_chunk_embedding import embedding_call
         from app.models.configure_center.system_config import SystemConfig
         system_config = SystemConfig.query.filter(
-            SystemConfig.config_key == "ai",
+            SystemConfig.config_key == "resources",
             SystemConfig.config_status == 1
         ).first()
-        embedding_result = embedding_call({
+        embedding_call_config = {
             "content": chunk_embedding_content,
             "config": {
-                "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
-                'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
-                "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
+                "api":  "",
+                'key': "",
+                "model": "",
+                "encoding_format": "float",
             }
-        })
+        }
+        if system_config and system_config.config_value.get("embedding", {}).get("llm_code"):
+            from app.models.configure_center.llm_kernel import LLMInstance
+            embedding_model = LLMInstance.query.filter(
+                LLMInstance.llm_code == system_config.config_value.get("embedding", {}).get("llm_code", ""),
+                LLMInstance.llm_status == "正常"
+            ).first()
+            if embedding_model:
+                embedding_call_config["config"]["api"] = embedding_model.llm_base_url
+                embedding_call_config["config"]["key"] = embedding_model.llm_api_secret_key
+                embedding_call_config["config"]["model"] = embedding_model.llm_name
+
+        embedding_result = embedding_call(embedding_call_config)
         if not embedding_result:
             return next_console_response(error_status=True, error_message="向量化处理失败")
         try:
@@ -1018,18 +1031,29 @@ def parse_resource_chunk_recall_service(params):
         return next_console_response(error_status=True, error_message="未找到对应的资源分块")
     from app.models.configure_center.system_config import SystemConfig
     system_config = SystemConfig.query.filter(
-        SystemConfig.config_key == "ai",
+        SystemConfig.config_key == "resources",
         SystemConfig.config_status == 1
     ).first()
-    query_embedding_result = embedding_call({
+    embedding_call_config = {
         "content": query_text,
         "config": {
-            "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
-            'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
-            "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
+            "api": "",
+            'key': "",
+            "model": "",
             "encoding_format": "float",
         }
-    })
+    }
+    if system_config and system_config.config_value.get("embedding", {}).get("llm_code"):
+        from app.models.configure_center.llm_kernel import LLMInstance
+        embedding_model = LLMInstance.query.filter(
+            LLMInstance.llm_code == system_config.config_value.get("embedding", {}).get("llm_code", ""),
+            LLMInstance.llm_status == "正常"
+        ).first()
+        if embedding_model:
+            embedding_call_config["config"]["api"] = embedding_model.llm_base_url
+            embedding_call_config["config"]["key"] = embedding_model.llm_api_secret_key
+            embedding_call_config["config"]["model"] = embedding_model.llm_name
+    query_embedding_result = embedding_call(embedding_call_config)
     if not query_embedding_result:
         return next_console_response(error_status=True, error_message="查询嵌入异常")
     query_embedding = query_embedding_result[1]

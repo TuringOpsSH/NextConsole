@@ -17,6 +17,6 @@ def recommend_question_update():
     params["user_id"] = int(user_id)
     recommend_question_id = params.get("recommend_question_id")
     if not recommend_question_id:
-        return next_console_response(error_status=True, error_message="参数异常！")
+        return next_console_response(error_status=False, error_message="参数异常！")
     return update_recommend_question(params)
 

@@ -126,7 +126,7 @@ async function addCopy() {
           </el-tooltip>
         </div>
         <div class="std-middle-box">
-          <el-dropdown>
+          <el-dropdown trigger="click">
             <MoreFilled class="agent-node-svg" />
             <template #dropdown>
               <el-dropdown-menu>

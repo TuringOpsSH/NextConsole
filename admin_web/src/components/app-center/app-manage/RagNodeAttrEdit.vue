@@ -9,6 +9,7 @@ import {
   Upload,
   Plus
 } from '@element-plus/icons-vue';
+import { ElMessage } from "element-plus";
 import { nextTick, ref } from 'vue';
 import { nodeUpdate } from '@/api/app-center-api';
 import { domainGet } from '@/api/base';
@@ -154,6 +155,34 @@ function addParamsResource(isArray = false) {
   });
   updateNodeRagConfig();
 }
+function addAttachmentResources(attachmentType: string) {
+  if (attachmentType === 'message') {
+    if (workflowStore.currentNodeDetail.node_rag_resources.filter(item => item?.id == 'message_attachments')?.length) {
+      ElMessage.info('已经添加消息附件');
+      return;
+    }
+    workflowStore.currentNodeDetail.node_rag_resources.push({
+      id: 'message_attachments',
+      resource_ready: true,
+      resource_icon: '/images/node_rag.svg',
+      resource_name: '消息附件',
+      resource_desc: '用户在当前请求中上传的所有附件'
+    });
+  } else if (attachmentType === 'session') {
+    if (workflowStore.currentNodeDetail.node_rag_resources.filter(item => item?.id == 'session_attachments')?.length) {
+      ElMessage.info('已经添加会话附件');
+      return;
+    }
+    workflowStore.currentNodeDetail.node_rag_resources.push({
+      id: 'session_attachments',
+      resource_ready: true,
+      resource_icon: '/images/node_rag.svg',
+      resource_name: '会话附件',
+      resource_desc: '用户在本次会话中上传的所有附件'
+    });
+  }
+  updateNodeRagConfig();
+}
 </script>
 
 <template>
@@ -168,7 +197,7 @@ function addParamsResource(isArray = false) {
         </el-icon>
       </div>
       <div class="std-middle-box">
-        <el-text> 知识库选择 </el-text>
+        <el-text> 知识库 </el-text>
       </div>
       <div>
         <el-tooltip content="配置知识来源" placement="top">
@@ -191,14 +220,15 @@ function addParamsResource(isArray = false) {
               @update:value="newValue => handleTemplateChange(newValue, 'node_rag_query_template')"
             />
           </el-form-item>
-          <el-form-item label="内置知识库" style="padding: 0 12px">
-
+          <el-form-item label="知识库" style="padding: 0 12px">
             <div class="rag-area">
-              <el-button-group>
-                <el-button :icon="Search" round @click="resourceSearchDialogShow = true"> 搜索知识库 </el-button>
-                <el-button :icon="Upload" round @click="routerServerResourceCenter"> 上传文档 </el-button>
-                <el-button :icon="Plus" round @click="addParamsResource(false)"> 添加文档变量 </el-button>
-                <el-button :icon="Plus" round @click="addParamsResource(true)"> 添加文档列表变量 </el-button>
+              <el-button-group size="small">
+                <el-button :icon="Search" round @click="resourceSearchDialogShow = true"> 搜索 </el-button>
+                <el-button :icon="Upload" round @click="routerServerResourceCenter"> 上传 </el-button>
+                <el-button :icon="Plus" round @click="addParamsResource(false)"> 文档变量 </el-button>
+                <el-button :icon="Plus" round @click="addParamsResource(true)"> 列表文档变量 </el-button>
+                <el-button :icon="Plus" round @click="addAttachmentResources('message')"> 消息附件 </el-button>
+                <el-button :icon="Plus" round @click="addAttachmentResources('session')"> 会话附件 </el-button>
               </el-button-group>
               <div class="rag-body">
                 <div v-for="(item, idx) in workflowStore.currentNodeDetail?.node_rag_resources" :key="idx">
@@ -510,6 +540,6 @@ function addParamsResource(isArray = false) {
   height: 24px;
 }
 .rag-config-item {
-  padding: 0 12px
+  padding: 0 12px;
 }
 </style>

@@ -32,7 +32,7 @@ def emit_resource_status(params):
     with app.app_context():
         user_id = int(params.get("user_id"))
         resource_id = params.get("resource_id")
-        rag_status = params.get("rag_status")
+        ref_status = params.get("ref_status")
         target_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.id == resource_id,
             ResourceObjectMeta.user_id == user_id,
@@ -48,7 +48,7 @@ def emit_resource_status(params):
         for client in all_user_clients:
             if client.get('status') == 'connected':
                 data = target_resource.show_info()
-                data["rag_status"] = rag_status
+                data["ref_status"] = ref_status
                 socketio.emit("updateRefStatus", [data], room=client.get('session_id'))
         return f'推送资源状态成功{target_resource.show_info()}'
 
@@ -260,7 +260,7 @@ def auto_build_resource_ref_v2(params):
         # todo 生成各项配置
         from app.models.configure_center.system_config import SystemConfig
         system_config = SystemConfig.query.filter(
-            SystemConfig.config_key == "ai",
+            SystemConfig.config_key == "resources",
             SystemConfig.config_status == 1
         ).first()
         file_reader_config = {
@@ -297,10 +297,11 @@ def auto_build_resource_ref_v2(params):
             "code_abstract": False,
             "question_abstract": False
         }
+
         file_chunk_embedding_config = {
-            "api":  system_config.config_value.get("embedding", {}).get("embedding_endpoint", ""),
-            'key': system_config.config_value.get("embedding", {}).get("embedding_api_key", ""),
-            "model": system_config.config_value.get("embedding", {}).get("embedding_model", ""),
+            "api":  "",
+            'key': "",
+            "model": "",
             "batch_size": 10,
             "dimension": 1024,
             "encoding_format": "float",
@@ -311,6 +312,17 @@ def auto_build_resource_ref_v2(params):
                 "model": '',
             },
         }
+        if system_config and system_config.config_value.get("embedding", {}).get("llm_code"):
+            from app.models.configure_center.llm_kernel import LLMInstance
+            embedding_model = LLMInstance.query.filter(
+                LLMInstance.llm_code == system_config.config_value.get("embedding", {}).get("llm_code", ""),
+                LLMInstance.llm_status == "正常"
+            ).first()
+            if embedding_model:
+                file_chunk_embedding_config["api"] = embedding_model.llm_base_url
+                file_chunk_embedding_config["key"] = embedding_model.llm_api_secret_key
+                file_chunk_embedding_config["model"] = embedding_model.llm_name
+
         ref_type = "resource"
         pandoc_input_formats = [
             "biblatex", "bibtex", "bits",
@@ -404,7 +416,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         if not (reader_result and isinstance(reader_result, dict) and reader_result.get("content")):
             target_ref.ref_status = "文件解析失败"
@@ -419,7 +431,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         if not (split_result and isinstance(split_result, dict) and split_result.get("status") == "success"):
             target_ref.ref_status = "文件切分失败"
@@ -431,7 +443,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         if not (abstract_result and isinstance(abstract_result, dict) and abstract_result.get("status") == "success"):
             return '文件摘要处理失败，请检查文件格式或内容'
@@ -440,7 +452,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         if not (embedding_result and isinstance(embedding_result, dict) and embedding_result.get("status") == "success"):
             return '文件向量化处理失败，请检查文件格式或内容'
@@ -454,7 +466,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         return '构建任务执行完成'
 

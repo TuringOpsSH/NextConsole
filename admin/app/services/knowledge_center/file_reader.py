@@ -235,7 +235,7 @@ def pymupdf_to_markdown(resource, task_params):
     if not os.path.exists(target_new_path):
         return f"转换后的文件不存在: {target_new_path}"
     return save_new_resource_meta(
-        'markdown', target_new_path, '', resource,
+        'markdown', target_new_path, target_new_media_path, resource,
         resource_source=task_params.get('resource_source', 'knowledge_center')
     )
 
@@ -504,7 +504,7 @@ def save_new_resource_meta(tgt_format, target_new_path, target_new_media_path, r
     db.session.commit()
     return {
         "id": new_resource.id,
-        "name": new_resource.resource_name + f".{tgt_format}",
+        "name": new_resource.resource_name,
         "size": new_resource.resource_size_in_MB,
         "format": tgt_format,
         "url": new_resource.resource_download_url,

@@ -25,7 +25,7 @@ export const upload_webpage_new_resources = reactive<{ new_urls:ResourceItem[]}>
             resource_name: '',
             resource_title: '',
             resource_icon: 'html.svg',
-            rag_status: null,
+            ref_status: null,
             resource_source_url: '',
         } as ResourceItem]
 })
@@ -71,10 +71,10 @@ export async function switch_on_webpage_search(){
 export function check_webpage_support_status(resource: ResourceItem): boolean{
     // 检查是否支持
     // console.log('判断支持',resource)
-    if (resource.resource_status == '异常' || resource?.rag_status == 'Error' || resource?.rag_status == 'Failure'){
+    if (resource.resource_status == '异常' || resource?.ref_status == 'Error' || resource?.ref_status == 'Failure'){
         return false
     }
-    if (resource?.rag_status == 'Success'){
+    if (resource?.ref_status == 'Success'){
         return true
     }
     return null
@@ -151,7 +151,7 @@ export async function add_new_webpage_resource(){
         resource_name: '',
         resource_title: '',
         resource_icon: 'html.svg',
-        rag_status: null,
+        ref_status: null,
         resource_source_url: '',
     } as ResourceItem)
 }
@@ -179,7 +179,7 @@ export async function switch_off_new_webpage(){
         upload_webpage_new_resources.new_urls.push({
             id: null,
             resource_title: '',
-            rag_status: null,
+            ref_status: null,
             resource_source_url: '',
         } as ResourceItem)
 
@@ -253,7 +253,7 @@ export async function commit_add_new_webpages(){
         resource_name: '',
         resource_title: '',
         resource_icon: 'html.svg',
-        rag_status: null,
+        ref_status: null,
         resource_source_url: '',
     } as ResourceItem]
 

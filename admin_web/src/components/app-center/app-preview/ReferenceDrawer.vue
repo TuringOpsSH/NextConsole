@@ -26,7 +26,7 @@ function getResourceIcon(resource: ResourceItem) {
 </script>
 
 <template>
-  <el-drawer v-model="show_reference_drawer" title="参考来源" :size="drawer_width">
+  <el-drawer v-model="show_reference_drawer" resizable title="参考来源" :size="drawer_width">
     <el-scrollbar>
       <div id="reference_drawer_body">
           <div v-for="(item,idx ) in reference_drawer_data" @click="open_reference(item)" class="reference-item">

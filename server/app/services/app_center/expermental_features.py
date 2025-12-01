@@ -32,10 +32,13 @@ def parallel_llm_node_execute(params, task_record, global_params):
     reasoning_content = ""
     msg_token_used = 0
     sub_results = []
-    for item in params[parallel_attr]:
+    batch_size = task_record.workflow_node_run_model_config.get("batch_size", 1)
+    question = ""
+    for i in range(0, len(params[parallel_attr]), batch_size):
         new_sub_params = {k: params[k] for k in params if k not in params[parallel_attr]}
-        new_sub_params[parallel_attr] = [item]
+        new_sub_params[parallel_attr] = params[parallel_attr][i : i+batch_size]
         workflow_node_llm_params = load_llm_prams(new_sub_params, task_record, global_params, imgUrl='base64')
+        question += " \r\n" + workflow_node_llm_params["messages"][1]["content"]
         future = global_params["executor"].submit(single_llm_sub_node_execute,
                                                   llm_client, workflow_node_llm_params,
                                                   task_record.to_dict(), global_params)
@@ -59,6 +62,13 @@ def parallel_llm_node_execute(params, task_record, global_params):
         "content": msg_content,
         "reasoning_content": reasoning_content,
     })
+    task_record.task_prompt = [
+        task_record.task_prompt[0],
+        {
+            "role": "user",
+            "content": question,
+        }
+    ]
     task_record.end_time = datetime.now()
     task_record.task_status = "已完成"
     task_record.task_token_used = msg_token_used
@@ -101,34 +111,48 @@ def single_llm_sub_node_execute(llm_client, workflow_node_llm_params, task_recor
                 for chunk in completion:
                     if global_params.get("stop_flag"):
                         raise GeneratorExit
-                    if hasattr(chunk, "usage") and chunk.usage and chunk.usage.total_tokens > 0:
-                        msg_token_used = chunk.usage.total_tokens
-                    if chunk.choices and (
-                            chunk.choices[0].delta.content or hasattr(chunk.choices[0].delta, "reasoning_content")):
-                        if hasattr(chunk.choices[0].delta, "reasoning_content") and chunk.choices[0].delta.reasoning_content:
-                            reasoning_content += chunk.choices[0].delta.reasoning_content
-                        elif chunk.choices[0].delta.content:
-                            msg_content += chunk.choices[0].delta.content
-                        if global_params["stream"] and output_flag:
-                            chunk_res = chunk.model_dump_json()
-                            chunk_res = json.loads(chunk_res)
-                            chunk_res["session_id"] = task_record.get("session_id"),
-                            chunk_res["qa_id"] = task_record.get("qa_id"),
-                            chunk_res["msg_parent_id"] = task_record.get("msg_id"),
-                            chunk_res["msg_id"] = answer_msg.msg_id
-                            # 自定义推理标签
-                            if llm_client.think_attr and llm_client.think_attr.get("begin"):
-                                # 判断当前content中是否包含推理标签的结束符
-                                if check_is_think_chunk(content, msg_content, llm_client.think_attr):
-                                    reasoning_content += content
-                                    content = ''
+                    chunk_res = chunk.model_dump_json()
+                    chunk_res = json.loads(chunk_res)
+                    try:
+                        total_tokens = chunk_res.get("usage").get("total_tokens", 0)
+                    except Exception as e:
+                        total_tokens = 0
+                    try:
+                        r_content = chunk_res.get("choices")[0].get("delta").get("reasoning_content", "")
+                    except Exception as e:
+                        r_content = ""
+                    try:
+                        content = chunk_res.get("choices")[0].get("delta").get("content", "")
+                    except Exception as e:
+                        content = ""
+                    if not r_content:
+                        r_content = ''
+                    if not content:
+                        content = ''
+                    reasoning_content += r_content
+                    msg_content += content
+                    if total_tokens:
+                        msg_token_used = total_tokens
+                    if global_params["stream"] and output_flag:
+                        chunk_res["session_id"] = task_record.get("session_id")
+                        chunk_res["qa_id"] = task_record.get("qa_id")
+                        chunk_res["msg_parent_id"] = task_record.get("msg_id")
+                        chunk_res["msg_id"] = answer_msg.msg_id
+                        # 自定义推理标签
+                        if llm_client.think_attr and llm_client.think_attr.get("begin"):
+                            # 判断当前content中是否包含推理标签的结束符
+                            if check_is_think_chunk(content, msg_content, llm_client.think_attr):
+                                reasoning_content += content
+                                content = ''
+                        if chunk_res["choices"]:
                             chunk_res["choices"][0]["delta"]["content"] = content
-                            chunk_res["choices"][0]["delta"]["reasoning_content"] = reasoning_content
-                            global_params["message_queue"].put(chunk_res)
+                            chunk_res["choices"][0]["delta"]["reasoning_content"] = r_content
+                        global_params["message_queue"].put(chunk_res)
             except GeneratorExit:
                 pass
             except Exception as e3:
                 app.logger.error(f"调用基模型异常：{str(e3)}, {workflow_node_llm_params}")
+                app.logger.warning(f"{chunk_res}")
                 msg_content += "\n\n **对不起，模型服务正忙，请稍等片刻后重试，或者可以试试切换其他模型~**"
                 if task_record.get("workflow_node_enable_message") and global_params["stream"]:
                     if task_record.get("workflow_node_message_schema_type") == "messageFlow":
@@ -195,9 +219,10 @@ def parallel_rag_node_execute(params, task_record, global_params):
         SystemConfig.config_status == 1
     ).first()
     sub_results = []
-    for item in params[parallel_attr]:
+    batch_size = task_record.workflow_node_run_model_config.get("batch_size", 1)
+    for i in range(0, len(params[parallel_attr]), batch_size):
         new_sub_params = {k: params[k] for k in params if k not in params[parallel_attr]}
-        new_sub_params[parallel_attr] = [item]
+        new_sub_params[parallel_attr] = params[parallel_attr][i : i+batch_size]
         future = global_params["executor"].submit(single_rag_node_execute, new_sub_params,
                                                   task_record.to_dict(), global_params,
                                                   system_tool_config.config_value.get("search_engine", {}))
@@ -313,4 +338,6 @@ def single_rag_node_execute(params, task_record, global_params, search_engine_co
         }
         from app.services.knowledge_center.rag_service_v3 import rag_query_v3
         rag_response = rag_query_v3(rag_params).json.get("result", {})
+        for i in rag_response.get("details"):
+            i["query"] = query
         return rag_response

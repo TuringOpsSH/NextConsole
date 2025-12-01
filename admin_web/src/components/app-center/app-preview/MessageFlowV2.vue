@@ -1515,6 +1515,16 @@ watch(
                             class="attachment-item-img"
                           />
                         </div>
+                        <div v-else-if="attachment.resource_type == 'folder'" class="attachment-item">
+                          <div class="std-middle-box">
+                            <el-image src="/images/folder.svg" class="attachment-item-img" />
+                          </div>
+                          <div class="attachment-item-right">
+                            <el-text style="width: 120px" truncated>
+                              {{ attachment.resource_name }}
+                            </el-text>
+                          </div>
+                        </div>
                         <template v-else-if="attachment.resource_type == 'document'">
                           <slot
                             v-if="$slots['document-attachment']"
@@ -1867,7 +1877,7 @@ watch(
             </el-text>
           </div>
         </div>
-        <el-drawer v-model="showReferenceDrawer" title="参考来源" :size="referenceDrawerWidth">
+        <el-drawer v-model="showReferenceDrawer" resizable title="参考来源" :size="referenceDrawerWidth">
           <el-scrollbar>
             <div id="reference_drawer_body">
               <div v-for="(item, idx) in referenceDrawerData" :key="idx" class="reference-item">
@@ -1988,6 +1998,7 @@ watch(
                     </div>
                   </template>
                 </el-table-column>
+                <el-table-column prop="task_token_used" label="消耗token" width="180" sortable />
                 <el-table-column prop="begin_time" label="开始时间" width="180" sortable />
                 <el-table-column prop="end_time" label="完成时间" width="180" sortable />
                 <el-table-column prop="duration" label="耗时（秒）" width="180" sortable />

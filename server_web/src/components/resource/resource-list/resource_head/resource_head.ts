@@ -13,7 +13,7 @@ import {
   setResourceList,
   setResourceLoading,
   setResourceTotal
-} from '@/components/resource/resource-list/resource_list';
+} from '@/components/resource/resource-list/resource-list';
 import {turn_on_resource_meta as turnOnResourceMeta} from '@/components/resource/resource_meta/resource_meta';
 import {sortResourceList} from '@/utils/common';
 
@@ -41,11 +41,11 @@ export async function refreshData() {
   resourceListStore.isLoading.value = false;
 }
 
-export async function switch_resource_layout(target_model: string = null) {
+export async function switch_resource_layout(targetMode: string = null) {
   // 切换面板展示时暂不刷新数据
-  // await refreshData();
+  console.log(targetMode)
   const resourceListStatus = useSessionStorage<TResourceListStatus>('resourceListStatus', 'card');
-  if (!target_model) {
+  if (!targetMode) {
     if (resourceListStatus.value === 'list') {
       resourceListStatus.value = 'card';
     } else {
@@ -53,7 +53,7 @@ export async function switch_resource_layout(target_model: string = null) {
     }
   } else {
     // @ts-ignore
-    resourceListStatus.value = target_model;
+    resourceListStatus.value = targetMode;
   }
   // 更新至url
   router.push({
@@ -64,22 +64,7 @@ export async function switch_resource_layout(target_model: string = null) {
     }
   });
 }
-export function switch_show_resource_meta() {
-  if (multipleSelection.value?.length > 0) {
-    // 将最新选中的资源设置为当前资源
-    let resource_id = multipleSelection.value[multipleSelection.value.length - 1]?.id;
-    if (!resource_id) {
-      return;
-    }
-    turnOnResourceMeta(resource_id);
-    return;
-  }
-  // 没有选中资源，则显示最近当前主目录的元信息
-  if (!currentResource.id) {
-    return;
-  }
-  turnOnResourceMeta(currentResource.id);
-}
+
 export function show_add_dir_dialog() {
   add_dir_dialog_flag.value = true;
   new_dir_form_valid.value = false;

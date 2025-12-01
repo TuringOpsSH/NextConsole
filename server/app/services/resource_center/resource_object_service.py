@@ -20,6 +20,7 @@ from app.services.resource_center.resource_share_service import search_share_res
 from app.services.task_center.resources_center import auto_build_resource_ref_v2
 from app.services.task_center.resources_center import send_resource_download_cooling_notice_email
 from app.utils.oss.oss_client import generate_new_path, generate_download_url
+from app.models.configure_center.system_config import SystemConfig
 
 
 def search_resource_object(params):
@@ -53,6 +54,8 @@ def search_resource_object(params):
     root_resource = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.user_id == user_id,
         ResourceObjectMeta.resource_status == "正常",
+        ResourceObjectMeta.resource_parent_id.is_(None),
+        ResourceObjectMeta.resource_source == "resource_center"
     ).first()
 
     if not root_resource:
@@ -128,10 +131,10 @@ def search_resource_object(params):
             resource_ref_dict[resource_ref.resource_id] = resource_ref
     for resource_item in data:
         if resource_ref_dict.get(resource_item.get("id")):
-            resource_item["rag_status"] = resource_ref_dict.get(resource_item.get("id")).ref_status
+            resource_item["ref_status"] = resource_ref_dict.get(resource_item.get("id")).ref_status
     if "rag" in resource_type:
         # 过滤掉非rag资源
-        data = [resource_item for resource_item in data if resource_item.get("rag_status") == "成功"]
+        data = [resource_item for resource_item in data if resource_item.get("ref_status") == "成功"]
         total = len(data)
     # 启用手动分页
     # 获取参数并进行异常处理
@@ -232,7 +235,8 @@ def get_resource_object(params):
         target_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.user_id == user_id,
             ResourceObjectMeta.resource_status == "正常",
-            ResourceObjectMeta.resource_parent_id.is_(None)
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_source == "resource_center"
         ).first()
         if not target_resource:
             if not target_user.user_resource_base_path:
@@ -251,7 +255,8 @@ def get_resource_object(params):
                 resource_desc="用户资源库",
                 resource_icon="folder.svg",
                 resource_path=target_user.user_resource_base_path,
-                resource_status="正常"
+                resource_status="正常",
+                resource_source='resource_center'
             )
             db.session.add(target_resource)
             db.session.commit()
@@ -317,9 +322,9 @@ def get_resource_object(params):
             RagRefInfo.create_time.desc()
         ).first()
         if not rag_ref:
-            result["rag_status"] = "未构建"
+            result["ref_status"] = "未构建"
         else:
-            result["rag_status"] = rag_ref.ref_status
+            result["ref_status"] = rag_ref.ref_status
         # 新增Tag信息
         all_tags = ResourceTagRelation.query.filter(
             ResourceTagRelation.resource_id == resource_id,
@@ -356,7 +361,6 @@ def add_resource_upload_task(params):
         if task_source == "session":
             target_resource = ResourceObjectMeta.query.filter(
                 ResourceObjectMeta.id == resource_parent_id,
-                ResourceObjectMeta.user_id == user_id,
                 ResourceObjectMeta.resource_source == "session",
                 ResourceObjectMeta.resource_status == "正常"
             ).first()
@@ -365,16 +369,22 @@ def add_resource_upload_task(params):
         else:
             target_resource = ResourceObjectMeta.query.filter(
                 ResourceObjectMeta.id == resource_parent_id,
-                ResourceObjectMeta.user_id == user_id,
                 ResourceObjectMeta.resource_status == "正常"
             ).first()
             if not target_resource:
                 return next_console_response(error_status=True, error_message="目录不存在！")
+        if not check_user_manage_access_to_resource({
+            "user": target_user,
+            "resource": target_resource,
+            "access_type": "edit"
+        }):
+            return next_console_response(error_status=True, error_message="无权限操作该目录！")
     else:
         root_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.user_id == user_id,
             ResourceObjectMeta.resource_status == "正常",
-            ResourceObjectMeta.resource_parent_id.is_(None)
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_source == "resource_center"
         ).first()
         if not root_resource:
             # 初始化根目录
@@ -385,7 +395,8 @@ def add_resource_upload_task(params):
                 resource_desc="用户资源库",
                 resource_icon="folder.svg",
                 resource_path=target_user.user_resource_base_path,
-                resource_status="正常"
+                resource_status="正常",
+                resource_source='resource_center'
             )
             db.session.add(root_resource)
             db.session.commit()
@@ -714,20 +725,6 @@ def upload_resource_object(params, chunk_content):
             db.session.commit()
         except Exception as e:
             return next_console_response(error_status=True, error_message=f"新增资源异常：{e.args}")
-        # 合并文件块
-        # for idx in range(target_resource_upload.content_max_idx + 1):
-        #     tmp_chunk_path = os.path.join(tmp_save_base_path, f"{target_resource_upload.content_prefix}_{idx}")
-        #     if not os.path.exists(tmp_chunk_path):
-        #         target_resource_upload.task_status = "error"
-        #         db.session.add(target_resource_upload)
-        #         db.session.commit()
-        #         return next_console_response(error_status=True, error_message="文件块不存在！")
-        #     with open(tmp_chunk_path, "rb") as f:
-        #         chunk_content = f.read()
-        #     with open(new_resource_path, "ab") as f:
-        #         f.write(chunk_content)
-        #     # 读取完成后删除文件块
-        #     os.remove(tmp_chunk_path)
         # 临时文件块重命名
         os.rename(tmp_save_path_main, new_resource_path)
         # 更新任务记录
@@ -740,8 +737,12 @@ def upload_resource_object(params, chunk_content):
         except Exception as e:
             return next_console_response(error_status=True, error_message=f"更新任务异常：{e.args}")
         # 满足条件后，提交自动构建任务
-        user_config = get_user_config(user_id).json.get("result")
-        if user_config and user_config["resources"]["auto_rag"]:
+        system_config = SystemConfig.query.filter(
+            SystemConfig.config_status == 1,
+            SystemConfig.config_key == "resources"
+        ).first()
+
+        if system_config and system_config.config_value.get("auto_rag", False):
             # 判断类型是否支持构建
             if check_rag_is_support(new_resource_meta):
                 build_params = {
@@ -924,7 +925,6 @@ def delete_resource_object(params):
         return next_console_response(result=target_resource.show_info())
     # 如果是目录，递归删除
     all_resource_list = ResourceObjectMeta.query.filter(
-        ResourceObjectMeta.user_id == user_id,
         ResourceObjectMeta.resource_status == "正常",
     ).all()
     target_resource_id_list = [resource_id]
@@ -1063,7 +1063,8 @@ def add_resource_object(params):
         root_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.user_id == user_id,
             ResourceObjectMeta.resource_status == "正常",
-            ResourceObjectMeta.resource_parent_id.is_(None)
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_source == "resource_center"
         ).first()
         if not root_resource:
             return next_console_response(error_status=True, error_message="根目录不存在！")
@@ -1126,7 +1127,8 @@ def batch_add_resource_folder(params):
     root_resource = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.user_id == user_id,
         ResourceObjectMeta.resource_status == "正常",
-        ResourceObjectMeta.resource_parent_id.is_(None)
+        ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_source == "resource_center"
     ).first()
     if not root_resource:
         return next_console_response(error_status=True, error_message="根目录不存在！")
@@ -1135,12 +1137,17 @@ def batch_add_resource_folder(params):
     else:
         target_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.id == resource_parent_id,
-            ResourceObjectMeta.user_id == user_id,
             ResourceObjectMeta.resource_status == "正常",
             ResourceObjectMeta.resource_type == "folder"
         ).first()
         if not target_resource:
             return next_console_response(error_status=True, error_message="目标目录不存在！")
+        if not check_user_manage_access_to_resource({
+            'user': target_user,
+            'resource': target_resource,
+            'access_type': 'edit'
+        }):
+            return next_console_response(error_status=True, error_message="没有编辑权限！")
         resource_parent_id = target_resource.id
 
 
@@ -1315,7 +1322,52 @@ def mv_resource_object(params):
     """
     移动资源对象,需要起点目录的管理权限和终点目录的管理权限
         修改资源的parent_id
-        底层数据也需要移动:,resource_path
+        如果底层资源不移动，彻底删除时，会出现问题
+    :param params:
+    :return:
+    """
+    resource_id_list = params.get("resource_id_list", [])
+    target_resource_id = params.get("target_resource_id")
+    pre_check_result = mv_pre_check(params)
+    if type(pre_check_result) is not tuple:
+        return pre_check_result
+    source_resources, target_dir_resource = pre_check_result
+    # 开始更新
+    # all_path_map = {}
+    # base_path = target_dir_resource.resource_path
+    # if not os.path.exists(base_path):
+    #     return next_console_response(error_status=True, error_message="目标目录物理路径不存在！")
+    for resource_item in source_resources:
+        resource_item.resource_parent_id = target_dir_resource.id
+        resource_item.resource_download_url = ''
+        resource_item.resource_show_url = ''
+        # 底层目录也需要修改
+        # mv_resource_old_path = resource_item.resource_path
+        # new_resource_path = os.path.join(base_path, os.path.basename(mv_resource_old_path))
+        # if os.path.exists(new_resource_path):
+        #     new_resource_path = os.path.join(base_path, str(uuid.uuid4())[:12])
+        # try:
+        #     os.rename(mv_resource_old_path, new_resource_path)
+        # except Exception as e:
+        #     app.logger.error(f"移动资源异常：{e.args}")
+        #     return next_console_response(error_status=True, error_message=f"移动资源异常：{e.args}")
+        # resource_item.resource_path = new_resource_path
+        # if mv_resource_old_path not in all_path_map:
+        #     all_path_map[mv_resource_old_path] = new_resource_path
+        db.session.add(resource_item)
+    db.session.commit()
+    result = {
+        "target_resource_id": target_resource_id,
+        "resource_id_list": resource_id_list
+    }
+    return next_console_response(result=result)
+
+
+def mv_pre_check(params):
+    """
+    移动资源预检查
+        核心检查目标目录是否是源目录的子目录
+        源目录之间的关系通过resource-id排序解决
     :param params:
     :return:
     """
@@ -1331,10 +1383,11 @@ def mv_resource_object(params):
         ResourceObjectMeta.id.in_(resource_id_list),
         ResourceObjectMeta.user_id == user_id,
         ResourceObjectMeta.resource_status == "正常"
+    ).order_by(
+        ResourceObjectMeta.id.desc()
     ).all()
     if not source_resources:
         return next_console_response(error_status=True, error_message="资源不存在！")
-    all_source_parent_id = set([resource.resource_parent_id for resource in source_resources])
     target_dir_resource = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.id == target_resource_id,
         ResourceObjectMeta.user_id == user_id,
@@ -1345,62 +1398,20 @@ def mv_resource_object(params):
     if target_dir_resource.resource_type != "folder":
         return next_console_response(error_status=True, error_message="目标资源不是目录！")
     # 检查目标目录是否是源目录的子目录，如果冲突则不允许移动
-    if target_dir_resource.id in all_source_parent_id:
-        return next_console_response(error_status=True, error_message="目标目录是源目录的子目录！")
-    all_user_resource = ResourceObjectMeta.query.filter(
-        ResourceObjectMeta.user_id == user_id,
-        ResourceObjectMeta.resource_status == "正常",
-    ).all()
-    target_resource_id_list = [target_dir_resource.resource_parent_id]
-    add_cnt = 1
-    while add_cnt > 0:
-        add_cnt = 0
-        for resource_item in all_user_resource:
-            if (resource_item.id in target_resource_id_list
-                    and resource_item.resource_parent_id not in target_resource_id_list):
-                target_resource_id_list.append(resource_item.resource_parent_id)
-                add_cnt += 1
-    if set(resource_id_list) & set(target_resource_id_list):
-        return next_console_response(error_status=True, error_message="目标目录是源目录的子目录！")
-    # 开始更新
-    all_path_map = {}
-    for resource_item in source_resources:
-        resource_item.resource_parent_id = target_dir_resource.id
-        resource_item.resource_source = target_dir_resource.resource_source
-        resource_item.resource_download_url = ''
-        resource_item.resource_show_url = ''
-        # 底层目录也需要修改
-        base_path = target_dir_resource.resource_path
-        if os.path.exists(base_path):
-            resource_now_path = resource_item.resource_path
-            new_resource_path = os.path.join(base_path, os.path.basename(resource_now_path))
-            if os.path.exists(new_resource_path):
-                new_resource_path = os.path.join(base_path, str(uuid.uuid4())[:12])
-            try:
-                os.rename(resource_now_path, new_resource_path)
-            except Exception as e:
-                app.logger.error(f"移动资源异常：{e.args}")
-                return next_console_response(error_status=True, error_message=f"移动资源异常：{e.args}")
-            resource_item.resource_path = new_resource_path
-            if resource_now_path not in all_path_map:
-                all_path_map[resource_now_path] = new_resource_path
-        db.session.add(resource_item)
-    db.session.commit()
-    # 更新下层所有资源的路径字段与下载链接
-    for resource in all_user_resource:
-        for mv_resource in all_path_map:
-            if resource.resource_path.startswith(mv_resource):
-                new_path = resource.resource_path.replace(mv_resource, all_path_map[mv_resource])
-                resource.resource_path = new_path
-                resource.resource_download_url = ''
-                resource.resource_show_url = ''
-                db.session.add(resource)
-    db.session.commit()
-    result = {
-        "target_resource_id": target_resource_id,
-        "resource_id_list": resource_id_list
-    }
-    return next_console_response(result=result)
+    target_resource_id_list = [target_dir_resource.id]
+    tmp_parent_resource_id = target_dir_resource.resource_parent_id
+    while tmp_parent_resource_id:
+        target_resource = ResourceObjectMeta.query.filter(
+            ResourceObjectMeta.id == tmp_parent_resource_id,
+            ResourceObjectMeta.resource_status == "正常"
+        ).first()
+        if target_resource:
+            target_resource_id_list.append(target_resource.id)
+        if target_resource.resource_parent_id:
+            tmp_parent_resource_id = target_resource.resource_parent_id
+        else:
+            break
+    return source_resources, target_dir_resource
 
 
 def download_resource_object(params):
@@ -1452,7 +1463,8 @@ def download_resource_object(params):
 
     # 查询下载记录
     if target_resource.user_id != user_id:
-        begin_time = datetime.now(timezone.utc) - timedelta(seconds=app.config["download_cool_time"])
+        download_cool_time = get_resource_download_config().get("cool_time")
+        begin_time = datetime.now(timezone.utc) - timedelta(seconds=download_cool_time)
         download_records = ResourceDownloadRecord.query.filter(
             ResourceDownloadRecord.user_id == user_id,
             ResourceDownloadRecord.create_time >= begin_time,
@@ -1464,7 +1476,8 @@ def download_resource_object(params):
         ).with_entities(
             ResourceObjectMeta
         ).all()
-        if len(download_records) >= app.config["download_max_count"]:
+        download_max_count = get_resource_download_config().get("max_count")
+        if len(download_records) >= download_max_count:
             # 查询冷却记录
             exist_cool_record = ResourceDownloadCoolingRecord.query.filter(
                 ResourceDownloadCoolingRecord.user_id == user_id,
@@ -1501,7 +1514,7 @@ def download_resource_object(params):
             if not exist_cool_record.author_allow:
                 return next_console_response(error_status=True,
                                              error_message="下载次数过多，请稍后再试！或者联系作者进一步授权！")
-            if (len(download_records) + exist_cool_record.author_allow_cnt) <= app.config["download_max_count"]:
+            if (len(download_records) + exist_cool_record.author_allow_cnt) <= download_max_count:
                 return next_console_response(error_status=True,
                                              error_message="下载次数过多，请稍后再试！或者联系作者进一步授权！")
     # 增加审计记录
@@ -1564,7 +1577,8 @@ def batch_download_resource_object(params):
         new_target_resources.append(resource_item)
 
     # 查询下载记录
-    begin_time = datetime.now() - timedelta(seconds=app.config["download_cool_time"])
+    download_cool_time = get_resource_download_config().get("cool_time")
+    begin_time = datetime.now() - timedelta(seconds=download_cool_time)
     all_author_ids = list(set([resource.user_id for resource in new_target_resources if resource.user_id != user_id]))
     all_download_records = ResourceDownloadRecord.query.filter(
         ResourceDownloadRecord.user_id == user_id,
@@ -1593,7 +1607,8 @@ def batch_download_resource_object(params):
     limit_resource_author_id = []
     for author_id in all_author_ids:
         download_cnt = len(all_download_map.get(author_id, [])) + len(this_download_map.get(author_id, []))
-        if download_cnt >= app.config["download_max_count"]:
+        download_max_count = get_resource_download_config().get("max_count")
+        if download_cnt >= download_max_count:
             # 查询冷却记录
             exist_cool_record = ResourceDownloadCoolingRecord.query.filter(
                 ResourceDownloadCoolingRecord.user_id == user_id,
@@ -1635,7 +1650,7 @@ def batch_download_resource_object(params):
                 # 从下载列表中删除
                 limit_resource_author_id.append(author_id)
                 break
-            if (download_cnt + exist_cool_record.author_allow_cnt) <= app.config["download_max_count"]:
+            if (download_cnt + exist_cool_record.author_allow_cnt) <= download_max_count:
                 # 从下载列表中删除
                 limit_resource_author_id.append(author_id)
                 break
@@ -2614,7 +2629,8 @@ def create_new_document(params):
         root_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.user_id == user_id,
             ResourceObjectMeta.resource_status == "正常",
-            ResourceObjectMeta.resource_parent_id.is_(None)
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_source == "resource_center"
         ).first()
         if not root_resource:
             return next_console_response(error_status=True, error_message="根目录不存在！")
@@ -2725,8 +2741,13 @@ def simple_upload_resource(params, data):
     db.session.add(new_resource)
     db.session.commit()
     # 满足条件后，提交自动构建任务
-    user_config = get_user_config(user_id).json.get("result")
-    if auto_index is True or (auto_index is None and user_config and user_config["resources"]["auto_rag"]):
+    system_config = SystemConfig.query.filter(
+        SystemConfig.config_status == 1,
+        SystemConfig.config_key == "resources"
+    ).first()
+    if auto_index is True or (
+            auto_index is None and system_config and system_config.config_value.get("auto_rag", False)
+    ):
         # 判断类型是否支持构建
         if check_rag_is_support(new_resource):
             build_params = {
@@ -2739,3 +2760,23 @@ def simple_upload_resource(params, data):
         "name": new_resource.resource_name,
         "url": new_resource.resource_show_url
     })
+
+
+def get_resource_download_config():
+    """
+    获取资源下载配置
+    """
+
+    system_config = SystemConfig.query.filter(
+        SystemConfig.config_key == 'resources',
+        SystemConfig.config_status == 1
+    ).with_entities(
+        SystemConfig.config_value
+    ).first()
+    if system_config:
+        return system_config.config_value.get("download", {})
+    else:
+        return {
+          "max_count": 100,
+          "cool_time": 7200
+        }

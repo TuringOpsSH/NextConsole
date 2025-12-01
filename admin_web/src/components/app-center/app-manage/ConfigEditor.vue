@@ -32,7 +32,9 @@ const welcomeConfigRules = {
 
 const paramsConfigRef = ref(null);
 const paramsConfig = reactive({
-  title: '应用参数'
+  title: '应用参数',
+  asr: false,
+  ragLock: false,
 });
 const paramsConfigRules = {
   title: [{ required: true, message: '标题不能为空', trigger: 'blur' }]
@@ -100,6 +102,8 @@ watch(
           welcomeConfig.keep = appInfoStore.currentApp.app_config?.[area.area]?.keep || false;
         } else if (newVal == 'params') {
           paramsConfig.title = appInfoStore.currentApp.app_config?.[area.area]?.title || '应用参数';
+          paramsConfig.asr = appInfoStore.currentApp.app_config?.[area.area]?.asr;
+          paramsConfig.ragLock = appInfoStore.currentApp.app_config?.[area.area]?.ragLock;
           // 这里可以添加更多的参数配置逻辑
         } else {
           ElMessage.error('未知配置区域');
@@ -203,6 +207,12 @@ watch(
               <el-form ref="paramsConfigRef" :model="paramsConfig" :rules="paramsConfigRules">
                 <el-form-item label="会话参数标题" prop="title">
                   <el-input v-model="paramsConfig.title" placeholder="请输入标题" />
+                </el-form-item>
+                <el-form-item label="启用语音输入" prop="title">
+                  <el-switch v-model="paramsConfig.asr" />
+                </el-form-item>
+                <el-form-item label="等待上传文档构建完成" prop="title">
+                  <el-switch v-model="paramsConfig.ragLock" />
                 </el-form-item>
                 <el-form-item>
                   <el-popconfirm title="确认更新应用配置么" width="180" @confirm="commitSaveConfig">

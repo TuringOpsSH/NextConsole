@@ -314,7 +314,7 @@ async function showSupDetailFn(item: IMsgQueueItem, event) {
           (referenceList[i]?.resource_source_url == targetLink && targetLink) ||
           (referenceList[i]?.resource_download_url == targetLink && targetLink) ||
           targetLink?.includes('next_console/resources/resource_viewer/' + referenceList[i]?.resource_id) ||
-          i === targetIndexNumber
+          i == targetIndexNumber - 1
         ) {
           currentSupDetail.value = referenceList[i];
           break;
@@ -1469,6 +1469,16 @@ watch(
                             class="attachment-item-img"
                           />
                         </div>
+                        <div v-else-if="attachment.resource_type == 'folder'" class="attachment-item">
+                          <div class="std-middle-box">
+                            <el-image src="/images/folder.svg" class="attachment-item-img" />
+                          </div>
+                          <div class="attachment-item-right">
+                            <el-text style="width: 120px" truncated>
+                              {{ attachment.resource_name }}
+                            </el-text>
+                          </div>
+                        </div>
                         <template v-else-if="attachment.resource_type == 'document'">
                           <slot
                             v-if="$slots['document-attachment']"
@@ -1808,12 +1818,12 @@ watch(
             </el-text>
           </div>
           <div class="reference-text-box">
-            <el-text line-clamp="2" class="reference-text">
+            <el-text line-clamp="10" class="reference-text">
               {{ currentSupDetail?.ref_text }}
             </el-text>
           </div>
         </div>
-        <el-drawer v-model="showReferenceDrawer" title="参考来源" :size="referenceDrawerWidth">
+        <el-drawer v-model="showReferenceDrawer" resizable title="参考来源" :size="referenceDrawerWidth">
           <el-scrollbar>
             <div id="reference_drawer_body">
               <div v-for="(item, idx) in referenceDrawerData" :key="idx" class="reference-item">
@@ -2324,8 +2334,8 @@ sup {
 #sup_detail_box {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 6px;
   background: #ffffff;
   border-radius: 8px;
   position: absolute;
@@ -2333,7 +2343,7 @@ sup {
   top: 0;
   left: 0;
   width: 300px;
-  max-height: 150px;
+  max-height: 320px;
   box-shadow: 0 12px 16px -4px #10182814;
 }
 .std-middle-box {
@@ -2360,7 +2370,7 @@ sup {
 .reference-name-text {
   font-weight: 500;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 16px;
   color: #101828;
   cursor: pointer;
 }
@@ -2375,8 +2385,8 @@ sup {
   gap: 8px; /* 增加元素间的间距 */
   flex-wrap: wrap;
   width: 100%;
-  padding: 16px; /* 添加内边距 */
-  margin: 16px 0; /* 添加外边距 */
+  padding: 6px; /* 添加内边距 */
+  margin: 6px 0; /* 添加外边距 */
   border: 1px solid #e5e7eb; /* 添加边框 */
   border-radius: 8px; /* 圆角边框 */
   background-color: #f9fafb; /* 背景颜色 */
@@ -2386,13 +2396,12 @@ sup {
   font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; /* 更换字体 */
   font-weight: 400;
   font-size: 14px;
-  line-height: 22px; /* 增加行高，提高可读性 */
+  line-height: 18px; /* 增加行高，提高可读性 */
   color: #4b5563; /* 调整文字颜色 */
   width: 100%; /* 确保文本宽度一致 */
   overflow: hidden; /* 隐藏溢出内容 */
   text-overflow: ellipsis; /* 添加省略号 */
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* 截断为 3 行 */
   -webkit-box-orient: vertical;
 }
 .attachment-area {

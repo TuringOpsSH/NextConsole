@@ -23,7 +23,7 @@ def get_version():
             version = f.read()
         version = json.loads(version)
     except Exception as e:
-        return next_console_response(result={"version": "0.2.8"})
+        return next_console_response(result={"version": "0.2.9"})
     return next_console_response(result=version)
 
 
@@ -34,8 +34,10 @@ def get_domain():
     :return:
     """
     server_domain = app.config.get("domain", "https://www.turingops.com")
+    admin_domain = app.config.get("admin_domain", "https://www.turingops.com")
     result = {
         "server_domain": server_domain,
+        "admin_domain": admin_domain,
     }
     return next_console_response(result=result)
 
@@ -48,8 +50,8 @@ def get_system_configs():
     获取系统配置
     :return:
     """
-
-    return get_system_configs_service()
+    data = request.get_json()
+    return get_system_configs_service(data)
 
 
 @app.route('/next_console_admin/config_center/system_config/update', methods=['POST'])
@@ -83,3 +85,16 @@ def load_system_configs():
     """
 
     return load_system_configs_service()
+
+
+@app.route('/next_console_admin/config_center/system_config/reset', methods=['POST'])
+@jwt_required()
+@roles_required(["next_console_admin"])
+def init_system_configs_view():
+    """
+    初始化系统配置
+    :return:
+    """
+    data = request.get_json()
+    config_key = data.get("config_key")
+    return init_system_configs(config_key)

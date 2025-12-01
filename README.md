@@ -1,12 +1,22 @@
 
+
 <p align="center">
   <img src="docs/logo_text.svg" width="600" alt="NextConsole Logo">
   <p align="center">Unleashing the Power of LLM for Enterprises💪</p>
+  
   <p align="center">
-    <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python Version">
+    <a href="https://docs.nextconsole.cn/" target="_blank">📚 Documents</a> • 
+    <a href="./README_CN.md">📖 中文</a> • 
+    <a href="./README.md">🌐 English</a>
+  </p>
+  
+  <p align="center">
+    <img src="https://img.shields.io/badge/Python-3.11%2B-blue" alt="Python Version">
     <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 License">
   </p>
 </p>
+
+
 
 ## Introduction
 NextConsole is an open - source project meticulously crafted for enterprise users, designed to empower businesses to rapidly and efficiently construct intelligent systems based on large - language models. With NextConsole, enterprises can effortlessly build intelligent agents, knowledge bases, workflows, and a wide range of applications, significantly reducing development time and costs while accelerating the process of enterprise digital transformation. 🚀
@@ -69,7 +79,7 @@ In the configuration file, you need to make the following configurations:
 **Domain Configuration**:
 Set the domain name of the application. Here is an example using the local address:
 ```python
-app.config["domain"] = "http://127.0.0.1:8080"
+app.config["domain"] = "http://<your_server_ip>:8080"
 app.config["admin_domain"] = "http://<your_server_ip>:8082"
 ```
 
@@ -82,25 +92,10 @@ In the configuration file, you need to make the following configurations:
 **Domain Configuration**:
 Set the domain name of the application. Here is an example using the local address:
 ```python
-app.config["domain"] = "http://127.0.0.1:8080"
+app.config["domain"] = "http://<your_server_ip>:8080"
 app.config["admin_domain"] = "http://<your_server_ip>:8082"
 ```
 
-
-**RAG (Retrieval Augmented Generation) Configuration**:
-It is recommended to use the free embedding and reranking models provided by Siliconflow. The specific configurations are as follows:
-```python
-# Vector model (It is recommended to use the free embed and rerank models from Siliconflow)
-app.config["EMBEDDING_ENDPOINT"] = "https://api.siliconflow.cn/v1/embeddings"
-app.config["EMBEDDING_MODEL"] = "BAAI/bge-m3"
-app.config["EMBEDDING_KEY"] = ""
-app.config["RERANK_ENDPOINT"] = "https://api.siliconflow.cn/v1/rerank"
-app.config["RERANK_MODEL"] = "BAAI/bge-reranker-v2-m3"
-app.config["RERANK_KEY"] = ""
-app.config["search_engine_endpoint"] = "https://google.serper.dev/search"
-app.config["search_engine_key"] = ""
-```
-Please fill in the corresponding keys (`EMBEDDING_KEY`, `RERANK_KEY`, `search_engine_key`) according to the actual situation. If you don't have them for now, you can leave them blank.
 
 ##### 3. Start the Docker Containers
 After the configuration is completed, use the following command to start the Docker containers:
@@ -130,7 +125,7 @@ By following the above steps, you can quickly start NextConsole and begin using 
 ### Prerequisites
 - Docker 21+ installed
 - Node.js 16+ (for frontend build)
-- Python 3.10+ (for backend services)
+- Python 3.11+ (for backend services)
 
 ### Build Steps
 

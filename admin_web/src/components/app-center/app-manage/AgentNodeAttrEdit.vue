@@ -425,7 +425,7 @@ watch(
       </div>
     </div>
   </div>
-  <el-drawer v-model="showLLMConfigForm" title="模型配置" size="50vw">
+  <el-drawer v-model="showLLMConfigForm" title="模型配置" size="50vw" resizable>
     <el-scrollbar>
       <div class="std-middle-box">
         <el-form

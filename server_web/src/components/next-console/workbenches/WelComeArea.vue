@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, watch} from 'vue';
+import { ref, watch } from 'vue';
 const props = defineProps({
   welcomeConfig: {
     type: Object,
@@ -15,18 +15,18 @@ const props = defineProps({
 const localWelcomeConfig = ref();
 const localDisable = ref(false);
 watch(
-    () => props.welcomeConfig,
-    (newVal) => {
-      localWelcomeConfig.value = newVal;
-    },
-    { immediate: true }
+  () => props.welcomeConfig,
+  newVal => {
+    localWelcomeConfig.value = newVal;
+  },
+  { immediate: true }
 );
 watch(
-    () => props.disable,
-    (newVal) => {
-      localDisable.value = newVal;
-    },
-    { immediate: true }
+  () => props.disable,
+  newVal => {
+    localDisable.value = newVal;
+  },
+  { immediate: true }
 );
 const emits = defineEmits(['prefixQuestionClick']);
 </script>
@@ -46,15 +46,15 @@ const emits = defineEmits(['prefixQuestionClick']);
         <el-text class="desc-text">{{ localWelcomeConfig.description }}</el-text>
       </div>
     </div>
-    <div class="preview-area-body"></div>
-    <div class="preview-area-foot" v-show="!localDisable">
+    <div class="preview-area-body" />
+    <div v-show="!localDisable" class="preview-area-foot">
       <el-tag
-          v-for="(question, index) in localWelcomeConfig.prefixQuestions"
-          :key="index"
-          class="prefix-question-tag"
-          size="large"
-          round
-          @click="emits('prefixQuestionClick', question)"
+        v-for="(question, index) in localWelcomeConfig.prefixQuestions"
+        :key="index"
+        class="prefix-question-tag"
+        size="large"
+        round
+        @click="emits('prefixQuestionClick', question)"
       >
         {{ question }}
       </el-tag>

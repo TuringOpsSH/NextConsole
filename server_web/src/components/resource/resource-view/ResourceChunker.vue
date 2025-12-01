@@ -37,7 +37,7 @@ const currentViewResource = reactive<ResourceItem>(
     resource_path: null,
     resource_size_in_MB: null,
     resource_status: null,
-    rag_status: null,
+    ref_status: null,
     create_time: null,
     update_time: null,
     delete_time: null,

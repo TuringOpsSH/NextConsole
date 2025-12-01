@@ -8,11 +8,11 @@ import ResourceEditor from '@/components/resource/resource-view/ResourceEditor.v
 import ResourceParser from '@/components/resource/resource-view/ResourceParser.vue';
 import ResourcePreviewer from '@/components/resource/resource-view/ResourcePreviewer.vue';
 import { currentPathTree } from '@/components/resource/resource-view/resource-viewer';
-import { show_resource_list } from '@/components/resource/resource-list/resource_list';
-import ResourceViewTree from '@/components/resource/resource_tree/resource_view_tree.vue';
+import { show_resource_list } from '@/components/resource/resource-list/resource-list';
 import 'vue-json-pretty/lib/styles.css';
 
 import router from '@/router';
+import {useUserInfoStore} from "@/stores/user-info-store";
 const props = defineProps({
   resourceId: {
     type: String,
@@ -32,6 +32,7 @@ const resourceParserRef = ref(null);
 const resourceEditorRef = ref(null);
 const resourceChunkerRef = ref(null);
 const resourceIndexRef = ref(null);
+const userInfoStore = useUserInfoStore();
 async function getParentResourceList() {
   if (!currentResourceId.value) {
     currentPathTree.value = [];
@@ -43,6 +44,35 @@ async function getParentResourceList() {
   let res = await get_resource_object_path(params);
   if (!res.error_status) {
     currentPathTree.value = res.result.data;
+  }
+}
+async function toResource(item) {
+  if (item.resource_type == 'folder') {
+    if (item.user_id != userInfoStore.userInfo.user_id) {
+      router.push({
+        name: 'resourceShare',
+        params: {
+          resourceId: item.id
+        }
+      });
+    } else {
+      router.push({
+        name: 'resource_list',
+        params: {
+          resource_id: item.id
+        }
+      });
+    }
+  } else {
+    router.push({
+      name: 'resource_viewer',
+      params: {
+        resource_id: item.id
+      },
+      query: {
+        ...router.currentRoute.value.query
+      }
+    });
   }
 }
 const handleMouseEnter = (event, index) => {
@@ -76,6 +106,7 @@ watch(
   async newResourceID => {
     currentResourceId.value = parseInt(newResourceID);
     getParentResourceList();
+    handlePaneChange(currentPane.value);
   },
   {
     immediate: true,
@@ -102,7 +133,7 @@ onMounted(() => {
               <el-breadcrumb-item
                 v-for="(item, index) in currentPathTree"
                 :key="item.id"
-                @click="show_resource_list(item)"
+                @click="toResource(item)"
               >
                 <el-tooltip :content="item.resource_name" effect="light" :disabled="!item.isOverflow">
                   <el-text
@@ -147,7 +178,6 @@ onMounted(() => {
     </el-main>
     <el-footer height="48px" style="padding: 0 !important; background-color: #f9fafb" />
   </el-container>
-  <ResourceViewTree />
 </template>
 
 <style scoped lang="scss">

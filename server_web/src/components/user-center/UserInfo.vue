@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Clipboard from 'clipboard';
 import CryptoJS from 'crypto-js';
 import { ElMessage, FormRules, FormInstance } from 'element-plus';
 import { nextTick, onMounted, reactive, ref, watch } from 'vue';
@@ -21,7 +22,6 @@ import UserInviteDialog from '@/components/user-center/UserInviteDialog.vue';
 import router from '@/router';
 import { useUserInfoStore } from '@/stores/user-info-store';
 import { IPointTransaction, IUsers } from '@/types/user-center';
-import Clipboard from "clipboard";
 
 const props = defineProps({
   // 是否显示用户信息

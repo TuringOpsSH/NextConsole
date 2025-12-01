@@ -49,7 +49,8 @@ export const api = {
   system_config_update: envUrl + '/next_console_admin/config_center/system_config/update',
   refresh_token: envUrl + '/next_console_admin/user_center/refresh_token',
   get_wx_config: envUrl + '/next_console_admin/config_center/system_config/get_wx_config',
-  system_config_load: envUrl + '/next_console_admin/config_center/system_config/load'
+  system_config_load: envUrl + '/next_console_admin/config_center/system_config/load',
+  system_config_reset: envUrl + '/next_console_admin/config_center/system_config/reset'
 };
 export async function getSupportArea(params: object): Promise<ServerResponse> {
   // @ts-ignore
@@ -360,5 +361,13 @@ export async function systemConfigLoad(params: object): Promise<ServerResponse> 
     data: params,
     responseType: 'json',
     noAuth: true
+  });
+}
+
+export async function systemConfigReset(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.system_config_reset,
+    data: params,
+    responseType: 'json'
   });
 }

@@ -1,25 +1,26 @@
 import { ElMessage } from 'element-plus';
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import AgentApp from '@/components/app-center/AgentApp.vue';
+import SdkAgentApp from '@/components/app-center/sdk-iframe/SdkAgentApp.vue';
 import ContactsPage from '@/components/contacts/ContactsPage.vue';
 import CompanyStructure from '@/components/contacts/company-structure/company_structure.vue';
 import Friends from '@/components/contacts/friends/Friends.vue';
 import groupsChat from '@/components/contacts/groups_chat/groups_chat.vue';
 import consoleMain from '@/components/next-console/ConsoleMain.vue';
+import MessageFlow from '@/components/next-console/messages-flow/MessageFlowMain.vue';
 import sessionHistory from '@/components/next-console/messages-flow/SessionHistory.vue';
 import NextConsoleWelcomeHome from '@/components/next-console/messages-flow/WelcomeHome.vue';
-import messageFlow from '@/components/next-console/messages-flow/MessageFlowMain.vue';
+import AgentAppV2 from '@/components/next-console/workbenches/AgentApp.vue';
 import ResourceMain from '@/components/resource/ResourceMain.vue';
 import ResourceList from '@/components/resource/resource-list/ResourceList.vue';
 import ResourceShare from '@/components/resource/resource-share/ResourceShare.vue';
 import ResourceShortcut from '@/components/resource/resource-shortcut/ResourceShortcut.vue';
-import { parseResourceType, parseTagId } from '@/components/resource/resource-shortcut/resource_shortcut';
+import { parseResourceType, parseTagId } from '@/components/resource/resource-shortcut/resource-shortcut';
 import ResourceViewer from '@/components/resource/resource-view/ResourceViewer.vue';
 import ResourceCooling from '@/components/resource/resource_cooling/resource_cooling.vue';
 import MyFavorite from '@/components/resource/resources_favorite/my_resource_favorite.vue';
 import UserInfo from '@/components/user-center/UserInfo.vue';
 import WxLoginCheck from '@/components/user-center/WxLoginCheck.vue';
-import AgentAppV2 from '@/components/next-console/workbenches/AgentApp.vue';
 import AppCenter from '@/pages/AppCenter.vue';
 import Contract from '@/pages/Contract.vue';
 import DefaultPage from '@/pages/DefaultPage.vue';
@@ -29,6 +30,7 @@ import Page403 from '@/pages/Page403.vue';
 import Page404 from '@/pages/Page404.vue';
 import PrivacyPolicy from '@/pages/PrivacyPolicy.vue';
 import ResetPassword from '@/pages/ResetPassword.vue';
+import SDKApp from '@/pages/SDKApp.vue';
 import invitation from '@/pages/invitation.vue';
 import unsubscribe from '@/pages/unsubscribe.vue';
 import { useUserInfoStore } from '@/stores/user-info-store';
@@ -81,7 +83,7 @@ const routes: RouteRecordRaw[] = [
           {
             path: 'message_flow/:session_code?',
             name: 'message_flow',
-            component: messageFlow,
+            component: MessageFlow,
             meta: { requiresAuth: true },
             strict: true,
             props: route => ({
@@ -176,14 +178,14 @@ const routes: RouteRecordRaw[] = [
             strict: true
           },
           {
-            path: 'resource_share/:resource_id?',
-            name: 'resource_share',
+            path: 'resource-share/:resourceId?',
+            name: 'resourceShare',
             component: ResourceShare,
             meta: { requiresAuth: true },
             strict: true,
             props: route => ({
-              resource_id: route.params.resource_id
-              // resource_view_model: route.query.view_model || 'card'
+              resourceId: route.params.resourceId || '',
+              resource_panel: 'true'
             })
           },
           {
@@ -264,6 +266,27 @@ const routes: RouteRecordRaw[] = [
         component: Contract,
         meta: { requiresAuth: true },
         strict: true
+      }
+    ]
+  },
+  {
+    name: 'sdkApp',
+    path: '/sdk',
+    component: SDKApp,
+    meta: { requiresAuth: false },
+    strict: true,
+    children: [
+      {
+        name: 'agentApp',
+        path: 'app/:appCode/:sessionCode?',
+        component: SdkAgentApp,
+        meta: { requiresAuth: false },
+        strict: true,
+        props: route => ({
+          appCode: route.params.appCode,
+          sessionCode: route.params.sessionCode,
+          autoAsk: route.query.autoAsk
+        })
       }
     ]
   },

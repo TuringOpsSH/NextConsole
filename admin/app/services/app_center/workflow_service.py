@@ -301,7 +301,7 @@ def update_app_flow(params):
     if workflow_edit_schema is not None:
         target_flow.workflow_edit_schema = workflow_edit_schema
     if flow_is_main is True and app_code:
-        old_main_flow = AppWorkFlowRelation.query.filter(
+        old_main_flows = AppWorkFlowRelation.query.filter(
             AppWorkFlowRelation.app_code == app_code,
             AppWorkFlowRelation.workflow_code != flow_code,
             AppWorkFlowRelation.rel_status != '已删除',
@@ -317,11 +317,12 @@ def update_app_flow(params):
             WorkFlowMetaInfo
         ).order_by(
             WorkFlowMetaInfo.version.desc()
-        ).first()
-        if old_main_flow:
-            old_main_flow.workflow_is_main = False
-            db.session.add(old_main_flow)
-            db.session.commit()
+        ).all()
+        if old_main_flows:
+            for old_main_flow in old_main_flows:
+                old_main_flow.workflow_is_main = False
+                db.session.add(old_main_flow)
+                db.session.commit()
         target_flow.workflow_is_main = True
     db.session.add(target_flow)
     db.session.commit()
@@ -573,6 +574,13 @@ def check_app_flow_schema(params):
                     'title': f'工作流{target_workflow.workflow_name}-节点{target_node.node_name}:未配置用户提示语',
                     'type': 'error'
                 })
+            if (target_node.node_run_model_config.get("node_run_model") == 'parallel'
+                and not target_node.node_run_model_config.get("parallel_attr")):
+                all_check_info.append({
+                    "id": f'alter-并行属性配置{target_node.id}',
+                    'title': f'工作流<{target_workflow.workflow_name}>-节点<{target_node.node_name}>:未配置并行任务属性',
+                    'type': 'error'
+                })
         if target_node.node_type == "rag":
             if not target_node.node_rag_query_template:
                 all_check_info.append({
@@ -601,7 +609,13 @@ def check_app_flow_schema(params):
                             'title': f'工作流{target_workflow.workflow_name}-节点{target_node.node_name}:输入参数{attr}配置异常',
                             'type': 'error'
                         })
-        all_check_info.extend(check_input_ref_params(target_workflow, target_node, global_params))
+        # 从上游节点中加载变量
+        upstream_nodes = load_upstream_nodes(target_workflow, target_node)
+        upstream_params = {
+            k: global_params[k]
+            for k in global_params if k in upstream_nodes
+        }
+        all_check_info.extend(check_input_ref_params(target_workflow, target_node, upstream_params))
         if target_node.node_enable_message:
             has_message_config = True
             # rule7 检查节点消息参数
@@ -660,16 +674,7 @@ def export_app_flow_schema(params):
 
 
 def load_all_global_params(all_target_nodes):
-    start_node = [node for node in all_target_nodes if node.node_type == 'start'][0]
-    global_params = {
-        start_node.node_code: {
-            "USER_INPUT": "fake",
-            "session_id": 1,
-            "SessionAttachmentList": [{"id": 1, "name": "fake_session_attachment.txt", "format": "txt", "size": 1024}],
-            "MessageAttachmentList": [{"id": 1, "name": "fake_session_attachment.txt", "format": "txt", "size": 1024}],
-            "current_time": "2023-10-01T00:00:00Z"
-        }
-    }
+    global_params = {}
     for target_node in all_target_nodes:
         properties = target_node.node_result_params_json_schema.get("properties", {})
         fake_result = generate_fake_result(properties)
@@ -705,6 +710,32 @@ def generate_fake_result(properties):
     return fake_result
 
 
+def load_upstream_nodes(workflow, node):
+    """
+    获取上游节点列表
+    """
+    cells = workflow.workflow_edit_schema.get("cells", [])
+    result = []
+    src_node_codes = [node.node_code]
+    while src_node_codes:
+        find_flag = False
+        tmp_src_node_codes = []
+        for cell in cells:
+            if cell.get("shape") != 'edge':
+                continue
+            source_code = cell.get("source").get("cell")
+            target_code = cell.get("target").get("cell")
+            if target_code in src_node_codes and source_code not in result:
+                result.append(source_code)
+                tmp_src_node_codes.append(source_code)
+                find_flag = True
+        if not find_flag:
+            src_node_codes = None
+        else:
+            src_node_codes = tmp_src_node_codes
+    return result
+
+
 def check_input_ref_params(workflow, node, global_params):
     """
     检查工作流引用参数是否符合规范
@@ -734,9 +765,11 @@ def check_input_ref_params(workflow, node, global_params):
     for error in error_result:
         error_info.append({
             "id": f"alter-节点引用参数{node.id}",
-            "title": f"工作流{workflow.workflow_name}-{node.node_name}:引用参数{error}失效",
+            "title": f"工作流<{workflow.workflow_name}>-节点<{node.node_name}>:引用参数<{error}>失效",
             "type": "error"
         })
+        from app.app import app
+        app.logger.warning(f"{global_params}")
     return error_info
 
 
@@ -961,21 +994,30 @@ def init_app_flow_node(params):
         node_llm_params=node_llm_params,
         node_input_params_json_schema=node_input_params_json_schema,
         node_result_params_json_schema=node_result_params_json_schema,
+        node_run_model_config={
+            "node_run_model": "sync",
+            "batch_size": 1,
+            "result_merge_model": "list"
+        }
     )
     if node_type == 'start':
         init_start_node(new_node)
-    if node_type == 'llm':
+    elif node_type == 'llm':
         init_llm_node(new_node)
-    if node_type == 'rag':
+    elif node_type == 'rag':
         init_rag_node(new_node)
-    if node_type == 'file_reader':
+    elif node_type == 'file_reader':
         init_file_reader_node(new_node)
-    if node_type == 'file_splitter':
+    elif node_type == 'file_splitter':
         init_file_splitter_node(new_node)
-    if node_type == 'workflow':
+    elif node_type == 'workflow':
         init_workflow_node(new_node)
-    if node_type == 'end':
+    elif node_type == 'end':
         init_end_node(new_node)
+    elif node_type == 'tool':
+        init_tool_node(new_node)
+    elif node_type == 'variable_cast':
+        init_variable_cast_node(new_node)
     db.session.add(new_node)
     db.session.commit()
     try:
@@ -1315,14 +1357,7 @@ def init_rag_node(new_node):
             "resource_icon": "/images/node_rag.svg",
             "resource_name": "消息附件",
             "resource_desc": "用户在当前请求中上传的所有附件"
-        },
-        {
-            "id": "session_attachments",
-            "resource_ready": True,
-            "resource_icon": "/images/node_rag.svg",
-            "resource_name": "会话附件",
-            "resource_desc": "用户在本次会话中上传的所有附件"
-        },
+        }
     ]
     new_node.node_rag_recall_config = {
         "recall_similarity": "ip",
@@ -1330,7 +1365,7 @@ def init_rag_node(new_node):
         "recall_k": 30,
     }
     new_node.node_rag_rerank_config = {
-        "rerank_enabled": True,
+        "rerank_enabled": False,
         "max_chunk_per_doc": 1024,
         "overlap_tokens": 80,
         "rerank_threshold": 0.6,
@@ -1676,6 +1711,83 @@ def init_end_node(new_node):
     }
 
 
+def init_tool_node(new_node):
+    """
+    初始化工具节点
+    :param new_node:
+    :return:
+    """
+    new_node.node_result_format = 'json'
+    new_node.node_tool_http_method = 'GET'
+    new_node.node_tool_configs = {
+        "protocol": "https",
+        "https": {
+            "verify": True
+        },
+        "mcp": {
+            "call_data_schema": {
+                "type": "object",
+                "ncOrders": ["tool_name", "tool_params"],
+                "properties": {
+                    "tool_name": {
+                        "type": "string",
+                        "typeName": "string",
+                        "description": "工具名称",
+                        "attrFixed": True,
+                        "typeFixed": True,
+                    },
+                    "tool_params": {
+                        "type": "object",
+                        "typeName": "object",
+                        "description": "工具参数",
+                        "typeFixed": True,
+                        "properties": {
+
+                        },
+                        "ncOrders": []
+                    }
+                }
+            },
+
+        }
+    }
+
+
+def init_variable_cast_node(new_node):
+    """
+    初始化变量转换节点
+    """
+    new_node.node_result_format = 'json'
+    new_node.node_variable_cast_config = {
+        "cast_type": "string",
+        "string_template": "",
+        "cast_schema": {
+            "type": "object",
+            "properties": {
+
+            },
+            "ncOrders": [],
+        }
+    }
+    new_node.node_result_params_json_schema = {
+        "type": "object",
+        "properties": {
+            "content": {
+                "type": "string",
+                "typeName": "string",
+                "description": "转换后内容",
+                "attrFixed": True,
+                "typeFixed": True,
+                "valueFixed": True,
+            },
+        },
+        "ncOrders": ["content"],
+        "attrFixed": True,
+        "typeFixed": True,
+        "valueFixed": True,
+    }
+
+
 def update_app_flow_node(params):
     """
     更新应用代理节点
@@ -1735,6 +1847,8 @@ def update_app_flow_node(params):
     node_file_reader_config = params.get("node_file_reader_config")
     node_file_splitter_config = params.get("node_file_splitter_config")
     node_sub_workflow_config = params.get("node_sub_workflow_config")
+    node_tool_configs = params.get("node_tool_configs")
+    node_variable_cast_config = params.get("node_variable_cast_config")
     target_node = WorkflowNodeInfo.query.filter(
         WorkflowNodeInfo.node_code == node_code,
         WorkflowNodeInfo.node_status == "正常",
@@ -1836,6 +1950,10 @@ def update_app_flow_node(params):
         target_node.node_file_splitter_config = node_file_splitter_config
     if node_sub_workflow_config is not None:
         target_node.node_sub_workflow_config = node_sub_workflow_config
+    if node_tool_configs is not None:
+        target_node.node_tool_configs = node_tool_configs
+    if node_variable_cast_config is not None:
+        target_node.node_variable_cast_config = node_variable_cast_config
     db.session.add(target_node)
     db.session.commit()
     return next_console_response(result=target_node.to_dict())
@@ -1869,9 +1987,12 @@ def delete_app_flow_node(params):
         return next_console_response(error_status=True, error_message="工作流不存在！", error_code=1002)
     # 修改工作流的schema
     for target_workflow in target_workflows:
-        target_workflow.workflow_edit_schema.get("cells").remove(
-            next(filter(lambda x: x.get("id") in nodes, target_workflow.workflow_edit_schema.get("cells")), None)
-        )
+        try:
+            target_workflow.workflow_edit_schema.get("cells").remove(
+                next(filter(lambda x: x.get("id") in nodes, target_workflow.workflow_edit_schema.get("cells")), None)
+            )
+        except Exception as e:
+            pass
         db.session.add(target_workflow)
         db.session.commit()
     for target_node in target_nodes:
@@ -1898,7 +2019,6 @@ def get_app_flow_node_detail(params):
         WorkflowNodeInfo.node_status != '已删除',
         WorkflowNodeInfo.environment == "开发"
     ).first()
-
     if target_node:
         return next_console_response(result=target_node.to_dict())
     return next_console_response(error_status=True, error_message="节点不存在！", error_code=1002)
@@ -2060,7 +2180,15 @@ def copy_app_flow_node(params):
                 ]
             },
             "id": new_node_code,
-            "data": target_cell.get("data"),
+            "data": {
+                "nodeType": target_cell.get("data").get("nodeType"),
+                "nodeDesc": target_cell.get("data").get("nodeDesc"),
+                "nodeName": target_cell.get("data").get("nodeName") + "_副本",
+                "nodeIcon": target_cell.get("data").get("nodeIcon"),
+                "nodeInput": target_cell.get("data").get("nodeInput"),
+                "nodeOutput": target_cell.get("data").get("nodeOutput"),
+                "nodeModel": target_cell.get("data").get("nodeModel"),
+            },
             "zIndex": 3
         }
     )

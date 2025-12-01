@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { format_resource_size, get_resource_icon } from '@/components/resource/resource-list/resource_list';
+import { format_resource_size, get_resource_icon } from '@/components/resource/resource-list/resource-list';
 import {
   all_resource_tags,
   before_leave_check,
@@ -18,17 +18,17 @@ import {
 } from '@/components/resource/resource_meta/resource_meta';
 import { onMounted, ref } from 'vue';
 const dialog_width = ref(window.innerWidth < 768 ? '90%' : '600px');
-function getRagStatus(rag_status :string) {
-  if (!rag_status) {
+function getRagStatus(ref_status :string) {
+  if (!ref_status) {
     return 'info';
   }
-  if (rag_status === '成功') {
+  if (ref_status === '成功') {
     return 'success';
   }
-  if (rag_status === '失败') {
+  if (ref_status === '失败') {
     return 'warning';
   }
-  if (rag_status === '异常') {
+  if (ref_status === '异常') {
     return 'danger';
   }
   return 'primary';
@@ -241,8 +241,8 @@ onMounted(() => {
               </div>
               <div class="resource-static-item-right">
 
-                  <el-tag :type="getRagStatus(choose_resource_meta?.rag_status)">
-                    {{ choose_resource_meta?.rag_status || '未索引' }}
+                  <el-tag :type="getRagStatus(choose_resource_meta?.ref_status)">
+                    {{ choose_resource_meta?.ref_status || '未索引' }}
                   </el-tag>
                 <el-button
                   @click="rebuild_resource()"
@@ -300,7 +300,7 @@ onMounted(() => {
         <div
           class="resource-meta-foot-button"
           style="background-color: #1570ef"
-          @click="update_choose_resource_meta()"
+          @click="update_choose_resource_meta"
           v-show="meta_edit_flag"
         >
           <el-text class="resource-meta-foot-button-text" style="color: white"> 保存 </el-text>

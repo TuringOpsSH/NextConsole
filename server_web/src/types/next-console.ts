@@ -122,6 +122,7 @@ export interface IReferenceItem {
   source_type: string;
   showAll?: boolean;
   resource_source_url?: string;
+  resource_download_url?: string;
 }
 export interface IRecommendQuestionItem {
   id: number;
@@ -166,6 +167,7 @@ export interface IWorkflowTaskItem {
   task_update_time: string | null;
   task_end_time: string | null;
   task_status: string | null;
+  task_label?: string | null;
 }
 export interface IWorkflowTaskMap {
   [key: number]: IWorkflowTaskItem[];

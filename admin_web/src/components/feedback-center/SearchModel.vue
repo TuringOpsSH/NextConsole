@@ -404,7 +404,7 @@ onMounted(async () => {
           </el-table>
         </div>
       </div>
-      <el-drawer v-model="showSessionHistoryMsg" size="50%">
+      <el-drawer v-model="showSessionHistoryMsg" size="50%" resizable>
         <template #header>
           <div
             v-if="targetSession"

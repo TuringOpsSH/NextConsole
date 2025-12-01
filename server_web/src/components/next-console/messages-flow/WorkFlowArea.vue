@@ -2,10 +2,10 @@
 import { Picture as IconPicture } from '@element-plus/icons-vue';
 import { onMounted, ref, watch } from 'vue';
 import SimpleProgress from '@/components/next-console/messages-flow/SimpleProgress.vue';
-import { workflow_task_item } from '@/types/next-console';
+import { IWorkflowTaskItem } from '@/types/next-console';
 const props = defineProps({
   workflowTask: {
-    type: Array as () => workflow_task_item[],
+    type: Array as () => IWorkflowTaskItem[],
     default: () => []
   },
   qaWorkflowOpen: {
@@ -19,34 +19,34 @@ const props = defineProps({
 });
 const localQaWorkflowOpen = ref(false);
 const localQaFinished = ref(false);
-const workflowTask = ref<workflow_task_item[]>([]);
+const workflowTaskList = ref<IWorkflowTaskItem[]>([]);
 onMounted(() => {
   localQaWorkflowOpen.value = props.qaWorkflowOpen;
   localQaFinished.value = props.qaFinished;
-  workflowTask.value = props.workflowTask;
+  workflowTaskList.value = props.workflowTask;
 });
 watch(
-    () => props.workflowTask,
-    newVal => {
-      workflowTask.value = newVal;
-    }
+  () => props.workflowTask,
+  newVal => {
+    workflowTaskList.value = newVal;
+  }
 );
 watch(
-    () => props.qaFinished,
-    newVal => {
-      localQaFinished.value = newVal;
-    }
+  () => props.qaFinished,
+  newVal => {
+    localQaFinished.value = newVal;
+  }
 );
 watch(
-    () => props.qaWorkflowOpen,
-    newVal => {
-      localQaWorkflowOpen.value = newVal;
-    }
-)
+  () => props.qaWorkflowOpen,
+  newVal => {
+    localQaWorkflowOpen.value = newVal;
+  }
+);
 </script>
 
 <template>
-  <div v-if="workflowTask?.length" class="msg-flow-workflow-box">
+  <div v-if="workflowTaskList?.length" class="msg-flow-workflow-box">
     <div v-show="localQaWorkflowOpen" class="open-workflow-area">
       <div class="open-workflow-head">
         <div class="open-workflow-head-left">
@@ -58,27 +58,27 @@ watch(
         <div class="open-workflow-head-right">
           <div class="std-middle-box">
             <el-image
-                src="/images/arrow_up_grey2.svg"
-                style="width: 20px; height: 20px; cursor: pointer"
-                @click="localQaWorkflowOpen = false"
+              src="/images/arrow_up_grey2.svg"
+              style="width: 20px; height: 20px; cursor: pointer"
+              @click="localQaWorkflowOpen = false"
             />
           </div>
         </div>
       </div>
       <el-scrollbar>
         <div class="open-workflow-list">
-          <div v-for="sub_workflow in workflowTask" class="sub-workflow-area">
+          <div v-for="sub_workflow in workflowTaskList" class="sub-workflow-area">
             <div class="sub-workflow-head">
               <div class="std-middle-box">
                 <el-image
-                    v-show="sub_workflow.task_status != 'finished'"
-                    src="/images/task_status.svg"
-                    style="width: 16px; height: 16px"
+                  v-show="sub_workflow.task_status != 'finished'"
+                  src="/images/task_status.svg"
+                  style="width: 16px; height: 16px"
                 />
                 <el-image
-                    v-show="sub_workflow.task_status == 'finished'"
-                    src="/images/task_status_ok.svg"
-                    style="width: 16px; height: 16px"
+                  v-show="sub_workflow.task_status == 'finished'"
+                  src="/images/task_status_ok.svg"
+                  style="width: 16px; height: 16px"
                 />
               </div>
               <div class="std-middle-box">
@@ -91,21 +91,21 @@ watch(
               </el-text>
             </div>
             <div
-                v-for="(img_item, idx) in sub_workflow?.task_params"
-                v-else-if="sub_workflow.task_type == '网页解析'"
-                class="sub-workflow-show-info"
+              v-for="(img_item, idx) in sub_workflow?.task_params"
+              v-else-if="sub_workflow.task_type == '网页解析'"
+              class="sub-workflow-show-info"
             >
               <div class="std-middle-box">
                 <el-image
-                    fit="cover"
-                    :zoom-rate="1.2"
-                    :max-scale="7"
-                    :min-scale="0.2"
-                    :preview-src-list="[img_item?.resource_show_url]"
-                    :initial-index="0"
-                    :alt="img_item?.resource_source_url"
-                    :src="img_item?.resource_show_url"
-                    style="width: 24px; height: 24px"
+                  fit="cover"
+                  :zoom-rate="1.2"
+                  :max-scale="7"
+                  :min-scale="0.2"
+                  :preview-src-list="[img_item?.resource_show_url]"
+                  :initial-index="0"
+                  :alt="img_item?.resource_source_url"
+                  :src="img_item?.resource_show_url"
+                  style="width: 24px; height: 24px"
                 >
                   <template #error>
                     <el-icon><IconPicture /></el-icon>
@@ -114,20 +114,20 @@ watch(
               </div>
             </div>
             <div
-                v-for="(img_item, idx) in sub_workflow?.task_params"
-                v-else-if="sub_workflow.task_type == '图像识别'"
-                class="sub-workflow-show-info"
+              v-for="(img_item, idx) in sub_workflow?.task_params"
+              v-else-if="sub_workflow.task_type == '图像识别'"
+              class="sub-workflow-show-info"
             >
               <div class="std-middle-box">
                 <el-image
-                    fit="cover"
-                    :zoom-rate="1.2"
-                    :max-scale="7"
-                    :min-scale="0.2"
-                    :preview-src-list="sub_workflow?.task_params"
-                    :initial-index="0"
-                    :src="img_item"
-                    style="width: 24px; height: 24px"
+                  fit="cover"
+                  :zoom-rate="1.2"
+                  :max-scale="7"
+                  :min-scale="0.2"
+                  :preview-src-list="sub_workflow?.task_params"
+                  :initial-index="0"
+                  :src="img_item"
+                  style="width: 24px; height: 24px"
                 >
                   <template #error>
                     <el-icon><IconPicture /></el-icon>
@@ -142,7 +142,7 @@ watch(
             </div>
             <div v-else class="sub-workflow-show-info">
               <el-text truncated style="max-width: 100%">
-                {{ sub_workflow.task_result }}
+                {{ sub_workflow.task_result || sub_workflow.task_label }}
               </el-text>
             </div>
           </div>
@@ -165,9 +165,9 @@ watch(
       <div class="close-workflow-area-right">
         <div class="std-middle-box">
           <el-image
-              src="/images/arrow_down_grey2.svg"
-              style="width: 20px; height: 20px; cursor: pointer"
-              @click="localQaWorkflowOpen = true"
+            src="/images/arrow_down_grey2.svg"
+            style="width: 20px; height: 20px; cursor: pointer"
+            @click="localQaWorkflowOpen = true"
           />
         </div>
       </div>

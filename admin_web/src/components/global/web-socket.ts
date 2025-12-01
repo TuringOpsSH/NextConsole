@@ -2,6 +2,7 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { ElNotification } from 'element-plus';
 import { io } from 'socket.io-client';
 import { ref } from 'vue';
+import { domainGet } from '@/api/base';
 import { consoleInputRef } from '@/components/app-center/app-preview/console_input';
 import { msgFlowRef } from '@/components/app-center/app-preview/message_flow';
 import router from '@/router';
@@ -19,13 +20,17 @@ export async function initSocket() {
   if (socket.value) {
     return;
   }
-  socket.value = io(import.meta.env.VITE_APP_WEBSOCKET_URL, {
-    transports: ['websocket']
+  const res = await domainGet();
+  const url = res.result.admin_domain;
+  console.log(res);
+  socket.value = io(url, {
+    transports: ['websocket'],
+    path: '/socket.io'
   });
   const userInfoStore = useUserInfoStore();
   // 监听连接事件
   socket.value.on('connect', () => {
-    // console.log('Connected to server');
+    console.log('Connected to server');
     // 发送身份验证
     if (!socket.value?.emit) {
       return;
@@ -39,6 +44,7 @@ export async function initSocket() {
   // 监听断开连接事件
   socket.value.on('disconnect', () => {
     // 发送身份验证,并退出
+    console.log('Disconnected from server');
     socket.value.emit('remove_auth', {
       token: userInfoStore.token,
       clientFingerprint: clientFingerprint.value
@@ -62,6 +68,9 @@ export async function initSocket() {
   socket.value.on('update_recommend_questions', data => {
     msgFlowRef?.value?.updateRecommendQuestion(data);
   });
+  socket.value.on('updateRefStatus', data => {
+    updateRefStatus(data);
+  });
   socket.value.on('disconnect', () => {
     console.log('Disconnected from server');
     // 这里可以执行清理操作，比如清空 socket 对象
@@ -79,14 +88,16 @@ export function updateUserInput(data) {
     consoleInputRef.value?.updateQuestion(data);
   }
 }
-function checkSocketConnection() {
+async function checkSocketConnection() {
   if (!socket.value || !socket.value.connected) {
     console.log('Socket is disconnected, reconnecting...');
-    initSocket();
+    await initSocket();
   } else {
     console.log('Socket is connected');
   }
 }
-
+async function updateRefStatus(data) {
+  consoleInputRef.value?.updateSessionAttachment(data);
+}
 // 每 30 秒检查一次连接状态
 setInterval(checkSocketConnection, 10000);

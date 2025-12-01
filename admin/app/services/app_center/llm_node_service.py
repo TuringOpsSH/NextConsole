@@ -102,8 +102,9 @@ def llm_node_execute(params, task_record, global_params):
                         if check_is_think_chunk(content, msg_content, llm_client.think_attr):
                             reasoning_content += content
                             content = ''
-                    chunk_res["choices"][0]["delta"]["content"] = content
-                    chunk_res["choices"][0]["delta"]["reasoning_content"] = reasoning_content
+                    if chunk_res["choices"]:
+                        chunk_res["choices"][0]["delta"]["content"] = content
+                        chunk_res["choices"][0]["delta"]["reasoning_content"] = reasoning_content
                     global_params["message_queue"].put(chunk_res)
         except GeneratorExit:
             pass
@@ -145,21 +146,22 @@ def llm_node_execute(params, task_record, global_params):
                     reference_md = add_reference_md(task_record, global_params)
                 except Exception as e:
                     app.logger.error(f"添加参考文献异常：{e}")
-            global_params["message_queue"].put({
-                "session_id": task_record.session_id,
-                "qa_id": task_record.qa_id,
-                "msg_parent_id": task_record.msg_id,
-                "msg_id": answer_msg.msg_id,
-                "msg_format": "messageFlow",
-                "choices": [{
-                    "finish_reason": "stop",
-                    "index": 0,
-                    "delta": {
-                        "content": reference_md,
-                        "role": "assistant"
-                    },
-                }]
-            })
+            if output_flag:
+                global_params["message_queue"].put({
+                    "session_id": task_record.session_id,
+                    "qa_id": task_record.qa_id,
+                    "msg_parent_id": task_record.msg_id,
+                    "msg_id": answer_msg.msg_id,
+                    "msg_format": "messageFlow",
+                    "choices": [{
+                        "finish_reason": "stop",
+                        "index": 0,
+                        "delta": {
+                            "content": reference_md,
+                            "role": "assistant"
+                        },
+                    }]
+                })
             msg_content += reference_md
             # 自定义推理标签
             if llm_client.think_attr and llm_client.think_attr.get("begin"):
@@ -417,16 +419,19 @@ def extract_think_chunk(msg_content, think_attr: dict):
 
 def check_is_think_chunk(chunk, msg_content, think_attr: dict):
     """
-    检查是否是推理片段
+    检查当前chunk是否是推理片段
     :param msg_content:
     :param think_attr:
     :return:
     """
     begin_attr = think_attr.get("begin")
     end_attr = think_attr.get("end")
-    if not chunk or (not begin_attr and not end_attr):
+    if not begin_attr or not end_attr:
         return False
-    if not msg_content.startswith(begin_attr):
-        return False
-
-    return True
+    # 开始的临界值
+    if msg_content in begin_attr:
+        return True
+    # 判断开始推理
+    if msg_content.startswith(begin_attr) and end_attr not in msg_content:
+        return True
+    return False

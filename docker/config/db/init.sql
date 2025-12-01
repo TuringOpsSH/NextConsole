@@ -3471,7 +3471,7 @@ INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruc
 	','正常',null,null,'2024-07-05 01:09:53+08','2025-04-23 12:35:38+08','llm','用户问题是：{{message_text}}
 
 仅以中文逗号“，”，分割回答推荐的5个问题
-现在请完成任务，不要做多余的任何回答，请给出你建议的5个问题：',null,1,'table','，',null,null,null,0,'0',null);
+现在请完成任务，不要做多余的任何回答，请给出你建议的5个问题：','{{ result }}',1,'text','，',null,null,null,0,'0',null);
 INSERT INTO "next_console"."assistant_instruction" ("id","assistant_id","instruction_name","instruction_desc","instruction_system_prompt_template","instruction_status","instruction_user_prompt_params_json_schema","instruction_result_json_schema","create_time","update_time","instruction_type","instruction_user_prompt_template","instruction_result_template","user_id","instruction_result_extract_format","instruction_result_extract_separator","instruction_result_extract_quote","instruction_system_prompt_params_json_schema","instruction_result_extract_columns","instruction_history_length","instruction_temperature","instruction_max_tokens") VALUES ('11',-12345,'PolicySchedule','策略调度','你是state of the art会话系统代理Agent管家，你正处在人类用户与AI机器人的会话情景中，作为旁观者通过阅读人类用户与AI机器人的对话历史，实时管理会话状态，并选择最优的会话策略。坚定你会话管家的角色定位与目标任务，任何时候不要去回答用户，那是AI机器人该干的事！
 
 ## 会话角色介绍
@@ -4033,4 +4033,29 @@ INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continen
 INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','果洛藏族自治州','正常');
 INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','玉树藏族自治州','正常');
 INSERT INTO support_area_info (country,iso_code_2,iso_code_3,phone_code,continent,province,city,area_status) VALUES ('中国','CN','CHN','86','亚洲','青海省','海西蒙古族藏族自治州','正常');
+
+ALTER TABLE "next_console"."resource_object_meta_info" ADD COLUMN "resource_rag_config" json;
+COMMENT ON COLUMN "next_console"."resource_object_meta_info"."resource_rag_config" IS '资源RAG配置';
+
+UPDATE "next_console"."resource_object_meta_info" set "resource_source" = 'resource_center' where "resource_parent_id" is null and "resource_status" = '正常' and "resource_name"  = '我的资源';
+
+
+/* 请确认以下SQL符合您的变更需求，务必确认无误后再提交执行 */
+
+ALTER TABLE "next_console"."workflow_node_info" ADD COLUMN  "node_tool_configs" json;
+COMMENT ON COLUMN "next_console"."workflow_node_info"."node_tool_configs" IS '工具节点配置';
+
+
+/* 请确认以下SQL符合您的变更需求，务必确认无误后再提交执行 */
+
+ALTER TABLE "next_console"."workflow_node_instance" ADD COLUMN  "workflow_node_tool_configs" json;
+COMMENT ON COLUMN "next_console"."workflow_node_instance"."workflow_node_tool_configs" IS '工具节点配置';
+
+/* 请确认以下SQL符合您的变更需求，务必确认无误后再提交执行 */
+ALTER TABLE "next_console"."workflow_node_info" ADD COLUMN "node_variable_cast_config" json;
+COMMENT ON COLUMN "next_console"."workflow_node_info"."node_variable_cast_config" IS '变量转换节点配置';
+
+ALTER TABLE "next_console"."workflow_node_instance" ADD COLUMN  "workflow_node_variable_cast_config" json;
+COMMENT ON COLUMN "next_console"."workflow_node_instance"."workflow_node_variable_cast_config" IS '节点变量类型转换配置';
+
 

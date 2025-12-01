@@ -1,3 +1,4 @@
+from app.models.app_center.publish_info_model import AppPublishRecord
 from app.models.user_center.user_info import *
 from app.models.app_center.app_info_model import *
 from app.services.configure_center.response_utils import next_console_response
@@ -94,6 +95,15 @@ def get_app_detail_service(params):
     result["assistant_prologue"] = target_assistant.assistant_prologue
     result["assistant_preset_question"] = target_assistant.assistant_preset_question or []
     result['assistant_avatar'] = target_assistant.assistant_avatar or '/images/logo.svg'
+    # 添加发布信息
+    target_publish = AppPublishRecord.query.filter(
+        AppPublishRecord.app_code == app_code,
+        AppPublishRecord.publish_status == '成功'
+    ).order_by(
+        AppPublishRecord.publish_version.desc()
+    ).first()
+    if target_publish:
+        result['connectors'] = target_publish.publish_config.get("connectors")
     return next_console_response(result=result)
 
 

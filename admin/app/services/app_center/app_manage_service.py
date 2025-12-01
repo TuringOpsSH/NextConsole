@@ -1,6 +1,8 @@
 import json
 from datetime import timedelta, timezone
-from app.models.user_center.user_info import UserInfo
+
+from sqlalchemy.orm.attributes import flag_modified
+
 from app.models.app_center.app_info_model import *
 from app.models.app_center.publish_info_model import AppPublishRecord
 from app.models.contacts.company_model import CompanyInfo
@@ -84,6 +86,68 @@ def search_all_apps(params):
         "page_size": page_size,
         "data": data
     }
+    return next_console_response(result=result)
+
+
+def get_prod_app_service(params):
+    """
+    获取正式发布应用的详细信息
+    """
+    user_id = int(params.get("user_id"))
+    admin_user = UserInfo.query.filter(UserInfo.user_id == user_id).first()
+    app_code = params.get("app_code")
+    target_app = AppMetaInfo.query.filter(
+        AppMetaInfo.app_code == app_code,
+        AppMetaInfo.environment == params["environment"],
+        AppMetaInfo.app_status == '正常'
+    ).join(
+        UserInfo,
+        UserInfo.user_id == AppMetaInfo.user_id
+    ).with_entities(
+        AppMetaInfo,
+        UserInfo,
+    ).first()
+    if not target_app:
+        return next_console_response(error_status=True, error_message='应用不存在')
+    if not check_has_role(admin_user.user_id, "next_console_admin") :
+        if (admin_user.user_id != target_app.UserInfo.user_id
+                and admin_user.user_company_id != target_app.UserInfo.user_company_id):
+            return next_console_response(error_status=True, error_message='无权限访问')
+    result = target_app.AppMetaInfo.to_dict()
+    result['user_info'] = target_app.UserInfo.show_info()
+    # 补充工作流信息
+    all_prod_workflows = AppWorkFlowRelation.query.filter(
+            AppWorkFlowRelation.app_code == target_app.AppMetaInfo.app_code,
+            AppWorkFlowRelation.environment == params["environment"],
+            AppWorkFlowRelation.rel_status == "正常",
+        ).join(
+            WorkFlowMetaInfo,
+            WorkFlowMetaInfo.workflow_code == AppWorkFlowRelation.workflow_code
+        ).filter(
+            WorkFlowMetaInfo.workflow_status == "正常",
+            AppWorkFlowRelation.rel_status == "正常",
+            WorkFlowMetaInfo.environment == params["environment"],
+        ).with_entities(
+            WorkFlowMetaInfo
+        ).all()
+    all_prod_workflows = [{
+        "id": workflow.id,
+        "workflow_code": workflow.workflow_code,
+        "workflow_name": workflow.workflow_name,
+        "workflow_desc": workflow.workflow_desc,
+        "workflow_icon": workflow.workflow_icon,
+        "workflow_is_main": workflow.workflow_is_main,
+        "version": workflow.version,
+    } for workflow in all_prod_workflows]
+    result["workflows"] = all_prod_workflows
+    target_publish = AppPublishRecord.query.filter(
+        AppPublishRecord.app_code == target_app.AppMetaInfo.app_code,
+        AppPublishRecord.publish_status == "成功",
+    ).order_by(
+        AppPublishRecord.publish_version.desc()
+    ).first()
+    if target_publish:
+        result["publish"] = target_publish.to_dict()
     return next_console_response(result=result)
 
 
@@ -552,6 +616,8 @@ def merge_workflow_data(new_app, all_dev_workflows):
                     node_file_reader_config=dev_node.node_file_reader_config,
                     node_file_splitter_config=dev_node.node_file_splitter_config,
                     node_sub_workflow_config=dev_node.node_sub_workflow_config,
+                    node_tool_configs=dev_node.node_tool_configs,
+                    node_variable_cast_config=dev_node.node_variable_cast_config,
                     environment="生产",
                     version=new_app.version
                 )
@@ -1326,6 +1392,18 @@ def import_workflow_schema(params):
         # 创建工作流
     workflows = workflow_schema.get("workflows")
     workflow_nodes = workflow_schema.get("workflow_nodes")
+    new_workflows, workflow_id_maps = generate_new_workflows(workflows, user_id, app_info)
+    new_workflow_nodes = generate_new_workflow_nodes(workflow_nodes, workflow_id_maps, user_id)
+    node_code_maps = update_workflow_node_ref_params(new_workflow_nodes)
+    # 处理workflow-schema
+    update_generate_workflow_schema(new_workflows, node_code_maps)
+    return next_console_response()
+
+
+def generate_new_workflows(workflows, user_id, app_info):
+    """
+    生产新的工作流
+    """
     workflow_id_maps = {}
     new_workflows = []
     for workflow in workflows:
@@ -1352,10 +1430,9 @@ def import_workflow_schema(params):
             environment="开发"
         )
         db.session.add(new_workflow)
-        db.session.flush()
+        db.session.commit()
         new_workflows.append(new_workflow)
         workflow_id_maps[workflow.get("id")] = new_workflow
-        db.session.commit()
         new_rel = AppWorkFlowRelation(
             app_code=app_info.app_code,
             workflow_code=new_workflow.workflow_code,
@@ -1364,9 +1441,24 @@ def import_workflow_schema(params):
         )
         db.session.add(new_rel)
         db.session.commit()
-    node_code_maps = {}
+    return new_workflows, workflow_id_maps
 
+
+def generate_new_workflow_nodes(workflow_nodes, workflow_id_maps, user_id):
+    """
+    生产新的工作流节点
+    """
+    node_code_maps = {}
     new_workflow_nodes = []
+    all_llm_codes = [workflow_node.get("node_llm_code")
+                     for workflow_node in workflow_nodes if workflow_node.get("node_llm_code") ]
+    from app.services.configure_center.model_manager import model_instance_search
+    all_author_model_instances = model_instance_search({
+        "user_id": user_id,
+        "llm_code": all_llm_codes,
+        "fetch_all": True,
+    }).json.get("result",{}).get("data", [])
+    all_author_model_codes = [llm.get("llm_code") for llm in all_author_model_instances]
     for workflow_node in workflow_nodes:
         workflow_item = workflow_id_maps.get(workflow_node.get("workflow_id"))
         old_node_code = workflow_node.get("node_code")
@@ -1390,228 +1482,7 @@ def import_workflow_schema(params):
             node_name=workflow_node.get("node_name"),
             node_desc=workflow_node.get("node_desc"),
             node_run_model_config=workflow_node.get("node_run_model_config"),
-            node_llm_code='',
-            node_llm_params=workflow_node.get("node_llm_params"),
-            node_llm_system_prompt_template=workflow_node.get("node_llm_system_prompt_template"),
-            node_llm_user_prompt_template=workflow_node.get("node_llm_user_prompt_template"),
-            node_result_format=workflow_node.get("node_result_format"),
-            node_result_params_json_schema=workflow_node.get("node_result_params_json_schema"),
-            node_result_extract_separator=workflow_node.get("node_result_extract_separator"),
-            node_result_extract_quote=workflow_node.get("node_result_extract_quote"),
-            node_result_extract_columns=workflow_node.get("node_result_extract_columns"),
-            node_result_template=workflow_node.get("node_result_template"),
-            node_timeout=workflow_node.get("node_timeout"),
-            node_retry_max=workflow_node.get("node_retry_max"),
-            node_retry_duration=workflow_node.get("node_retry_duration"),
-            node_retry_model=workflow_node.get("node_retry_model"),
-            node_failed_solution=workflow_node.get("node_failed_solution"),
-            node_failed_template=workflow_node.get("node_failed_template"),
-            node_session_memory_size=workflow_node.get("node_session_memory_size"),
-            node_deep_memory=workflow_node.get("node_deep_memory"),
-            node_agent_nickname=workflow_node.get("node_agent_nickname"),
-            node_agent_desc=workflow_node.get("node_agent_desc"),
-            node_agent_avatar=workflow_node.get("node_agent_avatar"),
-            node_agent_prologue=workflow_node.get("node_agent_prologue"),
-            node_agent_preset_question=workflow_node.get("node_agent_preset_question"),
-            node_agent_tools=workflow_node.get("node_agent_tools"),
-            node_input_params_json_schema=workflow_node.get("node_input_params_json_schema"),
-            node_status="正常",
-            environment="开发",
-            version=workflow_node.get("version"),
-            node_tool_api_url=workflow_node.get("node_tool_api_url"),
-            node_tool_http_method=workflow_node.get("node_tool_http_method"),
-            node_tool_http_header=workflow_node.get("node_tool_http_header"),
-            node_tool_http_params=workflow_node.get("node_tool_http_params"),
-            node_tool_http_body=workflow_node.get("node_tool_http_body"),
-            node_tool_http_body_type=workflow_node.get("node_tool_http_body_type"),
-            node_rag_resources=workflow_node.get("node_rag_resources"),
-            node_rag_ref_show=workflow_node.get("node_rag_ref_show"),
-            node_rag_query_template=workflow_node.get("node_rag_query_template"),
-            node_rag_recall_config=workflow_node.get("node_rag_recall_config"),
-            node_rag_rerank_config=workflow_node.get("node_rag_rerank_config"),
-            node_rag_web_search_config=workflow_node.get("node_rag_web_search_config"),
-            node_enable_message=workflow_node.get("node_enable_message"),
-            node_message_schema_type=workflow_node.get("node_message_schema_type"),
-            node_message_schema=workflow_node.get("node_message_schema"),
-            node_file_reader_config=workflow_node.get("node_file_reader_config"),
-            node_file_splitter_config=workflow_node.get("node_file_splitter_config"),
-            node_sub_workflow_config=workflow_node.get("node_sub_workflow_config")
-        )
-        db.session.add(new_workflow_node)
-        new_workflow_nodes.append(new_workflow_node)
-        db.session.commit()
-    # 处理ref变量
-    has_ref_attrs = [
-        'node_input_params_json_schema',
-        'node_llm_system_prompt_template', 'node_llm_user_prompt_template',
-        'node_tool_http_header', 'node_tool_http_params', 'node_tool_http_body',
-        'node_rag_query_template',
-        'node_result_params_json_schema', 'node_result_template',
-        'node_message_schema',
-        'node_failed_template',
-        'node_llm_params'
-    ]
-    for new_node in new_workflow_nodes:
-        # 针对导入节点的引入ref变量的属性，将ref变量中的旧的node_code替换为新的node_code
-        for ref_attr in has_ref_attrs:
-            # 将旧的node_code替换为新的node_code
-            ref_attr_value = getattr(new_node, ref_attr, None)
-            if not ref_attr_value:
-                continue
-            json_flag = False
-            if not isinstance(ref_attr_value, str):
-                json_flag = True
-                ref_attr_value = json.dumps(ref_attr_value)
-            # 遍历旧code 和新code的映射关系,进行替换
-            for new_node_code in node_code_maps:
-                if node_code_maps[new_node_code] in ref_attr_value:
-                    ref_attr_value = ref_attr_value.replace(node_code_maps[new_node_code], new_node_code)
-            if json_flag:
-                ref_attr_value = json.loads(ref_attr_value)
-            setattr(new_node, ref_attr, ref_attr_value)
-        db.session.add(new_node)
-        db.session.commit()
-    # 处理workflow-schema
-    has_ref_attrs = [
-        "workflow_edit_schema", "workflow_schema"
-    ]
-    for workflow in new_workflows:
-        for ref_attr in has_ref_attrs:
-            ref_attr_value = getattr(workflow, ref_attr, None)
-            if not ref_attr_value:
-                continue
-            json_flag = False
-            if not isinstance(ref_attr_value, str):
-                json_flag = True
-                ref_attr_value = json.dumps(ref_attr_value)
-            # 遍历旧code 和新code的映射关系,进行替换
-            for new_node_code in node_code_maps:
-                if node_code_maps[new_node_code] in ref_attr_value:
-                    ref_attr_value = ref_attr_value.replace(node_code_maps[new_node_code], new_node_code)
-            if json_flag:
-                ref_attr_value = json.loads(ref_attr_value)
-            setattr(workflow, ref_attr, ref_attr_value)
-        db.session.add(workflow)
-        db.session.commit()
-    return next_console_response()
-
-
-def import_app_schema(data):
-    """
-    根据schema创建新应用
-    :param data:
-    :return:
-    """
-    user_id = int(data.get("user_id"))
-    app_schema_url = data.get("app_schema_url")
-    # 获取schema数据
-    app_schema_path = get_download_url_path(app_schema_url)
-    if not app_schema_path:
-        return next_console_response(error_status=True, error_message="应用schema文件不存在！", error_code=1002)
-    with open(app_schema_path, 'r', encoding='utf-8') as f:
-        try:
-            app_schema = json.load(f)
-        except json.JSONDecodeError:
-            return next_console_response(error_status=True, error_message="应用schema文件格式错误！", error_code=1002)
-    app_meta = app_schema.get("app")
-    workflows = app_schema.get("workflows")
-    workflow_nodes = app_schema.get("workflow_nodes")
-    meta = app_schema.get("meta")
-    if not app_meta or not workflows or not meta:
-        return next_console_response(error_status=True, error_message="应用schema文件格式错误！", error_code=1002)
-    # 创建应用
-    app_code = app_meta.get("app_code")
-    if not app_code:
-        return next_console_response(error_status=True, error_message="应用schema文件格式错误！", error_code=1002)
-    exist_app = AppMetaInfo.query.filter(
-        AppMetaInfo.app_code == app_code,
-        AppMetaInfo.app_status != '删除'
-    ).first()
-    if exist_app:
-        app_code = str(uuid.uuid4())
-    dev_app_info = AppMetaInfo(
-        app_code=app_code,
-        user_id=user_id,
-        app_name=app_meta.get("app_name"),
-        app_desc=app_meta.get("app_desc"),
-        app_icon=app_meta.get("app_icon"),
-        app_type="个人应用",
-        app_default_assistant=app_meta.get("app_default_assistant"),
-        app_source=app_meta.get("app_source"),
-        app_agent_api_url=app_meta.get("app_agent_api_url"),
-        app_agent_api_key=app_meta.get("app_agent_api_key"),
-        app_config=app_meta.get("app_config", {}),
-        app_status="创建中",
-        environment="开发",
-        version=meta.get("version"),
-    )
-    db.session.add(dev_app_info)
-    db.session.commit()
-    # 创建工作流
-    workflow_id_maps = {}
-    new_workflows = []
-    for workflow in workflows:
-        workflow_code = workflow.get("workflow_code")
-        if not workflow_code:
-            return next_console_response(error_status=True, error_message="应用schema文件格式错误！", error_code=1002)
-        exist_workflow = WorkFlowMetaInfo.query.filter(
-            WorkFlowMetaInfo.workflow_code == workflow_code,
-            WorkFlowMetaInfo.workflow_status != '删除'
-        ).first()
-        if exist_workflow:
-            workflow_code = str(uuid.uuid4())
-        new_workflow = WorkFlowMetaInfo(
-            user_id=user_id,
-            workflow_code=workflow_code,
-            workflow_name=workflow.get("workflow_name"),
-            workflow_desc=workflow.get("workflow_desc"),
-            workflow_icon=workflow.get("workflow_icon"),
-            workflow_schema=workflow.get("workflow_schema"),
-            workflow_edit_schema=workflow.get("workflow_edit_schema"),
-            workflow_is_main=workflow.get("workflow_is_main"),
-            workflow_status="正常",
-            environment="开发",
-            version=meta.get("version")
-        )
-        db.session.add(new_workflow)
-        db.session.flush()
-        new_workflows.append(new_workflow)
-        workflow_id_maps[workflow.get("id")] = new_workflow
-        db.session.commit()
-        new_rel = AppWorkFlowRelation(
-            app_code=dev_app_info.app_code,
-            workflow_code=new_workflow.workflow_code,
-            rel_type="使用",
-            environment="开发",
-        )
-        db.session.add(new_rel)
-        db.session.commit()
-    node_code_maps = {}
-    new_workflow_nodes = []
-    for workflow_node in workflow_nodes:
-        workflow_item = workflow_id_maps.get(workflow_node.get("workflow_id"))
-        old_node_code = workflow_node.get("node_code")
-        new_node_code = str(uuid.uuid4())
-        # 替换工作流节点中的schema
-        old_workflow_schema = json.dumps(workflow_item.workflow_schema)
-        old_workflow_edit_schema = json.dumps(workflow_item.workflow_edit_schema)
-        new_workflow_schema = json.loads(old_workflow_schema.replace(old_node_code, new_node_code))
-        new_workflow_edit_schema = json.loads(old_workflow_edit_schema.replace(old_node_code, new_node_code))
-        workflow_item.workflow_schema = new_workflow_schema
-        workflow_item.workflow_edit_schema = new_workflow_edit_schema
-        db.session.add(workflow_item)
-        db.session.commit()
-        node_code_maps[new_node_code] = old_node_code
-        new_workflow_node = WorkflowNodeInfo(
-            user_id=user_id,
-            workflow_id=workflow_item.id,
-            node_code=new_node_code,
-            node_type=workflow_node.get("node_type"),
-            node_icon=workflow_node.get("node_icon"),
-            node_name=workflow_node.get("node_name"),
-            node_desc=workflow_node.get("node_desc"),
-            node_run_model_config=workflow_node.get("node_run_model_config"),
-            node_llm_code='',
+            node_llm_code=workflow_node.get("node_llm_code") if workflow_node.get("node_llm_code") in all_author_model_codes else None,
             node_llm_params=workflow_node.get("node_llm_params"),
             node_llm_system_prompt_template=workflow_node.get("node_llm_system_prompt_template"),
             node_llm_user_prompt_template=workflow_node.get("node_llm_user_prompt_template"),
@@ -1657,10 +1528,20 @@ def import_app_schema(data):
             node_file_reader_config=workflow_node.get("node_file_reader_config"),
             node_file_splitter_config=workflow_node.get("node_file_splitter_config"),
             node_sub_workflow_config=workflow_node.get("node_sub_workflow_config"),
+            node_tool_configs=workflow_node.get("node_tool_configs"),
+            node_variable_cast_config=workflow_node.get("node_variable_cast_config"),
         )
         db.session.add(new_workflow_node)
         new_workflow_nodes.append(new_workflow_node)
         db.session.commit()
+    return new_workflow_nodes
+
+
+def update_workflow_node_ref_params(new_workflow_nodes):
+    """
+    更新新生产的工作流节点中的ref变量
+    """
+    node_code_maps = {}
     # 处理ref变量
     has_ref_attrs = [
         'node_input_params_json_schema',
@@ -1692,7 +1573,13 @@ def import_app_schema(data):
             setattr(new_node, ref_attr, ref_attr_value)
         db.session.add(new_node)
         db.session.commit()
-    # 处理workflow-schema
+    return node_code_maps
+
+
+def update_generate_workflow_schema(new_workflows, node_code_maps):
+    """
+    更新生产出的工作流中的schema异常
+    """
     has_ref_attrs = [
         "workflow_edit_schema", "workflow_schema"
     ]
@@ -1714,6 +1601,65 @@ def import_app_schema(data):
             setattr(workflow, ref_attr, ref_attr_value)
         db.session.add(workflow)
         db.session.commit()
+
+
+def import_app_schema(data):
+    """
+    根据schema创建新应用
+    :param data:
+    :return:
+    """
+    user_id = int(data.get("user_id"))
+    app_schema_url = data.get("app_schema_url")
+    # 获取schema数据
+    app_schema_path = get_download_url_path(app_schema_url)
+    if not app_schema_path:
+        return next_console_response(error_status=True, error_message="应用schema文件不存在！", error_code=1002)
+    with open(app_schema_path, 'r', encoding='utf-8') as f:
+        try:
+            app_schema = json.load(f)
+        except json.JSONDecodeError:
+            return next_console_response(error_status=True, error_message="应用schema文件格式错误！", error_code=1002)
+    app_meta = app_schema.get("app")
+    workflows = app_schema.get("workflows")
+    workflow_nodes = app_schema.get("workflow_nodes")
+    meta = app_schema.get("meta")
+    if not app_meta or not workflows or not meta:
+        return next_console_response(error_status=True, error_message="应用schema文件格式错误！", error_code=1002)
+    # 创建应用
+    app_code = app_meta.get("app_code")
+    if not app_code:
+        return next_console_response(error_status=True, error_message="应用schema文件格式错误！", error_code=1002)
+    exist_app = AppMetaInfo.query.filter(
+        AppMetaInfo.app_code == app_code,
+        AppMetaInfo.app_status != '删除'
+    ).first()
+    if exist_app:
+        app_code = str(uuid.uuid4())
+    dev_app_info = AppMetaInfo(
+        app_code=app_code,
+        user_id=user_id,
+        app_name=app_meta.get("app_name") + "_副本",
+        app_desc=app_meta.get("app_desc"),
+        app_icon=app_meta.get("app_icon"),
+        app_type="个人应用",
+        app_default_assistant=app_meta.get("app_default_assistant"),
+        app_source=app_meta.get("app_source"),
+        app_agent_api_url=app_meta.get("app_agent_api_url"),
+        app_agent_api_key=app_meta.get("app_agent_api_key"),
+        app_config=app_meta.get("app_config", {}),
+        app_status="创建中",
+        environment="开发",
+        version=meta.get("version"),
+    )
+    db.session.add(dev_app_info)
+    db.session.commit()
+    # 创建工作流
+    new_workflows, workflow_id_maps = generate_new_workflows(workflows, user_id, dev_app_info)
+    new_workflow_nodes = generate_new_workflow_nodes(workflow_nodes, workflow_id_maps, user_id)
+    node_code_maps = update_workflow_node_ref_params(new_workflow_nodes)
+    # 处理workflow-schema
+    update_generate_workflow_schema(new_workflows, node_code_maps)
     return next_console_response()
 
 
@@ -1790,3 +1736,27 @@ def delete_app_publish(data):
         db.session.commit()
     return next_console_response(result={"message": "应用发布记录删除成功！"})
 
+
+def update_app_publish(data):
+    """
+        更新发布的配置信息
+    """
+    publish_code = data.get("publish_code")
+    user_id = int(data.get("user_id"))
+    target_publish_record = AppPublishRecord.query.filter(
+        AppPublishRecord.publish_code == publish_code,
+    ).first()
+    if not target_publish_record:
+        return next_console_response(error_status=True,error_message='无此发布！')
+    if not check_has_role(user_id, "next_console_admin") and target_publish_record.user_id != user_id:
+        return next_console_response(error_status=True,error_message="没有权限进行更新！")
+    publish_config = data.get("publish_config")
+    config_id = publish_config.get("id")
+    for config in target_publish_record.publish_config.get("connectors"):
+        if config.get("id") == config_id:
+            config["config"] = publish_config.get("config").get("config")
+            break
+    flag_modified(target_publish_record, "publish_config")
+    db.session.add(target_publish_record)
+    db.session.commit()
+    return next_console_response(result=target_publish_record.to_dict())

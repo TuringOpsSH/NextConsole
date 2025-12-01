@@ -24,10 +24,14 @@ def notice_user_by_email(data_list):
             SystemConfig.config_status == 1
         ).first()
         smtp_server = system_tool_config.config_value.get("email", {}).get("smtp_server")
+        smtp_ssl = system_tool_config.config_value.get("email", {}).get("smtp_ssl")
         smtp_port = system_tool_config.config_value.get("email", {}).get("smtp_port")
         smtp_user = system_tool_config.config_value.get("email", {}).get("smtp_user")
         smtp_password = system_tool_config.config_value.get("email", {}).get("smtp_password")
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        if smtp_ssl:
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_server, smtp_port)
         server.login(smtp_user, smtp_password)
         for data in data_list:
             task_instance_id = data.get("id")
@@ -161,11 +165,15 @@ def admin_notice_new_user(user_list):
             SystemConfig.config_status == 1
         ).first()
         smtp_server = system_tool_config.config_value.get("email", {}).get("smtp_server")
+        smtp_ssl = system_tool_config.config_value.get("email", {}).get("smtp_ssl")
         smtp_port = system_tool_config.config_value.get("email", {}).get("smtp_port")
         smtp_user = system_tool_config.config_value.get("email", {}).get("smtp_user")
         smtp_password = system_tool_config.config_value.get("email", {}).get("smtp_password")
         subject = '欢迎使用【NextConsole智能体服务平台】'
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        if smtp_ssl:
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_server, smtp_port)
         server.login(smtp_user, smtp_password)
         for new_user in user_list:
             hello_html = "user_welcome.html"

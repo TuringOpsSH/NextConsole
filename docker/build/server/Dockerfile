@@ -8,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # 安装最小化Python环境和必要系统依赖
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    tzdata \
     python3.11 \
     python3-pip \
     python3.11-venv \
@@ -29,6 +30,10 @@ RUN apt-get update && \
     fonts-wqy-zenhei \
     fonts-wqy-microhei \
     libreoffice \
+    # 设置时区
+    && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && dpkg-reconfigure --frontend noninteractive tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 # 创建虚拟环境（更干净的依赖管理）
@@ -41,10 +46,10 @@ WORKDIR /app
 
 # 先复制 requirements.txt 并安装依赖
 COPY server/requirements.txt /app/
-#RUN pip install --upgrade pip --index-url https://pypi.tuna.tsinghua.edu.cn/simple
-#RUN pip install --no-cache-dir -r requirements.txt --index-url https://pypi.tuna.tsinghua.edu.cn/simple
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip --index-url https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip install --no-cache-dir -r requirements.txt --index-url https://pypi.tuna.tsinghua.edu.cn/simple
+#RUN pip install --upgrade pip
+#RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get update
 RUN playwright install
 RUN playwright install-deps

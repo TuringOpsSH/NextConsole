@@ -5,6 +5,12 @@ import { defineProps, onMounted, reactive, ref } from 'vue';
 
 import { publishCreate } from '@/api/app-center-api';
 import router from '@/router';
+const prop = defineProps({
+  appCode: {
+    type: String,
+    default: ''
+  }
+});
 const newPublish = reactive({
   appCode: '',
   publishName: '',
@@ -25,21 +31,35 @@ const newPublish = reactive({
         id: 2,
         name: 'NC-API',
         icon: '/images/logo.svg',
-        desc: '智能应用将提供对外API',
+        desc: '智能应用将提供对外API，与下游业务后端系统迅速集成',
         status: '已授权',
         type: 'connector',
         picked: false,
-        able: false
+        able: true
       },
       {
         id: 3,
         name: 'NC-SDK',
         icon: '/images/logo.svg',
-        desc: '智能应用将提供可嵌入的前端SDK',
+        desc: '智能应用将提供可嵌入的前端SDK，与下游系统页面迅速集成',
         status: '已授权',
         type: 'connector',
         picked: false,
-        able: false
+        able: true,
+        config: {
+          domains: []
+        }
+      },
+      {
+        id: 9,
+        name: 'NC-h5',
+        icon: '/images/logo.svg',
+        desc: '智能应用将提供适合在移动端浏览器中运行与使用的网页应用',
+        status: '已授权',
+        type: 'connector',
+        picked: false,
+        able: false,
+        config: {}
       },
       {
         id: 4,
@@ -94,12 +114,6 @@ const newPublish = reactive({
     ]
   }
 });
-const prop = defineProps({
-  appCode: {
-    type: String,
-    default: ''
-  }
-});
 const publishFormRef = ref();
 const publishing = ref(false);
 const rules = {
@@ -146,6 +160,13 @@ const rules = {
     }
   ]
 };
+const SDKPublishConfigFormRef = ref();
+const SDKPublishConfigForm = reactive({
+  domains: ['*']
+});
+const publishConfigShow = ref({
+  sdk: false
+});
 onMounted(async () => {
   if (!prop.appCode) {
     await router.push({
@@ -185,6 +206,16 @@ async function createNewPublish() {
     });
   }
   publishing.value = false;
+}
+function beginEditPublishConfig(connector: object) {
+  // 开始编辑发布渠道的详细配置
+  if (connector.id == 3) {
+    publishConfigShow.value.sdk = true;
+  }
+
+}
+function updateSdkConfig() {
+  newPublish.publishConfig.connectors[2].config = SDKPublishConfigForm;
 }
 </script>
 
@@ -243,14 +274,31 @@ async function createNewPublish() {
                   </div>
                 </div>
 
-                <div class="connector-item-right">
-                  <el-button text type="primary" disabled> 配置 </el-button>
+                <div v-if="connector?.config" class="connector-item-right">
+                  <el-button
+                    text
+                    type="primary"
+                    :disabled="!connector?.able"
+                    @click="beginEditPublishConfig(connector)"
+                  >
+                    配置
+                  </el-button>
                 </div>
               </div>
             </div>
           </el-form-item>
         </el-form>
       </div>
+      <el-dialog v-model="publishConfigShow.sdk" title="SDK发布配置" @closed="updateSdkConfig">
+        <el-form ref="SDKPublishConfigFormRef" :model="SDKPublishConfigForm">
+          <el-form-item prop="domains" label="客户端域名">
+            <el-input-tag
+              v-model="SDKPublishConfigForm.domains"
+              placeholder="可接受的客户端域名，*代表所有域名客户端均可访问"
+            />
+          </el-form-item>
+        </el-form>
+      </el-dialog>
     </el-main>
   </el-container>
 </template>
