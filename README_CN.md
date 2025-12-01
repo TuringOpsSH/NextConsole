@@ -4,6 +4,7 @@
   <p align="center">释放大语言模型赋能企业的无限潜力💪</p>
   
   <p align="center">
+    <a href="https://docs.nextconsole.cn/" target="_blank">📚 文档</a> •
     <a href="./README_CN.md">📖 中文</a> • 
     <a href="./README.md">🌐 English</a>
   </p>

@@ -5,6 +5,7 @@
   <p align="center">Unleashing the Power of LLM for Enterprises💪</p>
   
   <p align="center">
+    <a href="https://docs.nextconsole.cn/" target="_blank">📚 Documents</a> • 
     <a href="./README_CN.md">📖 中文</a> • 
     <a href="./README.md">🌐 English</a>
   </p>
@@ -14,6 +15,7 @@
     <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 License">
   </p>
 </p>
+
 
 
 ## Introduction
