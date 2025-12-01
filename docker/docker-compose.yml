@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   redis:
-    image: nextconsole/redis:latest
+    image: redis:latest
     ports:
       - "6379:6379"
     command: redis-server --requirepass ncRedisPassword
