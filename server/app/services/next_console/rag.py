@@ -3,6 +3,10 @@ from app.services.configure_center.llm import *
 from app.models.knowledge_center.rag_ref_model import RagRefInfo
 from app.models.assistant_center.assistant import AssistantInstruction
 from app.models.app_center.app_info_model import WorkFlowTaskInfo
+from app.models.resource_center.share_resource_model import *
+from app.models.user_center.user_info import UserInfo
+from app.models.contacts.company_model import CompanyInfo
+from app.models.contacts.department_model import DepartmentInfo
 
 
 def get_all_ref_ids(user_id, session_id, qa_id, msg_id, assistant_id, model_name):
@@ -122,14 +126,27 @@ def get_all_webpage_ref_ids(user_id, session_id, qa_id, msg_id, assistant_id, mo
 
 
 def get_all_resource_ref_ids(target_session):
-    # 如果为全部资源，则获取所有的ref_id
+    # 如果为全部资源，则获取所有有权限的ref_id
     all_ref_ids = []
     if target_session.session_local_resource_use_all:
+        #  获取用户所有的ref_id
         all_ref_ids = RagRefInfo.query.filter(
             RagRefInfo.ref_status == '成功',
             RagRefInfo.user_id == target_session.user_id
+        ).join(
+            ResourceObjectMeta,
+            RagRefInfo.resource_id == ResourceObjectMeta.id,
+        ).filter(
+            ResourceObjectMeta.resource_status == '正常',
+            ResourceObjectMeta.resource_source == 'resource_center'
+        ).with_entities(
+            RagRefInfo.id
         ).all()
         all_ref_ids = [ref.id for ref in all_ref_ids]
+        # 获取团队共享的ref_id
+        all_ref_ids += get_all_share_resources_ref_ids(target_session.user_id)
+        all_ref_ids = list(set(all_ref_ids))
+
     else:
         # 获取会话附件文档的ref_id
         attachment_files = SessionAttachmentRelation.query.filter(
@@ -162,8 +179,8 @@ def get_all_resource_ref_ids(target_session):
         if all_folders:
             # 如果为文件夹，则获取文件夹下的子资源
             all_user_resources = ResourceObjectMeta.query.filter(
-                ResourceObjectMeta.user_id == target_session.user_id,
                 ResourceObjectMeta.resource_status == '正常',
+                ResourceObjectMeta.resource_source == 'resource_center',
             ).all()
             all_sub_resource_ids = [folder.id for folder in all_folders]
             add_cnt = 1
@@ -187,6 +204,127 @@ def get_all_resource_ref_ids(target_session):
             for ref in all_sub_resource_ref_ids:
                 all_ref_ids.append(ref.id)
     return all_ref_ids
+
+
+def get_all_share_resources_ref_ids(user_id):
+    """
+    获取指定用户所有可见的共享资源ref_id
+        ShareResourceAuthorizeCompanyInfo
+        ShareResourceAuthorizeDepartmentInfo
+        ShareResourceAuthorizeColleagueInfo
+        ShareResourceAuthorizeFriendInfo
+    """
+    target_user = UserInfo.query.filter(
+        UserInfo.user_id == user_id,
+        UserInfo.user_status == 1,
+    ).first()
+    all_departments = []
+    all_companies = []
+    results = []
+    friends_rag_refs = ShareResourceAuthorizeFriendInfo.query.filter(
+        ShareResourceAuthorizeFriendInfo.auth_user_id == user_id,
+        ShareResourceAuthorizeFriendInfo.auth_status == '正常',
+    ).join(
+        RagRefInfo,
+        ShareResourceAuthorizeFriendInfo.resource_id == RagRefInfo.resource_id,
+    ).filter(
+        RagRefInfo.ref_status == '成功'
+    ).join(
+        ResourceObjectMeta,
+        RagRefInfo.resource_id == ResourceObjectMeta.id,
+    ).filter(
+        ResourceObjectMeta.resource_status == '正常',
+        ResourceObjectMeta.resource_source == 'resource_center'
+    ).with_entities(
+        RagRefInfo.id
+    ).all()
+    for ref in friends_rag_refs:
+        results.append(ref.id)
+    colleague_rag_refs = ShareResourceAuthorizeColleagueInfo.query.filter(
+        ShareResourceAuthorizeColleagueInfo.auth_user_id == user_id,
+        ShareResourceAuthorizeColleagueInfo.auth_status == '正常',
+    ).join(
+        RagRefInfo,
+        ShareResourceAuthorizeColleagueInfo.resource_id == RagRefInfo.resource_id,
+    ).filter(
+        RagRefInfo.ref_status == '成功'
+    ).join(
+        ResourceObjectMeta,
+        RagRefInfo.resource_id == ResourceObjectMeta.id,
+    ).filter(
+        ResourceObjectMeta.resource_status == '正常',
+        ResourceObjectMeta.resource_source == 'resource_center'
+    ).with_entities(
+        RagRefInfo.id
+    ).all()
+    for ref in colleague_rag_refs:
+        results.append(ref.id)
+    if target_user.user_company_id:
+        # 获取所有公司id
+        all_companies.append(target_user.user_company_id)
+        target_company = CompanyInfo.query.filter(
+            CompanyInfo.id == target_user.user_company_id,
+            CompanyInfo.company_status == '正常',
+        ).first()
+        while target_company and target_company.parent_company_id:
+            target_company = CompanyInfo.query.filter(
+                CompanyInfo.id == target_company.parent_company_id,
+                CompanyInfo.company_status == '正常',
+            ).first()
+            if target_company:
+                all_companies.append(target_company.id)
+        company_rag_refs = ShareResourceAuthorizeCompanyInfo.query.filter(
+            ShareResourceAuthorizeCompanyInfo.company_id.in_(all_companies),
+            ShareResourceAuthorizeCompanyInfo.auth_status == '正常',
+        ).join(
+            RagRefInfo,
+            ShareResourceAuthorizeCompanyInfo.resource_id == RagRefInfo.resource_id,
+        ).filter(
+            RagRefInfo.ref_status == '成功'
+        ).join(
+            ResourceObjectMeta,
+            RagRefInfo.resource_id == ResourceObjectMeta.id,
+        ).filter(
+            ResourceObjectMeta.resource_status == '正常',
+            ResourceObjectMeta.resource_source == 'resource_center'
+        ).with_entities(
+            RagRefInfo.id
+        ).all()
+        for ref in company_rag_refs:
+            results.append(ref.id)
+        # 获取所有部门id
+        all_departments.append(target_user.user_department_id)
+        target_department = DepartmentInfo.query.filter(
+            DepartmentInfo.id == target_user.user_department_id,
+            DepartmentInfo.department_status == '正常',
+        ).first()
+        while target_department and target_department.parent_department_id:
+            target_department = DepartmentInfo.query.filter(
+                DepartmentInfo.id == target_department.parent_department_id,
+                DepartmentInfo.department_status == '正常',
+            ).first()
+            if target_department:
+                all_departments.append(target_department.id)
+        department_rag_refs = ShareResourceAuthorizeDepartmentInfo.query.filter(
+            ShareResourceAuthorizeDepartmentInfo.department_id.in_(all_departments),
+            ShareResourceAuthorizeDepartmentInfo.auth_status == '正常',
+        ).join(
+            RagRefInfo,
+            ShareResourceAuthorizeDepartmentInfo.resource_id == RagRefInfo.resource_id,
+        ).filter(
+            RagRefInfo.ref_status == '成功'
+        ).join(
+            ResourceObjectMeta,
+            RagRefInfo.resource_id == ResourceObjectMeta.id,
+        ).filter(
+            ResourceObjectMeta.resource_status == '正常',
+            ResourceObjectMeta.resource_source == 'resource_center'
+        ).with_entities(
+            RagRefInfo.id
+        ).all()
+        for ref in department_rag_refs:
+            results.append(ref.id)
+    return results
 
 
 def search_generate_rag_question(user_id, session_id, qa_id, msg_id, question_content, assistant_id, model_name
@@ -239,7 +377,7 @@ def search_generate_rag_question(user_id, session_id, qa_id, msg_id, question_co
     # embedding & rerank 配置
     from app.models.configure_center.system_config import SystemConfig
     system_config = SystemConfig.query.filter(
-        SystemConfig.config_key == 'ai',
+        SystemConfig.config_key == 'resources',
         SystemConfig.config_status == 1,
     ).first()
     if system_config:

@@ -34,7 +34,6 @@ import Page404 from '@/pages/Page404.vue';
 import ResetPassword from '@/pages/ResetPassword.vue';
 import PrivacyPolicy from '@/pages/privacyPolicy.vue';
 import { useUserInfoStore } from '@/stores/user-info-store';
-
 const routes: RouteRecordRaw[] = [
   {
     path: '/next-console',

@@ -24,7 +24,7 @@ import {
   new_document_resource,
   show_resource_list,
   new_document_form_Ref
-} from '@/components/resource/resource-list/resource_list';
+} from '@/components/resource/resource-list/resource-list';
 import { useResourceListStore } from '@/stores/resourceListStore';
 import { TResourceListStatus } from '@/types/resource-type';
 import { ElTooltip } from 'element-plus';

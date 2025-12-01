@@ -26,6 +26,7 @@ export const api = {
   bind_new_phone: envUrl + '/next_console/user_center/bind_new_phone',
   valid_new_phone: envUrl + '/next_console/user_center/valid_new_phone',
   close_user: envUrl + '/next_console/user_center/users/close',
+  login_by_token: '/next_console/user_center/login_by_token',
   // 站内信
   get_system_notices: envUrl + '/next_console/get_system_notices',
   set_system_notices_read: envUrl + '/next_console/set_system_notices_read',
@@ -61,7 +62,8 @@ export const api = {
   refresh_token: envUrl + '/next_console/user_center/refresh_token',
   get_wx_config: envUrl + '/next_console/config_center/system_config/get_wx_config',
   system_config_load: envUrl + '/next_console/config_center/system_config/load',
-  get_domain: envUrl + '/next_console/domain'
+  get_domain: envUrl + '/next_console/domain',
+  system_config_reset: envUrl + '/next_console/config_center/system_config/reset'
 };
 
 export async function getSupportArea(params: object): Promise<ServerResponse> {
@@ -331,6 +333,24 @@ export async function systemConfigLoad(params: object): Promise<ServerResponse> 
   // @ts-ignore
   return request({
     url: api.system_config_load,
+    data: params,
+    responseType: 'json',
+    noAuth: true
+  });
+}
+
+export async function systemConfigReset(params: object): Promise<ServerResponse> {
+  return request({
+    url: api.system_config_reset,
+    data: params,
+    responseType: 'json'
+  });
+}
+
+export async function loginByToken(params: object): Promise<ServerResponse> {
+  // @ts-ignore
+  return request({
+    url: api.login_by_token,
     data: params,
     responseType: 'json',
     noAuth: true

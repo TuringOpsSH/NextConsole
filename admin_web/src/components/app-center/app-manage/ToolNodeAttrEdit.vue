@@ -9,17 +9,67 @@ import { useWorkflowStore } from '@/stores/workflow-store';
 const showToolConfigFlag = ref(false);
 const appInfoStore = useAppStore();
 const workflowStore = useWorkflowStore();
+const protocolOptions = [
+  {
+    label: 'https',
+    value: 'https'
+  },
+  {
+    label: 'mcp',
+    value: 'mcp'
+  }
+];
 async function updateNodeToolConfig() {
   nodeUpdate({
     app_code: appInfoStore.currentApp.app_code,
     node_code: workflowStore.currentNodeDetail.node_code,
+    noe_tool_configs: workflowStore.currentNodeDetail.node_tool_configs,
     node_tool_api_url: workflowStore.currentNodeDetail.node_tool_api_url,
     node_tool_http_method: workflowStore.currentNodeDetail.node_tool_http_method,
     node_tool_http_header: workflowStore.currentNodeDetail.node_tool_http_header,
     node_tool_http_params: workflowStore.currentNodeDetail.node_tool_http_params,
     node_tool_http_body: workflowStore.currentNodeDetail.node_tool_http_body,
-    node_tool_http_body_type: workflowStore.currentNodeDetail.node_tool_http_body_type
+    node_tool_http_body_type: workflowStore.currentNodeDetail.node_tool_http_body_type,
+    node_result_format: workflowStore.currentNodeDetail.node_result_format,
+    node_result_params_json_schema: workflowStore.currentNodeDetail.node_result_params_json_schema
   });
+}
+async function handleProtocolChange(value: string) {
+  if (value == 'mcp') {
+    workflowStore.currentNodeDetail.node_tool_http_method = 'sse';
+    workflowStore.currentNodeDetail.node_result_format = 'json';
+    workflowStore.currentNodeDetail.node_result_params_json_schema = {
+      type: 'object',
+      properties: {
+        content: {
+          type: 'array',
+          typeName: 'Array[Object]',
+          description: '工具调用结果列表',
+          attrFixed: true,
+          typeFixed: true,
+          items: {
+            type: 'object',
+            typeName: 'object',
+            properties: {},
+            ncOrders: [],
+            attrFixed: true,
+            typeFixed: true
+          }
+        }
+      },
+      attrFixed: true,
+      typeFixed: true,
+      ncOrders: ['content']
+    };
+  } else if (value == 'https') {
+    workflowStore.currentNodeDetail.node_tool_http_method = 'GET';
+    workflowStore.currentNodeDetail.node_result_params_json_schema = {
+      type: 'object',
+      properties: {},
+      ncOrders: []
+    };
+  }
+  await updateNodeToolConfig();
 }
 </script>
 
@@ -47,6 +97,13 @@ async function updateNodeToolConfig() {
     </div>
     <div v-show="showToolConfigFlag" class="config-area">
       <el-form :model="workflowStore.currentNodeDetail" label-position="top">
+        <el-form-item prop="node_tool_configs.protocol" label="协议类型" style="padding: 0 12px">
+          <el-segmented
+            v-model="workflowStore.currentNodeDetail.node_tool_configs.protocol"
+            :options="protocolOptions"
+            @change="handleProtocolChange"
+          />
+        </el-form-item>
         <el-form-item prop="node_tool_api_url" label="URL" style="padding: 0 12px">
           <el-input
             v-model="workflowStore.currentNodeDetail.node_tool_api_url"
@@ -54,10 +111,22 @@ async function updateNodeToolConfig() {
             @blur="updateNodeToolConfig"
           />
         </el-form-item>
+        <el-form-item
+          v-if="workflowStore.currentNodeDetail.node_tool_configs.protocol == 'https'"
+          prop="node_tool_configs.https.verify"
+          label="证书校验"
+          style="padding: 0 12px"
+        >
+          <el-switch
+            v-model="workflowStore.currentNodeDetail.node_tool_configs.https.verify"
+            @change="updateNodeToolConfig"
+          />
+        </el-form-item>
         <el-form-item prop="node_tool_http_method" label="Method" style="padding: 0 12px">
           <el-select
             v-model="workflowStore.currentNodeDetail.node_tool_http_method"
             placeholder="请选择请求方法类型"
+            :disabled="workflowStore.currentNodeDetail.node_tool_configs.protocol == 'mcp'"
             @change="updateNodeToolConfig"
           >
             <el-option value="GET" label="GET" />
@@ -67,6 +136,11 @@ async function updateNodeToolConfig() {
             <el-option value="PATCH" label="PATCH" />
             <el-option value="HEAD" label="HEAD" />
             <el-option value="OPTIONS" label="OPTIONS" />
+            <el-option
+              v-if="workflowStore.currentNodeDetail.node_tool_configs.protocol == 'mcp'"
+              value="sse"
+              label="sse"
+            />
           </el-select>
         </el-form-item>
         <el-form-item prop="node_tool_http_header" label="Header" style="padding: 0 12px">
@@ -91,7 +165,12 @@ async function updateNodeToolConfig() {
             @update:schema="updateNodeToolConfig"
           />
         </el-form-item>
-        <el-form-item prop="node_tool_http_params" label="Query" style="padding: 0 12px">
+        <el-form-item
+          v-if="workflowStore.currentNodeDetail.node_tool_configs.protocol == 'https'"
+          prop="node_tool_http_params"
+          label="Query"
+          style="padding: 0 12px"
+        >
           <el-row style="width: 100%">
             <el-col :span="4">
               <el-text type="info" size="small"> 变量名称 </el-text>
@@ -109,13 +188,21 @@ async function updateNodeToolConfig() {
           <JsonSchemaForm
             :json-schema="workflowStore.currentNodeDetail.node_tool_http_params"
             :value-define="true"
-            :node-upstream="workflowStore.currentNodeDetail?.node_upstream"
+            :node-upstream="workflowStore.currentNodeDetail?.nodeSelf"
             @update:schema="updateNodeToolConfig"
           />
         </el-form-item>
-        <el-form-item prop="node_tool_http_body" label="Body" style="padding: 0 12px">
+        <el-form-item
+          v-if="workflowStore.currentNodeDetail.node_tool_configs.protocol == 'https'"
+          prop="node_tool_http_body"
+          label="Body"
+          style="padding: 0 12px"
+        >
           <el-row style="width: 100%">
-            <el-radio-group v-model="workflowStore.currentNodeDetail.node_tool_http_body_type" @change="updateNodeToolConfig">
+            <el-radio-group
+              v-model="workflowStore.currentNodeDetail.node_tool_http_body_type"
+              @change="updateNodeToolConfig"
+            >
               <el-radio value="json">json</el-radio>
               <el-radio value="form-data">form-data</el-radio>
             </el-radio-group>
@@ -139,6 +226,25 @@ async function updateNodeToolConfig() {
             :value-define="true"
             :node-upstream="workflowStore.currentNodeDetail?.node_upstream"
             @update:schema="updateNodeToolConfig"
+          />
+        </el-form-item>
+        <el-form-item
+          v-if="workflowStore.currentNodeDetail.node_tool_configs.protocol == 'mcp'"
+          prop="node_tool_configs.mcp.call_data_schema"
+          label="工具配置"
+          style="padding: 0 12px"
+        >
+          <JsonSchemaForm
+            :json-schema="workflowStore.currentNodeDetail.node_tool_configs.mcp.call_data_schema"
+            :value-define="true"
+            :require-define="true"
+            :node-upstream="workflowStore.currentNodeDetail?.node_upstream"
+            @update:schema="
+              newSchema => {
+                workflowStore.currentNodeDetail.node_tool_configs.mcp.call_data_schema = newSchema;
+                updateNodeToolConfig();
+              }
+            "
           />
         </el-form-item>
       </el-form>

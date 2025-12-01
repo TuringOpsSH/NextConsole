@@ -109,18 +109,18 @@ def next_console_search_messages(params):
     all_test_session_ids = [s.id for s in all_test_sessions]
     for msg_item in res_msgs:
         #测试会话不用删除
-        if msg_item["session_id"] not in all_test_session_ids:
-            # 删除了问题，但是答案还在,
-            if not msg_item["qa_value"]["question"]:
-                continue
-            # 删除了答案，但是问题还在
-            valid_questions = []
-            for question in msg_item["qa_value"]["question"]:
-                if question["msg_id"] in msg_item["qa_value"]["answer"]:
-                    valid_questions.append(question)
-            msg_item["qa_value"]["question"] = valid_questions
-            if not valid_questions:
-                continue
+        # if msg_item["session_id"] not in all_test_session_ids:
+        #     # 删除了问题，但是答案还在,
+        #     if not msg_item["qa_value"]["question"]:
+        #         continue
+        #     # 删除了答案，但是问题还在
+        #     valid_questions = []
+        #     for question in msg_item["qa_value"]["question"]:
+        #         if question["msg_id"] in msg_item["qa_value"]["answer"]:
+        #             valid_questions.append(question)
+        #     msg_item["qa_value"]["question"] = valid_questions
+        #     if not valid_questions:
+        #         continue
         new_res_msgs.append(msg_item)
     # 增加附件搜索
     return next_console_response(result=new_res_msgs)

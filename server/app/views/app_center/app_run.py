@@ -29,7 +29,7 @@ def get_app_session():
 @cross_origin()  # 允许跨域访问
 def app_add_message():
     # 处理请求
-    if request.content_type == 'application/json':
+    if 'application/json' in request.content_type:
         params = request.get_json()
     elif request.content_type.startswith('text/plain'):
         try:

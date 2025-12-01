@@ -32,6 +32,7 @@ class ResourceObjectMeta(db.Model):
     resource_language = db.Column(db.String(255), default="简体中文", comment='资源语言')
     resource_status = db.Column(db.String(255), default="正常", comment='资源状态')
     resource_version = db.Column(db.Integer, default=1, comment='资源版本')
+    resource_rag_config = db.Column(db.JSON, default={}, comment='资源RAG配置')
     create_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='创建时间')
     update_time = db.Column(db.TIMESTAMP, server_default=func.now(), comment='更新时间')
     delete_time = db.Column(db.TIMESTAMP, comment='删除时间')
@@ -72,6 +73,7 @@ class ResourceObjectMeta(db.Model):
             'resource_language': self.resource_language,
             'resource_version': self.resource_version,
             'resource_status': self.resource_status,
+            "resource_rag_config": self.resource_rag_config,
             "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             "update_time": self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
             "delete_time": self.delete_time.strftime('%Y-%m-%d %H:%M:%S') if self.delete_time else "",

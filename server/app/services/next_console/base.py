@@ -34,6 +34,7 @@ def add_session(params):
     session_local_resource_switch = params.get("session_local_resource_switch", False)
     session_local_resource_use_all = params.get("session_local_resource_use_all", False)
     session_task_params_schema = params.get("session_task_params_schema", {})
+    session_task_params = params.get("session_task_params", {})
     # 使用 UUID4 生成基于随机数的唯一标识符
     unique_id = uuid.uuid4().hex
     # 使用 SHA-256 生成哈希值，保证唯一性和长度一致
@@ -72,7 +73,8 @@ def add_session(params):
         session_attachment_webpage_switch=session_attachment_webpage_switch,
         session_local_resource_switch=session_local_resource_switch,
         session_local_resource_use_all=session_local_resource_use_all,
-        session_task_params_schema=session_task_params_schema
+        session_task_params_schema=session_task_params_schema,
+        session_task_params=session_task_params,
     )
     db.session.add(new_session)
     db.session.commit()

@@ -62,7 +62,7 @@ def resource_get_detail():
     params = request.get_json()
     user_id = get_jwt_identity()
     params["user_id"] = int(user_id)
-    resource_id = params.get('resource_id')
+    resource_id = int(params.get('resource_id'))
     if not resource_id:
         return next_console_response(error_status=True, error_message="资源id不能为空！")
     return get_share_resource_meta(params)

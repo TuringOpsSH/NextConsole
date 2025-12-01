@@ -3,7 +3,7 @@ import mimetypes
 import os
 import time
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import or_, distinct
 
@@ -20,6 +20,7 @@ from app.services.resource_center.resource_share_service import search_share_res
 from app.services.task_center.resources_center import auto_build_resource_ref_v2
 from app.services.task_center.resources_center import send_resource_download_cooling_notice_email
 from app.utils.oss.oss_client import generate_new_path, generate_download_url
+from app.models.configure_center.system_config import SystemConfig
 
 
 def search_resource_object(params):
@@ -75,7 +76,7 @@ def search_resource_object(params):
         )
     if resource_type:
         if "recent" in resource_type:
-            recent_end_time = datetime.now() - timedelta(days=7)
+            recent_end_time = datetime.now(timezone.utc) - timedelta(days=7)
             all_filter.append(
                 ResourceObjectMeta.update_time > recent_end_time
             )
@@ -120,12 +121,18 @@ def search_resource_object(params):
     all_resource_ref = RagRefInfo.query.filter(
         RagRefInfo.resource_id.in_(all_resource_ids)
     ).all()
-    resource_ref_dict = {resource_ref.resource_id: resource_ref.ref_status for resource_ref in all_resource_ref}
+    resource_ref_dict = {}
+    for resource_ref in all_resource_ref:
+        if resource_ref.resource_id not in resource_ref_dict:
+            resource_ref_dict[resource_ref.resource_id] = resource_ref
+        if resource_ref.id > resource_ref_dict[resource_ref.resource_id].id:
+            resource_ref_dict[resource_ref.resource_id] = resource_ref
     for resource_item in data:
-        resource_item["rag_status"] = resource_ref_dict.get(resource_item.get("id"))
+        if resource_ref_dict.get(resource_item.get("id")):
+            resource_item["ref_status"] = resource_ref_dict.get(resource_item.get("id")).ref_status
     if "rag" in resource_type:
         # 过滤掉非rag资源
-        data = [resource_item for resource_item in data if resource_item.get("rag_status") == "成功"]
+        data = [resource_item for resource_item in data if resource_item.get("ref_status") == "成功"]
         total = len(data)
     # 启用手动分页
     # 获取参数并进行异常处理
@@ -226,7 +233,8 @@ def get_resource_object(params):
         target_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.user_id == user_id,
             ResourceObjectMeta.resource_status == "正常",
-            ResourceObjectMeta.resource_parent_id.is_(None)
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_source == "resource_center",
         ).first()
         if not target_resource:
             if not target_user.user_resource_base_path:
@@ -245,7 +253,8 @@ def get_resource_object(params):
                 resource_desc="用户资源库",
                 resource_icon="folder.svg",
                 resource_path=target_user.user_resource_base_path,
-                resource_status="正常"
+                resource_status="正常",
+                resource_source="resource_center",
             )
             db.session.add(target_resource)
             db.session.commit()
@@ -304,26 +313,27 @@ def get_resource_object(params):
         resource_path = []
     result["resource_path"] = "/".join(resource_path)
     # 返回资源ref状态
-    rag_ref = RagRefInfo.query.filter(
-        RagRefInfo.resource_id == resource_id
-    ).order_by(
-        RagRefInfo.create_time.desc()
-    ).first()
-    if not rag_ref:
-        result["rag_status"] = "未构建"
-    else:
-        result["rag_status"] = rag_ref.ref_status
-    # 新增Tag信息
-    all_tags = ResourceTagRelation.query.filter(
-        ResourceTagRelation.resource_id == resource_id,
-        ResourceTagRelation.rel_status == "正常"
-    ).join(
-        ResourceTag,
-        ResourceTagRelation.tag_id == ResourceTag.id
-    ).with_entities(
-        ResourceTag
-    ).all()
-    result["resource_tags"] = [tag.show_info() for tag in all_tags]
+    if resource_id:
+        rag_ref = RagRefInfo.query.filter(
+            RagRefInfo.resource_id == resource_id
+        ).order_by(
+            RagRefInfo.create_time.desc()
+        ).first()
+        if not rag_ref:
+            result["ref_status"] = "未构建"
+        else:
+            result["ref_status"] = rag_ref.ref_status
+        # 新增Tag信息
+        all_tags = ResourceTagRelation.query.filter(
+            ResourceTagRelation.resource_id == resource_id,
+            ResourceTagRelation.rel_status == "正常"
+        ).join(
+            ResourceTag,
+            ResourceTagRelation.tag_id == ResourceTag.id
+        ).with_entities(
+            ResourceTag
+        ).all()
+        result["resource_tags"] = [tag.show_info() for tag in all_tags]
     return next_console_response(result=result)
 
 
@@ -367,7 +377,8 @@ def add_resource_upload_task(params):
         root_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.user_id == user_id,
             ResourceObjectMeta.resource_status == "正常",
-            ResourceObjectMeta.resource_parent_id.is_(None)
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_source == "resource_center",
         ).first()
         if not root_resource:
             # 初始化根目录
@@ -378,7 +389,8 @@ def add_resource_upload_task(params):
                 resource_desc="用户资源库",
                 resource_icon="folder.svg",
                 resource_path=target_user.user_resource_base_path,
-                resource_status="正常"
+                resource_status="正常",
+                resource_source="resource_center",
             )
             db.session.add(root_resource)
             db.session.commit()
@@ -733,8 +745,12 @@ def upload_resource_object(params, chunk_content):
         except Exception as e:
             return next_console_response(error_status=True, error_message=f"更新任务异常：{e.args}")
         # 满足条件后，提交自动构建任务
-        user_config = get_user_config(user_id).json.get("result")
-        if user_config and user_config["resources"]["auto_rag"]:
+        system_config = SystemConfig.query.filter(
+            SystemConfig.config_status == 1,
+            SystemConfig.config_key == "resources"
+        ).first()
+
+        if system_config and system_config.config_value.get("auto_rag", False):
             # 判断类型是否支持构建
             if check_rag_is_support(new_resource_meta):
                 build_params = {
@@ -795,7 +811,7 @@ def set_resource_icon(params):
     }
     default_icon_format_map = {
         # 文档类型
-        "doc": "doc.svg", "docx": "doc.svg",
+        "doc": "doc.svg", "docx": "docx.svg",
         "xls": "xls.svg", "xlsx": "xlsx.svg", "csv": "csv.svg",
         "ppt": "ppt.svg", "pptx": "pptx.svg",
         "pdf": "pdf.svg",
@@ -1056,7 +1072,8 @@ def add_resource_object(params):
         root_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.user_id == user_id,
             ResourceObjectMeta.resource_status == "正常",
-            ResourceObjectMeta.resource_parent_id.is_(None)
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_source == "resource_center"
         ).first()
         if not root_resource:
             return next_console_response(error_status=True, error_message="根目录不存在！")
@@ -1119,7 +1136,8 @@ def batch_add_resource_folder(params):
     root_resource = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.user_id == user_id,
         ResourceObjectMeta.resource_status == "正常",
-        ResourceObjectMeta.resource_parent_id.is_(None)
+        ResourceObjectMeta.resource_parent_id.is_(None),
+        ResourceObjectMeta.resource_source == "resource_center"
     ).first()
     if not root_resource:
         return next_console_response(error_status=True, error_message="根目录不存在！")
@@ -1445,7 +1463,8 @@ def download_resource_object(params):
 
     # 查询下载记录
     if target_resource.user_id != user_id:
-        begin_time = datetime.now() - timedelta(seconds=app.config["download_cool_time"])
+        download_cool_time = get_resource_download_config().get("cool_time")
+        begin_time = datetime.now(timezone.utc) - timedelta(seconds=download_cool_time)
         download_records = ResourceDownloadRecord.query.filter(
             ResourceDownloadRecord.user_id == user_id,
             ResourceDownloadRecord.create_time >= begin_time,
@@ -1457,7 +1476,8 @@ def download_resource_object(params):
         ).with_entities(
             ResourceObjectMeta
         ).all()
-        if len(download_records) >= app.config["download_max_count"]:
+        download_max_count = get_resource_download_config().get("max_count")
+        if len(download_records) >= download_max_count:
             # 查询冷却记录
             exist_cool_record = ResourceDownloadCoolingRecord.query.filter(
                 ResourceDownloadCoolingRecord.user_id == user_id,
@@ -1494,7 +1514,7 @@ def download_resource_object(params):
             if not exist_cool_record.author_allow:
                 return next_console_response(error_status=True,
                                              error_message="下载次数过多，请稍后再试！或者联系作者进一步授权！")
-            if (len(download_records) + exist_cool_record.author_allow_cnt) <= app.config["download_max_count"]:
+            if (len(download_records) + exist_cool_record.author_allow_cnt) <= download_max_count:
                 return next_console_response(error_status=True,
                                              error_message="下载次数过多，请稍后再试！或者联系作者进一步授权！")
     # 增加审计记录
@@ -1557,7 +1577,8 @@ def batch_download_resource_object(params):
         new_target_resources.append(resource_item)
 
     # 查询下载记录
-    begin_time = datetime.now() - timedelta(seconds=app.config["download_cool_time"])
+    download_cool_time = get_resource_download_config().get("cool_time")
+    begin_time = datetime.now() - timedelta(seconds=download_cool_time)
     all_author_ids = list(set([resource.user_id for resource in new_target_resources if resource.user_id != user_id]))
     all_download_records = ResourceDownloadRecord.query.filter(
         ResourceDownloadRecord.user_id == user_id,
@@ -1586,7 +1607,8 @@ def batch_download_resource_object(params):
     limit_resource_author_id = []
     for author_id in all_author_ids:
         download_cnt = len(all_download_map.get(author_id, [])) + len(this_download_map.get(author_id, []))
-        if download_cnt >= app.config["download_max_count"]:
+        download_max_count = get_resource_download_config().get("max_count")
+        if download_cnt >= download_max_count:
             # 查询冷却记录
             exist_cool_record = ResourceDownloadCoolingRecord.query.filter(
                 ResourceDownloadCoolingRecord.user_id == user_id,
@@ -1628,7 +1650,7 @@ def batch_download_resource_object(params):
                 # 从下载列表中删除
                 limit_resource_author_id.append(author_id)
                 break
-            if (download_cnt + exist_cool_record.author_allow_cnt) <= app.config["download_max_count"]:
+            if (download_cnt + exist_cool_record.author_allow_cnt) <= download_max_count:
                 # 从下载列表中删除
                 limit_resource_author_id.append(author_id)
                 break
@@ -1669,7 +1691,8 @@ def build_resource_object_ref(params):
     target_resources = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.id.in_(resource_list),
         ResourceObjectMeta.user_id == user_id,
-        ResourceObjectMeta.resource_status == "正常"
+        ResourceObjectMeta.resource_status == "正常",
+        ResourceObjectMeta.resource_source == "resource_center"
     ).all()
     if not target_resources:
         return next_console_response(error_status=True, error_message="资源不存在！")
@@ -1677,7 +1700,8 @@ def build_resource_object_ref(params):
     all_file_resources = [resource for resource in target_resources if resource.resource_type != "folder"]
     al_resources = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.user_id == user_id,
-        ResourceObjectMeta.resource_status == "正常"
+        ResourceObjectMeta.resource_status == "正常",
+        ResourceObjectMeta.resource_source == "resource_center"
     ).all()
     all_dir_sub_resources = [
         resource.id for resource in all_dir_resources
@@ -1692,7 +1716,10 @@ def build_resource_object_ref(params):
                 all_cnt += 1
     all_dir_sub_file_resources = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.id.in_(all_dir_sub_resources),
-        ResourceObjectMeta.resource_type != "folder"
+        ResourceObjectMeta.resource_type != "folder",
+        ResourceObjectMeta.user_id == user_id,
+        ResourceObjectMeta.resource_status == "正常",
+        ResourceObjectMeta.resource_source == "resource_center"
     ).all()
     all_file_resources.extend(all_dir_sub_file_resources)
     for resource_item in all_file_resources:
@@ -2444,8 +2471,10 @@ def search_by_resource_keyword(params):
     if rag_enhance:
         rag_res = search_rag_enhanced({
             "user_id": user_id,
-            "resource_keyword": resource_keyword
+            "resource_keyword": resource_keyword,
+            "resource_source": "resource_center",
         })
+
         # merge 入 new_res
         for rag_item in rag_res:
             if rag_item.get("id") not in all_resource_id:
@@ -2510,6 +2539,7 @@ def search_rag_enhanced(params):
     user_id = int(params.get("user_id", 0))
     resource_keyword = params.get("resource_keyword")
     all_resource_id = params.get("all_resource_id", [])
+    resource_source = params.get("resource_source")
     all_conditions = [RagRefInfo.ref_status == "成功"]
     if user_id:
         all_conditions.append(RagRefInfo.user_id == user_id)
@@ -2530,6 +2560,7 @@ def search_rag_enhanced(params):
         }
     }
     try:
+        t1 = time.time()
         rag_response = rag_query_v3(rag_params).json.get("result", {})
         details = rag_response.get("details", [])
         if not details:
@@ -2540,13 +2571,16 @@ def search_rag_enhanced(params):
             ResourceObjectMeta.id.in_(all_resource_id),
             ResourceObjectMeta.resource_status == "正常"
         ).all()
-        all_md_resource_ids = list(set([i.resource_parent_id for i in all_md_resources]))
+        all_md_resource_ids = list(set([i.resource_parent_id for i in all_md_resources if i.resource_parent_id]))
         md_map = {resource.id: resource.resource_parent_id for resource in all_md_resources}
-        all_ref_resources = ResourceObjectMeta.query.filter(
+        all_resources_conditions = [
             ResourceObjectMeta.id.in_(all_md_resource_ids),
             ResourceObjectMeta.resource_status == "正常",
             ResourceObjectMeta.resource_type != 'folder'
-        ).all()
+        ]
+        if resource_source:
+            all_resources_conditions.append(ResourceObjectMeta.resource_source == resource_source)
+        all_ref_resources = ResourceObjectMeta.query.filter(*all_resources_conditions).all()
         res = []
         for resource in all_ref_resources:
             # 从detail中获取rerank_score最高的 text
@@ -2560,8 +2594,7 @@ def search_rag_enhanced(params):
             res.append(resource_dict)
         return res
     except Exception as e:
-        print('search_rag_enhanced', e)
-        app.logger.error(f"RAG增强搜索异常：{e}")
+        print(e)
         return []
 
 
@@ -2596,7 +2629,8 @@ def create_new_document(params):
         root_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.user_id == user_id,
             ResourceObjectMeta.resource_status == "正常",
-            ResourceObjectMeta.resource_parent_id.is_(None)
+            ResourceObjectMeta.resource_parent_id.is_(None),
+            ResourceObjectMeta.resource_source == "resource_center"
         ).first()
         if not root_resource:
             return next_console_response(error_status=True, error_message="根目录不存在！")
@@ -2707,8 +2741,13 @@ def simple_upload_resource(params, data):
     db.session.add(new_resource)
     db.session.commit()
     # 满足条件后，提交自动构建任务
-    user_config = get_user_config(user_id).json.get("result")
-    if auto_index is True or (auto_index is None and user_config and user_config["resources"]["auto_rag"]):
+    system_config = SystemConfig.query.filter(
+        SystemConfig.config_status == 1,
+        SystemConfig.config_key == "resources"
+    ).first()
+    if auto_index is True or (
+            auto_index is None and system_config and system_config.config_value.get("auto_rag", False)
+    ):
         # 判断类型是否支持构建
         if check_rag_is_support(new_resource):
             build_params = {
@@ -2721,3 +2760,23 @@ def simple_upload_resource(params, data):
         "name": new_resource.resource_name,
         "url": new_resource.resource_show_url
     })
+
+
+def get_resource_download_config():
+    """
+    获取资源下载配置
+    """
+
+    system_config = SystemConfig.query.filter(
+        SystemConfig.config_key == 'resources',
+        SystemConfig.config_status == 1
+    ).with_entities(
+        SystemConfig.config_value
+    ).first()
+    if system_config:
+        return system_config.config_value.get("download", {})
+    else:
+        return {
+          "max_count": 100,
+          "cool_time": 7200
+        }

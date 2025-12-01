@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { current_resource } from '@/components/resource/resource-list/resource_list';
-import { current_share_resource } from '@/components/resource/resource-share/share_resources';
 import {
-  current_resource_usage_percent,
   init_upload_manager,
   upload_file_Ref
 } from '@/components/resource/resource-panel/panel';
@@ -14,26 +10,24 @@ import {
 } from '@/components/resource/resource-upload/resource-upload';
 import router from '@/router';
 
-interface IProps {
-  isSearchMode?: boolean;
-}
-
-const props = withDefaults(defineProps<IProps>(), {
-  isSearchMode: false
+const props = defineProps({
+  isSearchMode: {
+    type: Boolean,
+    default: false
+  },
+  uploadDisabled: {
+    type: Boolean,
+    default: false
+  }
 });
 
-const showNoSearchResult = computed(
-  () =>
-    (props.isSearchMode && ['resource_share', 'resource_list'].includes(router.currentRoute.value.name as string)) ||
-    router.currentRoute.value.name == 'resource_search'
-);
 defineOptions({
   name: 'ResourceEmpty'
 });
 </script>
 
 <template>
-  <div v-if="showNoSearchResult" id="show-info-box" style="gap: 16px">
+  <div v-if="router.currentRoute.value.name == 'resource_search'" id="show-info-box" style="gap: 16px">
     <div>
       <el-image src="/images/empty_company_logo.svg" style="height: 160px; width: 220px" />
     </div>
@@ -41,19 +35,13 @@ defineOptions({
       <el-text style="font-size: 16px; font-weight: 600; color: #101828; line-height: 24px"> 搜索结果为空 </el-text>
     </div>
   </div>
-  <div v-else-if="router.currentRoute.value.name == 'resource_share'" id="show-info-box" style="gap: 16px">
+  <div v-else-if="router.currentRoute.value.name == 'resourceShare'" id="show-info-box" style="gap: 16px">
     <div>
       <el-image src="/images/empty_company_logo.svg" style="height: 160px; width: 220px" />
     </div>
     <div class="std-middle-box">
-      <el-text
-        v-if="!current_share_resource.resource_parent_id"
-        style="font-size: 16px; font-weight: 600; color: #101828; line-height: 24px"
-      >
-        共享资源库为空
-      </el-text>
-      <el-text v-else style="font-size: 16px; font-weight: 600; color: #101828; line-height: 24px">
-        当前文件夹为空
+      <el-text style="font-size: 16px; font-weight: 600; color: #101828; line-height: 24px">
+        当前共享资源库为空
       </el-text>
     </div>
     <div class="std-middle-box">
@@ -80,7 +68,6 @@ defineOptions({
       </ul>
     </div>
   </div>
-
   <div v-else-if="router.currentRoute.value.name == 'resource_recycle_bin'" id="show-info-box" style="gap: 16px">
     <div>
       <el-image src="/images/empty_company_logo.svg" style="height: 160px; width: 220px" />
@@ -94,15 +81,7 @@ defineOptions({
       <el-image src="/images/empty_company_logo.svg" style="height: 160px; width: 220px" />
     </div>
     <div class="std-middle-box">
-      <el-text
-        v-if="!current_resource.resource_parent_id"
-        style="font-size: 16px; font-weight: 600; color: #101828; line-height: 24px"
-      >
-        资源库为空
-      </el-text>
-      <el-text v-else style="font-size: 16px; font-weight: 600; color: #101828; line-height: 24px">
-        当前文件夹为空
-      </el-text>
+      <el-text style="font-size: 16px; font-weight: 600; color: #101828; line-height: 24px"> 当前为空 </el-text>
     </div>
     <div class="std-middle-box">
       <el-text style="font-size: 14px; color: #475467">
@@ -135,7 +114,7 @@ defineOptions({
       </ul>
     </div>
     <el-upload
-      ref="upload_file_Ref"
+
       v-model:file-list="upload_file_list"
       multiple
       :show-file-list="false"
@@ -144,7 +123,7 @@ defineOptions({
       :before-upload="prepare_upload_files"
       :on-change="init_upload_manager"
       :http-request="upload_file_content"
-      :disabled="current_resource_usage_percent >= 100"
+      :disabled="props.uploadDisabled"
       accept="*"
       action=""
     >

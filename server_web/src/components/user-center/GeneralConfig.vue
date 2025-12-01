@@ -8,7 +8,7 @@ import { llmInstanceSearch, userConfigGet, userConfigUpdate } from '@/api/user-c
 import ResourcesSearch from '@/components/next-console/messages-flow/ResourcesSearch.vue';
 import { useUserConfigStore } from '@/stores/user-config-store';
 import { useUserInfoStore } from '@/stores/user-info-store';
-import { ResourceItem } from '@/types/resource-type';
+import { IResourceItem } from '@/types/resource-type';
 import { IUserConfig } from '@/types/user-center';
 
 const userInfoStore = useUserInfoStore();
@@ -25,12 +25,8 @@ const localUserConfig = reactive<IUserConfig>({
         resource_id: -1,
         resource_icon: 'all_resource.svg',
         resource_name: '全部资源'
-      } as ResourceItem
+      } as IResourceItem
     ]
-  },
-  resources: {
-    auto_rag: true,
-    view_components: 'pdf'
   },
   contact: {
     allow_search: true
@@ -149,7 +145,7 @@ async function checkLatestVersion() {
     }
   }
 }
-function getResourceIcon(resource: ResourceItem) {
+function getResourceIcon(resource: IResourceItem) {
   // 获取资源图标
   if (resource.resource_icon) {
     if (
@@ -164,7 +160,7 @@ function getResourceIcon(resource: ResourceItem) {
     return '/images/html.svg';
   }
 }
-function removeResourceItem(resource: ResourceItem) {
+function removeResourceItem(resource: IResourceItem) {
   const indexToRemove = localUserConfig.workbench.session_resources_list.findIndex(item => item.id === resource.id);
   if (indexToRemove !== -1) {
     localUserConfig.workbench.session_resources_list.splice(indexToRemove, 1);
@@ -172,13 +168,12 @@ function removeResourceItem(resource: ResourceItem) {
   handleChangeUpdate('workbench');
 }
 function setDefaultResources() {
-
   localUserConfig.workbench.session_resources_list = [
     {
       resource_id: -1,
       resource_icon: 'all_resource.svg',
       resource_name: '全部资源'
-    } as ResourceItem
+    } as IResourceItem
   ];
   handleChangeUpdate('workbench');
 }
@@ -311,16 +306,6 @@ onMounted(async () => {
                   }
                 "
               />
-            </el-form-item>
-          </div>
-        </div>
-        <div class="form-area">
-          <div>
-            <el-text class="form-label-text">AI资源库</el-text>
-          </div>
-          <div class="form-area-body">
-            <el-form-item label="自动构建" label-position="left">
-              <el-switch v-model="localUserConfig.resources.auto_rag" @change="handleChangeUpdate('resources')" />
             </el-form-item>
           </div>
         </div>

@@ -119,10 +119,14 @@
             </div>
             <div class="resource-static-item-right">
               <div>
-                <el-text class="resource-static-value"> 子文件夹：{{ resourceDetail?.sub_resource_dir_cnt }}个 </el-text>
+                <el-text class="resource-static-value">
+                  子文件夹：{{ resourceDetail?.sub_resource_dir_cnt }}个
+                </el-text>
               </div>
               <div>
-                <el-text class="resource-static-value"> 子文件：{{ resourceDetail?.sub_resource_file_cnt }} 个 </el-text>
+                <el-text class="resource-static-value">
+                  子文件：{{ resourceDetail?.sub_resource_file_cnt }} 个
+                </el-text>
               </div>
             </div>
           </div>
@@ -183,7 +187,7 @@
             </div>
             <div class="resource-static-item-right">
               <el-tag :type="getRagStatus()">
-                {{ resourceDetail?.rag_status }}
+                {{ resourceDetail?.ref_status }}
               </el-tag>
               <el-button
                 v-show="showRebuildButton"
@@ -280,10 +284,10 @@
 </template>
 
 <script setup lang="ts">
-import { useSessionStorage } from '@vueuse/core';
-import { ElMessage, ElNotification } from 'element-plus';
-import { computed, onMounted, ref, watch, onBeforeUnmount } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import {useSessionStorage} from '@vueuse/core';
+import {ElMessage, ElNotification} from 'element-plus';
+import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
 import {
   build_resource_object_ref as buildResourceObjectRef,
   get_resource_object as getResourceObject,
@@ -295,15 +299,14 @@ import {
   format_resource_size as formatResourceSize,
   get_resource_icon as getResourceIcon,
   search_all_resource_object as searchAllResourceObject
-} from '@/components/resource/resource-list/resource_list';
-import { useUserInfoStore } from '@/stores/user-info-store';
-import { ResourceTag } from '@/types/resource-type';
+} from '@/components/resource/resource-list/resource-list';
+import {init_my_resource_tree as initMyResourceTree,} from '@/components/resource/resource-panel/panel';
 import {
-  init_my_resource_tree as initMyResourceTree,
-  refresh_panel_count as refreshPanelCount
-} from '@/components/resource/resource-panel/panel';
-import { search_resource_by_tags as searchResourceByTags } from '@/components/resource/resource-shortcut/resource_shortcut';
-import { search_all_resource_share_object as searchAllResourceShareObject } from '@/components/resource/resource-share/share_resources';
+  search_resource_by_tags as searchResourceByTags
+} from '@/components/resource/resource-shortcut/resource-shortcut';
+import {useUserInfoStore} from '@/stores/user-info-store';
+import {IResourceTag} from '@/types/resource-type';
+
 const userInfoStore = useUserInfoStore();
 interface IResourceDetail {
   resource_name: string;
@@ -322,7 +325,7 @@ interface IResourceDetail {
   access_list?: string[];
   resource_path?: string;
   create_time?: string;
-  rag_status?: string;
+  ref_status?: string;
   resource_tags?: any[];
   resource_status?: string;
   user_id?: string;
@@ -339,14 +342,14 @@ const isLoadingTags = ref(false);
 const isShowMeta = ref(false);
 const showRebuildButton = ref(false);
 const uncommitNotice = ref(false);
-const resourceTags = ref<ResourceTag[]>([]);
+const resourceTags = ref<IResourceTag[]>([]);
 const currentResourceId = useSessionStorage('currentResourceId', '');
 const nowResourceId = computed(() => {
   return currentResourceId.value || route.params.resource_id;
 });
 
 onMounted(() => {
-  if (route.name === 'resource_share') {
+  if (route.name === 'resourceShare') {
     resourceDetail.value = initResource;
   } else {
     resourceDetail.value = myResource;
@@ -360,7 +363,7 @@ onBeforeUnmount(() => {
 
 watch(nowResourceId, newVal => {
   if (!newVal) {
-    if (route.name === 'resource_share') {
+    if (route.name === 'resourceShare') {
       resourceDetail.value = initResource;
     } else {
       resourceDetail.value = myResource;
@@ -377,7 +380,7 @@ async function getResourceDetail() {
   const params = {
     resource_id: nowResourceId.value ?? ''
   };
-  const isShare = route.name === 'resource_share';
+  const isShare = route.name === 'resourceShare';
   let res;
   if (isShare) {
     res = await resourceShareGetMeta(params);
@@ -387,9 +390,9 @@ async function getResourceDetail() {
   if (!res.error_status) {
     const result = res.result;
     resourceDetail.value = result;
-    resourceDetail.value.rag_status = result?.rag_status;
+    resourceDetail.value.ref_status = result?.ref_status;
     resourceTags.value = result.resource_tags;
-    showRebuildButton.value = result.rag_status === '成功';
+    showRebuildButton.value = result.ref_status === '成功';
   }
 }
 
@@ -482,28 +485,25 @@ async function updateResource() {
     isShowEdit.value = false;
     ElMessage.success('更新成功');
   }
-  refreshPanelCount();
   initMyResourceTree();
   if (router.currentRoute.value.name === 'resource_list') {
     searchAllResourceObject();
   } else if (router.currentRoute.value.name === 'resource_shortcut') {
     searchResourceByTags();
-  } else if (router.currentRoute.value.name === 'resource_share') {
-    searchAllResourceShareObject();
   }
 }
 
 function getRagStatus() {
-  if (!resourceDetail.value.rag_status) {
+  if (!resourceDetail.value.ref_status) {
     return 'info';
   }
-  if (resourceDetail.value.rag_status === '成功') {
+  if (resourceDetail.value.ref_status === '成功') {
     return 'success';
   }
-  if (resourceDetail.value.rag_status === '失败') {
+  if (resourceDetail.value.ref_status === '失败') {
     return 'warning';
   }
-  if (resourceDetail.value.rag_status === '异常') {
+  if (resourceDetail.value.ref_status === '异常') {
     return 'danger';
   }
   return 'primary';

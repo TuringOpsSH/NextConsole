@@ -23,10 +23,6 @@ def init_user_config(user_id):
               }
             ]
         },
-        "resources": {
-            "auto_rag": True,
-            "view_components": 'pdf',
-        },
         "contact": {
             "allow_search": True,
         },

@@ -359,6 +359,20 @@ def search_ai_apps_publish():
     return search_all_apps(data)
 
 
+@app.route('/next_console_admin/app_center/publish_manage/get_prod_app', methods=['POST'])
+@roles_required(["admin", "super_admin", "next_console_admin"])
+@jwt_required()
+def get_ai_apps_publish():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    app_code = data.get("app_code")
+    if not app_code:
+        return next_console_response(error_status=True, error_message="应用编号缺失", error_code=1002)
+    data["user_id"] = user_id
+    data["environment"] = "生产"
+    return get_prod_app_service(data)
+
+
 @app.route('/next_console_admin/app_center/publish_manage/create', methods=['POST'])
 @roles_required(["admin", "super_admin", "next_console_admin"])
 @jwt_required()
@@ -480,3 +494,15 @@ def delete_ai_apps_publish_version():
     if not app_code:
         return next_console_response(error_status=True, error_message="缺失应用编号！")
     return delete_app_publish(data)
+
+@app.route('/next_console_admin/app_center/publish_manage/update', methods=['POST'])
+@roles_required(["admin", "super_admin", "next_console_admin"])
+@jwt_required()
+def update_ai_apps_publish():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    data["user_id"] = user_id
+    publish_code = data.get("publish_code")
+    if not publish_code:
+        return next_console_response(error_status=True, error_message="缺失发布名称！")
+    return update_app_publish(data)

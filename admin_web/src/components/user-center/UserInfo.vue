@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Clipboard from 'clipboard';
 import CryptoJS from 'crypto-js';
 import { ElMessage, FormRules, FormInstance } from 'element-plus';
 import { nextTick, onMounted, reactive, ref, watch } from 'vue';

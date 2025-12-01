@@ -132,6 +132,8 @@ defineExpose({
       :socket="socket"
       :disable="sessionParamsRef && !sessionParamsRef?.schemaReady"
       :row="1"
+      :asr-able="currentApp?.app_config?.params?.asr"
+      :rag-lock="currentApp?.app_config?.params?.ragLock"
       @begin-answer="data => handleBeginAnswer(data)"
       @update-answer="newMsg => msgFlowRef.updateAnswer(newMsg)"
       @finish-answer="args => msgFlowRef?.finishAnswer(args)"

@@ -75,6 +75,9 @@ async function beginEdit(app) {
     name: 'publishDetail',
     params: {
       app_code: app.app_code
+    },
+    query: {
+      viewTab: 'base'
     }
   });
 }

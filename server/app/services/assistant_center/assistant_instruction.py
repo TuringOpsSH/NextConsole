@@ -515,6 +515,7 @@ def run_assistant_instruction(params):
     if assistant_instruction.instruction_result_template:
         instruction_result_template = Template(assistant_instruction.instruction_result_template or '')
         instruction_result = instruction_result_template.render(instruction_result)
+        app.logger.warning(f"{instruction_result}")
     # 推送指令结果
 
     return next_console_response(result=instruction_result)

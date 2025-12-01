@@ -104,7 +104,29 @@ const unreadNotice = useSystemNoticeStore();
 const allSystemNotice = ref<ISystemNotice[]>([]);
 const currentPageSize = ref(50);
 const currentPageNum = ref(1);
-
+async function routerToServer(path: string = '/next-console') {
+  const res = await domainGet();
+  const serverDomain = res.result.server_domain;
+  const newWindow = window.open(serverDomain + path, '_blank');
+  const targetOrigin = new URL(serverDomain).origin;
+  const readyHandler = event => {
+    if (event.origin === targetOrigin && event.data.type === 'RECEIVER_READY') {
+      // 收到准备就绪的信号，发送 token
+      newWindow.postMessage(
+        {
+          type: 'AUTH_TOKEN_TRANSFER',
+          token: userInfoStore.token
+        },
+        targetOrigin
+      );
+      console.log('Token sent after ready signal:', targetOrigin);
+      // 移除这个临时的事件监听器
+      window.removeEventListener('message', readyHandler);
+    }
+  };
+  window.addEventListener('message', readyHandler);
+  return;
+}
 async function chooseMenuItem(item) {
   activeSlideBarName.value = item.rootName;
   await router.push({ name: item.name });
@@ -116,10 +138,7 @@ async function callUserButton(item) {
       return;
     }
     if (item?.name == 'server_app') {
-      const res = await domainGet();
-      const serverDomain = res.result.server_domain;
-      window.open(serverDomain, '_blank');
-      return;
+      await routerToServer();
     }
     window.open(router.resolve({ name: item.name }).href, '_blank');
   } else {

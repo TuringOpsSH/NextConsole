@@ -217,6 +217,7 @@ class WorkflowNodeInfo(db.Model):
             "properties": {},
     }, comment='api请求体')
     node_tool_http_body_type = db.Column(db.String(255), default='json', comment='api请求体类型')
+    node_tool_configs = db.Column(db.JSON, default={}, comment='节点工具配置')
     node_rag_resources = db.Column(db.JSON, default=[], comment='RAG资源')
     node_rag_ref_show = db.Column(db.Boolean, default=True, comment='RAG引用显示开关')
     node_rag_query_template = db.Column(db.Text, default='', comment='RAG查询模板')
@@ -229,6 +230,7 @@ class WorkflowNodeInfo(db.Model):
     node_file_reader_config = db.Column(db.JSON, default={}, comment='文档读取配置')
     node_file_splitter_config = db.Column(db.JSON, default={}, comment='文档分割配置')
     node_sub_workflow_config = db.Column(db.JSON, default={}, comment='子工作流配置')
+    node_variable_cast_config = db.Column(db.JSON, default={}, comment='节点变量类型转换配置')
     create_time = db.Column(db.DateTime, default=func.now())
     update_time = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
 
@@ -289,6 +291,8 @@ class WorkflowNodeInfo(db.Model):
             'node_file_reader_config': self.node_file_reader_config,
             'node_file_splitter_config': self.node_file_splitter_config,
             'node_sub_workflow_config': self.node_sub_workflow_config,
+            'node_variable_cast_config': self.node_variable_cast_config,
+            'node_tool_configs': self.node_tool_configs,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
         }
@@ -350,6 +354,8 @@ class WorkFlowNodeInstance(db.Model):
     workflow_node_file_reader_config = db.Column(db.JSON, default={}, comment='文档读取配置')
     workflow_node_file_splitter_config = db.Column(db.JSON, default={}, comment='文档分割配置')
     workflow_node_sub_workflow_config = db.Column(db.JSON, default={}, comment='子工作流配置')
+    workflow_node_tool_configs = db.Column(db.JSON, default={}, comment='节点工具配置')
+    workflow_node_variable_cast_config = db.Column(db.JSON, default={}, comment='节点变量类型转换配置')
     session_id = db.Column(db.Integer, nullable=False, comment='会话id')
     qa_id = db.Column(db.Integer, nullable=False, comment='问答id')
     msg_id = db.Column(db.Integer, nullable=False, comment='消息id')
@@ -428,6 +434,8 @@ class WorkFlowNodeInstance(db.Model):
             "workflow_node_file_reader_config": self.workflow_node_file_reader_config,
             "workflow_node_file_splitter_config": self.workflow_node_file_splitter_config,
             "workflow_node_sub_workflow_config": self.workflow_node_sub_workflow_config,
+            "workflow_node_tool_configs": self.workflow_node_tool_configs,
+            "workflow_node_variable_cast_config": self.workflow_node_variable_cast_config,
             "begin_time": self.begin_time.strftime('%Y-%m-%d %H:%M:%S') if self.begin_time else None,
             "end_time": self.end_time.strftime('%Y-%m-%d %H:%M:%S') if self.end_time else None,
             "create_time": self.create_time.strftime('%Y-%m-%d %H:%M:%S'),

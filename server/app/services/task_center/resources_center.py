@@ -32,7 +32,7 @@ def emit_resource_status(params):
     with app.app_context():
         user_id = int(params.get("user_id"))
         resource_id = params.get("resource_id")
-        rag_status = params.get("rag_status")
+        ref_status = params.get("ref_status")
         target_resource = ResourceObjectMeta.query.filter(
             ResourceObjectMeta.id == resource_id,
             ResourceObjectMeta.user_id == user_id,
@@ -48,7 +48,8 @@ def emit_resource_status(params):
         for client in all_user_clients:
             if client.get('status') == 'connected':
                 data = target_resource.show_info()
-                data["rag_status"] = rag_status
+                data["ref_status"] = ref_status
+                data['msg_time'] = time.time()
                 socketio.emit("updateRefStatus", [data], room=client.get('session_id'))
         return f'推送资源状态成功{target_resource.show_info()}'
 
@@ -132,13 +133,19 @@ def completely_delete_resources():
             return "无需删除"
         all_finish_task_cnt = 0
         # 删除资源文件
+        # for delete_resource in delete_resources:
+        #     if os.path.exists(delete_resource.resource_path):
+        #         os.remove(delete_resource.resource_path)
+        #         # 删除数据库记录
+        #         db.session.delete(delete_resource)
+        #         db.session.commit()
+        #         all_finish_task_cnt += 1
+        # 仅标记
         for delete_resource in delete_resources:
-            if os.path.exists(delete_resource.resource_path):
-                os.remove(delete_resource.resource_path)
-                # 删除数据库记录
-                db.session.delete(delete_resource)
-                db.session.commit()
-                all_finish_task_cnt += 1
+            delete_resource.resource_status = "已删除"
+            db.session.add(delete_resource)
+            db.session.commit()
+            all_finish_task_cnt += 1
         return f"删除完成{all_finish_task_cnt}条"
 
 
@@ -260,7 +267,7 @@ def auto_build_resource_ref_v2(params):
         # todo 生成各项配置
         from app.models.configure_center.system_config import SystemConfig
         system_config = SystemConfig.query.filter(
-            SystemConfig.config_key == "ai",
+            SystemConfig.config_key == "resources",
             SystemConfig.config_status == 1
         ).first()
         file_reader_config = {
@@ -416,7 +423,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         if not (reader_result and isinstance(reader_result, dict) and reader_result.get("content")):
             target_ref.ref_status = "文件解析失败"
@@ -431,7 +438,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         if not (split_result and isinstance(split_result, dict) and split_result.get("status") == "success"):
             target_ref.ref_status = "文件切分失败"
@@ -443,7 +450,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         if not (abstract_result and isinstance(abstract_result, dict) and abstract_result.get("status") == "success"):
             return '文件摘要处理失败，请检查文件格式或内容'
@@ -452,7 +459,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         if not (embedding_result and isinstance(embedding_result, dict) and embedding_result.get("status") == "success"):
             return '文件向量化处理失败，请检查文件格式或内容'
@@ -466,7 +473,7 @@ def start_ref_task(params):
         emit_resource_status.delay({
             "user_id": user_id,
             "resource_id": resource_id,
-            "rag_status": target_ref.ref_status
+            "ref_status": target_ref.ref_status
         })
         return '构建任务执行完成'
 

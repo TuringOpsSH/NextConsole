@@ -1,7 +1,8 @@
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { ElMessage, ElNotification } from 'element-plus';
 import { io } from 'socket.io-client';
-import { ref } from 'vue';
+import {nextTick, ref} from 'vue';
+import { domainGet } from '@/api/base';
 import {
   AgentAppMsgFlow,
   currentGraphConfigs,
@@ -10,23 +11,21 @@ import {
 } from '@/components/app-center/ts/agent-app';
 import { consoleInput } from '@/components/app-center/ts/agent_console';
 import { current_friend_request_cnt } from '@/components/contacts/contacts-panel/contacts_panel';
-import { consoleInputRef, user_input } from '@/components/next-console/messages-flow/console_input';
-import {
-  msg_flow,
-  msg_recommend_question,
-} from '@/components/next-console/messages-flow/message_flow';
+import { consoleInputRef } from '@/components/next-console/messages-flow/console_input';
+import { consoleInputRef as agentConsoleRef } from '@/components/next-console/workbenches/console_input';
+import { msg_flow } from '@/components/next-console/messages-flow/message_flow';
 import { msgFlowRef } from '@/components/next-console/messages-flow/message_flow';
 import { session_history_top5 } from '@/components/next-console/messages-flow/sessions';
-import { current_resource_list, resourceDetailRef } from '@/components/resource/resource-list/resource_list';
-import { current_resource_list as current_resource_shortcut_list } from '@/components/resource/resource-shortcut/resource_shortcut';
+import { current_resource_list, resourceDetailRef } from '@/components/resource/resource-list/resource-list';
+import { current_resource_list as current_resource_shortcut_list } from '@/components/resource/resource-shortcut/resource-shortcut';
 import { currentPathTree } from '@/components/resource/resource-view/resource-viewer';
 import router from '@/router';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useSystemNoticeStore } from '@/stores/systemNoticeStore';
 import { useUserInfoStore } from '@/stores/user-info-store';
-import { Friend } from '@/types/contacts';
-import { recommend_question_item, workflow_task_item, workflow_task_map } from '@/types/next-console';
-import { ResourceItem } from '@/types/resource-type';
+import { IFriend } from '@/types/contacts';
+import { IWorkflowTaskItem, IWorkflowTaskMap } from '@/types/next-console';
+import { IResourceItem } from '@/types/resource-type';
 import { ISystemNotice } from '@/types/user-center';
 // 创建 Socket.IO 客户端实例，连接到服务器
 export const socket = ref(null);
@@ -38,24 +37,17 @@ export async function getFingerPrint() {
   });
 }
 export async function initSocket() {
-  if (socket.value?.connected) {
+  if (socket.value) {
     return;
   }
-
-  if (!socket.value) {
-    if (import.meta.env.VITE_APP_NODE_ENV === 'private') {
-      const socketUrl = `${window.location.protocol === 'https:' ? 'wss://' : 'ws://'}${window.location.host}`;
-      socket.value = io(socketUrl, {
-        transports: ['websocket'],
-        path: '/socket.io'
-      });
-    } else {
-      socket.value = io(import.meta.env.VITE_APP_WEBSOCKET_URL, {
-        transports: ['websocket'],
-        path: '/socket.io'
-      });
-    }
-  }
+  await nextTick();
+  const res = await domainGet();
+  const url = res.result?.server_domain;
+  console.log(url);
+  socket.value = io(url, {
+    transports: ['websocket'],
+    path: '/socket.io'
+  });
   // 监听连接事件
   socket.value.on('connect', () => {
     // 发送身份验证
@@ -85,14 +77,13 @@ export async function initSocket() {
   });
   // 更新资源状态
   socket.value.on('updateRefStatus', data => {
-    // console.log('updateRefStatus',data)
+    console.log('updateRefStatus', data);
     updateRefStatus(data);
   });
   // 工作流更新
   socket.value.on('update_workflow_item_status', data => {
-    // // console.log('update_workflow_item_status',data)
     if (router.currentRoute.value.name === 'agent_app') {
-      update_workflow_item_status(data, QAWorkFlowMap.value);
+      updateWorkflowItemStatus(data, QAWorkFlowMap.value);
     } else if (data.task_type == '会话命名') {
       const store = useSessionStore();
       if (store.getLatestSessionListRef) {
@@ -108,7 +99,7 @@ export async function initSocket() {
   });
   // 好友申请提醒
   socket.value.on('new_friend_request', data => {
-    update_friend_request(data);
+    updateFriendRequest(data);
   });
   // 更新站内信
   socket.value.on('new_system_notice', (data: ISystemNotice) => {
@@ -116,9 +107,9 @@ export async function initSocket() {
     updateSystemNotices(data);
   });
   // 更新资源名称
-  socket.value.on('wps_rename', (data: ResourceItem) => {
+  socket.value.on('wps_rename', (data: IResourceItem) => {
     // console.log('update_system_msg',data)
-    update_resource_view_name(data);
+    updateResourceViewName(data);
   });
   socket.value.on('disconnect', () => {
     console.log('Disconnected from server');
@@ -151,7 +142,6 @@ export async function initSocket() {
 }
 
 export function updateUserInput(newQuestion: string) {
-  console.log(router.currentRoute.value.name, newQuestion);
   if (router.currentRoute.value.name === 'agent_app') {
     consoleInput.value += newQuestion;
   } else if (
@@ -161,7 +151,7 @@ export function updateUserInput(newQuestion: string) {
     consoleInputRef.value?.handleAsr(newQuestion);
   }
 }
-export function updateRefStatus(data: ResourceItem[]) {
+export function updateRefStatus(data: IResourceItem[]) {
   // 根据传入的数据更新ref状态
   // data: 需要更新的资源对象列表
   // console.log('ref_status_update',data)
@@ -169,8 +159,12 @@ export function updateRefStatus(data: ResourceItem[]) {
     // 更新我的资源列表
     for (let i = 0; i < current_resource_shortcut_list.value.length; i++) {
       for (let j = 0; j < data.length; j++) {
-        if (current_resource_list.value[i]?.id === data[j].id) {
-          current_resource_list.value[i].rag_status = data[j].rag_status;
+        if (current_resource_shortcut_list.value[i]?.id === data[j].id) {
+          if (current_resource_shortcut_list.value[i]?.msg_time && current_resource_shortcut_list.value[i]?.msg_time > data[j]?.msg_itme) {
+            continue;
+          }
+          current_resource_shortcut_list.value[i].msg_time = data[j]?.msg_time;
+          current_resource_shortcut_list.value[i].ref_status = data[j].ref_status;
         }
       }
     }
@@ -180,8 +174,11 @@ export function updateRefStatus(data: ResourceItem[]) {
     for (let i = 0; i < current_resource_list.value.length; i++) {
       for (let j = 0; j < data.length; j++) {
         if (current_resource_list.value[i].id == data[j].id) {
-          // // console.log('update',data[j].rag_status)
-          current_resource_list.value[i].rag_status = data[j].rag_status;
+          if (current_resource_list.value[i]?.msg_time && current_resource_list.value[i]?.msg_time > data[j]?.msg_itme) {
+            continue;
+          }
+          current_resource_list.value[i].msg_time = data[j]?.msg_time;
+          current_resource_list.value[i].ref_status = data[j].ref_status;
         }
         if (resourceDetailRef.value?.nowResourceId == data[j].id) {
           resourceDetailRef.value?.getResourceDetail();
@@ -190,8 +187,9 @@ export function updateRefStatus(data: ResourceItem[]) {
     }
   }
   consoleInputRef.value?.updateSessionAttachment(data);
+  agentConsoleRef?.value?.updateSessionAttachment(data);
 }
-export function update_workflow_item_status(data: workflow_task_item, targetWorkflowMap: workflow_task_map) {
+export function updateWorkflowItemStatus(data: IWorkflowTaskItem, targetWorkflowMap: IWorkflowTaskMap) {
   // 根据传入工作流任务对象更新工作流任务状态
   // 如果不存在则新增，如果存在则更新
   // // console.log('收到工作流任务状态更新',data)
@@ -202,15 +200,15 @@ export function update_workflow_item_status(data: workflow_task_item, targetWork
   if (!targetWorkflowMap[data.qa_id]?.length) {
     targetWorkflowMap[data.qa_id] = [data];
   } else {
-    let find_flag = false;
+    let findFlag = false;
     for (let i = 0; i < targetWorkflowMap[data.qa_id].length; i++) {
       if (targetWorkflowMap[data.qa_id][i].task_id === data.task_id) {
         targetWorkflowMap[data.qa_id][i] = data;
-        find_flag = true;
+        findFlag = true;
         break;
       }
     }
-    if (!find_flag) {
+    if (!findFlag) {
       targetWorkflowMap[data.qa_id].push(data);
     }
   }
@@ -237,20 +235,11 @@ export function update_workflow_item_status(data: workflow_task_item, targetWork
     }
   }
 }
-export function update_recommend_question_lists(data: recommend_question_item[]) {
-  for (const recommend_question of data) {
-    if (!msg_recommend_question.value?.[recommend_question.msg_id]) {
-      msg_recommend_question.value[recommend_question.msg_id] = [recommend_question];
-    } else {
-      msg_recommend_question.value[recommend_question.msg_id].push(recommend_question);
-    }
-  }
-}
-export function update_friend_request(new_friend: Friend) {
+export function updateFriendRequest(newFiend: IFriend) {
   // 好友申请提醒
   ElNotification.success({
     title: '好友申请',
-    message: `您收到了${new_friend.user_nick_name}的好友申请`,
+    message: `您收到了${newFiend.user_nick_name}的好友申请`,
     duration: 0
   });
   // 更新好友申请数量
@@ -260,10 +249,10 @@ export function updateSystemNotices(data: ISystemNotice) {
   const unreadNotice = useSystemNoticeStore();
   unreadNotice.addNewNotice(data);
 }
-export function update_resource_view_name(new_resource: ResourceItem) {
+export function updateResourceViewName(newResource: IResourceItem) {
   currentPathTree.value.forEach(item => {
-    if (item.id == new_resource.id) {
-      item.resource_name = new_resource.resource_name;
+    if (item.id == newResource.id) {
+      item.resource_name = newResource.resource_name;
       ElMessage.success('重命名成功');
     }
   });
@@ -285,7 +274,6 @@ export function updateSqlResult(data) {
   // console.log(currentGraphConfigs.value)
 }
 export function updateChartOptionsResult(data) {
-  console.log(data);
   currentGraphConfigs.value[data.msg_id].options = data?.options?.options;
   currentGraphConfigs.value[data.msg_id].pane = 'graph';
 }

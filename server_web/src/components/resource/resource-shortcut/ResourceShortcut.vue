@@ -1,16 +1,32 @@
 <script setup lang="ts">
 import { useSessionStorage } from '@vueuse/core';
-import {ElMessage, genFileId, UploadRawFile} from 'element-plus';
+import { ElMessage, genFileId, UploadRawFile } from 'element-plus';
 import { storeToRefs } from 'pinia';
-import {onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
+import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
-import { get_resource_recent_format_count, search_resource_tags } from '@/api/resource-api';
+import {
+  build_resource_object_ref,
+  delete_resource_object_api,
+  download_resource_object,
+  get_resource_recent_format_count,
+  search_resource_tags
+} from '@/api/resource-api';
+import ResourceEmpty from '@/components/resource/ResourceEmpty.vue';
+import {
+  double_click_resource_card,
+  format_resource_size,
+  get_resource_icon,
+  sort_resource_size,
+  sort_resource_status
+} from '@/components/resource/resource-list/resource-list';
+import { handle_search_clear } from '@/components/resource/resource-panel/panel';
+import { turn_on_share_selector } from '@/components/resource/resource-share-selector/resource_share_selector';
+import ResourceShareSelector from '@/components/resource/resource-share-selector/resource_share_selector.vue';
 import {
   batch_completely_delete_resources,
   batch_copy_select_resources,
   batch_delete_resources,
   batch_download_select_resource,
-  batch_move_select_resources,
   batch_rebuild,
   batch_recover_resources,
   button_Ref,
@@ -23,8 +39,6 @@ import {
   current_resource_cnt,
   current_resource_list,
   current_tag,
-  delete_resource,
-  download_resource,
   get_system_tag,
   get_timestamp_duration,
   get_upload_progress,
@@ -34,11 +48,9 @@ import {
   handleCurrentChange,
   handleDragOver,
   handleSizeChange,
-  move_resource,
   multiple_selection,
   onDragEnd,
   onDragStart,
-  rebuild_resource,
   recover_resource,
   resource_loading,
   resource_shortcut_Ref,
@@ -46,47 +58,40 @@ import {
   search_rag_enhance,
   search_resource_by_tags,
   setCurrentResourceValues,
-  share_resource,
   show_delete_flag,
-  show_delete_resource_detail, show_multiple_button,
+  show_delete_resource_detail,
+  show_multiple_button,
   show_recover_flag,
-  show_resource_detail,
   show_upload_progress_status
-} from '@/components/resource/resource-shortcut/resource_shortcut';
+} from '@/components/resource/resource-shortcut/resource-shortcut';
 import {
   current_resource_tags,
   current_resource_types,
   show_search_config_area,
   showConfigFlag
 } from '@/components/resource/resource-shortcut/resource_shortcut_head/resource_shortcut_head';
-import ResourceEmpty from '@/components/resource/ResourceEmpty.vue';
-import {
-  double_click_resource_card,
-  format_resource_size,
-  get_resource_icon,
-  sort_resource_size,
-  sort_resource_status
-} from '@/components/resource/resource-list/resource_list';
-import ResourceMeta from '@/components/resource/resource_meta/resource_meta.vue';
-import ResourceViewTree from '@/components/resource/resource_tree/resource_view_tree.vue';
 import {
   close_upload_manager,
-  prepare_upload_files, show_upload_manage_box, upload_button_Ref,
+  prepare_upload_files,
+  show_upload_manage_box,
+  upload_button_Ref,
   upload_file_content,
-  upload_file_list, upload_parent_resource
+  upload_file_list,
+  upload_parent_resource
 } from '@/components/resource/resource-upload/resource-upload';
-import ResourceShareSelector from '@/components/resource/resource-share-selector/resource_share_selector.vue';
-import router from '@/router';
-import { useResourceStore } from '@/stores/resourceStore';
-import { useUserInfoStore } from '@/stores/user-info-store';
-import { current_resource_usage_percent, handle_search_clear } from '@/components/resource/resource-panel/panel';
 import {
   choose_resource_meta,
   show_meta_flag,
   turn_on_resource_meta
 } from '@/components/resource/resource_meta/resource_meta';
+import ResourceMeta from '@/components/resource/resource_meta/resource_meta.vue';
+import ResourceViewTree from '@/components/resource/resource_tree/ResourceViewTree.vue';
+import router from '@/router';
+import { useResourceInfoStore } from '@/stores/resource-info-store';
+import { useResourceStore } from '@/stores/resourceStore';
+import { useUserInfoStore } from '@/stores/user-info-store';
+import { IResourceItem, IResourceTag } from '@/types/resource-type';
 import { AUTH_TYPE, RESOURCE_FORMATS } from '@/utils/constant';
-import {ResourceItem, ResourceTag} from "@/types/resource-type";
 
 const props = defineProps({
   tag_source: {
@@ -158,9 +163,9 @@ const checkAll = ref(false);
 const updateResourceKeyword = ref('');
 const updateRagEnhance = ref(false);
 const editSearchKeywordFlag = ref(false);
-const allResourceTags = ref<ResourceTag[]>([]);
+const allResourceTags = ref<IResourceTag[]>([]);
 const mousePosition = ref({ x: 0, y: 0 });
-const currentRowItem = reactive<ResourceItem>({
+const currentRowItem = reactive<IResourceItem>({
   id: null,
   resource_parent_id: null,
   user_id: null,
@@ -173,7 +178,7 @@ const currentRowItem = reactive<ResourceItem>({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   resource_size_in_MB: null,
   resource_status: null,
-  rag_status: null,
+  ref_status: null,
   create_time: null,
   update_time: null,
   delete_time: null,
@@ -187,6 +192,8 @@ const currentRowItem = reactive<ResourceItem>({
 const uploadFileRef = ref(null);
 const contextMenuFlag = ref(false);
 const currentResourceFormats = ref([]);
+const resourceViewTreeRef = ref();
+const resourceInfoStore = useResourceInfoStore();
 async function handleCheckAllChange(val: boolean) {
   const cities = [
     'document',
@@ -499,7 +506,7 @@ function closeMenu(event) {
     contextMenuFlag.value = false;
   }
 }
-async function previewResource(resource: ResourceItem) {
+async function previewResource(resource: IResourceItem) {
   // 预览资源
   if (resource.resource_status == '删除') {
     ElMessage.warning('资源已删除，请恢复后查看!');
@@ -524,6 +531,146 @@ async function previewResource(resource: ResourceItem) {
       resource_id: resource.id
     }
   });
+}
+async function moveResource(resource: IResourceItem) {
+  if (!resource?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除，请先恢复后再操作!');
+    return;
+  }
+  // 移动资源
+  resourceViewTreeRef.value?.showMoveDialogMultiple([resource.id]);
+}
+function batchMoveSelectResources() {
+  const selectedResources = [];
+  if (resource_view_model.value == 'list') {
+    for (const resource of multiple_selection.value) {
+      if (resource.id && resource.resource_status == '正常') {
+        selectedResources.push(resource.id);
+      }
+    }
+  } else {
+    for (const resource of current_resource_list.value) {
+      if (resource.resource_is_selected && resource.id && resource.resource_status == '正常') {
+        selectedResources.push(resource.id);
+      }
+    }
+  }
+  resourceViewTreeRef.value?.showMoveDialogMultiple(selectedResources);
+}
+async function downloadResource(resource: IResourceItem) {
+  // 下载资源
+  if (!resource?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除，请恢复后下载!');
+    return;
+  }
+  if (resource.resource_type == 'folder') {
+    ElMessage.warning('文件夹无法下载!');
+    return;
+  }
+  const params = {
+    resource_id: resource.id
+  };
+  const res = await download_resource_object(params);
+  if (!res.error_status) {
+    let downloadUrl = res.result?.download_url;
+    if (!downloadUrl) {
+      ElMessage.error('下载链接为空');
+      return;
+    }
+    downloadUrl = downloadUrl + '?filename=' + encodeURIComponent(resource.resource_name);
+    // 创建一个隐藏的 <a> 标签
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = resource.resource_name; // 设置下载文件的名称
+    link.style.display = 'none';
+
+    // 将 <a> 标签添加到文档中
+    document.body.appendChild(link);
+
+    // 触发点击事件
+    link.click();
+
+    // 移除 <a> 标签
+    document.body.removeChild(link);
+  }
+}
+async function shareResource(resource: IResourceItem) {
+  // 分享资源
+  if (!resource?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除，请恢复后分享!');
+    return;
+  }
+  // 调用分享接口
+  await turn_on_share_selector(resource);
+}
+async function showResourceDetail(resource: IResourceItem) {
+  if (!resource?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除，请恢复后查看!');
+    return;
+  }
+  const userInfoStore = useUserInfoStore();
+  if (resource.user_id == userInfoStore.userInfo.user_id) {
+    turn_on_resource_meta(resource.id);
+  } else {
+    turn_on_resource_meta(resource.id, '共享');
+  }
+}
+async function rebuildResource(resource: IResourceItem) {
+  if (!resource?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除，请先恢复后再操作!');
+    return;
+  }
+  // 检查资源状态
+  if (resource.resource_status != '正常') {
+    ElMessage.warning('资源无法构建索引!');
+    return;
+  }
+  const params = {
+    resource_list: [resource.id]
+  };
+  const res = await build_resource_object_ref(params);
+  if (!res.error_status) {
+    ElMessage.success('提交重建任务成功!');
+  }
+}
+async function deleteResource(resource: IResourceItem) {
+  if (!resource?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除!');
+    return;
+  }
+  // 删除资源
+  const params = {
+    resource_id: resource.id
+  };
+  const res = await delete_resource_object_api(params);
+  if (!res.error_status) {
+    ElMessage.success('删除成功!');
+    await search_resource_by_tags();
+  }
 }
 watch(
   () => route.name,
@@ -701,10 +848,10 @@ defineOptions({
                 </el-checkbox>
                 <el-checkbox-group v-model="current_resource_types" @change="systemTagsFilterChange">
                   <el-checkbox
-                      v-for="item in allResourceTypes"
-                      :key="item.value"
-                      :value="item.value"
-                      :label="item.name"
+                    v-for="item in allResourceTypes"
+                    :key="item.value"
+                    :value="item.value"
+                    :label="item.name"
                   />
                 </el-checkbox-group>
               </div>
@@ -716,19 +863,19 @@ defineOptions({
                 </div>
                 <div class="std-middle-box" style="width: 100%; max-width: 300px">
                   <el-select
-                      v-model="current_resource_tags"
-                      multiple
-                      placeholder="搜索标签"
-                      filterable
-                      remote
-                      reserve-keyword
-                      :loading="loadingUserTags"
-                      collapse-tags
-                      collapse-tags-tooltip
-                      value-key="id"
-                      clearable
-                      :remote-method="searchResourceTagsByKeyword"
-                      @change="systemTagsFilterChange"
+                    v-model="current_resource_tags"
+                    multiple
+                    placeholder="搜索标签"
+                    filterable
+                    remote
+                    reserve-keyword
+                    :loading="loadingUserTags"
+                    collapse-tags
+                    collapse-tags-tooltip
+                    value-key="id"
+                    clearable
+                    :remote-method="searchResourceTagsByKeyword"
+                    @change="systemTagsFilterChange"
                   >
                     <el-option v-for="item in allResourceTags" :key="item.id" :label="item.tag_name" :value="item">
                       <div class="user-tag-area">
@@ -752,18 +899,18 @@ defineOptions({
                 </div>
                 <div class="std-middle-box" style="width: 100%; max-width: 160px">
                   <el-select
-                      v-model="currentResourceValues"
-                      multiple
-                      placeholder="全部格式"
-                      collapse-tags
-                      collapse-tags-tooltip
-                      @change="changeResourceFormat"
+                    v-model="currentResourceValues"
+                    multiple
+                    placeholder="全部格式"
+                    collapse-tags
+                    collapse-tags-tooltip
+                    @change="changeResourceFormat"
                   >
                     <el-option
-                        v-for="resourceFormat in RESOURCE_FORMATS"
-                        :key="resourceFormat.value"
-                        :value="resourceFormat.value"
-                        :label="resourceFormat.text"
+                      v-for="resourceFormat in RESOURCE_FORMATS"
+                      :key="resourceFormat.value"
+                      :value="resourceFormat.value"
+                      :label="resourceFormat.text"
                     >
                       {{ resourceFormat.text }}
                     </el-option>
@@ -968,16 +1115,16 @@ defineOptions({
               </el-table-column>
               <el-table-column
                 v-if="current_tag?.tag_source == 'system' && current_tag?.tag_value == 'recent_index'"
-                prop="rag_status"
+                prop="ref_status"
                 label="构建状态"
                 min-width="120"
               >
                 <template #default="scope">
                   <div class="std-middle-box">
-                    <el-tag v-if="scope.row.rag_status == 'Success'" type="success" round> 索引成功 </el-tag>
-                    <el-tag v-else-if="scope.row.rag_status == 'Failure'" type="warning" round> 索引失败 </el-tag>
-                    <el-tag v-else-if="scope.row.rag_status == 'Pending'" type="primary" round> 索引中 </el-tag>
-                    <el-tag v-else-if="scope.row.rag_status == 'Error'" type="danger" round> 索引错误 </el-tag>
+                    <el-tag v-if="scope.row.ref_status == 'Success'" type="success" round> 索引成功 </el-tag>
+                    <el-tag v-else-if="scope.row.ref_status == 'Failure'" type="warning" round> 索引失败 </el-tag>
+                    <el-tag v-else-if="scope.row.ref_status == 'Pending'" type="primary" round> 索引中 </el-tag>
+                    <el-tag v-else-if="scope.row.ref_status == 'Error'" type="danger" round> 索引错误 </el-tag>
                     <el-tag v-else> 未知 </el-tag>
                   </div>
                 </template>
@@ -1038,33 +1185,29 @@ defineOptions({
                     </template>
                     <div v-show="current_tag?.tag_value != 'recycle_bin'" class="resource-button-group">
                       <div class="resource-button">
-                        <el-button text class="resource-button" @click="previewResource(scope.row)">
-                          查看
-                        </el-button>
+                        <el-button text class="resource-button" @click="previewResource(scope.row)"> 查看 </el-button>
                       </div>
                       <div class="resource-button">
-                        <el-button text class="resource-button" @click="show_resource_detail(scope.row)">
+                        <el-button text class="resource-button" @click="showResourceDetail(scope.row)">
                           详情
                         </el-button>
                       </div>
                       <div class="resource-button">
-                        <el-button text class="resource-button" @click="download_resource(scope.row)">
-                          下载
-                        </el-button>
+                        <el-button text class="resource-button" @click="downloadResource(scope.row)"> 下载 </el-button>
                       </div>
                       <div class="resource-button">
-                        <el-button text class="resource-button" @click="share_resource(scope.row)"> 分享 </el-button>
+                        <el-button text class="resource-button" @click="shareResource(scope.row)"> 分享 </el-button>
                       </div>
                       <div class="resource-button">
-                        <el-button text class="resource-button" @click="move_resource(scope.row)"> 移动到 </el-button>
+                        <el-button text class="resource-button" @click="moveResource(scope.row)"> 移动到 </el-button>
                       </div>
                       <div class="resource-button">
-                        <el-button text class="resource-button" @click="rebuild_resource(scope.row)">
+                        <el-button text class="resource-button" @click="rebuildResource(scope.row)">
                           重新索引
                         </el-button>
                       </div>
                       <div class="resource-button">
-                        <el-button text type="danger" class="resource-button" @click="delete_resource(scope.row)">
+                        <el-button text type="danger" class="resource-button" @click="deleteResource(scope.row)">
                           删除
                         </el-button>
                       </div>
@@ -1076,9 +1219,7 @@ defineOptions({
                         </el-button>
                       </div>
                       <div class="resource-button">
-                        <el-button text class="resource-button" @click="recover_resource(scope.row)">
-                          恢复
-                        </el-button>
+                        <el-button text class="resource-button" @click="recover_resource(scope.row)"> 恢复 </el-button>
                       </div>
                       <div class="resource-button">
                         <el-button
@@ -1100,6 +1241,7 @@ defineOptions({
           <div v-show="resource_view_model == 'card' && !resource_loading" id="card-model">
             <div
               v-for="item in current_resource_list"
+              :key="item.id"
               class="resource-item-card"
               :class="{ resource_selected: item.resource_is_selected }"
               draggable="true"
@@ -1143,26 +1285,22 @@ defineOptions({
                           <el-button text class="resource-button" @click="previewResource(item)"> 查看 </el-button>
                         </div>
                         <div class="resource-button">
-                          <el-button text class="resource-button" @click="show_resource_detail(item)">
-                            详情
-                          </el-button>
+                          <el-button text class="resource-button" @click="showResourceDetail(item)"> 详情 </el-button>
                         </div>
                         <div class="resource-button">
-                          <el-button text class="resource-button" @click="download_resource(item)"> 下载 </el-button>
+                          <el-button text class="resource-button" @click="downloadResource(item)"> 下载 </el-button>
                         </div>
                         <div class="resource-button">
-                          <el-button text class="resource-button" @click="share_resource(item)"> 分享 </el-button>
+                          <el-button text class="resource-button" @click="shareResource(item)"> 分享 </el-button>
                         </div>
                         <div class="resource-button">
-                          <el-button text class="resource-button" @click="move_resource(item)"> 移动到 </el-button>
+                          <el-button text class="resource-button" @click="moveResource(item)"> 移动到 </el-button>
                         </div>
                         <div class="resource-button">
-                          <el-button text class="resource-button" @click="rebuild_resource(item)">
-                            重新索引
-                          </el-button>
+                          <el-button text class="resource-button" @click="rebuildResource(item)"> 重新索引 </el-button>
                         </div>
                         <div class="resource-button">
-                          <el-button text type="danger" class="resource-button" @click="delete_resource(item)">
+                          <el-button text type="danger" class="resource-button" @click="deleteResource(item)">
                             删除
                           </el-button>
                         </div>
@@ -1210,7 +1348,7 @@ defineOptions({
             <div
               v-show="current_tag?.tag_value != 'recycle_bin'"
               class="resource-foot-button"
-              @click="batch_move_select_resources()"
+              @click="batchMoveSelectResources"
             >
               <el-text> 移动到 </el-text>
             </div>
@@ -1276,145 +1414,155 @@ defineOptions({
         </div>
       </el-scrollbar>
     </el-footer>
-  </el-container>
-  <ResourceMeta />
-  <ResourceViewTree />
-  <div
-    v-show="contextMenuFlag"
-    id="resource_shortcut_menu_box"
-    ref=""
-    :style="{ left: mousePosition.x + 'px', top: mousePosition.y + 'px', position: 'absolute' }"
-    class="ces-os-context-menu"
-  >
-    <div class="context-menu-button">
-      <el-button text style="width: 100%" @click="search_resource_by_tags"> 刷新 </el-button>
-    </div>
-    <div class="context-menu-button">
-      <el-button text style="width: 100%" @click="show_resource_detail"> 详情 </el-button>
-    </div>
-    <div class="context-menu-button">
-      <el-button v-if="currentRowItem.id == -1" text style="width: 100%" @click="switchResourceLayout">
-        切换布局
-      </el-button>
-    </div>
-    <div class="context-menu-button">
-      <el-button v-if="currentRowItem.id == -1" text style="width: 100%" @click="selectAll"> 全选 </el-button>
-    </div>
-    <el-upload
-      ref="uploadFileRef"
-      v-model:file-list="upload_file_list"
-      multiple
-      :show-file-list="false"
-      :auto-upload="true"
-      name="chunk_content"
-      :before-upload="prepare_upload_files"
-      :on-change="initUploadManager"
-      :http-request="upload_file_content"
-      :disabled="current_resource_usage_percent >= 100"
-      accept="*"
-      action=""
+    <ResourceMeta />
+    <ResourceViewTree ref="resourceViewTreeRef" />
+    <div
+      v-show="contextMenuFlag"
+      id="resource_shortcut_menu_box"
+      ref=""
+      :style="{ left: mousePosition.x + 'px', top: mousePosition.y + 'px', position: 'absolute' }"
+      class="ces-os-context-menu"
     >
       <div class="context-menu-button">
-        <el-button text style="width: 100%"> 上传 </el-button>
+        <el-button text style="width: 100%" @click="search_resource_by_tags"> 刷新 </el-button>
       </div>
-    </el-upload>
-    <div class="context-menu-button">
-      <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="previewResource"> 查看 </el-button>
-    </div>
-    <div class="context-menu-button">
-      <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="download_resource"> 下载 </el-button>
-    </div>
-    <div class="context-menu-button">
-      <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="share_resource"> 分享 </el-button>
-    </div>
-    <div class="context-menu-button">
-      <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="move_resource"> 移动到 </el-button>
-    </div>
-    <div class="context-menu-button">
-      <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="rebuild_resource"> 重新构建 </el-button>
-    </div>
-    <div class="context-menu-button">
-      <el-button
-        v-if="currentRowItem.id > 0 && currentRowItem.resource_status != '删除'"
-        text
-        type="danger"
-        style="width: 100%"
-        @click="delete_resource"
+      <div class="context-menu-button">
+        <el-button text style="width: 100%" @click="showResourceDetail(currentRowItem)"> 详情 </el-button>
+      </div>
+      <div class="context-menu-button">
+        <el-button v-if="currentRowItem.id == -1" text style="width: 100%" @click="switchResourceLayout">
+          切换布局
+        </el-button>
+      </div>
+      <div class="context-menu-button">
+        <el-button v-if="currentRowItem.id == -1" text style="width: 100%" @click="selectAll"> 全选 </el-button>
+      </div>
+      <el-upload
+        ref="uploadFileRef"
+        v-model:file-list="upload_file_list"
+        multiple
+        :show-file-list="false"
+        :auto-upload="true"
+        name="chunk_content"
+        :before-upload="prepare_upload_files"
+        :on-change="initUploadManager"
+        :http-request="upload_file_content"
+        :disabled="resourceInfoStore.currentResourceUsage >= 100"
+        accept="*"
+        action=""
       >
-        删除
-      </el-button>
-      <el-button
-        v-if="currentRowItem.id > 0 && currentRowItem.resource_status == '删除'"
-        text
-        type="danger"
-        style="width: 100%"
-        @click="completely_delete_resource(currentRowItem)"
-      >
-        彻底删除
-      </el-button>
-    </div>
-  </div>
-  <ResourceShareSelector />
-  <el-dialog v-model="show_delete_flag" title="删除资源" style="max-width: 600px" :width="dialogWidth">
-    <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center">
-      <div class="std-middle-box">
-        <el-result
-          icon="warning"
-          title="确认删除选中资源？"
-          sub-title="删除的内容将进入回收站，您可以在回收站中找回，30天后自动彻底删除！"
-        />
+        <div class="context-menu-button">
+          <el-button text style="width: 100%"> 上传 </el-button>
+        </div>
+      </el-upload>
+      <div class="context-menu-button">
+        <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="previewResource(currentRowItem)">
+          查看
+        </el-button>
       </div>
+      <div class="context-menu-button">
+        <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="downloadResource(currentRowItem)">
+          下载
+        </el-button>
+      </div>
+      <div class="context-menu-button">
+        <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="shareResource(currentRowItem)">
+          分享
+        </el-button>
+      </div>
+      <div class="context-menu-button">
+        <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="moveResource(currentRowItem)">
+          移动到
+        </el-button>
+      </div>
+      <div class="context-menu-button">
+        <el-button v-if="currentRowItem.id > 0" text style="width: 100%" @click="rebuildResource(currentRowItem)">
+          重新构建
+        </el-button>
+      </div>
+      <div class="context-menu-button">
+        <el-button
+          v-if="currentRowItem.id > 0 && currentRowItem.resource_status != '删除'"
+          text
+          type="danger"
+          style="width: 100%"
+          @click="deleteResource(currentRowItem)"
+        >
+          删除
+        </el-button>
+        <el-button
+          v-if="currentRowItem.id > 0 && currentRowItem.resource_status == '删除'"
+          text
+          type="danger"
+          style="width: 100%"
+          @click="completely_delete_resource(currentRowItem)"
+        >
+          彻底删除
+        </el-button>
+      </div>
+    </div>
+    <ResourceShareSelector />
+    <el-dialog v-model="show_delete_flag" title="删除资源" style="max-width: 600px" :width="dialogWidth">
+      <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center">
+        <div class="std-middle-box">
+          <el-result
+            icon="warning"
+            title="确认删除选中资源？"
+            sub-title="删除的内容将进入回收站，您可以在回收站中找回，30天后自动彻底删除！"
+          />
+        </div>
 
-      <div id="button-area">
-        <el-button @click="show_delete_flag = false"> 取消 </el-button>
-        <el-button type="danger" @click="batch_delete_resources()"> 确定 </el-button>
+        <div id="button-area">
+          <el-button @click="show_delete_flag = false"> 取消 </el-button>
+          <el-button type="danger" @click="batch_delete_resources"> 确定 </el-button>
+        </div>
       </div>
-    </div>
-  </el-dialog>
-  <el-dialog v-model="show_recover_flag" title="恢复资源" style="max-width: 600px" :width="dialogWidth">
-    <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center">
-      <div class="std-middle-box">
-        <el-result icon="info" title="确认恢复选中资源？" sub-title="恢复的内容将回到原目录" />
-      </div>
+    </el-dialog>
+    <el-dialog v-model="show_recover_flag" title="恢复资源" style="max-width: 600px" :width="dialogWidth">
+      <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center">
+        <div class="std-middle-box">
+          <el-result icon="info" title="确认恢复选中资源？" sub-title="恢复的内容将回到原目录" />
+        </div>
 
-      <div id="button-area">
-        <el-button @click="show_recover_flag = false"> 取消 </el-button>
-        <el-button type="danger" @click="batch_recover_resources"> 确定 </el-button>
+        <div id="button-area">
+          <el-button @click="show_recover_flag = false"> 取消 </el-button>
+          <el-button type="danger" @click="batch_recover_resources"> 确定 </el-button>
+        </div>
       </div>
-    </div>
-  </el-dialog>
-  <el-dialog v-model="completely_delete_flag" title="彻底删除资源" style="max-width: 600px" :width="dialogWidth">
-    <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center">
-      <div class="std-middle-box">
-        <el-result icon="warning" title="确认彻底删除选中资源？" sub-title="注意！将会从系统中彻底删除，不可恢复！" />
-      </div>
+    </el-dialog>
+    <el-dialog v-model="completely_delete_flag" title="彻底删除资源" style="max-width: 600px" :width="dialogWidth">
+      <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center">
+        <div class="std-middle-box">
+          <el-result icon="warning" title="确认彻底删除选中资源？" sub-title="注意！将会从系统中彻底删除，不可恢复！" />
+        </div>
 
-      <div id="button-area">
-        <el-button @click="completely_delete_flag = false"> 取消 </el-button>
-        <el-button type="danger" @click="batch_completely_delete_resources"> 确定 </el-button>
+        <div id="button-area">
+          <el-button @click="completely_delete_flag = false"> 取消 </el-button>
+          <el-button type="danger" @click="batch_completely_delete_resources"> 确定 </el-button>
+        </div>
       </div>
-    </div>
-  </el-dialog>
-  <el-dialog v-model="editSearchKeywordFlag" title="资源搜索" :width="dialogWidth">
-    <div id="update_search_keyword_area">
-      <div class="std-middle-box" style="width: 100%">
-        <el-input
-          v-model="updateResourceKeyword"
-          placeholder="请输入搜索意图"
-          type="textarea"
-          :rows="4"
-          resize="none"
-        />
+    </el-dialog>
+    <el-dialog v-model="editSearchKeywordFlag" title="资源搜索" :width="dialogWidth">
+      <div id="update_search_keyword_area">
+        <div class="std-middle-box" style="width: 100%">
+          <el-input
+            v-model="updateResourceKeyword"
+            placeholder="请输入搜索意图"
+            type="textarea"
+            :rows="4"
+            resize="none"
+          />
+        </div>
+        <div class="std-middle-box">
+          <el-switch v-model="updateRagEnhance" active-text="内容检索" style="margin-right: 6px" />
+        </div>
+        <div class="std-middle-box" style="width: 100%">
+          <el-button @click="editSearchKeywordFlag = false">取消</el-button>
+          <el-button type="primary" @click="confirmUpdateKeyword">确定</el-button>
+        </div>
       </div>
-      <div class="std-middle-box">
-        <el-switch v-model="updateRagEnhance" active-text="内容检索" style="margin-right: 6px" />
-      </div>
-      <div class="std-middle-box" style="width: 100%">
-        <el-button @click="editSearchKeywordFlag = false">取消</el-button>
-        <el-button type="primary" @click="confirmUpdateKeyword">确定</el-button>
-      </div>
-    </div>
-  </el-dialog>
+    </el-dialog>
+  </el-container>
 </template>
 
 <style scoped lang="scss">

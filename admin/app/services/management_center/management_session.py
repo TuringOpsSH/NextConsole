@@ -1,4 +1,4 @@
-
+from app.models.app_center.app_info_model import WorkFlowNodeInstance
 from app.models.app_center.app_info_model import AppMetaInfo
 from sqlalchemy import and_, case, func, literal_column, cast, Integer, Numeric, or_
 from sqlalchemy.exc import IntegrityError
@@ -93,11 +93,23 @@ def lookup_session_details(params):
         AppMetaInfo.environment == "生产"
     ).all()
     all_app_info_dict = {app.app_code: app.to_dict() for app in all_app_info}
+    # 新增应用token计算方式
+    app_token_used = WorkFlowNodeInstance.query.filter(
+        WorkFlowNodeInstance.session_id.in_(target_session_ids),
+    ).group_by(WorkFlowNodeInstance.session_id).with_entities(
+        WorkFlowNodeInstance.session_id,
+        func.sum(WorkFlowNodeInstance.task_token_used).label("task_used"),
+    ).all()
+    app_token_used_map = {
+        session_id: task_used for session_id, task_used in app_token_used
+    }
     session_list = []
     for session in target_sessions:
         session_dict = session.to_dict()
         session_dict["qa_cnt"] = all_idx_dict.get(session.id, {}).get("qa_cnt", 0)
         session_dict["msg_token_used"] = all_idx_dict.get(session.id, {}).get("msg_token_used", 0)
+        if app_token_used_map.get(session.id):
+            session_dict["msg_token_used"] = app_token_used_map.get(session.id)
         session_dict["session_source"] = all_app_info_dict.get(session.session_source)
         if not session_dict["session_source"]:
             if session.session_source == "next_search":
@@ -200,62 +212,62 @@ def addtag_session_details(params):
         return next_console_response(error_status=True, error_code=1004, error_message="user_id不能为空！")
     # 如果tag已经在，则返回tag_id，如果tag不存在，则创建tag
     else:
-        try:
-            if str(tag).strip() != "":
-                tag_list = tag.split(',')
-                # NextConsoleSessionTagRelation.query.filter(NextConsoleSessionTagRelation.session_id == session_id).delete()
-                # db.session.commit()
-                # 获取当前session的所有标签tag_name，组成一个list，与taglist比较，如果taglist中的tag不在当前session的标签中，则添加
-                cur_tag_name_list = []
-                cur_tag_dict = {}
-                cur_session = NextConsoleSessionTagRelation.query.with_entities(
-                        NextConsoleTag.tag_name,
-                        NextConsoleSessionTagRelation.tag_id
-                    ).filter(NextConsoleSessionTagRelation.session_id == session_id).join(NextConsoleTag, NextConsoleTag.tag_id == NextConsoleSessionTagRelation.tag_id).all()
-                for cur_tag in cur_session:
-                    cur_tag_name_list.append(cur_tag[0])
-                    cur_tag_dict[cur_tag[0]] = cur_tag[1]
-                
-                # 标签去重
-                tag_list = list(set(tag_list))
-                cur_tag_name_list = list(set(cur_tag_name_list))
-
-                # 两个标签集相减，获得需要删除的标签和需要添加的标签
-                set_org_tag = set(cur_tag_name_list)
-                set_dest_tag = set(tag_list)
-                del_tag = set_org_tag - set_dest_tag
-                add_tag = set_dest_tag - set_org_tag
-                # 新增tag不存在的话，先初始化新增的tag
-                for tag in add_tag:
-                    tag_row = NextConsoleTag.query.filter(NextConsoleTag.tag_name == tag).first()
-                    if not tag_row:
-                        tag_row = NextConsoleTag(tag_name=tag, create_user_id=user_id)
-                        db.session.add(tag_row)
-                db.session.commit()
-                # 删除session的标签
-                for tag in del_tag:
-                    session_tag = NextConsoleSessionTagRelation.query.filter(
-                            and_(NextConsoleSessionTagRelation.session_id == session_id, NextConsoleSessionTagRelation.tag_id == cur_tag_dict[tag])).first()
-                    db.session.delete(session_tag)
-                # 添加session的标签
-                for tag in add_tag:
-                    tag_row = NextConsoleTag.query.filter(NextConsoleTag.tag_name == tag).first()
-                    session_tag = NextConsoleSessionTagRelation(
-                        session_id=session_id,
-                        tag_id=tag_row.tag_id,
-                        create_user_id=user_id)
-                    db.session.add(session_tag)
-                db.session.commit()
-                return next_console_response(result="添加标签成功！")
-            else:
-                # 删除session的所有标签
-                NextConsoleSessionTagRelation.query.filter(NextConsoleSessionTagRelation.session_id == session_id).delete()
-                db.session.commit()
-                return next_console_response(result="删除标签成功！")
-        except Exception as e:
-            print(e)
-            app.logger.error(e)
-            return next_console_response(error_status=True, error_code=2001, error_message="添加标签失败！")
+        # try:
+        #     if str(tag).strip() != "":
+        #         tag_list = tag.split(',')
+        #         # NextConsoleSessionTagRelation.query.filter(NextConsoleSessionTagRelation.session_id == session_id).delete()
+        #         # db.session.commit()
+        #         # 获取当前session的所有标签tag_name，组成一个list，与taglist比较，如果taglist中的tag不在当前session的标签中，则添加
+        #         cur_tag_name_list = []
+        #         cur_tag_dict = {}
+        #         cur_session = NextConsoleSessionTagRelation.query.with_entities(
+        #                 NextConsoleTag.tag_name,
+        #                 NextConsoleSessionTagRelation.tag_id
+        #             ).filter(NextConsoleSessionTagRelation.session_id == session_id).join(NextConsoleTag, NextConsoleTag.tag_id == NextConsoleSessionTagRelation.tag_id).all()
+        #         for cur_tag in cur_session:
+        #             cur_tag_name_list.append(cur_tag[0])
+        #             cur_tag_dict[cur_tag[0]] = cur_tag[1]
+        #
+        #         # 标签去重
+        #         tag_list = list(set(tag_list))
+        #         cur_tag_name_list = list(set(cur_tag_name_list))
+        #
+        #         # 两个标签集相减，获得需要删除的标签和需要添加的标签
+        #         set_org_tag = set(cur_tag_name_list)
+        #         set_dest_tag = set(tag_list)
+        #         del_tag = set_org_tag - set_dest_tag
+        #         add_tag = set_dest_tag - set_org_tag
+        #         # 新增tag不存在的话，先初始化新增的tag
+        #         for tag in add_tag:
+        #             tag_row = NextConsoleTag.query.filter(NextConsoleTag.tag_name == tag).first()
+        #             if not tag_row:
+        #                 tag_row = NextConsoleTag(tag_name=tag, create_user_id=user_id)
+        #                 db.session.add(tag_row)
+        #         db.session.commit()
+        #         # 删除session的标签
+        #         for tag in del_tag:
+        #             session_tag = NextConsoleSessionTagRelation.query.filter(
+        #                     and_(NextConsoleSessionTagRelation.session_id == session_id, NextConsoleSessionTagRelation.tag_id == cur_tag_dict[tag])).first()
+        #             db.session.delete(session_tag)
+        #         # 添加session的标签
+        #         for tag in add_tag:
+        #             tag_row = NextConsoleTag.query.filter(NextConsoleTag.tag_name == tag).first()
+        #             session_tag = NextConsoleSessionTagRelation(
+        #                 session_id=session_id,
+        #                 tag_id=tag_row.tag_id,
+        #                 create_user_id=user_id)
+        #             db.session.add(session_tag)
+        #         db.session.commit()
+        #         return next_console_response(result="添加标签成功！")
+        #     else:
+        #         # 删除session的所有标签
+        #         NextConsoleSessionTagRelation.query.filter(NextConsoleSessionTagRelation.session_id == session_id).delete()
+        #         db.session.commit()
+        #         return next_console_response(result="删除标签成功！")
+        # except Exception as e:
+        #     print(e)
+        #     app.logger.error(e)
+        return next_console_response(error_status=True, error_code=2001, error_message="添加标签失败！")
 
 
 def lookuptag_session_details(params):
@@ -266,15 +278,15 @@ def lookuptag_session_details(params):
     if not session_id:
         return next_console_response(error_status=True, error_code=1004, error_message="session_id不能为空！")
     else:
-        try:
-            tag_list = []
-            tag_ids = NextConsoleSessionTagRelation.query.filter(NextConsoleSessionTagRelation.session_id == session_id).all()
-            for tag_id in tag_ids:
-                tag = NextConsoleTag.query.filter(NextConsoleTag.tag_id == tag_id.tag_id).first()
-                tag_list.append(tag.tag_name)
-            return next_console_response(result={"session_id":session_id,"tag_list":tag_list})
-        except Exception as e:
-            return next_console_response(error_status=True, error_code=2001, error_message="查询标签失败！")
+        # try:
+        #     tag_list = []
+        #     tag_ids = NextConsoleSessionTagRelation.query.filter(NextConsoleSessionTagRelation.session_id == session_id).all()
+        #     for tag_id in tag_ids:
+        #         tag = NextConsoleTag.query.filter(NextConsoleTag.tag_id == tag_id.tag_id).first()
+        #         tag_list.append(tag.tag_name)
+        #     return next_console_response(result={"session_id":session_id,"tag_list":tag_list})
+        # except Exception as e:
+        return next_console_response(error_status=True, error_code=2001, error_message="查询标签失败！")
 
 
 def lookup_session_message_details(params):
@@ -302,17 +314,17 @@ def lookup_session_message_details(params):
         params["fetch_all"] = True
         message = next_console_search_messages(params)
         result = message.get_json()["result"]
-        admin_msg = NextConsoleLlmMsgAdminEvaluate.query.filter(
-            NextConsoleLlmMsgAdminEvaluate.session_id == session_id).all()
-        if admin_msg is not None:
-            admin_msg_dict = {msg.msg_id: msg.admin_msg_remark for msg in admin_msg}
-        else:
-            admin_msg_dict = {}
-        # 将 admin_msg_dict 中的msg_id 对应 admin_msg_remark 添加到 message_list 中的每个对应msg_id的message中
-        for qa in result:
-            for msg_id,msg_list in qa["qa_value"]["answer"].items():
-                for msg in msg_list:
-                    msg["admin_msg_remark"] = admin_msg_dict.get(msg["msg_id"], 0)
+        # admin_msg = NextConsoleLlmMsgAdminEvaluate.query.filter(
+        #     NextConsoleLlmMsgAdminEvaluate.session_id == session_id).all()
+        # if admin_msg is not None:
+        #     admin_msg_dict = {msg.msg_id: msg.admin_msg_remark for msg in admin_msg}
+        # else:
+        #     admin_msg_dict = {}
+        # # 将 admin_msg_dict 中的msg_id 对应 admin_msg_remark 添加到 message_list 中的每个对应msg_id的message中
+        # for qa in result:
+        #     for msg_id,msg_list in qa["qa_value"]["answer"].items():
+        #         for msg in msg_list:
+        #             msg["admin_msg_remark"] = admin_msg_dict.get(msg["msg_id"], 0)
 
         return next_console_response(result=result)
 
@@ -331,21 +343,21 @@ def update_admin_favorite(params):
     elif not operate_user_id:
         return next_console_response(error_status=True, error_code=1004, error_message="user_id不能为空！")
     else:
-        try:
-            session = NextConsoleSessionAdminEvaluate.query.filter(NextConsoleSessionAdminEvaluate.session_id == session_id).first()
-            # 查询 session 是否存在，如果不存在，则插一条记录，如果存在，则更新 admin_session_favorite 字段值
-            if not session:
-                user = NextConsoleSession.query.with_entities(
-                    NextConsoleSession.user_id).filter(NextConsoleSession.id == session_id).first()
-                session = NextConsoleSessionAdminEvaluate(
-                    session_id=session_id, user_id=user[0], operate_user_id=operate_user_id)
-                db.session.add(session)
-            session.admin_session_favorite = admin_session_favorite
-            session.operate_user_id = operate_user_id
-            db.session.commit()
-            return next_console_response(result="更新admin_session_favorite成功！")
-        except Exception as e:
-            return next_console_response(error_status=True, error_code=2001, error_message="更新admin_session_favorite失败！")
+        # try:
+        #     session = NextConsoleSessionAdminEvaluate.query.filter(NextConsoleSessionAdminEvaluate.session_id == session_id).first()
+        #     # 查询 session 是否存在，如果不存在，则插一条记录，如果存在，则更新 admin_session_favorite 字段值
+        #     if not session:
+        #         user = NextConsoleSession.query.with_entities(
+        #             NextConsoleSession.user_id).filter(NextConsoleSession.id == session_id).first()
+        #         session = NextConsoleSessionAdminEvaluate(
+        #             session_id=session_id, user_id=user[0], operate_user_id=operate_user_id)
+        #         db.session.add(session)
+        #     session.admin_session_favorite = admin_session_favorite
+        #     session.operate_user_id = operate_user_id
+        #     db.session.commit()
+        #     return next_console_response(result="更新admin_session_favorite成功！")
+        # except Exception as e:
+        return next_console_response(error_status=True, error_code=2001, error_message="更新admin_session_favorite失败！")
 
 
 def lookup_admin_favorite(params):
@@ -356,18 +368,18 @@ def lookup_admin_favorite(params):
     if not session_id:
         return next_console_response(error_status=True, error_code=1004, error_message="session_id不能为空！")
     else:
-        try:
-            session = NextConsoleSessionAdminEvaluate.query.filter(
-                NextConsoleSessionAdminEvaluate.session_id == session_id).first()
-            if session:
-                return next_console_response(result={
-                    "session_id": session_id,
-                    "admin_session_favorite": session.admin_session_favorite})
-            else:
-                return next_console_response(result={"session_id": session_id,"admin_session_favorite": 0})
-        except Exception as e:
-            return next_console_response(
-                error_status=True, error_code=2001, error_message="查询admin_session_favorite失败！")
+        # try:
+        #     session = NextConsoleSessionAdminEvaluate.query.filter(
+        #         NextConsoleSessionAdminEvaluate.session_id == session_id).first()
+        #     if session:
+        #         return next_console_response(result={
+        #             "session_id": session_id,
+        #             "admin_session_favorite": session.admin_session_favorite})
+        #     else:
+        #         return next_console_response(result={"session_id": session_id,"admin_session_favorite": 0})
+        # except Exception as e:
+        return next_console_response(
+            error_status=True, error_code=2001, error_message="查询admin_session_favorite失败！")
 
 
 def update_admin_msg_like(params):
@@ -384,47 +396,47 @@ def update_admin_msg_like(params):
     elif not operate_user_id:
         return next_console_response(error_status=True, error_code=1004, error_message="user_id不能为空！")
     else:
-        try:
-            message = NextConsoleLlmMsgAdminEvaluate.query.filter(NextConsoleLlmMsgAdminEvaluate.msg_id == msg_id).first()
-            # 查询 message 是否存在，如果不存在，则插一条记录，如果存在，则更新 msg_remark 字段值，同时还要更新 NextConsoleSessionAdminEvaluateInfo 的点踩计数和点赞计数
-            if not message:
-                msg_info = NextConsoleMessage.query.with_entities(NextConsoleMessage.session_id,NextConsoleMessage.user_id).filter(NextConsoleMessage.msg_id == msg_id).first()
-                message = NextConsoleLlmMsgAdminEvaluate(msg_id=msg_id, session_id=msg_info[0], user_id=msg_info[1], admin_msg_remark=admin_msg_remark,operate_user_id=operate_user_id)
-                db.session.add(message)
-                message = NextConsoleLlmMsgAdminEvaluate.query.filter(NextConsoleLlmMsgAdminEvaluate.msg_id == msg_id).first()
-            else:
-                message.admin_msg_remark = admin_msg_remark
-                message.operate_user_id = operate_user_id
-            user_id = message.user_id
-            # 更新 NextConsoleSessionAdminEvaluateInfo 的点赞计数和点踩计数            
-            session_id = message.session_id
-            session_ori = NextConsoleSessionAdminEvaluate.query.filter(NextConsoleSessionAdminEvaluate.session_id == session_id).first()
-            if not session_id:
-                return next_console_response(error_status=True, error_code=1004, error_message="session_id不能为空！")
-            # 如果这个session_id 在管理员收藏表中不存在，则插入一条记录
-            if not session_ori:
-                session = NextConsoleSessionAdminEvaluate(session_id=session_id, user_id=user_id, operate_user_id=operate_user_id)
-                db.session.add(session)
-                session_ori = NextConsoleSessionAdminEvaluate.query.filter(NextConsoleSessionAdminEvaluate.session_id == session_id).first()
-            # 汇总计算点赞和点踩的数量
-            query = db.session.query(
-                NextConsoleLlmMsgAdminEvaluate.session_id,
-                func.sum(case((NextConsoleLlmMsgAdminEvaluate.admin_msg_remark < 0, 1), else_=0)).label('dislike_cnt'),
-                func.sum(case((NextConsoleLlmMsgAdminEvaluate.admin_msg_remark > 0, 1), else_=0)).label('like_cnt')
-                ).filter(
-                    NextConsoleLlmMsgAdminEvaluate.session_id == session_id
-                ).group_by(
-                    NextConsoleLlmMsgAdminEvaluate.session_id
-                ).first()
-            if query:
-                session_ori.admin_session_dislike_cnt = query[1]
-                session_ori.admin_session_like_cnt = query[2]
-            else:
-                return next_console_response(error_status=True, error_code=1004, error_message="查询原始session会话点赞和点踩数量失败！")
-            db.session.commit()
-            return next_console_response(result=f"更新msg_remark成功！")
-        except Exception as e:
-            return next_console_response(error_status=True, error_code=2001, error_message=f"更新msg_remark失败！{e}")
+        # try:
+        #     message = NextConsoleLlmMsgAdminEvaluate.query.filter(NextConsoleLlmMsgAdminEvaluate.msg_id == msg_id).first()
+        #     # 查询 message 是否存在，如果不存在，则插一条记录，如果存在，则更新 msg_remark 字段值，同时还要更新 NextConsoleSessionAdminEvaluateInfo 的点踩计数和点赞计数
+        #     if not message:
+        #         msg_info = NextConsoleMessage.query.with_entities(NextConsoleMessage.session_id,NextConsoleMessage.user_id).filter(NextConsoleMessage.msg_id == msg_id).first()
+        #         message = NextConsoleLlmMsgAdminEvaluate(msg_id=msg_id, session_id=msg_info[0], user_id=msg_info[1], admin_msg_remark=admin_msg_remark,operate_user_id=operate_user_id)
+        #         db.session.add(message)
+        #         message = NextConsoleLlmMsgAdminEvaluate.query.filter(NextConsoleLlmMsgAdminEvaluate.msg_id == msg_id).first()
+        #     else:
+        #         message.admin_msg_remark = admin_msg_remark
+        #         message.operate_user_id = operate_user_id
+        #     user_id = message.user_id
+        #     # 更新 NextConsoleSessionAdminEvaluateInfo 的点赞计数和点踩计数
+        #     session_id = message.session_id
+        #     session_ori = NextConsoleSessionAdminEvaluate.query.filter(NextConsoleSessionAdminEvaluate.session_id == session_id).first()
+        #     if not session_id:
+        #         return next_console_response(error_status=True, error_code=1004, error_message="session_id不能为空！")
+        #     # 如果这个session_id 在管理员收藏表中不存在，则插入一条记录
+        #     if not session_ori:
+        #         session = NextConsoleSessionAdminEvaluate(session_id=session_id, user_id=user_id, operate_user_id=operate_user_id)
+        #         db.session.add(session)
+        #         session_ori = NextConsoleSessionAdminEvaluate.query.filter(NextConsoleSessionAdminEvaluate.session_id == session_id).first()
+        #     # 汇总计算点赞和点踩的数量
+        #     query = db.session.query(
+        #         NextConsoleLlmMsgAdminEvaluate.session_id,
+        #         func.sum(case((NextConsoleLlmMsgAdminEvaluate.admin_msg_remark < 0, 1), else_=0)).label('dislike_cnt'),
+        #         func.sum(case((NextConsoleLlmMsgAdminEvaluate.admin_msg_remark > 0, 1), else_=0)).label('like_cnt')
+        #         ).filter(
+        #             NextConsoleLlmMsgAdminEvaluate.session_id == session_id
+        #         ).group_by(
+        #             NextConsoleLlmMsgAdminEvaluate.session_id
+        #         ).first()
+        #     if query:
+        #         session_ori.admin_session_dislike_cnt = query[1]
+        #         session_ori.admin_session_like_cnt = query[2]
+        #     else:
+        #         return next_console_response(error_status=True, error_code=1004, error_message="查询原始session会话点赞和点踩数量失败！")
+        #     db.session.commit()
+        #     return next_console_response(result=f"更新msg_remark成功！")
+        # except Exception as e:
+        return next_console_response(error_status=True, error_code=2001, error_message=f"更新msg_remark失败！")
 
 
 def lookup_admin_msg_like(params):
@@ -435,14 +447,14 @@ def lookup_admin_msg_like(params):
     if not msg_id:
         return next_console_response(error_status=True, error_code=1004, error_message="msg_id不能为空！")
     else:
-        try:
-            message = NextConsoleLlmMsgAdminEvaluate.query.filter(NextConsoleLlmMsgAdminEvaluate.msg_id == msg_id).first()
-            if message:
-                return next_console_response(result={"msg_id":msg_id,"admin_msg_remark":message.admin_msg_remark})
-            else:
-                return next_console_response(result={"msg_id":msg_id,"admin_msg_remark":0})
-        except Exception as e:
-            return next_console_response(error_status=True, error_code=2001, error_message="查询admin_msg_remark失败！")
+        # try:
+        #     message = NextConsoleLlmMsgAdminEvaluate.query.filter(NextConsoleLlmMsgAdminEvaluate.msg_id == msg_id).first()
+        #     if message:
+        #         return next_console_response(result={"msg_id":msg_id,"admin_msg_remark":message.admin_msg_remark})
+        #     else:
+        #         return next_console_response(result={"msg_id":msg_id,"admin_msg_remark":0})
+        # except Exception as e:
+        return next_console_response(error_status=True, error_code=2001, error_message="查询admin_msg_remark失败！")
 
 
 def check_has_role(user_id, role_name):

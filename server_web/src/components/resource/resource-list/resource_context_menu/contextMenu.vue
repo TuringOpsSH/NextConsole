@@ -1,36 +1,59 @@
 <script setup lang="ts">
-import { computed, inject, Ref } from 'vue';
+import {computed, inject, Ref} from 'vue';
 import {
   current_row_item,
   delete_resource,
   download_resource,
   mousePosition,
-  move_resource,
   preview_resource,
   rebuild_resource,
   resource_list_context_menu_flag,
   select_all,
-  share_resource,
-  show_resource_detail,
-  upload_file_Ref
-} from '@/components/resource/resource-list/resource_context_menu/context_menu';
+  share_resource
+} from '@/components/resource/resource-list/resource_context_menu/context-menu';
 import {
   show_add_dir_dialog,
-  show_add_document_dialog,
-  switch_resource_layout
+  show_add_document_dialog
 } from '@/components/resource/resource-list/resource_head/resource_head';
-import { search_all_resource_object, current_resource_list } from '@/components/resource/resource-list/resource_list';
-import { current_resource_usage_percent, init_upload_manager } from '@/components/resource/resource-panel/panel';
-import {
-  prepare_upload_files,
-  upload_file_content,
-  upload_file_list
-} from '@/components/resource/resource-upload/resource-upload';
-
+import {current_resource_list, search_all_resource_object} from '@/components/resource/resource-list/resource-list';
+import {ElMessage} from "element-plus";
+import {useSessionStorage} from "@vueuse/core";
+import {TResourceListStatus} from "@/types/resource-type";
+import router from "@/router";
+const emits = defineEmits(['moveDialogMultiple']);
 const isSelectedAll = computed(() => {
   return current_resource_list.value.every(item => item.resource_is_selected);
 });
 const isMultipleSelection = inject<Ref<boolean>>('isMultipleSelection');
+async function moveResource() {
+  if (!current_row_item?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (current_row_item.resource_status == '删除') {
+    ElMessage.warning('资源已删除，请先恢复后再操作!');
+    return;
+  }
+  // 移动资源
+  emits('moveDialogMultiple', [current_row_item.id], search_all_resource_object);
+}
+async function switchResourceLayout() {
+  // 切换面板展示时暂不刷新数据
+  const resourceListStatus = useSessionStorage<TResourceListStatus>('resourceListStatus', 'card');
+  if (resourceListStatus.value === 'list') {
+    resourceListStatus.value = 'card';
+  } else {
+    resourceListStatus.value = 'list';
+  }
+  // 更新至url
+  router.push({
+    params: { ...router.currentRoute.value.params },
+    query: {
+      ...router.currentRoute.value.query,
+      view_model: resourceListStatus.value
+    }
+  });
+}
 </script>
 
 <template>
@@ -43,13 +66,8 @@ const isMultipleSelection = inject<Ref<boolean>>('isMultipleSelection');
     <div class="context-menu-button">
       <el-button text style="width: 100%" @click="search_all_resource_object"> 刷新 </el-button>
     </div>
-    <!-- <div class="context-menu-button">
-      <el-button text @click="show_resource_detail()" style="width: 100%">
-        详情
-      </el-button>
-    </div> -->
     <div class="context-menu-button">
-      <el-button v-if="current_row_item.id == -1" text style="width: 100%" @click="switch_resource_layout()">
+      <el-button v-if="current_row_item.id == -1" text style="width: 100%" @click="switchResourceLayout">
         切换布局
       </el-button>
     </div>
@@ -68,39 +86,17 @@ const isMultipleSelection = inject<Ref<boolean>>('isMultipleSelection');
         {{ isSelectedAll ? '取消全选' : '全选' }}
       </el-button>
     </div>
-
-    <el-upload
-      ref="upload_file_Ref"
-      v-model:file-list="upload_file_list"
-      multiple
-      :show-file-list="false"
-      :auto-upload="true"
-      name="chunk_content"
-      action=""
-      :before-upload="prepare_upload_files"
-      :on-change="init_upload_manager"
-      :http-request="upload_file_content"
-      :disabled="current_resource_usage_percent >= 100"
-      accept="*"
-      style="width: 100%; display: flex; align-items: center; justify-content: center"
-      :on-success="search_all_resource_object"
-    >
-      <div class="context-menu-button">
-        <el-button text style="width: 100%"> 上传 </el-button>
-      </div>
-    </el-upload>
-
     <div v-if="!isMultipleSelection" class="context-menu-button">
-      <el-button text style="width: 100%" @click="share_resource()"> 分享 </el-button>
+      <el-button text style="width: 100%" @click="share_resource"> 分享 </el-button>
     </div>
     <div class="context-menu-button">
-      <el-button v-if="current_row_item.id > 0" text style="width: 100%" @click="preview_resource()"> 查看 </el-button>
+      <el-button v-if="current_row_item.id > 0" text style="width: 100%" @click="preview_resource"> 查看 </el-button>
     </div>
     <div class="context-menu-button">
-      <el-button v-if="current_row_item.id > 0" text style="width: 100%" @click="download_resource()"> 下载 </el-button>
+      <el-button v-if="current_row_item.id > 0" text style="width: 100%" @click="download_resource"> 下载 </el-button>
     </div>
     <div class="context-menu-button">
-      <el-button v-if="current_row_item.id > 0" text style="width: 100%" @click="move_resource"> 移动到 </el-button>
+      <el-button v-if="current_row_item.id > 0" text style="width: 100%" @click="moveResource"> 移动到 </el-button>
     </div>
     <div class="context-menu-button">
       <el-button v-if="current_row_item.id > 0" text style="width: 100%" @click="rebuild_resource">

@@ -1,12 +1,14 @@
-import { ref } from 'vue';
-import { IResourceItem, IResourceUploadItem } from '@/types/resource-type';
-import { ElNotification, UploadRawFile, UploadRequestOptions, UploadUserFile } from 'element-plus';
-import { add_upload_task, update_upload_task, upload_resource_object } from '@/api/resource-api';
-import { current_resource, search_all_resource_object } from '@/components/resource/resource-list/resource_list';
-import { init_my_resource_tree, refresh_panel_count, show_upload_button, switch_panel } from '@/components/resource/resource-panel/panel';
-import { show_upload_dialog_multiple } from '@/components/resource/resource_tree/resource_tree';
+import {enc} from 'crypto-js';
 import sha256 from 'crypto-js/sha256';
-import { enc } from 'crypto-js';
+import {ElNotification, UploadRawFile, UploadRequestOptions, UploadUserFile} from 'element-plus';
+import {ref} from 'vue';
+import {add_upload_task, update_upload_task, upload_resource_object} from '@/api/resource-api';
+import {current_resource, search_all_resource_object} from '@/components/resource/resource-list/resource-list';
+import {init_my_resource_tree, show_upload_button} from '@/components/resource/resource-panel/panel';
+import {showUploadDialogMultiple} from '@/components/resource/resource_tree/resource-tree';
+import {IResourceItem, IResourceUploadItem} from '@/types/resource-type';
+import router from "@/router";
+
 export const show_upload_manage_box = ref(false);
 export const upload_file_task_list = ref<IResourceUploadItem[]>([]);
 
@@ -23,7 +25,7 @@ export const show_close_confirm_flag = ref(false);
 export async function retry_all_upload_file() {
   // 重试所有上传任务
   show_upload_manage_box.value = true;
-  for (let item of upload_file_list.value) {
+  for (const item of upload_file_list.value) {
     item.status = 'ready';
     await upload_file_content(<UploadRequestOptions>{
       file: item.raw,
@@ -39,8 +41,8 @@ export function close_upload_manager(notice: boolean = true) {
   if (notice) {
     for (let i = 0; i < upload_file_task_list.value.length; i++) {
       if (
-          upload_file_task_list.value[i].task_status !== 'success' &&
-          upload_file_task_list.value[i].task_error_msg !== '空'
+        upload_file_task_list.value[i].task_status !== 'success' &&
+        upload_file_task_list.value[i].task_error_msg !== '空'
       ) {
         show_close_confirm_flag.value = true;
         return false;
@@ -56,12 +58,12 @@ export function clean_upload_manager() {
   // 更新后端上传任务状态
   for (let i = 0; i < upload_file_task_list.value.length; i++) {
     if (
-        upload_file_task_list.value[i].task_status !== 'success' &&
-        upload_file_task_list.value[i].task_status !== 'error' &&
-        upload_file_task_list.value[i].task_status !== 'abort' &&
-        upload_file_task_list.value[i].id
+      upload_file_task_list.value[i].task_status !== 'success' &&
+      upload_file_task_list.value[i].task_status !== 'error' &&
+      upload_file_task_list.value[i].task_status !== 'abort' &&
+      upload_file_task_list.value[i].id
     ) {
-      let params = {
+      const params = {
         task_id: upload_file_task_list.value[i].id,
         task_status: 'abort'
       };
@@ -83,22 +85,21 @@ export async function calculateMD5(file: UploadRawFile): Promise<string> {
     const arrayBuffer = await file.arrayBuffer();
     const hashBuffer = await crypto.subtle?.digest('SHA-256', arrayBuffer);
     if (!hashBuffer) {
-      return
+      return;
     }
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   } catch (e) {
-    return
+    return;
   }
-
 }
 export async function calculateSHA256(file: UploadRawFile): Promise<string> {
   // 计算文件的SHA256值
   const arrayBuffer = await file.arrayBuffer();
   const wordArray = enc.Latin1.parse(
-      Array.from(new Uint8Array(arrayBuffer))
-          .map(byte => String.fromCharCode(byte))
-          .join('')
+    Array.from(new Uint8Array(arrayBuffer))
+      .map(byte => String.fromCharCode(byte))
+      .join('')
   );
   return sha256(wordArray).toString(enc.Hex);
 }
@@ -109,154 +110,154 @@ export async function prepare_upload_files(uploadFile: UploadRawFile) {
   if (show_upload_button.value) {
     show_upload_button.value?.hide();
   }
-  if (window.innerWidth < 768) {
-    switch_panel('close');
-  }
   // 1. 计算文件的MD5值
-  let fileSHA256  = ''
+  let fileSHA256 = '';
   try {
-    fileSHA256 = await calculateMD5(uploadFile)
+    fileSHA256 = await calculateMD5(uploadFile);
     if (!fileSHA256) {
-      fileSHA256 = await calculateSHA256(uploadFile)
+      fileSHA256 = await calculateSHA256(uploadFile);
     }
+  } catch (e) {
+    fileSHA256 = await calculateSHA256(uploadFile);
   }
-  catch (e) {
-    fileSHA256 = await calculateSHA256(uploadFile)
-  }
-  if (!fileSHA256 ) {
+  if (!fileSHA256) {
     ElNotification.error({
       title: '系统通知',
       message: '文件上传失败，无法计算文件特征值！',
-      duration: 5000,
-    })
+      duration: 5000
+    });
     return false;
   }
   // 2. 准备参数
-  let resource_size = uploadFile.size / 1024 / 1024;
-  let content_max_idx = Math.floor(resource_size / upload_size.value);
+  const resourceSize = uploadFile.size / 1024 / 1024;
+  const contentMaxidx = Math.floor(resourceSize / upload_size.value);
   // 前端临时可视化文件类型和格式
-  let resource_type = '';
-  let resource_format = '';
+  let resourceType = '';
+  let resourceFormat = '';
 
   if (uploadFile.name.indexOf('.') > -1) {
-    resource_format = uploadFile.name.split('.').pop().toLowerCase();
+    resourceFormat = uploadFile.name.split('.').pop().toLowerCase();
   }
-  resource_type = uploadFile.type;
-  let task_icon = get_task_icon(resource_type, resource_format);
-  let new_upload_file_task = <IResourceUploadItem>{
+  resourceType = uploadFile.type;
+  const taskIcon = get_task_icon(resourceType, resourceFormat);
+  const newUploadFileTask = <IResourceUploadItem>{
     id: null,
     resource_parent_id: current_resource.id,
     resource_id: null,
     resource_name: uploadFile.name,
-    resource_size_in_mb: resource_size,
-    resource_type: resource_type,
-    resource_format: resource_format,
-    content_max_idx: content_max_idx,
+    resource_size_in_mb: resourceSize,
+    resource_type: resourceType,
+    resource_format: resourceFormat,
+    content_max_idx: contentMaxidx,
     content_finish_idx: -1,
     resource_md5: fileSHA256,
     raw_file: uploadFile,
-    task_icon: task_icon,
+    task_icon: taskIcon,
     task_status: 'pending'
   };
-  upload_file_task_list.value.push(new_upload_file_task);
+  upload_file_task_list.value.push(newUploadFileTask);
+  if (['resource_shortcut', 'resource_search', 'resource_share'].includes(router.currentRoute.value.name as string)) {
+    upload_parent_resource.value.id = null;
+  }
   if (!upload_parent_resource.value?.id) {
     // console.log('无选择父资源')
     upload_button_Ref.value?.handleStart(uploadFile);
     upload_file_list.value.push(uploadFile);
-    await show_upload_dialog_multiple(retry_all_upload_file);
+    await showUploadDialogMultiple(retry_all_upload_file);
     return false;
   }
 }
 export async function upload_file_content(options: UploadRequestOptions) {
   // 分块上传文件内容
-  let { file, data, headers } = options;
-  let target_upload_task = upload_file_task_list.value.find(item => item.raw_file.uid === file.uid);
-  if (!target_upload_task) {
+  const { file, data, headers } = options;
+  const targetUploadTask = upload_file_task_list.value.find(item => item?.raw_file?.uid === file?.uid);
+  console.log(targetUploadTask, file)
+  if (!targetUploadTask) {
     return false;
   }
-  if (!target_upload_task.id) {
-    let upload_task_params = {
-      resource_parent_id: target_upload_task.resource_parent_id,
-      resource_name: target_upload_task.resource_name,
-      resource_size: target_upload_task.resource_size_in_mb,
-      resource_type: target_upload_task.resource_type,
-      resource_format: target_upload_task.resource_format,
-      task_source: target_upload_task.task_source,
-      content_max_idx: target_upload_task.content_max_idx,
-      resource_md5: target_upload_task.resource_md5
+  if (!targetUploadTask.id) {
+    const uploadTaskParams = {
+      resource_parent_id: targetUploadTask.resource_parent_id,
+      resource_name: targetUploadTask.resource_name,
+      resource_size: targetUploadTask.resource_size_in_mb,
+      resource_type: targetUploadTask.resource_type,
+      resource_format: targetUploadTask.resource_format,
+      task_source: targetUploadTask.task_source,
+      content_max_idx: targetUploadTask.content_max_idx,
+      resource_md5: targetUploadTask.resource_md5
     };
 
     // 3. 生成上传任务
-    let res = await add_upload_task(upload_task_params);
+    const res = await add_upload_task(uploadTaskParams);
     if (!res.error_status && !res.error_message) {
       // 4. 更新上传任务列表
-      target_upload_task.id = res.result.id;
+      targetUploadTask.id = res.result.id;
       upload_manager_status.value = 'uploading';
-      target_upload_task.resource_name = res.result.resource_name;
-      target_upload_task.resource_type = res.result.resource_type;
-      target_upload_task.resource_format = res.result.resource_format;
-      target_upload_task.task_icon = res.result.task_icon;
-      target_upload_task.task_status = res.result.task_status;
+      targetUploadTask.resource_name = res.result.resource_name;
+      targetUploadTask.resource_type = res.result.resource_type;
+      targetUploadTask.resource_format = res.result.resource_format;
+      targetUploadTask.task_icon = res.result.task_icon;
+      targetUploadTask.task_status = res.result.task_status;
     } else {
-      target_upload_task.task_status = 'error';
-      target_upload_task.task_error_msg = '空';
+      targetUploadTask.task_status = 'error';
+      targetUploadTask.task_error_msg = '空';
       return false;
     }
   }
-  target_upload_task.task_status = 'uploading';
+  targetUploadTask.task_status = 'uploading';
   // 循环上传文件内容
-  let content_size = 1024 * 1024 * upload_size.value;
+  const contentSize = 1024 * 1024 * upload_size.value;
   let content = null;
-  let arrayBuffer = null;
-  let hashBuffer = null;
-  let hashArray = null;
-  let chunk_MD5 = '';
+  const arrayBuffer = null;
+  const hashBuffer = null;
+  const hashArray = null;
+  let chunkMD5 = '';
   // 从已经上传的位置开始上传，默认为-1
   let res = null;
   try {
-    let begin_idx = target_upload_task.content_finish_idx + 1;
-    for (let i = begin_idx; i <= target_upload_task.content_max_idx; i++) {
-      if (target_upload_task.task_status === 'pause') {
+    const beginIdx = targetUploadTask.content_finish_idx + 1;
+    for (let i = beginIdx; i <= targetUploadTask.content_max_idx; i++) {
+      if (targetUploadTask.task_status === 'pause') {
         return false;
       }
-      let start_idx = i * content_size;
-      let end_idx = (i + 1) * content_size;
-      if (end_idx > target_upload_task.raw_file.size) {
-        end_idx = target_upload_task.raw_file.size;
+      const startIdx = i * contentSize;
+      let endIdx = (i + 1) * contentSize;
+      if (endIdx > targetUploadTask.raw_file.size) {
+        endIdx = targetUploadTask.raw_file.size;
       }
-      content = target_upload_task.raw_file.slice(start_idx, end_idx);
+      content = targetUploadTask.raw_file.slice(startIdx, endIdx);
       try {
-        chunk_MD5 = await calculateMD5(content)
-        if (!chunk_MD5) {
-          chunk_MD5 = await calculateSHA256(content)
+        chunkMD5 = await calculateMD5(content);
+        if (!chunkMD5) {
+          chunkMD5 = await calculateSHA256(content);
         }
       } catch (e) {
-        chunk_MD5 = await calculateSHA256(content)
+        chunkMD5 = await calculateSHA256(content);
       }
-      // // console.log('上传文件chunk_MD5', start_idx, end_idx, i, chunk_MD5  )
-      let upload_content_form = new FormData();
-      upload_content_form.append('chunk_task_id', target_upload_task.id.toString());
-      upload_content_form.append('chunk_index', i.toString());
-      upload_content_form.append('chunk_content', content);
-      upload_content_form.append('chunk_MD5', chunk_MD5);
-      upload_content_form.append('chunk_size', content.size);
-      res = await upload_resource_object(upload_content_form);
+      // // console.log('上传文件chunkMD5', startIdx, endIdx, i, chunkMD5  )
+      const uploadContentForm = new FormData();
+      uploadContentForm.append('chunk_task_id', targetUploadTask.id.toString());
+      uploadContentForm.append('chunk_index', i.toString());
+      uploadContentForm.append('chunk_content', content);
+      uploadContentForm.append('chunk_MD5', chunkMD5);
+      uploadContentForm.append('chunk_size', content.size);
+      res = await upload_resource_object(uploadContentForm);
       if (!res.error_status) {
         init_my_resource_tree();
         // 上传成功，更新位置
-        target_upload_task.content_finish_idx = i;
-        let finish_time = Date.now();
-        if (!finish_time_size_map.value[finish_time]) {
-          finish_time_size_map.value[finish_time] = 0;
+        targetUploadTask.content_finish_idx = i;
+        const finishTime = Date.now();
+        if (!finish_time_size_map.value[finishTime]) {
+          finish_time_size_map.value[finishTime] = 0;
         }
-        finish_time_size_map.value[finish_time] += end_idx - start_idx;
+        finish_time_size_map.value[finishTime] += endIdx - startIdx;
       } else {
-        target_upload_task.task_status = 'error';
+        targetUploadTask.task_status = 'error';
         return false;
       }
     }
   } catch (e) {
-    target_upload_task.task_status = 'error';
+    targetUploadTask.task_status = 'error';
     ElNotification.error({
       title: '系统通知',
       message: '上传文件内容失败' + e,
@@ -265,23 +266,22 @@ export async function upload_file_content(options: UploadRequestOptions) {
     return false;
   }
   // 上传成功，更新状态
-  target_upload_task.task_status = 'success';
+  targetUploadTask.task_status = 'success';
   // 更新后端上传任务状态
-  let params = {
-    task_id: target_upload_task.id,
+  const params = {
+    task_id: targetUploadTask.id,
     task_status: 'success'
   };
   update_upload_task(params);
-  refresh_panel_count();
   search_all_resource_object();
-  let fail_flag = false;
+  let failFlag = false;
   for (let i = 0; i < upload_file_task_list.value.length; i++) {
     if (upload_file_task_list.value[i].task_status !== 'success') {
-      fail_flag = true;
+      failFlag = true;
       break;
     }
   }
-  if (!fail_flag) {
+  if (!failFlag) {
     upload_manager_status.value = 'success';
   }
   return res;
@@ -290,9 +290,9 @@ export async function upload_file_content(options: UploadRequestOptions) {
 // 获取可视化要素
 export function get_task_icon(resource_type: string, resource_format: string) {
   // 获取任务图标
-  let icon_base_url = '/images/';
+  const icon_base_url = '/images/';
   let icon_url = 'other.svg';
-  let icon_format_map = {
+  const icon_format_map = {
     // 文档类型
     doc: 'doc.svg',
     docx: 'doc.svg',
@@ -409,7 +409,7 @@ export function get_task_icon(resource_type: string, resource_format: string) {
     icon_url = icon_format_map[resource_format];
     return icon_base_url + icon_url;
   }
-  let icon_type_map = {};
+  const icon_type_map = {};
   if (icon_type_map[resource_type]) {
     return icon_type_map[resource_type];
   }

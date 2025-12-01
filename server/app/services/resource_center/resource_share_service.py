@@ -79,6 +79,13 @@ def get_share_resource_access_list(params):
         })
     # 公开访问权限
     access_list.extend(get_resources_open_access(all_resource_id))
+    # 所有者为管理权限
+    for parent_resource in all_parent_resources:
+        if parent_resource.user_id == target_user.user_id:
+            access_list.append({
+                'type': 'owner',
+                'auth_type': 'manage',
+            })
     return next_console_response(result={
         'access_list': access_list,
         'resource_id': resource_id,
@@ -94,10 +101,8 @@ def get_all_parent_resources(target_resource):
     all_resources = ResourceObjectMeta.query.filter(
         ResourceObjectMeta.resource_status == '正常',
         ResourceObjectMeta.resource_type == 'folder',
-        ResourceObjectMeta.user_id == target_resource.user_id,
         ResourceObjectMeta.id != target_resource.id,
         ResourceObjectMeta.resource_source == "resource_center"
-
     ).all()
     if not all_resources:
         return []
@@ -325,7 +330,7 @@ def update_share_resource_access_list(params):
         return next_console_response(error_status=True, error_message="无权操作！")
     # 无需给资源所有者分享资源
     for access in access_list:
-        if access.get('id') == target_resource.user_id:
+        if access.get('id') == target_resource.user_id and access['access_type'] in ('colleague', 'friend'):
             return next_console_response(error_status=True, error_message="无需给资源所有者授权资源权限！")
     # 更新资源的访问列表
     target_resource.resource_is_share = True
@@ -392,7 +397,6 @@ def check_user_manage_access_to_resource(params):
     target_access_value = access_value_map.get(access_type, -1)
     # 检查用户是否在权限清单中
     for access in all_access_list:
-        # print(access)
         if access_value_map.get(access.get('auth_type'), 0) < target_access_value:
             continue
         # 检查好友权限
@@ -410,6 +414,8 @@ def check_user_manage_access_to_resource(params):
             return True
         # 检查公开访问权限
         if access.get('type') == 'open':
+            return True
+        if access.get('type') == 'owner':
             return True
     return False
 
@@ -709,7 +715,7 @@ def get_share_resource_list(params):
                 'resource': resource.show_info(),
                 'auth_type': 'read',
             })
-        # 作者信息
+        # # 作者信息
         all_author_id = [resource.user_id for resource in all_child_resources]
         all_author = UserInfo.query.filter(
             UserInfo.user_id.in_(all_author_id),
@@ -718,11 +724,19 @@ def get_share_resource_list(params):
         author_map = {author.user_id: author.show_info() for author in all_author}
         for resource in data:
             resource['resource']["author_info"] = author_map.get(resource.get("resource").get("user_id"))
-
-        return next_console_response(result={
+            if str(resource["resource"]["author_info"].get("user_id")) == str(target_user.user_id):
+                resource["auth_type"] = "manage"
+        result = {
             'data': data,
             'total': total,
-        })
+            'access_type': 'read',
+        }
+        if check_user_manage_access_to_resource(
+                {'user': target_user,
+                 'resource': target_parent_resource,
+                 'access_type': 'edit'}):
+            result['access_type'] = 'edit'
+        return next_console_response(result=result)
     # 不存在目标上级资源，获取用户的所有共享资源
     res = []
     if target_user.user_account_type == '企业账号':
@@ -992,7 +1006,7 @@ def get_share_resource_meta(params):
         RagRefInfo.id.desc()
     ).first()
     if ref:
-        result["rag_status"] = ref.ref_status
+        result["ref_status"] = ref.ref_status
     t5 = time.time()
     # 新增Tag信息
     all_tags = ResourceTagRelation.query.filter(
@@ -1047,6 +1061,7 @@ def get_user_access_to_resource(params):
     })
     if all_access_list_res.json.get('error_status'):
         return False
+
     all_access_list = all_access_list_res.json.get('result').get('access_list')
     all_department_list = get_user_department_list(user)
     all_department_ids = [department.id for department in all_department_list]
@@ -1069,6 +1084,9 @@ def get_user_access_to_resource(params):
         # 检查公开访问权限
         if access.get('type') == 'open':
             all_access.add(access.get('auth_type'))
+        if access.get('type') == 'owner':
+            all_access.add("manage")
+
     access_translate = {
         "read": '阅读',
         "download": '下载',

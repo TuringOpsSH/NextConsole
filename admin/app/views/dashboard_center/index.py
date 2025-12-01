@@ -5,13 +5,15 @@ from flask_jwt_extended import (
 )
 
 from app.app import app
-from app.services.dashboard_center.index_service import *
+from app.services.dashboard_center.user_index_service import *
+from app.services.dashboard_center.workbench_index_service import *
+from app.services.dashboard_center.resource_index_service import *
 from app.services.user_center.users import *
 
 from app.services.user_center.roles import roles_required
 from app.models.user_center.user_role_info import UserRoleInfo
 from app.models.user_center.role_info import RoleInfo
-from app.services.dashboard_center.model_service import *
+from app.services.dashboard_center.model_index_service import *
 
 
 @app.route('/next_console_admin/dashboard/index', methods=['GET'])
@@ -282,6 +284,88 @@ def index_get():
             "company_id": company_id
         }
         return get_user_view_resource_top(new_params)
+    elif index_name == 'active_day_rank':
+        new_params = {
+            "user_id": user_id,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "top": top,
+            "company_id": company_id
+        }
+        return get_active_day_rank(new_params)
+    elif index_name == 'user_rank_active_day':
+        new_params = {
+            "user_id": user_id,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "top": top,
+            "company_id": company_id
+        }
+        return get_active_day_rank(new_params)
+    elif index_name == 'user_rank_qa':
+        new_params = {
+            "user_id": user_id,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "top": top,
+            "company_id": company_id
+        }
+        return get_user_qa_rank(new_params)
+    elif index_name == 'user_rank_token':
+        new_params = {
+            "user_id": user_id,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "top": top,
+            "company_id": company_id
+        }
+        return get_user_token_rank(new_params)
+    elif index_name == 'app_rank_user':
+        new_params = {
+            "user_id": user_id,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "top": top,
+            "company_id": company_id
+        }
+        return get_app_active_user_rank(new_params)
+    elif index_name == 'app_rank_qa':
+        new_params = {
+            "user_id": user_id,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "top": top,
+            "company_id": company_id
+        }
+        return get_app_active_qa_rank(new_params)
+
+    elif index_name == 'app_rank_token':
+        new_params = {
+            "user_id": user_id,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "top": top,
+            "company_id": company_id
+        }
+        return get_app_active_token_rank(new_params)
+    elif index_name == 'user_latest_questions':
+        new_params = {
+            "user_id": user_id,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "top": top,
+            "company_id": company_id
+        }
+        return get_user_latest_questions(new_params)
+    elif index_name == 'qa_topic':
+        new_params = {
+            "user_id": user_id,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "top": top,
+            "company_id": company_id
+        }
+        return get_qa_topic(new_params)
 
     return next_console_response(error_status=True, error_message="暂不支持此类指标！")
 

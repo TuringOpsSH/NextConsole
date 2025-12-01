@@ -161,6 +161,11 @@ async function addAgentNode(nodeType: string) {
       data.nodeType = 'workflow';
       data.nodeDesc = '调用执行其他工作流';
       data.nodeName = '工作流节点';
+    } else if (nodeType == 'variable_cast') {
+      data.nodeIcon = '/images/node_params.svg';
+      data.nodeType = 'variable_cast';
+      data.nodeDesc = '进行变量的转换组合等操作';
+      data.nodeName = '变量转换';
     }
     const newNode = workflowStore.graphWrapper.addNode({
       shape: 'custom-vue-node',
@@ -301,13 +306,19 @@ function handleClickBlank() {
   }
   preCheckWorkflow();
 }
-function handleClickNode(node: any, e) {
+function handleClickNode(node:any, e) {
+  highlightNode(node, e);
+}
+function handleDbClickNode(node: any, e) {
   highlightNode(node, e);
   workflowStore.showAgentApp = false;
   workflowStore.showEdgeFlag = false;
   showNodeDetail(node);
 }
-function handleClickEdge(edge: any, e) {
+function handleClickEdge(edge:any, e) {
+  highlightEdge(edge, e);
+}
+function handleDbClickEdge(edge: any, e) {
   highlightEdge(edge, e);
   workflowStore.showNodeFlag = false;
   workflowStore.showAgentApp = false;
@@ -811,9 +822,17 @@ onMounted(async () => {
   workflowStore.graphWrapper.on('node:click', ({ node, e }) => {
     handleClickNode(node, e);
   });
+  // 双击节点事件
+  workflowStore.graphWrapper.on('node:dblclick', ({ node, e }) => {
+    handleDbClickNode(node, e);
+  });
   // 单击边事件
   workflowStore.graphWrapper.on('edge:click', ({ edge, e }) => {
     handleClickEdge(edge, e);
+  });
+  // 双击边事件
+  workflowStore.graphWrapper.on('edge:dblclick', ({ edge, e }) => {
+    handleDbClickEdge(edge, e);
   });
   // 单击空白事件
   workflowStore.graphWrapper.on('blank:click', () => {
@@ -960,7 +979,7 @@ defineExpose({
                         </div>
                       </div>
                     </el-dropdown-item>
-                    <el-dropdown-item divided disabled>
+                    <el-dropdown-item divided @click="addAgentNode('variable_cast')">
                       <div class="agent-node-option">
                         <div class="std-middle-box">
                           <el-image src="/images/node_params.svg" class="agent-node-icon" />

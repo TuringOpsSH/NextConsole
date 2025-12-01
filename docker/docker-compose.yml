@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   redis:
-    image: redis:latest
+    image: registry.cn-hangzhou.aliyuncs.com/nextconsole/redis:latest
     ports:
       - "6379:6379"
     command: redis-server --requirepass ncRedisPassword
@@ -12,12 +12,13 @@ services:
       - app_network
 
   db:
-    image: pgvector/pgvector:pg17
+    image: registry.cn-hangzhou.aliyuncs.com/nextconsole/pgvector:pg17
     environment:
       POSTGRES_USER: next_console
       POSTGRES_PASSWORD: ncDBPassword
       POSTGRES_DB: next_console
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8"
+      TZ: Asia/Shanghai  # 设置时区为东八区
     volumes:
       - ./data/db:/var/lib/postgresql/data
       - ./config/db/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -27,7 +28,7 @@ services:
       - app_network
 
   server:
-    image: nextconsole/nc:0.2.8
+    image: registry.cn-hangzhou.aliyuncs.com/nextconsole/nc:0.2.9
     command:  ["sh", "-c", "cd /app/server && /app/server/entrypoint.sh"]
     volumes:
       - ./config/server/config_private.py:/app/server/app/config/config_private.py
@@ -37,7 +38,6 @@ services:
       TZ: "Asia/Shanghai"
       LANG: "C.UTF-8"
       LC_ALL: "C.UTF-8"
-      PYTHONUTF8: 1
     ports:
       - "5124:5123"
     depends_on:
@@ -47,7 +47,7 @@ services:
       - app_network
 
   server-worker:
-    image: nextconsole/nc:0.2.8
+    image: registry.cn-hangzhou.aliyuncs.com/nextconsole/nc:0.2.9
     command: ["sh", "-c", "cd /app/server && celery -A app.celery worker -l INFO -P gevent --concurrency=80 -Q nc_server_queue"]
     volumes:
       - ./config/server/config_private.py:/app/server/app/config/config_private.py
@@ -62,7 +62,7 @@ services:
 
 
   admin:
-    image: nextconsole/nc:0.2.8
+    image: registry.cn-hangzhou.aliyuncs.com/nextconsole/nc:0.2.9
     command: ["sh", "-c", "cd /app/admin && /app/admin/entrypoint.sh"]
     volumes:
       - ./config/admin/config_private.py:/app/admin/app/config/config_private.py
@@ -78,7 +78,7 @@ services:
       - app_network
 
   admin-worker:
-    image: nextconsole/nc:0.2.8
+    image: registry.cn-hangzhou.aliyuncs.com/nextconsole/nc:0.2.9
     command: ["python", "/app/admin/run_admin_celery_worker.py"]
     volumes:
       - ./config/server/config_private.py:/app/server/app/config/config_private.py
@@ -92,7 +92,7 @@ services:
       - app_network
 
   web:
-    image: nextconsole/nc-web:0.2.8
+    image: registry.cn-hangzhou.aliyuncs.com/nextconsole/nc-web:0.2.9
     ports:
       - "8080:6668"
       - "8082:6669"

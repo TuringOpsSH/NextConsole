@@ -1,4 +1,4 @@
-import { ResourceItem } from '@/types/resource-type';
+import { IResourceItem } from '@/types/resource-type';
 
 export interface IUsers {
   user_id?: string | number;
@@ -113,11 +113,7 @@ export interface IUserConfig {
     message_layout: string;
     search_engine_language: string;
     search_engine_resource: string;
-    session_resources_list: Array<ResourceItem>;
-  };
-  resources: {
-    auto_rag: boolean;
-    view_components: string;
+    session_resources_list: Array<IResourceItem>;
   };
   contact: {
     allow_search: boolean;
@@ -135,6 +131,20 @@ export interface ISystemConfig {
       name: string;
       avatar_url: string;
     };
+    stt: {
+      provider: string;
+      xf_api: string;
+      xf_api_id: string;
+      xf_api_key: string;
+      xf_api_secret: string;
+    };
+  };
+  resources: {
+    download: {
+      max_count: number;
+      cool_time: number;
+    };
+    auto_rag: boolean;
     embedding: {
       enable: boolean;
       llm_code: string;
@@ -146,13 +156,6 @@ export interface ISystemConfig {
       llm_code: string;
       threshold: number;
       topK: number;
-    };
-    stt: {
-      provider: string;
-      xf_api: string;
-      xf_api_id: string;
-      xf_api_key: string;
-      xf_api_secret: string;
     };
   };
   connectors: {
@@ -190,6 +193,7 @@ export interface ISystemConfig {
     };
     email: {
       smtp_server: string;
+      smtp_ssl: boolean;
       smtp_port: 465;
       smtp_user: string;
       smtp_password: string;
@@ -203,6 +207,34 @@ export interface ISystemConfig {
     };
   };
   ops: {
+    server: {
+      domain: string;
+      admin_domain: string;
+      base_dir: string;
+      data_dir: string;
+      bucket_size: number;
+      download_dir: string;
+      jwt_access_token_expires: number;
+      timezone: string;
+      log_dir: string;
+      log_file: string;
+      log_level: string;
+      log_max_size: number;
+      log_backup_count: number;
+      db_type: string;
+      db_user: string;
+      db_host: string;
+      db_port: string;
+      redis_host: string;
+      redis_port: number;
+      redis_username: string | null;
+      next_console_channel: number;
+      websocket_channel: number;
+      celery_broker_channel: number;
+      celery_result_channel: number;
+      worker_concurrency: number;
+      task_timeout: number;
+    };
     brand: {
       enable: boolean;
       logo_url: string;

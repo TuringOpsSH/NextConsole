@@ -477,3 +477,10 @@ def refresh_token():
         return next_console_response(error_status=True, error_message="参数错误！")
     return refresh_token_service(data)
 
+
+@app.route("/next_console/user_center/login_by_token", methods=["POST"])
+def login_by_token():
+    data = request.get_json()
+    if not data.get("token"):
+        return next_console_response(error_status=True, error_message="token为空")
+    return login_by_token_service(data)

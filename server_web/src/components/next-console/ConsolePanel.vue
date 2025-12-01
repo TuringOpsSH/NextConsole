@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowDown, ArrowUp, Memo } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { nextTick, onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import { onBeforeMount } from 'vue-demi';
 import { appSearch } from '@/api/app-center';
 import { delete_session, search_session, update_session } from '@/api/next-console';
@@ -31,10 +31,11 @@ const currentApp = ref({
 });
 const currentAppList = ref([]);
 const currentSession = ref<ISessionItem>({
-  session_source: 'next_search'
+  id: 0,
+  session_source: 'next_search',
+  session_code: ''
 });
 const newSessionLoading = ref(false);
-
 async function toAllSession() {
   await router.push({
     name: 'session_history',
@@ -261,6 +262,15 @@ onMounted(async () => {
     console.error('🚀ConsolePanel.vue', e);
   }
 });
+watch(
+  () => router.currentRoute.value.params?.session_code,
+  newCode => {
+    if (newCode) {
+      currentSession.value.session_code = newCode as string;
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -387,7 +397,6 @@ onMounted(async () => {
                   {{ item?.session_topic }}
                 </el-text>
               </div>
-
               <div
                 v-show="currentSession?.session_code == item.session_code && currentSession?.session_code"
                 class="std-middle-box session-more-button"
@@ -426,7 +435,7 @@ onMounted(async () => {
           v-if="session_history_top5?.length"
           id="more-session-button"
           class="session-item-box"
-          @click="toAllSession()"
+          @click="toAllSession"
         >
           <el-text style="font-size: 12px"> 查看全部记录...</el-text>
         </div>

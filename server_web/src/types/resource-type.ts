@@ -21,7 +21,7 @@ export interface IResourceItem {
   resource_show_url?: string | null;
   resource_download_url?: string | null;
   resource_feature_code?: string | null;
-  rag_status?: string | null;
+  ref_status?: string | null;
   resource_language?: string | null;
   create_time?: string;
   update_time?: string;
@@ -162,7 +162,7 @@ export interface IPersistOptions {
 
 export interface ISearchByKeywordParams {
   resource_keyword: string;
-  resource_id?: string;
+  resource_id?: number;
   rag_enhanced?: string;
   auth_type?: string;
 }

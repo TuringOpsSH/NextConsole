@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowRight, Close, QuestionFilled, Search, SuccessFilled } from '@element-plus/icons-vue';
-import { nextTick, ref } from 'vue';
+import { ArrowDown, ArrowRight, QuestionFilled } from '@element-plus/icons-vue';
+import { ref } from 'vue';
 import { nodeUpdate } from '@/api/app-center-api';
-import TemplateEditor from '@/components/app-center/app-manage/TemplateEditor.vue';
-
 
 import { useAppStore } from '@/stores/app-store';
 import { useWorkflowStore } from '@/stores/workflow-store';

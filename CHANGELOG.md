@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.  
 Format adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.2.9] - 2025-11-23
+
+### New Features
+
+- Workbench knowledge search supports adding from the Resource Library directory tree  
+- Team members can upload, update, and delete shared resources in the Resource Library  
+- Application Factory adds a variable transformation node for easy fixed-text composition and variable construction  
+- Management console monitoring center adds user-level leaderboards 📈  
+- Smart applications support third-party application integration via SDK  
+- Smart applications can view publishing details  
+- Supports parsing and processing of Think tags for privatized models  
+
+### Fixes and Optimizations
+
+- Fixed an issue with the first use of knowledge base Q&A in the Workbench  
+- Fixed an issue with batch delivery of internal messages  
+- Optimized user interaction and improved performance in the Application Factory
+
+
+
 ## [0.2.8] - 2025-10-31
  
 ### New Features

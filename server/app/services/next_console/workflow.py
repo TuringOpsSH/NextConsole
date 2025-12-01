@@ -1,5 +1,5 @@
 from app.services.next_console.reference import *
-from app.models.next_console.next_console_model import NextConsoleQa
+from app.models.next_console.next_console_model import NextConsoleQa, NextConsoleRecommendQuestion
 from app.models.app_center.app_info_model import WorkFlowTaskInfo
 
 
@@ -95,3 +95,21 @@ def show_workflow_task_label(workflow_task):
     else:
         show_data["task_label"] = task_result
     return show_data
+
+
+def update_recommend_question(data):
+    """
+    更新推荐问题点击记录
+    """
+    recommend_question_id = data.get("recommend_question_id")
+    target_question = NextConsoleRecommendQuestion.query.filter(
+        NextConsoleRecommendQuestion.id == recommend_question_id,
+    ).first()
+    if not target_question:
+        return next_console_response(error_status=False,)
+    target_question.is_click = 1
+    db.session.add(target_question)
+    db.session.commit()
+    return next_console_response(
+        error_status=False,
+    )

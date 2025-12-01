@@ -1,7 +1,7 @@
 from app.models.configure_center.system_config import SupportArea
 from app.services.configure_center.response_utils import next_console_response
 from app.models.configure_center.system_config import SystemConfig
-from app.app import db
+from app.app import db, app
 
 
 def get_support_area_data():
@@ -63,9 +63,11 @@ def get_support_area_data():
     return next_console_response(result=support_area_list)
 
 
-def init_system_configs():
+def init_system_configs(config_key=None):
     """
     初始化系统配置
+        在第一次使用系统时，初始化系统配置
+        后续可以根据key重置具体配置
     Returns
     -------
 
@@ -76,6 +78,77 @@ def init_system_configs():
                 "llm_code": "",
                 "name": "小亦助手",
                 "avatar_url": "/images/logo.svg"
+            },
+            "stt": {
+                "provider": "讯飞",
+                "xf_api": "wss://ws-api.xfyun.cn/v2/iat",
+                "xf_api_id": "",
+                "xf_api_key": "",
+                "xf_api_secret": ""
+            }
+        },
+        'resources': {
+            'auto_rag': True,
+            'viewer': {
+
+            },
+            'download': {
+              "max_count": 100,
+              "cool_time": 7200,
+            },
+            'parser': {
+                'pdf': {
+                    'engine': 'pymupdf',
+                    'options': [],
+                    'config': {
+
+                    }
+                },
+                'pptx': {
+                    'engine': 'pymupdf',
+                    'engine_options': [],
+                },
+                'xlsx': {
+                    'engine': 'openpyxl',
+                    'options': [],
+                    'config': {}
+                },
+                'xls': {
+                    'engine': 'openpyxl',
+                    'options': [],
+                    'config': {}
+                },
+                'html': {
+                    'engine': 'html2text',
+                    'engine_options': [],
+                    'config': {}
+                },
+                'shtml': {
+                    'engine': 'html2text',
+                    'engine_options': [],
+                    'config': {}
+                },
+                'phtml': {
+                    'engine': 'html2text',
+                    'engine_options': [],
+                    'config': {}
+                },
+                'htm': {
+                    'engine': 'html2text',
+                    'engine_options': [],
+                    'config': {}
+                },
+                'others': {
+                    'engine': 'text',
+                    'engine_options': [],
+                    'config': {}
+                }
+            },
+            'splitter': {
+
+            },
+            'abstractor': {
+
             },
             "embedding": {
                 "llm_code": "",
@@ -89,13 +162,6 @@ def init_system_configs():
                 "threshold": 0.2,
                 "topK": 10
             },
-            "stt": {
-                "provider": "讯飞",
-                "xf_api": "wss://ws-api.xfyun.cn/v2/iat",
-                "xf_api_id": "",
-                "xf_api_key": "",
-                "xf_api_secret": ""
-            }
         },
         'connectors': {
             "qywx": [{
@@ -129,6 +195,7 @@ def init_system_configs():
             },
             "email": {
                 "smtp_server": "",
+                "smtp_ssl": False,
                 "smtp_port": 465,
                 "smtp_user": "",
                 "smtp_password": "",
@@ -147,7 +214,73 @@ def init_system_configs():
             }
         },
     }
+    pandoc_input_formats = [
+        "biblatex", "bibtex", "bits",
+        "commonmark", "commonmark_x", "creole", "csljson", "csv",
+        "djot", "docbook", "docx", "dokuwiki",
+        "endnotexml", "epub",
+        "fb2",
+        "gfm",
+        "haddock", "html",
+        "ipynb",
+        "jats", "jira",
+        "latex",
+        "man", "markdown", "markdown_github", "markdown_mmd", "markdown_phpextra", "markdown_strict", "mdoc",
+        "mediawiki", "muse",
+        "native",
+        "odt", "opml", "org",
+        "pod",
+        "ris", "rst", "rtf",
+        "t2t", "textile", "tikiwiki", "tsv", "twiki", "typst",
+        "vimwiki",
+    ]
+    for resource_format in pandoc_input_formats:
+        if resource_format not in default_system_config["resources"]["parser"]:
+            default_system_config["resources"]["parser"][resource_format] = {
+                'engine': 'pandoc',
+                'options': ['pandoc'],
+                'config': {
+                    "to_format": "markdown",
+                    "preserve-tabs": True,
+                    "wrap": "none",
+                    "mathml": True,
+                },
+            }
+    if config_key:
+        target_config = SystemConfig.query.filter(
+            SystemConfig.config_key == config_key,
+            SystemConfig.config_status == 1
+        ).first()
+        if config_key not in default_system_config:
+            return next_console_response(error_status=True, error_message="无法初始化该系统配置")
+        if not target_config:
+            target_config = SystemConfig(
+                config_key=config_key,
+                config_desc=f"{config_key}配置",
+                config_default_value=default_system_config[config_key],
+                config_value=default_system_config[config_key],
+                config_status=1
+            )
+            db.session.add(target_config)
+            db.session.commit()
+        else:
+            target_config.config_value = default_system_config[config_key]
+            db.session.add(target_config)
+            db.session.commit()
+        return next_console_response(result={
+            config_key: default_system_config[config_key],
+        })
+
+    exist_system_configs = SystemConfig.query.filter(
+        SystemConfig.config_status == 1
+    ).with_entities(
+        SystemConfig.config_key
+    ).all()
+    exist_keys = [config.config_key for config in exist_system_configs]
+
     for key in default_system_config:
+        if key in exist_keys:
+            continue
         new_config = SystemConfig(
             config_key=key,
             config_desc=f"{key}配置",
@@ -160,19 +293,53 @@ def init_system_configs():
     return next_console_response(result=default_system_config)
 
 
-def get_system_configs_service():
+def get_system_configs_service(data):
     """
     获取系统配置
     Returns
     -------
 
     """
+    config_key = data.get("config_key")
     all_system_configs = SystemConfig.query.filter(
         SystemConfig.config_status == 1
     ).all()
     if not all_system_configs:
         return init_system_configs()
     system_configs = {config.config_key: config.config_value for config in all_system_configs}
+    ops_server_config = {
+        "domain": app.config.get("domain"),
+        "admin_domain": app.config.get("admin_domain"),
+        "base_dir": str(app.config.get("base_dir")),
+        "bucket_size": app.config.get("bucket_size"),
+        "data_dir": str(app.config.get("data_dir")),
+        "download_dir": str(app.config.get("download_dir")),
+        "jwt_access_token_expires": str(app.config.get("JWT_ACCESS_TOKEN_EXPIRES")),
+        "timezone": app.config.get("timezone"),
+        "log_dir": str(app.config.get("LOG_DIR")),
+        "log_file": app.config.get("LOG_FILE"),
+        "log_level": app.config.get("LOG_LEVEL"),
+        "log_max_size": app.config.get("LOG_MAX_BYTES"),
+        "log_backup_count": app.config.get("LOG_BACKUP_COUNT"),
+        "db_type": app.config.get("db_type"),
+        "db_user": app.config.get("db_user"),
+        "db_host": app.config.get("db_host"),
+        "db_port": app.config.get("db_port"),
+        "redis_host": app.config.get("redis_host"),
+        "redis_port": app.config.get("redis_port"),
+        "redis_username": app.config.get("redis_username"),
+        "next_console_channel": app.config.get("next_console_channel"),
+        "websocket_channel": app.config.get("websocket_channel"),
+        "celery_broker_channel": app.config.get("celery_broker_channel"),
+        "celery_result_channel": app.config.get("celery_result_channel"),
+        "worker_concurrency": app.config.get("worker_concurrency"),
+        "task_timeout": app.config.get("task_timeout"),
+    }
+    system_configs["ops"]["server"] = ops_server_config
+    if config_key:
+        if config_key not in system_configs:
+            return next_console_response(error_status=True, error_message="系统配置不存在")
+        return next_console_response(result={config_key: system_configs[config_key]})
     return next_console_response(result=system_configs)
 
 
@@ -224,6 +391,8 @@ def get_wx_config_service(data):
         SystemConfig.config_key == "connectors",
         SystemConfig.config_status == 1
     ).first()
+    if not system_connectors_config:
+        return next_console_response(error_message="未配置微信登录！", error_code=1001)
     config = None
     for wx in system_connectors_config.config_value.get("weixin"):
         if wx.get("domain") == domain:
@@ -241,7 +410,6 @@ def get_wx_config_service(data):
 def load_system_configs_service():
     """
     加载必要的系统配置
-ops
     Returns
     -------
     """
@@ -253,6 +421,7 @@ ops
         return next_console_response()
     result = {}
     # brand
-    if system_config.config_value.get("brand",{}).get("enable"):
-        result["brand"] = system_config.config_value.get("brand",{})
+    if system_config.config_value.get("brand", {}).get("enable"):
+        result["brand"] = system_config.config_value.get("brand", {})
     return next_console_response(result=result)
+

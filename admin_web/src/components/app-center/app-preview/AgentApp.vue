@@ -41,7 +41,10 @@ const startX = ref(0);
 const startWidth = ref(0);
 const streaming = ref(true);
 const currentApp = ref({
-  app_config: {}
+  app_config: {
+    welcome: {},
+    params: {}
+  }
 });
 const sessionParamsRef = ref(null);
 const skipUserInput = ref(false);
@@ -50,7 +53,7 @@ async function initTestSession(newVal, keepSession = false) {
     app_code: newVal,
     session_test: true,
     session_code: null,
-    workflow_code: currentWorkflowCode.value
+    task_code: currentWorkflowCode.value
   };
   if (keepSession) {
     params.session_code = currentSession.value.session_code;
@@ -213,6 +216,8 @@ defineExpose({
       :socket="socket"
       :disable="sessionParamsRef && !sessionParamsRef?.schemaReady"
       :row="1"
+      :asr-able="currentApp.app_config?.params?.asr"
+      :rag-lock="currentApp.app_config?.params?.ragLock"
       @begin-answer="data => handleBeginAnswer(data)"
       @update-answer="newMsg => msgFlowRef.updateAnswer(newMsg)"
       @finish-answer="args => msgFlowRef?.finishAnswer(args)"

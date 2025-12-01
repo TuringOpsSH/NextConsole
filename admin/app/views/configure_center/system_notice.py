@@ -18,7 +18,7 @@ def handle_connect():
     处理客户端连接事件，并记录客户端信息至redis
     :return:
     """
-    pass
+    return ''
 
 
 @socketio.on('auth')
@@ -28,6 +28,7 @@ def handle_auth(data):
     session_id = request.sid
     token = data.get('token')
     client_fingerprint = data.get('client_fingerprint')
+    app.logger.warning(f"handle_auth: {session_id}, {data}")
     if not token:
         disconnect()
         return False
@@ -52,17 +53,18 @@ def handle_auth(data):
         all_user_clients = json.loads(all_user_clients)
     else:
         all_user_clients = []
+
     for client in all_user_clients:
-        if client.get('client_fingerprint') == client_fingerprint:
+        if client.get('session_id') == session_id and client.get('client_fingerprint') == client_fingerprint:
             # 更新会话ID和连接时间
-            client['session_id'] = session_id
             client['connect_time'] = current_datetime
             client['status'] = 'connected'
             redis_client.set(user_id, json.dumps(all_user_clients))
-            return
+            socketio.emit("updateRefStatus", [client_info], room=session_id)
+            return True
     all_user_clients.append(client_info)
     redis_client.set(user_id, json.dumps(all_user_clients))
-    print(f'auth success: {session_id}')
+    return True
 
 
 @socketio.on('remove_auth')
@@ -98,7 +100,7 @@ def handle_disconnect(data):
                 client['disconnect_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 break
     redis_client.set(user_id, json.dumps(all_user_clients))
-    print(f'remove auth success: {session_id}')
+    return True
 
 
 @socketio.on('message')

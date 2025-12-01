@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { Microphone, Picture as IconPicture, TopRight, VideoPause } from '@element-plus/icons-vue';
-import {
-  ElMessage,
-  ElNotification,
-  genFileId,
-  UploadFile,
-  UploadFiles,
-  UploadRawFile,
-  type UploadUserFile
-} from 'element-plus';
+import { ElMessage, ElNotification, genFileId, UploadFile, UploadRawFile, type UploadUserFile } from 'element-plus';
 import { v4 as uuidv4 } from 'uuid';
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import {
@@ -27,6 +19,7 @@ import {
 import { llmInstanceSearch } from '@/api/user-center';
 import { isRecording, startRecording, stopRecording } from '@/components/app-center/ts/agent_console';
 import ResourcesSearch from '@/components/next-console/messages-flow/ResourcesSearch.vue';
+import ResourceUploadManager from '@/components/resource/resource-upload/ResourceUploadManager.vue';
 import {
   calculateMD5,
   calculateSHA256,
@@ -37,7 +30,6 @@ import {
   upload_file_task_list,
   upload_size
 } from '@/components/resource/resource-upload/resource-upload';
-import ResourceUploadManager from '@/components/resource/resource-upload/ResourceUploadManager.vue';
 import router from '@/router';
 import { useUserConfigStore } from '@/stores/user-config-store';
 import { IRunningQuestionMeta, ISessionItem } from '@/types/next-console';
@@ -96,7 +88,7 @@ const uploadWebpageNewResources = reactive<{ new_urls: IResourceItem[] }>({
       resource_name: '',
       resource_title: '',
       resource_icon: 'html.svg',
-      rag_status: null,
+      ref_status: null,
       resource_source_url: ''
     } as IResourceItem
   ]
@@ -430,7 +422,7 @@ async function handleDrop(event) {
           uploadImgRef.value?.handleStart(file);
           uploadImgList.value.push(file);
           if (!currentSession?.id) {
-            prepareUploadImage(file);
+            await prepareUploadImage(file);
           }
         }
       }
@@ -447,7 +439,7 @@ async function handleDrop(event) {
           uploadFileRef.value?.handleStart(file);
           uploadFileList.value.push(file);
           if (!currentSession?.id) {
-            prepareUploadFile(file);
+            await prepareUploadFile(file);
           }
         }
       }
@@ -693,11 +685,11 @@ function addNewWebpageResource() {
     resource_name: '',
     resource_title: '',
     resource_icon: 'html.svg',
-    rag_status: null,
+    ref_status: null,
     resource_source_url: ''
   } as IResourceItem);
 }
-function switchOffNewWebpage() {
+async function switchOffNewWebpage() {
   // 关闭新的网页资源输入框
   uploadWebpageDialogVisible.value = false;
   // 去除非法数据
@@ -711,7 +703,7 @@ function switchOffNewWebpage() {
     uploadWebpageNewResources.new_urls.push({
       id: null,
       resource_title: '',
-      rag_status: null,
+      ref_status: null,
       resource_source_url: ''
     } as IResourceItem);
   }
@@ -721,10 +713,10 @@ function switchOffNewWebpage() {
 }
 function checkWebpageSupportStatus(resource: IResourceItem): boolean {
   // 检查是否支持
-  if (resource?.rag_status == '异常' || resource?.rag_status == '失败') {
+  if (resource?.ref_status == '异常' || resource?.ref_status == '失败') {
     return false;
   }
-  if (resource?.rag_status == '成功') {
+  if (resource?.ref_status == '成功') {
     return true;
   }
   return null;
@@ -795,7 +787,7 @@ async function commitAddNewWebpages() {
       resource_name: '',
       resource_title: '',
       resource_icon: 'html.svg',
-      rag_status: null,
+      ref_status: null,
       resource_source_url: ''
     } as IResourceItem
   ];
@@ -808,40 +800,42 @@ async function commitAddNewWebpages() {
 }
 function updateSessionAttachment(data) {
   for (const resource of data) {
-    if (resource.resource_source == 'session') {
-      // 更新附件资源状态
-      for (let i = 0; i < uploadFileResourceList.value.length; i++) {
-        if (uploadFileResourceList.value[i].id == resource.id) {
-          uploadFileResourceList.value[i].rag_status = resource.rag_status;
-          uploadFileResourceList.value[i].resource_is_supported = checkFileSupportStatus(
-            uploadFileResourceList.value[i]
-          );
+    if (resource.resource_source != 'session') {
+      continue;
+    }
+    for (let i = 0; i < uploadFileResourceList.value.length; i++) {
+      if (uploadFileResourceList.value[i].id == resource.id) {
+        if (uploadFileResourceList.value[i]?.msg_time && uploadFileResourceList.value[i]?.msg_time > resource?.create) {
+          continue;
         }
+        uploadFileResourceList.value[i].msg_time = resource.msg_time;
+        uploadFileResourceList.value[i].ref_status = resource.ref_status;
+        uploadFileResourceList.value[i].resource_is_supported = checkFileSupportStatus(uploadFileResourceList.value[i]);
       }
-      for (let i = 0; i < uploadWebpageResourceList.value.length; i++) {
-        if (uploadWebpageResourceList.value[i].id == resource.id) {
-          if (resource?.rag_status) {
-            uploadWebpageResourceList.value[i].rag_status = resource.rag_status;
-          }
-          if (resource?.resource_icon) {
-            uploadWebpageResourceList.value[i].resource_icon = resource.resource_icon;
-          }
-          if (resource?.resource_title) {
-            uploadWebpageResourceList.value[i].resource_title = resource.resource_title;
-          }
-          if (resource?.resource_name) {
-            uploadWebpageResourceList.value[i].resource_name = resource.resource_name;
-          }
-          if (resource?.resource_size_in_MB) {
-            uploadWebpageResourceList.value[i].resource_size_in_MB = resource.resource_size_in_MB;
-          }
-          if (resource?.resource_status) {
-            uploadWebpageResourceList.value[i].resource_status = resource.resource_status;
-          }
-          uploadWebpageResourceList.value[i].resource_is_supported = checkWebpageSupportStatus(
-            uploadWebpageResourceList.value[i]
-          );
+    }
+    for (let i = 0; i < uploadWebpageResourceList.value.length; i++) {
+      if (uploadWebpageResourceList.value[i].id == resource.id) {
+        if (resource?.ref_status) {
+          uploadWebpageResourceList.value[i].ref_status = resource.ref_status;
         }
+        if (resource?.resource_icon) {
+          uploadWebpageResourceList.value[i].resource_icon = resource.resource_icon;
+        }
+        if (resource?.resource_title) {
+          uploadWebpageResourceList.value[i].resource_title = resource.resource_title;
+        }
+        if (resource?.resource_name) {
+          uploadWebpageResourceList.value[i].resource_name = resource.resource_name;
+        }
+        if (resource?.resource_size_in_MB) {
+          uploadWebpageResourceList.value[i].resource_size_in_MB = resource.resource_size_in_MB;
+        }
+        if (resource?.resource_status) {
+          uploadWebpageResourceList.value[i].resource_status = resource.resource_status;
+        }
+        uploadWebpageResourceList.value[i].resource_is_supported = checkWebpageSupportStatus(
+          uploadWebpageResourceList.value[i]
+        );
       }
     }
   }
@@ -1025,15 +1019,18 @@ async function waitForSession() {
     check();
   });
 }
-async function handleImageFileChange(uploadFile: UploadFile, uploadFiles: UploadFiles) {
+async function handleImageFileChange(uploadFile: UploadFile) {
   if (!firstImage.value) {
-    firstImage.value = uploadFile;
+    firstImage.value = uploadFile?.uid;
   }
 }
 async function prepareUploadImage(uploadFile: UploadRawFile) {
   // 如果没有会话，则等待到会话生成
   if (!currentSession?.id) {
-    if (uploadFile?.uid == firstImage.value.uid) {
+    if (!firstImage.value) {
+      firstImage.value = uploadFile?.uid;
+    }
+    if (uploadFile?.uid == firstImage.value) {
       await createNewSession();
     } else {
       await waitForSession();
@@ -1131,7 +1128,7 @@ async function prepareUploadImage(uploadFile: UploadRawFile) {
     task_status: 'pending'
   });
 }
-async function uploadImgSuccess(response: any, uploadFile: UploadFile, uploadFiles: UploadFiles) {
+async function uploadImgSuccess(response: any, uploadFile: UploadFile) {
   // 上传成功后，添加附件与会话消息
   let imgResource = response.result as IResourceUploadItem;
   let resourceId = response.result?.resource_id;
@@ -1381,20 +1378,20 @@ function checkFileSupportStatus(fileResource: IResourceItem) {
     'tar',
     'manifest'
   ];
-  if (fileResource?.rag_status) {
-    if (typeof fileResource.rag_status == 'string') {
-      if (fileResource.rag_status == '成功') {
+  if (fileResource?.ref_status) {
+    if (typeof fileResource.ref_status == 'string') {
+      if (fileResource.ref_status == '成功') {
         return true;
       }
-      if (fileResource.rag_status == '失败' || fileResource.rag_status == '异常') {
+      if (fileResource.ref_status == '失败' || fileResource.ref_status == '异常') {
         return false;
       }
-      if (fileResource.rag_status == '排队') {
+      if (fileResource.ref_status == '排队') {
         return null;
       }
     }
     // 资源空间
-    for (let i of fileResource.rag_status) {
+    for (let i of fileResource.ref_status) {
       // @ts-ignore
       if (i?.status == '失败' || i?.status == '异常') {
         return false;
@@ -1426,15 +1423,18 @@ async function removeFileItem(index: number) {
     resource_list: [resourceId]
   });
 }
-function handleFileChange(uploadFile: UploadFile, uploadFiles: UploadFiles) {
+function handleFileChange(uploadFile: UploadFile) {
   // 处理文件上传
   if (!firstFile.value) {
-    firstFile.value = uploadFile;
+    firstFile.value = uploadFile?.uid;
   }
 }
 async function prepareUploadFile(uploadFile: UploadRawFile) {
   if (!currentSession?.id) {
-    if (uploadFile?.uid == firstFile.value.uid) {
+    if (!firstFile.value) {
+      firstFile.value = uploadFile?.uid;
+    }
+    if (uploadFile?.uid == firstFile.value) {
       await createNewSession();
     } else {
       await waitForSession();
@@ -1535,7 +1535,7 @@ async function prepareUploadFile(uploadFile: UploadRawFile) {
     task_status: 'pending'
   });
 }
-async function uploadFileSuccess(response: any, uploadFile: UploadFile, uploadFiles: UploadFiles) {
+async function uploadFileSuccess(response: any, uploadFile: UploadFile) {
   // 上传成功后，添加附件与会话消息
   let fileResource = response.result as IResourceUploadItem;
   let resourceId = response.result?.resource_id;
@@ -1645,7 +1645,7 @@ async function hideAiResourceConfigArea() {
   }
 }
 async function cleanResourceList() {
-  setDefaultResources();
+  setDefaultResources(true);
   currentSession.session_local_resource_switch = true;
   currentSession.session_local_resource_use_all = true;
   if (!currentSession?.id) {
@@ -1679,21 +1679,26 @@ async function removeResourceItem(resource: IResourceItem) {
   });
 }
 async function commitAddChooseResources() {
-  const res = resourcesSearchRef.value?.getSelectedResources();
+  const res = await resourcesSearchRef.value?.getSelectedResources();
   if (!res?.length) {
     return;
   }
-  sessionResourcesList.value = res;
+  if (currentSession.session_local_resource_use_all) {
+    sessionResourcesList.value = res;
+    currentSession.session_local_resource_use_all = false;
+  } else {
+    sessionResourcesList.value.push(...res);
+  }
+
   resourceSearchDialogShow.value = false;
   currentSession.session_local_resource_switch = true;
-  currentSession.session_local_resource_use_all = false;
   if (!currentSession?.id) {
     await createNewSession();
   }
   update_session({
     session_id: currentSession.id,
-    session_local_resource_switch: true,
-    session_local_resource_use_all: false
+    session_local_resource_switch: currentSession.session_local_resource_switch,
+    session_local_resource_use_all: currentSession.session_local_resource_use_all,
   });
   let params = {
     session_id: currentSession.id,
@@ -1715,11 +1720,25 @@ async function commitAddChooseResources() {
 async function toLLMConfigArea() {
   router.push({ name: 'next_console_user_info', query: { tab: 'setting' } });
 }
-async function setDefaultResources() {
+async function setDefaultResources(force: boolean = false) {
   resourceSearchDialogShow.value = false;
   // 为空时从配置中读取资源列表
-  if (!sessionResourcesList.value.length) {
+  if (!sessionResourcesList.value.length || force) {
     sessionResourcesList.value = userConfigStore.userConfig.workbench.session_resources_list;
+    for (let resource of sessionResourcesList.value) {
+      if (resource.resource_id == -1) {
+        currentSession.session_local_resource_use_all = true;
+      }
+    }
+    currentSession.session_local_resource_switch = true;
+    if (!currentSession?.id) {
+      return;
+    }
+    await update_session({
+      session_id: currentSession.id,
+      session_local_resource_switch: currentSession.session_local_resource_switch,
+      session_local_resource_use_all: currentSession.session_local_resource_use_all
+    });
   }
 }
 onMounted(async () => {
@@ -1772,7 +1791,7 @@ defineExpose({
         <div
           class="console-button"
           :class="{ 'console-button-active': currentSession.session_search_engine_switch }"
-          @click="switchOnAiSearch()"
+          @click="switchOnAiSearch"
         >
           <div class="std-middle-box">
             <el-image
@@ -1848,7 +1867,7 @@ defineExpose({
           :before-upload="prepareUploadImage"
           :http-request="upload_file_content"
           :on-success="uploadImgSuccess"
-          @click="switchOnImgSearch()"
+          @click="switchOnImgSearch"
         >
           <div
             class="console-button"
@@ -1903,7 +1922,7 @@ defineExpose({
           :before-upload="prepareUploadFile"
           :http-request="upload_file_content"
           :on-success="uploadFileSuccess"
-          @click.prevent="switchOnFileSearch()"
+          @click.prevent="switchOnFileSearch"
         >
           <div
             class="console-button"
@@ -2173,7 +2192,7 @@ defineExpose({
                   :before-upload="prepareUploadImage"
                   :http-request="upload_file_content"
                   :on-success="uploadImgSuccess"
-                  @click="switchOnImgSearch()"
+                  @click="switchOnImgSearch"
                 >
                   <div class="std-middle-box" style="gap: 8px">
                     <div class="std-middle-box">
@@ -2206,7 +2225,7 @@ defineExpose({
                   </template>
                 </el-tooltip>
                 <el-tooltip effect="light" placement="top">
-                  <div class="std-middle-box" style="cursor: pointer" @click="switchOffImageSearch()">
+                  <div class="std-middle-box" style="cursor: pointer" @click="switchOffImageSearch">
                     <el-image src="/images/switch_off.svg" class="rag-icon" />
                   </div>
                   <template #content>
@@ -2264,7 +2283,7 @@ defineExpose({
                 </div>
               </el-scrollbar>
               <div id="ai_image_body_right">
-                <el-button text type="primary" @click="cleanTmpImgList()"> 重置 </el-button>
+                <el-button text type="primary" @click="cleanTmpImgList"> 重置 </el-button>
               </div>
             </div>
           </div>
@@ -2293,7 +2312,7 @@ defineExpose({
                   :before-upload="prepareUploadFile"
                   :http-request="upload_file_content"
                   :on-success="uploadFileSuccess"
-                  @click="switchOnFileSearch()"
+                  @click="switchOnFileSearch"
                 >
                   <div class="std-middle-box" style="gap: 8px">
                     <div class="std-middle-box">
@@ -2318,7 +2337,7 @@ defineExpose({
                 </el-tooltip>
                 <el-divider direction="vertical" />
                 <el-tooltip effect="light" placement="top">
-                  <div class="std-middle-box" style="cursor: pointer" @click="hideAiFileConfigArea()">
+                  <div class="std-middle-box" style="cursor: pointer" @click="hideAiFileConfigArea">
                     <el-image src="/images/minimize.svg" class="rag-icon" />
                   </div>
                   <template #content>
@@ -2326,7 +2345,7 @@ defineExpose({
                   </template>
                 </el-tooltip>
                 <el-tooltip effect="light" placement="top">
-                  <div class="std-middle-box" style="cursor: pointer" @click="switchOffFileSearch()">
+                  <div class="std-middle-box" style="cursor: pointer" @click="switchOffFileSearch">
                     <el-image src="/images/switch_off.svg" class="rag-icon" />
                   </div>
                   <template #content>
@@ -2385,7 +2404,7 @@ defineExpose({
                 </div>
               </el-scrollbar>
               <div id="ai_image_body_right">
-                <el-button text type="primary" @click="cleanTmpFileList()"> 重置 </el-button>
+                <el-button text type="primary" @click="cleanTmpFileList"> 重置 </el-button>
               </div>
             </div>
           </div>
@@ -2424,7 +2443,7 @@ defineExpose({
                 </el-tooltip>
                 <el-divider direction="vertical" />
                 <el-tooltip effect="light" placement="top">
-                  <div class="std-middle-box" style="cursor: pointer" @click="hideAiResourceConfigArea()">
+                  <div class="std-middle-box" style="cursor: pointer" @click="hideAiResourceConfigArea">
                     <el-image src="/images/minimize.svg" class="rag-icon" />
                   </div>
                   <template #content>
@@ -2644,7 +2663,7 @@ defineExpose({
           </el-form-item>
           <el-form-item>
             <div class="std-middle-box" style="width: 100%">
-              <el-button style="width: 100%" @click="switchOffNewWebpage()">取消</el-button>
+              <el-button style="width: 100%" @click="switchOffNewWebpage">取消</el-button>
               <el-button style="width: 100%" type="primary" @click="commitAddNewWebpages()">确定</el-button>
             </div>
           </el-form-item>

@@ -3,8 +3,9 @@ import { ElMessage } from 'element-plus';
 import { nextTick, onMounted, ref, watch } from 'vue';
 import { attachment_get_all_resource_formats, attachment_search_resources } from '@/api/next-console';
 import { md_answer } from '@/components/next-console/messages-flow/message_flow';
-import { ResourceItem } from '@/types/resource-type';
-import { IUsers } from '@/types/user-center';
+import ResourceViewTree from "@/components/resource/resource_tree/ResourceViewTree.vue";
+import { useUserInfoStore } from '@/stores/user-info-store';
+import { IResourceItem } from '@/types/resource-type';
 
 const props = defineProps({
   model: {
@@ -13,42 +14,13 @@ const props = defineProps({
     required: false
   },
   sessionResources: {
-    type: Array as () => ResourceItem[],
+    type: Array as () => IResourceItem[],
     default: () => [],
     required: false
   }
 });
 const emit = defineEmits(['commit', 'close']);
-const userInfo = ref<IUsers>({
-  user_resource_limit: 0,
-  user_id: null,
-  user_code: null,
-  user_name: null,
-  user_nick_name: null,
-  user_nick_name_py: 'null',
-  user_email: null,
-  user_phone: null,
-  user_gender: null,
-  user_age: null,
-  user_avatar: null,
-  user_department: null,
-  user_company: null,
-  user_account_type: null,
-  create_time: null,
-  update_time: null,
-  user_expire_time: null,
-  last_login_time: null,
-  user_role: null,
-  user_status: null,
-  user_source: null,
-  user_wx_nickname: null,
-  user_wx_avatar: null,
-  user_wx_openid: null,
-  user_wx_union_id: null,
-  user_position: null,
-  user_department_id: null,
-  user_company_id: null
-});
+const userInfoStore = useUserInfoStore();
 interface ISearchType {
   search_type: string;
   search_type_name: string;
@@ -78,9 +50,9 @@ const resourceSearchTypes = ref<ISearchType[]>([
 ]);
 const allResourceFormats = ref([]);
 const resourceSearchModel = ref('recently');
-const resourceSearchResult = ref<ResourceItem[]>([]);
+const resourceSearchResult = ref<IResourceItem[]>([]);
 const resourceSearchDialogShow = ref(false);
-const sessionResourceList = ref<ResourceItem[]>([]);
+const sessionResourceList = ref<IResourceItem[]>([]);
 const searchResourceLoading = ref(false);
 const resourceRecentTableRef = ref(null);
 const resourceSearchTableRef = ref(null);
@@ -93,6 +65,7 @@ const currentTotal = ref(0);
 const searchResourceListScrollRef = ref(null);
 const currentResourceTypes = ref(['文档', '图片', '网页', '代码', '文件夹']);
 const elScrollbarRef = ref(null);
+const resourceViewTreeRef = ref(null);
 function formatResourceSize(sizeNum: number | null) {
   // 格式化文件大小,保留两位小数,输入为mb单位的数字
   if (sizeNum === null) {
@@ -122,7 +95,7 @@ function formatResourceSize(sizeNum: number | null) {
   }
   return sizeStr;
 }
-function getResourceIcon(resource: ResourceItem) {
+function getResourceIcon(resource: IResourceItem) {
   // 获取资源图标
   if (resource.resource_icon) {
     if (
@@ -170,6 +143,8 @@ function getSelectedResources() {
     chooseResources = resourceRecentTableRef.value?.getSelectionRows();
   } else if (resourceSearchModel.value == 'search') {
     chooseResources = resourceSearchTableRef.value?.getSelectionRows();
+  } else if (resourceSearchModel.value == 'resources') {
+    chooseResources = resourceViewTreeRef.value?.ragSelectedResourceTree;
   }
   if (!chooseResources.length) {
     ElMessage.info('请选择资源');
@@ -184,7 +159,7 @@ async function changeSearchType(searchType: ISearchType) {
   resourceSearchModel.value = 'search';
   searchResourceKeyword();
 }
-function clickRow(row, column, event) {
+function clickRow(row) {
   // 切换该行的选中状态
   resourceSearchTableRef.value?.toggleRowSelection(row);
 }
@@ -337,6 +312,11 @@ async function updateSelectedRow() {
     });
   }
 }
+async function handelTabChange(name: string) {
+  if (name == 'resources') {
+    resourceViewTreeRef.value?.showRagMultiple();
+  }
+}
 onMounted(async () => {
   changeRecentSearchType({
     search_type: 'all',
@@ -373,7 +353,7 @@ defineExpose({
 <template>
   <el-dialog
     v-model="resourceSearchDialogShow"
-    title="资源检索"
+    title="知识检索"
     :draggable="true"
     :modal="true"
     style="max-width: 1500px"
@@ -427,226 +407,50 @@ defineExpose({
           </template>
         </el-input>
       </div>
-      <div v-show="resourceSearchModel == 'recently'" id="search_recent_area">
-        <div class="std-middle-box">
-          <el-text class="std-sub-title"> 最近检索 </el-text>
-        </div>
-        <div id="search_recent_type">
-          <div
-            v-for="(search_type, idx) in resourceSearchTypes"
-            :key="idx"
-            class="search-type-box"
-            :class="{ 'search-type-box-active': search_type.search_type_active }"
-            @click="changeRecentSearchType(search_type)"
-          >
-            <el-text class="search-type-text" :class="{ 'search-type-text-active': search_type.search_type_active }">
-              {{ search_type.search_type_name }}
-            </el-text>
-          </div>
-        </div>
-        <el-scrollbar v-loading="searchResourceLoading" style="width: 100%">
-          <div id="search_recent_result">
-            <el-table
-              ref="resourceRecentTableRef"
-              :data="resourceSearchResult"
-              style="width: 100%; margin-top: 8px"
-              :default-sort="{ prop: 'rag_time', order: 'descending' }"
-              row-key="id"
-              @row-click="clickRow"
+      <el-tabs v-model="resourceSearchModel" style="width: 100%; max-height: 400px" @tab-change="handelTabChange">
+        <el-tab-pane name="recently" label="最近使用">
+          <div id="search_recent_type">
+            <div
+              v-for="(search_type, idx) in resourceSearchTypes"
+              :key="idx"
+              class="search-type-box"
+              :class="{ 'search-type-box-active': search_type.search_type_active }"
+              @click="changeRecentSearchType(search_type)"
             >
-              <el-table-column type="selection" width="55" />
-              <el-table-column prop="resource_name" label="资源名称" min-width="120" show-overflow-tooltip sortable>
-                <template #default="scope">
-                  <div class="resource-item-name">
-                    <div :id="scope.row.id" class="resource-item-name-drag">
-                      <img :id="scope.row.id" :src="getResourceIcon(scope.row)" class="resource-icon" alt="" />
-                    </div>
-                    <div class="std-box">
-                      <el-text style="cursor: default" class="resource-name-text">
-                        {{ scope.row.resource_name }}
-                      </el-text>
-                    </div>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="resource_desc" label="资源描述" show-overflow-tooltip sortable />
-              <el-table-column prop="create_time" label="创建时间" width="180" sortable />
-              <el-table-column prop="rag_time" label="检索时间" width="180" sortable />
-              <el-table-column prop="resource_type_cn" label="资源类型" width="120" sortable />
-              <el-table-column prop="resource_format" label="资源格式" width="120" sortable />
-              <el-table-column
-                prop="resource_size"
-                label="资源大小"
-                width="120"
-                :sortable="true"
-                :sort-method="sortResourceSize"
-              >
-                <template #default="scope">
-                  <el-text v-if="scope.row.resource_type != 'folder'">
-                    {{ formatResourceSize(scope.row.resource_size_in_MB) }}
-                  </el-text>
-                  <el-text v-else> - </el-text>
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
-        </el-scrollbar>
-        <div id="search_confirm_area">
-          <el-button style="width: 100%" @click="cancelAddChooseResources()"> 取消 </el-button>
-          <el-button type="primary" style="width: 100%" @click="emit('commit')"> 确认 </el-button>
-        </div>
-      </div>
-      <div v-show="resourceSearchModel == 'search'" id="search_result_area">
-        <div id="search_resource_condition">
-          <div id="search_resource_condition_left">
-            <div class="std-middle-box">
-              <el-text>资源种类</el-text>
-            </div>
-            <div class="std-middle-box">
-              <el-checkbox-group v-model="currentResourceTypes" :min="1" @change="searchResourceKeyword()">
-                <el-checkbox value="文档" label="文档" />
-                <el-checkbox value="图片" label="图片" />
-                <el-checkbox value="网页" label="网页" />
-                <el-checkbox value="代码" label="代码" />
-                <el-checkbox value="文件夹" label="文件夹" />
-              </el-checkbox-group>
+              <el-text class="search-type-text" :class="{ 'search-type-text-active': search_type.search_type_active }">
+                {{ search_type.search_type_name }}
+              </el-text>
             </div>
           </div>
-          <div id="search_resource_condition_right">
-            <div class="std-middle-box">
-              <el-text>资源格式</el-text>
-            </div>
-            <div class="std-middle-box">
-              <el-select
-                v-model="currentResourceFormats"
-                multiple
-                style="min-width: 120px"
-                placeholder="全部格式"
-                filterable
-                :clearable="true"
-                collapse-tags
-                collapse-tags-tooltip
-                :max-collapse-tags="2"
-                @change="searchResourceKeyword()"
-              >
-                <el-option v-for="item in allResourceFormats" :key="item.name" :label="item.name" :value="item.name">
-                  <el-text>{{ item.name }}</el-text>
-                  <el-text>({{ item.count }})</el-text>
-                </el-option>
-              </el-select>
-            </div>
-          </div>
-        </div>
-        <div id="search_recent_type">
-          <div
-            v-for="(searchType, idx) in resourceSearchTypes"
-            :key="idx"
-            class="search-type-box"
-            :class="{ 'search-type-box-active': searchType.search_type_active }"
-            @click="changeSearchType(searchType)"
-          >
-            <el-text class="search-type-text" :class="{ 'search-type-text-active': searchType.search_type_active }">
-              {{ searchType.search_type_name }}
-            </el-text>
-          </div>
-        </div>
-        <el-scrollbar
-          ref="elScrollbarRef"
-          v-loading="searchResourceLoading"
-          style="width: 100%"
-          element-loading-text="资源检索中..."
-          @scroll="searchResourceKeywordNext"
-        >
-          <div id="search_recent_result">
-            <div ref="searchResourceListScrollRef">
+          <el-scrollbar v-loading="searchResourceLoading" style="width: 100%">
+            <div id="search_recent_result">
               <el-table
-                ref="resourceSearchTableRef"
+                ref="resourceRecentTableRef"
                 :data="resourceSearchResult"
                 style="width: 100%; margin-top: 8px"
+                :default-sort="{ prop: 'rag_time', order: 'descending' }"
+                row-key="id"
                 @row-click="clickRow"
               >
                 <el-table-column type="selection" width="55" />
-                <el-table-column prop="resource_name" label="资源名称" min-width="120" sortable>
+                <el-table-column prop="id" width="70" label="资源id" />
+                <el-table-column prop="resource_name" label="资源名称" min-width="120" show-overflow-tooltip sortable>
                   <template #default="scope">
                     <div class="resource-item-name">
                       <div :id="scope.row.id" class="resource-item-name-drag">
                         <img :id="scope.row.id" :src="getResourceIcon(scope.row)" class="resource-icon" alt="" />
                       </div>
                       <div class="std-box">
-                        <el-text
-                          style="cursor: default"
-                          class="resource-name-text"
-                          v-html="getHighlightedText(scope.row.resource_name)"
-                        />
+                        <el-text style="cursor: default" class="resource-name-text">
+                          {{ scope.row.resource_name }}
+                        </el-text>
                       </div>
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="author_info" label="资源作者" width="200" sortable>
-                  <template #default="scope">
-                    <div v-if="scope.row.user_id == userInfo?.user_id" class="std-box">
-                      <el-avatar :src="userInfo?.user_avatar" style="width: 16px; height: 16px" />
-                      <el-text
-                        style="width: 160px; font-size: 12px; font-weight: 500; line-height: 18px; color: #475467"
-                        truncated
-                      >
-                        {{ userInfo?.user_nick_name }}
-                      </el-text>
-                    </div>
-                    <div v-else class="std-box">
-                      <el-avatar :src="scope.row?.author_info?.user_avatar" style="width: 18px; height: 18px" />
-                      <el-text style="font-size: 12px; font-weight: 500; line-height: 18px; color: #475467" truncated>
-                        {{ scope.row?.author_info?.user_nick_name }}
-                      </el-text>
-                    </div>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="resource_desc" label="资源描述" min-width="120" sortable>
-                  <template #default="scope">
-                    <div class="std-box">
-                      <el-text
-                        style="cursor: default"
-                        class="resource-name-text"
-                        v-html="getHighlightedText(scope.row.resource_desc)"
-                      />
-                    </div>
-                  </template>
-                </el-table-column>
-                <el-table-column v-if="resourceSearchRag" prop="ref_text" label="关联内容" min-width="120" sortable>
-                  <template #default="scope">
-                    <div class="std-box">
-                      <el-tooltip effect="light">
-                        <el-text
-                          style="cursor: default"
-                          class="resource-name-text"
-                          truncated
-                          v-html="getHighlightedText(scope.row.ref_text)"
-                        />
-                        <template #content>
-                          <el-scrollbar>
-                            <div style="max-height: 500px">
-                              <div
-                                style="cursor: default"
-                                class="resource-name-text"
-                                v-html="md_answer.render(getHighlightedText(scope.row.ref_text))"
-                              />
-                            </div>
-                          </el-scrollbar>
-                        </template>
-                      </el-tooltip>
-                    </div>
-                  </template>
-                </el-table-column>
-                <el-table-column
-                  v-if="resourceSearchRag"
-                  prop="rerank_score"
-                  label="相关度评分"
-                  width="120"
-                  show-overflow-tooltip
-                  sortable
-                />
+                <el-table-column prop="resource_desc" label="资源描述" show-overflow-tooltip sortable />
                 <el-table-column prop="create_time" label="创建时间" width="180" sortable />
-                <el-table-column prop="update_time" label="更新时间" width="180" sortable />
+                <el-table-column prop="rag_time" label="检索时间" width="180" sortable />
                 <el-table-column prop="resource_type_cn" label="资源类型" width="120" sortable />
                 <el-table-column prop="resource_format" label="资源格式" width="120" sortable />
                 <el-table-column
@@ -665,12 +469,188 @@ defineExpose({
                 </el-table-column>
               </el-table>
             </div>
+          </el-scrollbar>
+        </el-tab-pane>
+        <el-tab-pane name="resources" label="资源库">
+          <ResourceViewTree ref="resourceViewTreeRef" />
+        </el-tab-pane>
+        <el-tab-pane name="search" label="搜索">
+          <div id="search_resource_condition">
+            <div id="search_resource_condition_left">
+              <div class="std-middle-box">
+                <el-text>资源种类</el-text>
+              </div>
+              <div class="std-middle-box">
+                <el-checkbox-group v-model="currentResourceTypes" :min="1" @change="searchResourceKeyword">
+                  <el-checkbox value="文档" label="文档" />
+                  <el-checkbox value="图片" label="图片" />
+                  <el-checkbox value="网页" label="网页" />
+                  <el-checkbox value="代码" label="代码" />
+                  <el-checkbox value="文件夹" label="文件夹" />
+                </el-checkbox-group>
+              </div>
+            </div>
+            <div id="search_resource_condition_right">
+              <div class="std-middle-box">
+                <el-text>资源格式</el-text>
+              </div>
+              <div class="std-middle-box">
+                <el-select
+                  v-model="currentResourceFormats"
+                  multiple
+                  style="min-width: 120px"
+                  placeholder="全部格式"
+                  filterable
+                  :clearable="true"
+                  collapse-tags
+                  collapse-tags-tooltip
+                  :max-collapse-tags="2"
+                  @change="searchResourceKeyword"
+                >
+                  <el-option v-for="item in allResourceFormats" :key="item.name" :label="item.name" :value="item.name">
+                    <el-text>{{ item.name }}</el-text>
+                    <el-text>({{ item.count }})</el-text>
+                  </el-option>
+                </el-select>
+              </div>
+            </div>
           </div>
-        </el-scrollbar>
-        <div id="search_confirm_area">
-          <el-button style="width: 100%" @click="cancelAddChooseResources()"> 取消 </el-button>
-          <el-button type="primary" style="width: 100%" @click="emit('commit')"> 确认 </el-button>
-        </div>
+          <div id="search_recent_type">
+            <div
+              v-for="(searchType, idx) in resourceSearchTypes"
+              :key="idx"
+              class="search-type-box"
+              :class="{ 'search-type-box-active': searchType.search_type_active }"
+              @click="changeSearchType(searchType)"
+            >
+              <el-text class="search-type-text" :class="{ 'search-type-text-active': searchType.search_type_active }">
+                {{ searchType.search_type_name }}
+              </el-text>
+            </div>
+          </div>
+          <el-scrollbar
+            ref="elScrollbarRef"
+            v-loading="searchResourceLoading"
+            style="width: 100%"
+            element-loading-text="资源检索中..."
+            @scroll="searchResourceKeywordNext"
+          >
+            <div id="search_recent_result">
+              <div ref="searchResourceListScrollRef">
+                <el-table
+                  ref="resourceSearchTableRef"
+                  :data="resourceSearchResult"
+                  style="width: 100%; margin-top: 8px"
+                  @row-click="clickRow"
+                >
+                  <el-table-column type="selection" width="55" />
+                  <el-table-column prop="id" width="70" label="资源id" />
+                  <el-table-column prop="resource_name" label="资源名称" min-width="120" sortable>
+                    <template #default="scope">
+                      <div class="resource-item-name">
+                        <div :id="scope.row.id" class="resource-item-name-drag">
+                          <img :id="scope.row.id" :src="getResourceIcon(scope.row)" class="resource-icon" alt="" />
+                        </div>
+                        <div class="std-box">
+                          <el-text
+                            style="cursor: default"
+                            class="resource-name-text"
+                            v-html="getHighlightedText(scope.row.resource_name)"
+                          />
+                        </div>
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="author_info" label="资源作者" width="200" sortable>
+                    <template #default="scope">
+                      <div v-if="scope.row.user_id == userInfoStore.userInfo?.user_id" class="std-box">
+                        <el-avatar :src="userInfoStore.userInfo?.user_avatar" style="width: 16px; height: 16px" />
+                        <el-text
+                          style="width: 160px; font-size: 12px; font-weight: 500; line-height: 18px; color: #475467"
+                          truncated
+                        >
+                          {{ userInfoStore.userInfo?.user_nick_name }}
+                        </el-text>
+                      </div>
+                      <div v-else class="std-box">
+                        <el-avatar :src="scope.row?.author_info?.user_avatar" style="width: 18px; height: 18px" />
+                        <el-text style="font-size: 12px; font-weight: 500; line-height: 18px; color: #475467" truncated>
+                          {{ scope.row?.author_info?.user_nick_name }}
+                        </el-text>
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="resource_desc" label="资源描述" min-width="120" sortable>
+                    <template #default="scope">
+                      <div class="std-box">
+                        <el-text
+                          style="cursor: default"
+                          class="resource-name-text"
+                          v-html="getHighlightedText(scope.row.resource_desc)"
+                        />
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column v-if="resourceSearchRag" prop="ref_text" label="关联内容" min-width="120" sortable>
+                    <template #default="scope">
+                      <div class="std-box">
+                        <el-tooltip effect="light">
+                          <el-text
+                            style="cursor: default"
+                            class="resource-name-text"
+                            truncated
+                            v-html="getHighlightedText(scope.row.ref_text)"
+                          />
+                          <template #content>
+                            <el-scrollbar>
+                              <div style="max-height: 500px">
+                                <div
+                                  style="cursor: default"
+                                  class="resource-name-text"
+                                  v-html="md_answer.render(getHighlightedText(scope.row.ref_text))"
+                                />
+                              </div>
+                            </el-scrollbar>
+                          </template>
+                        </el-tooltip>
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    v-if="resourceSearchRag"
+                    prop="rerank_score"
+                    label="相关度评分"
+                    width="120"
+                    show-overflow-tooltip
+                    sortable
+                  />
+                  <el-table-column prop="create_time" label="创建时间" width="180" sortable />
+                  <el-table-column prop="update_time" label="更新时间" width="180" sortable />
+                  <el-table-column prop="resource_type_cn" label="资源类型" width="120" sortable />
+                  <el-table-column prop="resource_format" label="资源格式" width="120" sortable />
+                  <el-table-column
+                    prop="resource_size"
+                    label="资源大小"
+                    width="120"
+                    :sortable="true"
+                    :sort-method="sortResourceSize"
+                  >
+                    <template #default="scope">
+                      <el-text v-if="scope.row.resource_type != 'folder'">
+                        {{ formatResourceSize(scope.row.resource_size_in_MB) }}
+                      </el-text>
+                      <el-text v-else> - </el-text>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </div>
+          </el-scrollbar>
+        </el-tab-pane>
+      </el-tabs>
+      <div id="search_confirm_area">
+        <el-button style="width: 100%" @click="cancelAddChooseResources"> 取消 </el-button>
+        <el-button type="primary" style="width: 100%" @click="emit('commit')"> 确认 </el-button>
       </div>
     </div>
   </el-dialog>

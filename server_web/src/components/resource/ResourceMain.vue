@@ -1,18 +1,11 @@
 <script setup lang="ts">
-import { useSessionStorage } from '@vueuse/core';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { panel_width, switch_panel } from '@/components/resource/resource-panel/panel';
-import Resource_panel from '@/components/resource/resource-panel/ResourcePanel.vue';
-
 import WelcomeHome from '@/components/resource/WelcomeHome.vue';
+import ResourcePanel from '@/components/resource/resource-panel/ResourcePanel.vue';
 
-const isShowResourcePanel = useSessionStorage('isShowResourcePanel', true);
 const router = useRouter();
-
-function switchPanel() {
-  isShowResourcePanel.value = true;
-  switch_panel();
-}
+const resourcePanelRef = ref();
 
 defineOptions({
   name: 'ResourceMain'
@@ -21,13 +14,13 @@ defineOptions({
 
 <template>
   <el-container>
-    <el-aside :width="panel_width">
-      <resource_panel />
+    <el-aside :width="resourcePanelRef?.panelWidth">
+      <ResourcePanel ref="resourcePanelRef" />
     </el-aside>
     <el-main style="padding: 0 !important">
-      <welcome-home v-if="router.currentRoute.value.path == '/next_console/resources'" />
+      <WelcomeHome v-if="router.currentRoute.value.path == '/next-console/resources'" />
       <router-view v-else />
-      <div v-show="panel_width == '0px'" id="layout_button2" @click="switchPanel">
+      <div v-show="resourcePanelRef?.panelWidth == '0px'" id="layout_button2" @click="resourcePanelRef?.switchPanel">
         <el-tooltip :content="$t('openSidebar')" effect="light">
           <el-image id="layout_alt" src="/images/layout_alt_blue.svg" />
         </el-tooltip>

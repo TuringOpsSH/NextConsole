@@ -202,9 +202,20 @@ def model_instance_search(params):
             LLMInstance.llm_desc.desc()
         ).paginate(page=page_num, per_page=page_size)
 
-    # 检查有权限的模型
+    if not llm_instances:
+        return next_console_response(result={
+            "total": total,
+            "data": [],
+            "options": {}
+        })
     llm_instances = check_model_authorize(user_id, llm_instances)
     data = [llm_instance.show_info() for llm_instance in llm_instances]
+    if not data:
+        return next_console_response(result={
+            "total": total,
+            "data": data,
+            "options": {}
+        })
     llm_type_options = LLMInstance.query.filter(
         or_(
             LLMInstance.user_id == user_id,

@@ -1,34 +1,33 @@
 <script setup lang="ts">
 import {Search} from '@element-plus/icons-vue';
 import {useSessionStorage} from '@vueuse/core';
+import {ElMessage, ElNotification, UploadRawFile, UploadRequestOptions} from 'element-plus';
+import type Node from 'element-plus/es/components/tree/src/model/node';
+import {v4 as uuidv4} from 'uuid';
 import {computed, onMounted, ref, watch} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 import {
-  current_resource,
-  format_resource_size,
-  get_resource_icon, show_resource_list
-} from '@/components/resource/resource-list/resource_list';
+  batch_create_folders,
+  get_resource_usage,
+  resource_share_get_list,
+  search_resource_object
+} from '@/api/resource-api';
 import {
-  current_resource_usage,
-  current_resource_usage_percent,
+  current_resource,
+  get_resource_icon,
+  show_resource_list
+} from '@/components/resource/resource-list/resource-list';
+import ResourcePanelTags from '@/components/resource/resource-panel/ResourcePanelTags.vue';
+import {
   folderInput,
-  get_current_resource_usage,
-  get_recent_data_count,
-  get_resource_data_count,
   handle_search_clear,
   init_my_resource_tree,
   init_share_resource_tree,
   init_upload_manager,
   my_resource_tree_data,
   my_resource_tree_props,
-  panel_recent_shortcuts,
-  panel_show_my_resources_area,
-  panel_show_share_resources_area,
-  panel_system_labels,
-  panel_width,
   share_resource_tree_data,
   show_upload_button,
-  switch_panel,
   upload_file_Ref
 } from '@/components/resource/resource-panel/panel';
 import {
@@ -36,42 +35,41 @@ import {
   get_system_tag,
   search_rag_enhance,
   search_resource_by_tags
-} from '@/components/resource/resource-shortcut/resource_shortcut';
-import {
-  calculateMD5, calculateSHA256,
-  folder_upload_parent_resource,
-  get_task_icon,
-  prepare_upload_files,
-  show_upload_manage_box,
-  upload_file_content,
-  upload_file_list,
-  upload_file_task_list,
-  upload_size
-} from '@/components/resource/resource-upload/resource-upload';
-import ResourceUploadManager from '@/components/resource/resource-upload/ResourceUploadManager.vue';
-import {useUserInfoStore} from '@/stores/user-info-store';
-import {batch_create_folders, resource_share_get_list, search_resource_object} from "@/api/resource-api";
-import {ElMessage, ElNotification, UploadRequestOptions} from 'element-plus';
-import type Node from 'element-plus/es/components/tree/src/model/node';
-import {show_upload_folder_dialog} from "@/components/resource/resource_tree/resource_tree";
+} from '@/components/resource/resource-shortcut/resource-shortcut';
 import {
   current_resource_tags,
   current_resource_types,
   show_search_config_area
-} from "@/components/resource/resource-shortcut/resource_shortcut_head/resource_shortcut_head";
-import {show_share_resources} from "@/components/resource/resource-share/share_resources";
-import {IResourceItem, IResourceUploadItem} from "@/types/resource-type";
-import {v4 as uuidv4} from "uuid";
-import ResourcePanelTags from "@/components/resource/resource-panel/ResourcePanelTags.vue";
+} from '@/components/resource/resource-shortcut/resource_shortcut_head/resource_shortcut_head';
+import ResourceUploadManager from '@/components/resource/resource-upload/ResourceUploadManager.vue';
+import {
+  calculateMD5,
+  calculateSHA256,
+  folder_upload_parent_resource,
+  get_task_icon,
+  prepare_upload_files,
+  show_upload_manage_box,
+  upload_button_Ref,
+  upload_file_content,
+  upload_file_task_list,
+  upload_parent_resource,
+  upload_size
+} from '@/components/resource/resource-upload/resource-upload';
+import ResourceViewTree from '@/components/resource/resource_tree/ResourceViewTree.vue';
+import {formatResourceSize} from '@/components/resource/utils/common';
+import {useResourceInfoStore} from '@/stores/resource-info-store';
+import {useUserInfoStore} from '@/stores/user-info-store';
+import {IResourceItem, IResourceUploadItem} from '@/types/resource-type';
+import {showUploadDialogMultiple} from "@/components/resource/resource_tree/resource-tree";
 
 const userInfoStore = useUserInfoStore();
-
+const resourceInfoStore = useResourceInfoStore();
 const router = useRouter();
 const route = useRoute();
 const isShowResourcePanel = useSessionStorage('isShowResourcePanel', true);
-const shareResourceActive = ref(route.name === 'resource_share');
+const shareResourceActive = ref(route.name === 'resourceShare');
 const myResourceActive = ref(route.name === 'resource_list');
-
+const resourceViewTreeRef = ref();
 interface ITree {
   label: string;
   children?: ITree[];
@@ -85,16 +83,21 @@ interface ITree {
 const ragEnhance = ref(true);
 const resourceKeyword = ref('');
 const resourceProgressStatus = computed(() => {
-  if (current_resource_usage_percent.value < 60) {
+  if (resourceInfoStore.currentResourceUsagePercent < 60) {
     return 'success';
-  } else if (current_resource_usage_percent.value >= 80 && current_resource_usage_percent.value < 100) {
+  } else if (
+    resourceInfoStore.currentResourceUsagePercent >= 80 &&
+    resourceInfoStore.currentResourceUsagePercent < 100
+  ) {
     return 'warning';
   } else {
     return 'exception';
   }
 });
-panel_width.value = isShowResourcePanel.value ? '200px' : '0px';
-
+const panelWidth = ref(window.innerWidth < 768 ? '0px' : '200px');
+const panelShowMyResourcesArea = ref(false);
+const panelShowShareResourcesArea = ref(false);
+const uploadFileRef = ref();
 async function getMyResourceTree(node: Node, resolve: (data: ITree[]) => void) {
   // // console.log(node)
   if (node.data.resource_type !== 'folder') {
@@ -163,8 +166,8 @@ async function handleFolderSelect(event: Event) {
   // 检查目标文件夹是否存在
   if (!folder_upload_parent_resource.value) {
     // 打开文件夹选择框
-    // console.log('打开文件夹选择框')
-    show_upload_folder_dialog(handleFolderSelect, event);
+    console.log('打开文件夹选择框', resourceViewTreeRef.value);
+    await resourceViewTreeRef.value?.showUploadFolderDialog(handleFolderSelect, event);
     return;
   }
   // 自动创建所有文件夹
@@ -201,12 +204,10 @@ async function handleFolderSelect(event: Event) {
 function triggerFolderInput() {
   if (router.currentRoute.value.name == 'resource_list') {
     folder_upload_parent_resource.value = current_resource.id;
+  } else {
+    folder_upload_parent_resource.value = null;
   }
   folderInput.value.click();
-}
-function switchPanel() {
-  isShowResourcePanel.value = false;
-  switch_panel();
 }
 async function getShareResourceTree(node: Node, resolve: (data: ITree[]) => void) {
   if (node.data.resource_type !== 'folder') {
@@ -261,9 +262,6 @@ async function getShareResourceTree(node: Node, resolve: (data: ITree[]) => void
   }
 }
 async function routerToSearchPage() {
-  if (window.innerWidth < 768) {
-    switch_panel();
-  }
   if (!resourceKeyword.value) {
     return;
   }
@@ -284,13 +282,6 @@ async function routerToSearchPage() {
     };
   }
 
-  // 系统标签处理
-  for (let system_tag of panel_recent_shortcuts.value) {
-    system_tag.tag_active = false;
-  }
-  for (let system_tag of panel_system_labels.value) {
-    system_tag.tag_active = false;
-  }
   if (router.currentRoute.value.name != 'resource_search') {
     // 资源标签清空
     current_resource_tags.value = [];
@@ -349,18 +340,9 @@ async function routerToSearchPage() {
   return;
 }
 async function routerToRecycleBin() {
-  if (window.innerWidth < 768) {
-    switch_panel();
-  }
   // @ts-ignore
   current_tag.value = get_system_tag('recycle_bin');
   // 系统标签处理
-  for (let systemTag of panel_recent_shortcuts.value) {
-    systemTag.tag_active = false;
-  }
-  for (let systemTag of panel_system_labels.value) {
-    systemTag.tag_active = false;
-  }
   // 资源标签选中的全部保留
   let userTagIds = [];
   for (let userTag of current_resource_tags.value) {
@@ -400,18 +382,23 @@ async function routerToRecycleBin() {
 async function routerToShareResource(item: Node) {
   if (!item?.data) {
     router.push({
-      name: 'resource_share'
+      name: 'resourceShare',
+      params: {
+        resourceId: ''
+      }
     });
   } else if (item.data.resource_type == 'folder') {
-    await show_share_resources({
-      id: item.data.resource_id,
-      resource_type: item.data.resource_type
-    } as IResourceItem);
+    await router.push({
+      name: 'resourceShare',
+      params: {
+        resourceId: item.data.resource_id
+      }
+    });
   } else {
     router.push({
       name: 'resource_viewer',
       params: {
-        resource_id: item.data.resource_id
+        resource_id: item.data.resource_id as string
       }
     });
   }
@@ -467,9 +454,6 @@ async function prepareFolderFile(uploadFile, parentId) {
   upload_file_task_list.value.push(newUploadFileTask);
 }
 async function routerToResource(item: Node) {
-  if (window.innerWidth < 768) {
-    switch_panel();
-  }
   const userInfoStore = useUserInfoStore();
   if (item.data.resource_type == 'folder') {
     await show_resource_list({
@@ -487,27 +471,164 @@ async function routerToResource(item: Node) {
     });
   }
 }
+async function switchPanel(status: string = null) {
+  isShowResourcePanel.value = false;
+  if (window.innerWidth < 768) {
+    const fullWidth = window.innerWidth - 60 + 'px';
+    if (!status) {
+      panelWidth.value = panelWidth.value === fullWidth ? '0px' : fullWidth;
+    } else if (status == 'close') {
+      panelWidth.value = '0px';
+    }
+    return;
+  }
+  panelWidth.value = panelWidth.value === '200px' ? '0px' : '200px';
+  if (panelWidth.value == '0px') {
+    router.replace({
+      query: {
+        ...router.currentRoute.value.query,
+        resource_panel: 'false'
+      }
+    });
+  } else {
+    router.replace({
+      query: {
+        ...router.currentRoute.value.query,
+        resource_panel: 'true'
+      }
+    });
+  }
+}
+async function getCurrentResourceUsage() {
+  const params = {};
+  const res = await get_resource_usage(params);
+  if (!res.error_status) {
+    resourceInfoStore.currentResourceUsage = res.result.usage;
+    const userInfoStore = useUserInfoStore();
+    if (userInfoStore.userInfo?.user_resource_limit) {
+      resourceInfoStore.currentResourceUsagePercent = Math.round(
+        (res.result.usage / userInfoStore.userInfo?.user_resource_limit) * 100
+      );
+    } else {
+      resourceInfoStore.currentResourceUsagePercent = 0;
+    }
+  }
+}
+async function prepareUploadFiles(uploadFile: UploadRawFile) {
+  // 正对于新上传的文件，需要进行一些准备工作，然后生成一个上传任务
+  // 如果没有选择父资源，那么需要打开资源选择器
+  show_upload_manage_box.value = true;
+  if (show_upload_button.value) {
+    show_upload_button.value?.hide();
+  }
+  // 1. 计算文件的MD5值
+  let fileSHA256 = '';
+  try {
+    fileSHA256 = await calculateMD5(uploadFile);
+    if (!fileSHA256) {
+      fileSHA256 = await calculateSHA256(uploadFile);
+    }
+  } catch (e) {
+    fileSHA256 = await calculateSHA256(uploadFile);
+  }
+  if (!fileSHA256) {
+    ElNotification.error({
+      title: '系统通知',
+      message: '文件上传失败，无法计算文件特征值！',
+      duration: 5000
+    });
+    return false;
+  }
+  // 2. 准备参数
+  const resourceSize = uploadFile.size / 1024 / 1024;
+  const contentMaxIdx = Math.floor(resourceSize / upload_size.value);
+  // 前端临时可视化文件类型和格式
+  let resourceType = '';
+  let resourceFormat = '';
+
+  if (uploadFile.name.indexOf('.') > -1) {
+    resourceFormat = uploadFile.name.split('.').pop().toLowerCase();
+  }
+  resourceType = uploadFile.type;
+  const taskIcon = get_task_icon(resourceType, resourceFormat);
+  const newUploadFileTask = <IResourceUploadItem>{
+    id: null,
+    resource_parent_id: current_resource.id,
+    resource_id: null,
+    resource_name: uploadFile.name,
+    resource_size_in_mb: resourceSize,
+    resource_type: resourceType,
+    resource_format: resourceFormat,
+    content_max_idx: contentMaxIdx,
+    content_finish_idx: -1,
+    resource_md5: fileSHA256,
+    raw_file: uploadFile,
+    task_icon: taskIcon,
+    task_status: 'pending'
+  };
+  upload_file_task_list.value.push(newUploadFileTask);
+  console.log( upload_parent_resource.value);
+  if (['resource_shortcut', 'resource_search', 'resource_share'].includes(router.currentRoute.value.name as string)) {
+    upload_parent_resource.value.id = null;
+  }
+  if (!upload_parent_resource.value?.id) {
+    // console.log('无选择父资源')
+    upload_button_Ref.value?.handleStart(uploadFile);
+    resourceInfoStore.uploadFileList.push(uploadFile);
+    await showUploadDialogMultiple(retryAllUploadFile);
+    console.log(resourceInfoStore.uploadFileList);
+    return false;
+  }
+}
+async function retryAllUploadFile(uploadFileList) {
+  // 重试所有上传任务
+  show_upload_manage_box.value = true;
+  console.log('retryAllUploadFile, ', uploadFileList);
+  for (const item of uploadFileList) {
+    item.status = 'ready';
+    await upload_file_content(<UploadRequestOptions>{
+      file: item,
+      data: {},
+      headers: {}
+    });
+  }
+}
+function initUploadManager() {
+  upload_parent_resource.value = current_resource;
+  upload_button_Ref.value = uploadFileRef.value;
+}
 
 onMounted(async () => {
-  get_current_resource_usage();
-  get_recent_data_count();
+  getCurrentResourceUsage();
   init_my_resource_tree();
   init_share_resource_tree();
-  get_resource_data_count();
-  // handle_window_size()
-  // window.addEventListener('resize', handle_window_size)
+
+  if (router.currentRoute.value.query.resource_panel != 'false') {
+    panelWidth.value = '200px';
+    router.replace({
+      query: {
+        resource_panel: 'true'
+      }
+    });
+  } else {
+    panelWidth.value = '0px';
+  }
 });
 
 watch(
   () => route.name,
   newVal => {
     myResourceActive.value = newVal === 'resource_list';
-    shareResourceActive.value = newVal === 'resource_share';
+    shareResourceActive.value = newVal === 'resourceShare';
   }
 );
 
 defineOptions({
   name: 'ResourcePanel'
+});
+defineExpose({
+  switchPanel,
+  panelWidth
 });
 </script>
 
@@ -528,14 +649,16 @@ defineOptions({
       </div>
       <div id="panel_head_right">
         <el-progress
-          :percentage="current_resource_usage_percent"
+          :percentage="resourceInfoStore.currentResourceUsagePercent"
           :text-inside="true"
           :stroke-width="18"
           style="width: 80%"
           :status="resourceProgressStatus"
         />
         <el-text size="small">
-          {{ current_resource_usage }}M/{{ format_resource_size(userInfoStore.userInfo?.user_resource_limit) }}
+          {{ resourceInfoStore.currentResourceUsage }}M/{{
+            formatResourceSize(userInfoStore.userInfo?.user_resource_limit)
+          }}
         </el-text>
       </div>
     </div>
@@ -547,7 +670,7 @@ defineOptions({
         <div id="my_file">
           <div
             class="resource-router-title"
-            :style="{ backgroundColor: myResourceActive || panel_show_my_resources_area ? '#eff8ff' : '#fff' }"
+            :style="{ backgroundColor: myResourceActive || panelShowMyResourcesArea ? '#eff8ff' : '#fff' }"
           >
             <div class="resource-router-title-left" @click="router.push({ name: 'resource_list' })">
               <div class="std-middle-box">
@@ -559,13 +682,13 @@ defineOptions({
                 </el-text>
               </div>
             </div>
-            <div class="menu-icon-box" @click="panel_show_my_resources_area = !panel_show_my_resources_area">
-              <el-image v-show="panel_show_my_resources_area" src="/images/panel_arrow_down.svg" class="menu-icon" />
-              <el-image v-show="!panel_show_my_resources_area" src="/images/panel_arrow_up.svg" class="menu-icon" />
+            <div class="menu-icon-box" @click="panelShowMyResourcesArea = !panelShowMyResourcesArea">
+              <el-image v-show="panelShowMyResourcesArea" src="/images/panel_arrow_down.svg" class="menu-icon" />
+              <el-image v-show="!panelShowMyResourcesArea" src="/images/panel_arrow_up.svg" class="menu-icon" />
             </div>
           </div>
 
-          <div v-show="panel_show_my_resources_area">
+          <div v-show="panelShowMyResourcesArea">
             <el-tree
               ref="resource_tree_Ref"
               :data="my_resource_tree_data"
@@ -603,7 +726,7 @@ defineOptions({
         <div id="my_share">
           <div
             class="resource-router-title"
-            :style="{ backgroundColor: shareResourceActive || panel_show_share_resources_area ? '#eff8ff' : '#fff' }"
+            :style="{ backgroundColor: shareResourceActive || panelShowShareResourcesArea ? '#eff8ff' : '#fff' }"
           >
             <div class="resource-router-title-left" @click="routerToShareResource">
               <div class="std-middle-box">
@@ -615,12 +738,12 @@ defineOptions({
                 </el-text>
               </div>
             </div>
-            <div class="menu-icon-box" @click="panel_show_share_resources_area = !panel_show_share_resources_area">
-              <el-image v-show="panel_show_share_resources_area" class="menu-icon" src="/images/panel_arrow_down.svg" />
-              <el-image v-show="!panel_show_share_resources_area" class="menu-icon" src="/images/panel_arrow_up.svg" />
+            <div class="menu-icon-box" @click="panelShowShareResourcesArea = !panelShowShareResourcesArea">
+              <el-image v-show="panelShowShareResourcesArea" class="menu-icon" src="/images/panel_arrow_down.svg" />
+              <el-image v-show="!panelShowShareResourcesArea" class="menu-icon" src="/images/panel_arrow_up.svg" />
             </div>
           </div>
-          <div v-show="panel_show_share_resources_area">
+          <div v-show="panelShowShareResourcesArea">
             <el-scrollbar>
               <el-tree
                 ref="share_resource_tree_Ref"
@@ -658,7 +781,6 @@ defineOptions({
         </div>
       </div>
     </el-scrollbar>
-
     <div id="panel_foot">
       <div id="panel_foot_head">
         <div id="resource_search" style="min-width: 100px">
@@ -700,16 +822,16 @@ defineOptions({
           <template #default>
             <div id="upload-method-area">
               <el-upload
-                ref="upload_file_Ref"
-                v-model:file-list="upload_file_list"
+                ref="uploadFileRef"
+                :file-list="resourceInfoStore.uploadFileList"
                 multiple
                 :show-file-list="false"
                 :auto-upload="true"
                 name="chunk_content"
-                :before-upload="prepare_upload_files"
-                :on-change="init_upload_manager"
+                :before-upload="prepareUploadFiles"
+                :on-change="initUploadManager"
                 :http-request="upload_file_content"
-                :disabled="current_resource_usage_percent >= 100"
+                :disabled="resourceInfoStore.currentResourceUsagePercent >= 100"
                 accept="*"
                 action=""
               >
@@ -763,10 +885,10 @@ defineOptions({
         </div>
       </div>
     </div>
-  </div>
-
-  <div id="resource_upload_manage_box">
-    <ResourceUploadManager />
+    <div id="resource_upload_manage_box">
+      <ResourceUploadManager />
+    </div>
+    <ResourceViewTree ref="resourceViewTreeRef" />
   </div>
 </template>
 

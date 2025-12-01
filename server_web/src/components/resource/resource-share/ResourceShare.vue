@@ -1,68 +1,110 @@
 <script setup lang="ts">
-import { useSessionStorage } from '@vueuse/core';
-import { ElMessage, ElNotification } from 'element-plus';
-import { saveAs } from 'file-saver'; // 使用FileSaver.js
-import { storeToRefs } from 'pinia';
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
-import { batch_download_resources, resource_share_get_list, resource_share_get_meta } from '@/api/resource-api';
+import {useSessionStorage} from '@vueuse/core';
+import {ElMessage} from 'element-plus';
+import {saveAs} from 'file-saver'; // 使用FileSaver.js
+import {storeToRefs} from 'pinia';
+import {computed, nextTick, onBeforeUnmount, onMounted, provide, reactive, ref, watch} from 'vue';
+import {onBeforeRouteLeave, useRoute} from 'vue-router';
+import {
+  batch_download_resources, delete_resource_object_api,
+  resource_share_get_list,
+  resource_share_get_meta,
+  searchByKeywordInResource
+} from '@/api/resource-api';
 import ResourceEmpty from '@/components/resource/ResourceEmpty.vue';
 import ResourceDetail from '@/components/resource/resource-detail/index.vue';
 import {
-  current_resource_list,
-  download_resource,
   format_resource_size,
   get_resource_icon,
   share_resource,
   sort_resource_size,
   sort_resource_status
-} from '@/components/resource/resource-list/resource_list';
+} from '@/components/resource/resource-list/resource-list';
+import ResourceHead from '@/components/resource/resource-share/ResourceHead.vue';
+import ContextMenu from '@/components/resource/resource-share/context_menu/ContextMenu.vue';
 import {
-  setCurrentRowItem,
   openCardContextMenu,
   openContextMenu,
   openTableContextMenu,
-  resource_share_context_menu_flag
-} from '@/components/resource/resource-share/context_menu/context_menu';
-import ContextMenu from '@/components/resource/resource-share/context_menu/context_menu.vue';
-import ResourceHead from '@/components/resource/resource-share/resource_head/resource_head.vue';
-import {
-  click_resource_card,
-  get_share_parent_resource_list,
-  handle_selection_change,
-  multiple_selection,
-  preview_share_resource,
-  resource_share_list_card_buttons_Ref,
-  resource_share_list_Ref,
-  search_all_resource_share_object as searchAllResources,
-  share_resource_list,
-  current_share_resource,
-  el_scrollbar_Ref,
-  current_page_num,
-  current_page_size,
-  current_total,
-  resource_list_scroll_Ref,
-  resource_card_scroll_Ref,
-  share_resource_loading, resource_view_model, show_share_resources, show_multiple_button
-} from '@/components/resource/resource-share/share_resources';
-import ResourceMeta from '@/components/resource/resource_meta/resource_meta.vue';
+  resource_share_context_menu_flag,
+  setCurrentRowItem
+} from '@/components/resource/resource-share/context_menu/context-menu';
 import ResourceShareSelector from '@/components/resource/resource-share-selector/resource_share_selector.vue';
-import ResourceViewTree from '@/components/resource/resource_tree/resource_view_tree.vue';
-import { useShareResourceStore } from '@/stores/resourceShareStore';
-import { IResourceItem, ISearchByKeywordParams, TResourceListStatus } from '@/types/resource-type';
-import {push_to_clipboard} from "@/components/resource/resource_clipborad/resource_clipboard";
+import ResourceMeta from '@/components/resource/resource_meta/resource_meta.vue';
+import ResourceViewTree from '@/components/resource/resource_tree/ResourceViewTree.vue';
+import {downloadResource} from "@/components/resource/utils/common";
+import router from '@/router';
+import {useShareResourceStore} from '@/stores/resourceShareStore';
+import {IResourceItem, ISearchByKeywordParams, TResourceListStatus} from '@/types/resource-type';
+import { sortShareResourceList } from '@/utils/common';
+
 const props = defineProps({
-  resource_id: {
+  resourceId: {
     type: String,
-    default: '',
+    default: null,
     required: false
   }
 });
+const resourceViewModel = ref('list');
+const resourceShareListCardButtonsRef = ref();
+const currentPageNum = ref(1);
+const currentPageSize = ref(50);
+const elScrollbarRef = ref(null);
 const { isSearchMode, isLoading } = storeToRefs(useShareResourceStore());
 const shareListStatus = useSessionStorage<TResourceListStatus>('shareListStatus', 'card');
 const showCardList = computed(() => {
   return shareListStatus.value === 'card';
 });
+const hidePermission = useSessionStorage('hideShareResourcePermission', false);
+const keyword = ref('');
+const route = useRoute();
+const resourceId = ref(props.resourceId);
+const resourceListScrollRef = ref(null);
+const resourceCardScrollRef = ref(null);
+const multipleSelection = ref<IResourceItem[]>([]);
+const currentResourceId = useSessionStorage('currentResourceId', '');
+const isMultipleSelection = computed(() => {
+  return multipleSelection.value.length > 1;
+});
+const currentShareResource = reactive<IResourceItem>(
+  // @ts-ignore
+  {
+    sub_rag_file_cnt: 0,
+    id: null,
+    resource_parent_id: null,
+    user_id: null,
+    resource_name: null,
+    resource_type: null,
+    resource_desc: null,
+    resource_icon: null,
+    resource_format: null,
+    resource_path: null,
+    resource_size_in_MB: null,
+    resource_status: null,
+    ref_status: null,
+    create_time: null,
+    update_time: null,
+    delete_time: null,
+    show_buttons: null,
+    resource_parent_name: null,
+    resource_is_selected: null,
+    sub_resource_dir_cnt: null,
+    sub_resource_file_cnt: null,
+    resource_feature_code: '',
+    resource_is_supported: false,
+    resource_show_url: '',
+    resource_source_url: '',
+    resource_title: '',
+    resource_source: 'resource_center',
+    ref_text: null,
+    rerank_score: null
+  }
+);
+const currentTotal = ref(0);
+const resourceShareListRef = ref();
+const showMultipleButton = ref(false);
+const shareResourceLoading = ref(false);
+const shareResourceList = ref<IResourceItem[]>([]);
 function closeMenu(event) {
   // 关闭菜单
   if (
@@ -75,91 +117,94 @@ function closeMenu(event) {
 }
 
 async function getCurrentShareResource(resourceId: string | number | null = null) {
+  if (!resourceId) {
+    return;
+  }
   let params = {
     resource_id: resourceId
   };
   let res = await resource_share_get_meta(params);
   if (!res.error_status) {
-    Object.assign(current_share_resource, res.result);
+    Object.assign(currentShareResource, res.result);
   }
 }
 
 async function searchNextResourceShareObject(scrollPosition: object) {
-  if (share_resource_loading.value) {
+  if (shareResourceLoading.value) {
     console.log('资源正在加载中');
     return;
   }
-  if (current_total.value && current_total.value <= share_resource_list.value.length) {
+  if (currentTotal.value && currentTotal.value <= shareResourceList.value.length) {
     return;
   }
-  if (resource_view_model.value == 'card') {
+  if (resourceViewModel.value == 'card') {
     // @ts-ignore
-    if (scrollPosition.scrollTop + window.innerHeight - 120 > resource_card_scroll_Ref.value.clientHeight - 10) {
+    if (scrollPosition.scrollTop + window.innerHeight - 120 > resourceCardScrollRef.value.clientHeight - 10) {
       // 下一页
-      current_page_num.value += 1;
+      currentPageNum.value += 1;
       let searchParams = {
-        resource_parent_id: current_share_resource.id,
-        page_num: current_page_num.value,
-        page_size: current_page_size.value
+        resource_parent_id: currentShareResource.id,
+        page_num: currentPageNum.value,
+        page_size: currentPageSize.value
       };
-      share_resource_loading.value = true;
+      shareResourceLoading.value = true;
       let res = await resource_share_get_list(searchParams);
       if (!res.error_status) {
-        current_total.value = res.result.total;
+        currentTotal.value = res.result.total;
 
         for (let resource of res.result.data) {
           // 去重添加
           let findFlag = false;
-          for (let item of share_resource_list.value) {
+          for (let item of shareResourceList.value) {
             if (item.id == resource.resource.id) {
               findFlag = true;
               break;
             }
           }
           if (!findFlag) {
-            share_resource_list.value.push({ ...resource.resource, auth_type: resource.auth_type });
+            shareResourceList.value.push({ ...resource.resource, auth_type: resource.auth_type });
           }
         }
       }
       // @ts-ignore
-      el_scrollbar_Ref.value.setScrollTop(scrollPosition.scrollTop - 20);
-      share_resource_loading.value = false;
+      elScrollbarRef.value.setScrollTop(scrollPosition.scrollTop - 20);
+      shareResourceLoading.value = false;
     }
-  } else if (resource_view_model.value == 'list') {
+  } else if (resourceViewModel.value == 'list') {
     // @ts-ignore
     if (
       Math.floor(scrollPosition.scrollTop + window.innerHeight - 128) >
-      resource_list_scroll_Ref.value.clientHeight - 10
+      resourceListScrollRef.value.clientHeight - 10
     ) {
       // 下一页
-      current_page_num.value += 1;
+      currentPageNum.value += 1;
       let searchParams = {
-        resource_parent_id: current_share_resource.id,
-        page_num: current_page_num.value,
-        page_size: current_page_size.value
+        resource_parent_id: currentShareResource.id,
+        page_num: currentPageNum.value,
+        page_size: currentPageSize.value
       };
-      share_resource_loading.value = true;
+      shareResourceLoading.value = true;
       let res = await resource_share_get_list(searchParams);
       if (!res.error_status) {
-        current_total.value = res.result.total;
+        currentTotal.value = res.result.total;
         for (let resource of res.result.data) {
           // 去重添加
           let findFlag = false;
-          for (let item of share_resource_list.value) {
+          for (let item of shareResourceList.value) {
             if (item.id == resource.resource.id) {
               findFlag = true;
               break;
             }
           }
           if (!findFlag) {
-            share_resource_list.value.push({ ...resource.resource, auth_type: resource.auth_type });
+            shareResourceList.value.push({ ...resource.resource, auth_type: resource.auth_type });
           }
         }
       }
       // 往上滚动防止连续加载
       // @ts-ignore
-      el_scrollbar_Ref.value.setScrollTop(scrollPosition.scrollTop - 20);
-      share_resource_loading.value = false;
+      elScrollbarRef.value.setScrollTop(scrollPosition.scrollTop - 20);
+      shareResourceLoading.value = false;
     }
   }
 }
@@ -167,66 +212,11 @@ async function searchNextResourceShareObject(scrollPosition: object) {
 async function doubleClickResourceCard(resource: IResourceItem) {
   // 双击资源列表中的某一行触发
   if (resource.resource_type === 'folder') {
-    show_share_resources(resource);
+    showShareResources(resource);
   } else {
-    preview_share_resource(resource);
+    previewShareResource(resource);
   }
 }
-
-defineOptions({
-  name: 'ShareResources'
-});
-
-onMounted(async () => {
-  if (props.resource_id) {
-    await getCurrentShareResource(props.resource_id);
-  } else {
-    current_share_resource.id = -1;
-    current_share_resource.resource_name = '共享资源';
-  }
-  await get_share_parent_resource_list();
-  await searchAllResources();
-  isLoading.value = false;
-  document.addEventListener('click', closeMenu);
-});
-onBeforeUnmount(() => {
-  share_resource_list.value = [];
-  isLoading.value = true;
-  document.removeEventListener('click', closeMenu);
-});
-onBeforeRouteLeave((to, from, next) => {
-  current_page_num.value = 1;
-  current_page_size.value = 50;
-  current_total.value = 0;
-  next();
-});
-
-const hidePermission = useSessionStorage('hideShareResourcePermission', false);
-const keyword = ref('');
-const route = useRoute();
-const resourceId = ref(route.params.resource_id);
-const currentResourceId = useSessionStorage('currentResourceId', '');
-const multipleSelection = computed(() => {
-  return share_resource_list.value.filter(item => item.resource_is_selected);
-});
-const isMultipleSelection = computed(() => {
-  return multipleSelection.value.length > 1;
-});
-provide('isMultipleSelection', isMultipleSelection);
-
-watch(keyword, async newValue => {
-  if (newValue === '') {
-    isSearchMode.value = false;
-    await searchAllResources();
-  }
-});
-
-watch(
-  () => route.params,
-  newVal => {
-    resourceId.value = (newVal.resource_id as string) ?? '';
-  }
-);
 
 async function handleSearch() {
   if (keyword.value === '') {
@@ -239,20 +229,14 @@ async function handleSearch() {
   isSearchMode.value = true;
   const params: ISearchByKeywordParams = {
     resource_keyword: keyword.value.trim(),
-    resource_id: resourceId.value as string
+    resource_id: resourceId.value as number
   };
-  await searchAllResources(params);
+  await searchAllResourceShareObject(params);
 }
 
 function handleClear() {
   isSearchMode.value = false;
   keyword.value = '';
-}
-
-function handleSelectionChange(val: IResourceItem[]) {
-  currentResourceId.value = val.at(-1)?.id.toString() ?? '';
-  setCurrentRowItem(val.at(-1));
-  handle_selection_change(val);
 }
 
 function clickResourceCard(resource: IResourceItem, event: MouseEvent) {
@@ -261,31 +245,31 @@ function clickResourceCard(resource: IResourceItem, event: MouseEvent) {
     return;
   }
   resource.resource_is_selected = !resource.resource_is_selected;
-  let selected_cnt = 0;
-  for (let item of share_resource_list.value) {
+  let selectedCnt = 0;
+  for (let item of shareResourceList.value) {
     if (item.resource_is_selected) {
-      selected_cnt += 1;
+      selectedCnt += 1;
     }
   }
-  if (selected_cnt > 0) {
-    show_multiple_button.value = true;
+  if (selectedCnt > 0) {
+    showMultipleButton.value = true;
   }
-  // 保证multiple_selection 的顺序来更新
+  // 保证multipleSelection 的顺序来更新
   if (resource.resource_is_selected) {
-    multiple_selection.value.push(resource);
+    multipleSelection.value.push(resource);
   } else {
-    let index = multiple_selection.value.findIndex(item => item.id == resource.id);
-    multiple_selection.value.splice(index, 1);
+    let index = multipleSelection.value.findIndex(item => item.id == resource.id);
+    multipleSelection.value.splice(index, 1);
   }
   // 同步到列表视图
-  resource_share_list_Ref.value?.toggleRowSelection(resource);
+  resourceShareListRef.value?.toggleRowSelection(resource);
   nextTick(() => {
-    currentResourceId.value = multiple_selection.value.at(-1)?.id.toString() ?? '';
+    currentResourceId.value = multipleSelection.value.at(-1)?.id.toString() ?? '';
   });
 }
 
 function loadMoreResource(e: Event) {
-  if (share_resource_list.value.length === 0) {
+  if (shareResourceList.value.length === 0) {
     return;
   }
   searchNextResourceShareObject(e);
@@ -306,7 +290,7 @@ async function batchDownloadSelectResource() {
     resource_list: []
   };
 
-  for (const item of share_resource_list.value) {
+  for (const item of shareResourceList.value) {
     if (item.id && item.resource_is_selected) {
       params.resource_list.push(item.id);
     }
@@ -315,9 +299,9 @@ async function batchDownloadSelectResource() {
     ElMessage.warning('请先选择要下载的资源！');
     return;
   }
-  share_resource_loading.value = true;
+  shareResourceLoading.value = true;
   let res = await batch_download_resources(params);
-  share_resource_loading.value = false;
+  shareResourceLoading.value = false;
   if (!res.error_status) {
     if (!res.result?.length) {
       ElMessage.info('无可下载资源,请检查资源对应权限!');
@@ -329,18 +313,18 @@ async function batchDownloadSelectResource() {
 }
 
 function cancelMultipleSelection() {
-  currentResourceId.value = (route.params.resource_id as string) ?? '';
-  show_multiple_button.value = false;
-  for (let item of multiple_selection.value) {
+  currentResourceId.value = (route.params.resourceId ) ?? null;
+  showMultipleButton.value = false;
+  for (let item of multipleSelection.value) {
     item.resource_is_selected = false;
   }
-  multiple_selection.value = [];
-  resource_share_list_Ref.value?.clearSelection();
+  multipleSelection.value = [];
+  resourceShareListRef.value?.clearSelection();
 }
 
 function batchShare() {
   let selectedResources = [];
-  for (let resource of multiple_selection.value) {
+  for (let resource of multipleSelection.value) {
     if (resource.resource_is_selected && resource.id) {
       selectedResources.push(resource);
     }
@@ -354,13 +338,184 @@ function batchShare() {
     ElMessage.info('当前仅支持单个资源分享，已为您打开第一个资源的分享窗口!');
   }
 }
+
+async function previewShareResource(resource: IResourceItem) {
+  // 预览资源
+
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除，请恢复后查看!');
+    return;
+  }
+  if (!resource?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_type == 'folder') {
+    await showShareResources(resource);
+    return;
+  }
+  await router.push({
+    name: 'resource_viewer',
+    params: {
+      resource_id: resource.id
+    },
+    query: {
+      ...router.currentRoute.value.query
+    }
+  });
+}
+
+async function handleSelectionChange(val: IResourceItem[]) {
+  // 多选框选中事件
+  currentResourceId.value = val.at(-1)?.id.toString() ?? '';
+  setCurrentRowItem(val.at(-1));
+  multipleSelection.value = val;
+  for (const item of multipleSelection.value) {
+    item.resource_is_selected = true;
+  }
+  const selectIds = val.map(item => item.id);
+  shareResourceList.value = shareResourceList.value.map(item => ({
+    ...item,
+    resource_is_selected: selectIds.includes(item.id)
+  }));
+  console.log(multipleSelection.value);
+}
+
+async function showShareResources(item: IResourceItem | null = null) {
+  // 面板跳转
+  if (item.resource_type == 'folder') {
+    router.push({
+      name: 'resourceShare',
+      query: {
+        ...router.currentRoute.value.query
+      },
+      params: {
+        ...router.currentRoute.value.params,
+        resourceId: item?.id
+      }
+    });
+    return;
+  }
+}
+
+async function searchAllResourceShareObject(params?: ISearchByKeywordParams) {
+  const { isLoading } = storeToRefs(useShareResourceStore());
+  let searchParams = {
+    resource_parent_id: currentShareResource.id > 0 ? currentShareResource.id : null
+  };
+  shareResourceLoading.value = true;
+  isLoading.value = true;
+  let res;
+  if (params) {
+    res = await searchByKeywordInResource(params);
+  } else {
+    res = await resource_share_get_list(searchParams);
+  }
+  isLoading.value = false;
+  if (!res.error_status) {
+    currentTotal.value = res.result.total;
+    const {
+      result: { data = [] }
+    } = res;
+    sortShareResourceList(data);
+    if (params) {
+      shareResourceList.value = data;
+    } else {
+      shareResourceList.value = data.map(({ resource, auth_type }) => {
+        return { ...resource, auth_type };
+      });
+    }
+  }
+  resourceShareListRef.value?.clearSelection();
+  shareResourceLoading.value = false;
+}
+
+function selectAll(isSelectedAll?: boolean) {
+  // 全选
+  shareResourceList.value = shareResourceList.value.map(item => ({
+    ...item,
+    resource_is_selected: !isSelectedAll
+  }));
+  showMultipleButton.value = !showMultipleButton.value;
+
+  if (!isSelectedAll) {
+    resourceShareListRef.value?.toggleAllSelection();
+  } else {
+    resourceShareListRef.value?.clearSelection();
+  }
+}
+async function deleteResource(resource: IResourceItem) {
+  if (!resource.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除!');
+    return;
+  }
+  // 删除资源
+  const params = {
+    resource_id: resource.id
+  };
+  const res = await delete_resource_object_api(params);
+  if (!res.error_status) {
+    ElMessage.success('删除成功!');
+    await searchAllResourceShareObject();
+  }
+}
+
 provide('keyword', keyword);
+provide('isMultipleSelection', isMultipleSelection);
+
+watch(keyword, async newValue => {
+  if (newValue === '') {
+    isSearchMode.value = false;
+    await searchAllResourceShareObject();
+  }
+});
+
+watch(
+  () => props.resourceId,
+  newVal => {
+    resourceId.value = newVal ?? null;
+    currentShareResource.id = resourceId.value;
+    searchAllResourceShareObject();
+  }
+);
+defineOptions({
+  name: 'ShareResources'
+});
+const isSelectedAll = computed(() => {
+  return shareResourceList.value.every(item => item.resource_is_selected);
+});
+onMounted(async () => {
+  if (props.resourceId && props.resourceId !== '0') {
+    await getCurrentShareResource(props.resourceId);
+  } else {
+    currentShareResource.id = -1;
+    currentShareResource.resource_name = '共享资源';
+  }
+  await searchAllResourceShareObject();
+  isLoading.value = false;
+  document.addEventListener('click', closeMenu);
+});
+onBeforeUnmount(() => {
+  shareResourceList.value = [];
+  isLoading.value = true;
+  document.removeEventListener('click', closeMenu);
+});
+onBeforeRouteLeave((to, from, next) => {
+  currentPageNum.value = 1;
+  currentPageSize.value = 50;
+  currentTotal.value = 0;
+  next();
+});
 </script>
 
 <template>
   <el-container>
     <el-header height="60" style="padding: 0 !important">
-      <ResourceHead @handle-search="handleSearch" @handle-clear="handleClear" />
+      <ResourceHead :resource-id="currentShareResource.id" @handle-search="handleSearch" @handle-clear="handleClear" />
     </el-header>
     <el-main style="padding: 2px !important" @contextmenu.prevent="openContextMenu">
       <div
@@ -370,15 +525,15 @@ provide('keyword', keyword);
         :style="{ height: 'calc(100vh -  121px)' }"
       >
         <el-scrollbar
-          v-if="share_resource_list.length"
-          ref="el_scrollbar_Ref"
+          v-if="shareResourceList.length"
+          ref="elScrollbarRef"
           style="width: 100%"
           @scroll="loadMoreResource"
         >
-          <div v-show="!showCardList" id="list_model" ref="resource_list_scroll_Ref">
+          <div v-show="!showCardList" id="list_model" ref="resourceListScrollRef">
             <el-table
-              ref="resource_share_list_Ref"
-              :data="share_resource_list"
+              ref="resourceShareListRef"
+              :data="shareResourceList"
               :highlight-current-row="true"
               :row-key="row => row.id"
               border
@@ -393,7 +548,7 @@ provide('keyword', keyword);
                     <div :id="scope.row.id" class="resource-item-name-drag">
                       <img :id="scope.row.id" :src="get_resource_icon(scope.row)" class="resource-icon" alt="" />
                     </div>
-                    <div class="std-box" @click="preview_share_resource(scope.row)">
+                    <div class="std-box" @click="previewShareResource(scope.row)">
                       <el-text style="cursor: pointer" class="resource-name-text">
                         {{ scope.row.resource_name }}
                       </el-text>
@@ -437,7 +592,7 @@ provide('keyword', keyword);
               >
                 <template #default="scope">
                   <div class="std-box">
-                    <el-tag v-if="scope.row.rag_status == 'Success'" type="success" round> 索引 </el-tag>
+                    <el-tag v-if="scope.row.ref_status == 'Success'" type="success" round> 索引 </el-tag>
                   </div>
                 </template>
               </el-table-column>
@@ -450,15 +605,26 @@ provide('keyword', keyword);
                     </template>
                     <div class="resource-button-group">
                       <div class="resource-button">
-                        <el-button text class="resource-button" @click="preview_share_resource(scope.row)">
+                        <el-button text class="resource-button" @click="previewShareResource(scope.row)">
                           查看
                         </el-button>
                       </div>
                       <div class="resource-button">
-                        <el-button text class="resource-button" @click="download_resource(scope.row)"> 下载 </el-button>
+                        <el-button text class="resource-button" @click="downloadResource(scope.row)"> 下载 </el-button>
                       </div>
                       <div class="resource-button">
                         <el-button text class="resource-button" @click="share_resource(scope.row)"> 分享 </el-button>
+                      </div>
+                      <div class="resource-button">
+                        <el-popconfirm
+                          confirm-button-type="danger"
+                          title="确认删除？可在回收站中找回"
+                          @confirm="deleteResource(scope.row)"
+                        >
+                          <template #reference>
+                            <el-button type="danger" text class="resource-button"> 删除 </el-button>
+                          </template>
+                        </el-popconfirm>
                       </div>
                     </div>
                   </el-popover>
@@ -466,9 +632,9 @@ provide('keyword', keyword);
               </el-table-column>
             </el-table>
           </div>
-          <div v-show="showCardList" id="card-model" ref="resource_card_scroll_Ref">
+          <div v-show="showCardList" id="card-model" ref="resourceCardScrollRef">
             <div
-              v-for="item in share_resource_list"
+              v-for="item in shareResourceList"
               :id="item.id.toString()"
               :key="item.id"
               draggable="true"
@@ -503,21 +669,30 @@ provide('keyword', keyword);
                 </div>
                 <div class="resource-item-card-panel">
                   <div class="resource-item-card-body-button">
-                    <el-popover ref="resource_share_list_card_buttons_Ref" trigger="click" :hide-after="0">
+                    <el-popover ref="resourceShareListCardButtonsRef" trigger="click" :hide-after="0">
                       <template #reference>
                         <el-image src="/images/dot_list_grey.svg" class="resource-icon2" />
                       </template>
                       <div class="resource-button-group">
                         <div class="resource-button">
-                          <el-button text class="resource-button" @click="preview_share_resource(item)">
-                            查看
-                          </el-button>
+                          <el-button text class="resource-button" @click="previewShareResource(item)"> 查看 </el-button>
                         </div>
                         <div class="resource-button">
-                          <el-button text class="resource-button" @click="download_resource(item)"> 下载 </el-button>
+                          <el-button text class="resource-button" @click="downloadResource(item)"> 下载 </el-button>
                         </div>
                         <div class="resource-button">
                           <el-button text class="resource-button" @click="share_resource(item)"> 分享 </el-button>
+                        </div>
+                        <div class="resource-button">
+                          <el-popconfirm
+                            confirm-button-type="danger"
+                            title="确认删除？可在回收站中找回"
+                            @confirm="deleteResource(item)"
+                          >
+                            <template #reference>
+                              <el-button type="danger" text class="resource-button"> 删除 </el-button>
+                            </template>
+                          </el-popconfirm>
                         </div>
                       </div>
                     </el-popover>
@@ -527,7 +702,7 @@ provide('keyword', keyword);
             </div>
           </div>
         </el-scrollbar>
-        <div v-if="!share_resource_list?.length && !isLoading" class="std-middle-box" style="width: 100%; height: 100%">
+        <div v-if="!shareResourceList?.length && !isLoading" class="std-middle-box" style="width: 100%; height: 100%">
           <ResourceEmpty :is-search-mode="isSearchMode" />
         </div>
         <div v-if="!isLoading" :class="['permission-container', { 'permission-container-hide': hidePermission }]">
@@ -565,7 +740,7 @@ provide('keyword', keyword);
           </div>
         </div>
         <ResourceMeta />
-        <ContextMenu />
+        <ContextMenu :resource-id="currentShareResource.id" @select-all="selectAll(isSelectedAll)" />
         <ResourceShareSelector />
         <ResourceViewTree />
       </el-scrollbar>

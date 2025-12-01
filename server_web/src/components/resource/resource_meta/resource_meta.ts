@@ -1,25 +1,24 @@
-import { ElMessage, ElNotification } from 'element-plus';
-import { reactive, ref } from 'vue';
+import {ElMessage, ElNotification} from 'element-plus';
+import {reactive, ref} from 'vue';
 import {
-  build_resource_object_ref,
-  get_resource_object,
-  get_resource_recycle_object,
-  resource_share_get_meta,
-  search_resource_tags,
-  update_resource_object
+    build_resource_object_ref,
+    get_resource_object,
+    get_resource_recycle_object,
+    resource_share_get_meta,
+    search_resource_tags,
+    update_resource_object
 } from '@/api/resource-api';
-import { search_all_resource_object } from '@/components/resource/resource-list/resource_list';
-import { init_my_resource_tree, refresh_panel_count } from '@/components/resource/resource-panel/panel';
-import { search_resource_by_tags } from '@/components/resource/resource-shortcut/resource_shortcut';
-import { search_all_resource_share_object } from '@/components/resource/resource-share/share_resources';
+import {search_all_resource_object} from '@/components/resource/resource-list/resource-list';
+import {init_my_resource_tree} from '@/components/resource/resource-panel/panel';
+import {search_resource_by_tags} from '@/components/resource/resource-shortcut/resource-shortcut';
 import router from '@/router';
-import { useUserInfoStore } from '@/stores/user-info-store';
-import { ResourceItem, ResourceTag } from '@/types/resource-type';
+import {useUserInfoStore} from '@/stores/user-info-store';
+import {IResourceItem, IResourceTag} from '@/types/resource-type';
 
 export const show_meta_flag = ref(false);
 export const meta_edit_flag = ref(false);
 //@ts-ignore
-export const choose_resource_meta = reactive<ResourceItem>({
+export const choose_resource_meta = reactive<IResourceItem>({
   id: null,
   resource_parent_id: null,
   user_id: null,
@@ -31,7 +30,7 @@ export const choose_resource_meta = reactive<ResourceItem>({
   resource_size_in_MB: null,
   resource_status: null,
   resource_language: null,
-  rag_status: null,
+  ref_status: null,
   delete_time: null,
   resource_parent_name: null,
   create_time: null,
@@ -45,7 +44,7 @@ export const choose_resource_meta = reactive<ResourceItem>({
 });
 export const loading_meta = ref(false);
 export const loading_meta_tags = ref(false);
-export const all_resource_tags = ref<ResourceTag[]>([]);
+export const all_resource_tags = ref<IResourceTag[]>([]);
 export const uncommit_notice = ref(false);
 export const show_rebuild_button = ref(true);
 export async function turn_on_resource_meta(resource_id: number, resource_status: string = '正常') {
@@ -65,7 +64,7 @@ export async function turn_on_resource_meta(resource_id: number, resource_status
       choose_resource_meta.resource_language = null;
       choose_resource_meta.resource_size_in_MB = null;
       choose_resource_meta.resource_format = null;
-      choose_resource_meta.rag_status = null;
+      choose_resource_meta.ref_status = null;
       choose_resource_meta.create_time = null;
       choose_resource_meta.resource_type = null;
       choose_resource_meta.resource_type_cn = null;
@@ -101,7 +100,7 @@ export async function turn_on_resource_meta(resource_id: number, resource_status
     choose_resource_meta.resource_language = res.result.resource_language;
     choose_resource_meta.resource_size_in_MB = res.result.resource_size_in_MB;
     choose_resource_meta.resource_format = res.result.resource_format;
-    choose_resource_meta.rag_status = res.result.rag_status;
+    choose_resource_meta.ref_status = res.result.ref_status;
     choose_resource_meta.create_time = res.result.create_time;
     choose_resource_meta.resource_type = res.result.resource_type;
     choose_resource_meta.resource_type_cn = res.result.resource_type_cn;
@@ -165,14 +164,11 @@ export async function update_choose_resource_meta() {
     meta_edit_flag.value = false;
     ElMessage.success('更新成功');
   }
-  refresh_panel_count();
   init_my_resource_tree();
   if (router.currentRoute.value.name === 'resource_list') {
     search_all_resource_object();
   } else if (router.currentRoute.value.name === 'resource_shortcut') {
     search_resource_by_tags();
-  } else if (router.currentRoute.value.name === 'resource_share') {
-    search_all_resource_share_object();
   }
 }
 
@@ -186,8 +182,9 @@ export async function before_leave_check(done) {
     return done(false);
   }
   // 检查是否有未提交的修改
+  const userInfoStore = useUserInfoStore();
   let res = null;
-  if (choose_resource_meta.user_id != user_info.value.user_id) {
+  if (choose_resource_meta.user_id != userInfoStore.userInfo.user_id) {
     res = await resource_share_get_meta({
       resource_id: choose_resource_meta.id
     });

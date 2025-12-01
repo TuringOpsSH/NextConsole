@@ -42,6 +42,13 @@ export const useUserInfoStore = defineStore(
       // eslint-disable-next-line @typescript-eslint/naming-convention
       return { Authorization: 'Bearer ' + token.value };
     });
+    const adminAccess = computed(() => {
+      return (
+        userInfo.user_role?.includes('admin') ||
+        userInfo.user_role?.includes('super_admin') ||
+        userInfo.user_role?.includes('next_console_admin')
+      );
+    });
     function updateUserInfo(info: IUsers) {
       Object.assign(userInfo, info);
     }
@@ -73,7 +80,7 @@ export const useUserInfoStore = defineStore(
           return role;
       }
     }
-    return { userInfo, token, expireTime, userHeader, updateUserInfo, translateUserRole, $reset };
+    return { userInfo, token, expireTime, userHeader, adminAccess, updateUserInfo, translateUserRole, $reset };
   },
   {
     persist: true // 启用持久化

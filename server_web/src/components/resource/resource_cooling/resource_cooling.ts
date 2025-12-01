@@ -28,7 +28,7 @@ export async function init_cooling_record(cooling_id: number) {
 export async function exit_cooling_page() {
   cool_record_dialog.value = false;
   await router.push({
-    name: 'resource_share'
+    name: 'resourceShare'
   });
 }
 

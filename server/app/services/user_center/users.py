@@ -2072,3 +2072,72 @@ def send_sms_by_client(phone, template_param):
         app.logger.error(error)
         return next_console_response(error_status=True, error_message="短信发送失败，请稍后重试！")
 
+
+def login_by_token_service(data):
+    """
+    sdk 中根据token进行用户鉴权
+    """
+    token = data.get("token")
+    connect_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "connectors",
+        SystemConfig.config_status == 1,
+    ).first()
+    if not connect_config or not connect_config.config_value.get("qy"):
+        return next_console_response(error_status=True,error_message="系统未配置鉴权信息！")
+    qy_connect = connect_config.config_value.get("qy")
+    url = qy_connect.get("url", "http://localhost:8080/next_console/user_center/users/get")
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    data = {
+        "token": token,
+    }
+    try:
+        resp = requests.post(url=url, headers=headers, data=data, verify=False)
+        resp.raise_for_status()
+        user = resp.json()
+    except Exception as error:
+        app.logger.error(error)
+        return next_console_response(error_status=True, error_message=str(error))
+    user_info = user.get("result")
+    user = UserInfo.query.filter(
+        UserInfo.user_code == user_info.get("user_code"),
+        UserInfo.user_status == 1,
+    ).first()
+    if not user:
+        # 根据用户信息新建用户
+        new_user_params = {
+            "user_code": user_info.get("user_code"),
+            'user_name': user_info.get("user_name"),
+            'user_source': "sdk",
+            "user_password": user_info.get("user_password", uuid.uuid4().hex),
+            "is_sha256_flag": False,
+            'user_email': user_info.get("email"),
+            'user_phone': user_info.get("phone"),
+            'user_status': 1,
+            "user_confirm_flag": False,
+        }
+        add_user(new_user_params)
+        user = UserInfo.query.filter_by(user_code=user_info.get("user_code")).first()
+        if user is None:
+            return next_console_response(error_status=True, error_message="自动注册失败！", error_code=1002)
+    # 直接登录
+    userinfo = user.to_dict()
+    user_role = search_user_roles({"user_id": userinfo['user_id']}).json
+    user_role = user_role.get("result", [])
+    user_role = [role.get("role_name") for role in user_role]
+    userinfo["user_role"] = user_role
+    data = {
+        "user_id": userinfo['user_id'],
+        "role_name": user_role,
+    }
+    access_token = create_access_token(identity=str(userinfo['user_id']),
+                                       expires_delta=timedelta(days=7),
+                                       additional_claims=data
+                                       )
+    user.last_login_time = datetime.now(timezone.utc)
+    db.session.add(user)
+    db.session.commit()
+    expire_time = (datetime.now(timezone.utc) + timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S")
+    return next_console_response(
+        result={"token": access_token, "userinfo": userinfo, "expire_time": expire_time})

@@ -562,7 +562,7 @@ watch(
         <el-col v-show="localRequireDefile && !localSchema?.properties?.[key]?.typeFixed" :span="2">
           <div class="attr-require">
             <el-tooltip content="是否必需" placement="top" effect="light">
-              <div>
+              <div class="std-middle-box">
                 <el-icon
                   v-if="!localSchema.properties?.[key]?.valueFixed"
                   :style="{ color: localSchema?.required?.includes(key) ? 'red' : 'grey' }"
@@ -594,7 +594,7 @@ watch(
                     localSchema.properties?.[key]?.type == 'string' ||
                     localSchema.properties?.[key]?.type == 'number' ||
                     localSchema.properties?.[key]?.type == 'integer'
-                  ">
+                  " style="width : 100%">
                   <el-input-tag
                     v-model="localSchema.properties[key].enum"
                     placeholder="请输入枚举值,enter键分隔"
@@ -603,6 +603,7 @@ watch(
                     tag-type="primary"
                     tag-effect="light"
                     @change="changeEnum(key)"
+
                   />
                 </div>
                 <div v-else-if="localSchema.properties?.[key]?.type == 'boolean'">
@@ -793,8 +794,6 @@ watch(
   justify-content: center;
   align-items: center;
   flex-direction: row;
-  height: 100%;
-  width: 100%;
 }
 .form-item-object {
   position: relative;

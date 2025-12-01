@@ -14,8 +14,8 @@ def handle_connect():
     处理客户端连接事件，并记录客户端信息至redis
     :return:
     """
-    # print("Client connected:", request.sid)
-    return
+    return ''
+
 
 
 @socketio.on('auth')
@@ -52,15 +52,16 @@ def handle_auth(data):
     else:
         all_user_clients = []
     for client in all_user_clients:
-        if client.get('client_fingerprint') == client_fingerprint:
+        if client.get('session_id') == session_id and client.get('client_fingerprint') == client_fingerprint:
             # 更新会话ID和连接时间
             client['session_id'] = session_id
             client['connect_time'] = current_datetime
             client['status'] = 'connected'
             redis_client.set(user_id, json.dumps(all_user_clients))
-            return
+            return True
     all_user_clients.append(client_info)
     redis_client.set(user_id, json.dumps(all_user_clients))
+    return True
 
 
 @socketio.on('remove_auth')
@@ -96,6 +97,7 @@ def handle_disconnect(data):
                 client['disconnect_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 break
     redis_client.set(user_id, json.dumps(all_user_clients))
+    return True
 
 
 @socketio.on('message')

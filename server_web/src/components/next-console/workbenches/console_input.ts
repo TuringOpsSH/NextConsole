@@ -1,3 +1,2 @@
-import {ref} from 'vue';
+import { ref } from 'vue';
 export const consoleInputRef = ref();
-

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { useSessionStorage } from '@vueuse/core';
-import { ElMessage, ElNotification } from 'element-plus';
-import { storeToRefs } from 'pinia';
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref } from 'vue';
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
+import {useSessionStorage} from '@vueuse/core';
+import {ElMessage, ElNotification} from 'element-plus';
+import {storeToRefs} from 'pinia';
+import {computed, nextTick, onBeforeUnmount, onMounted, provide, ref} from 'vue';
+import {onBeforeRouteLeave, useRoute} from 'vue-router';
 import {
-  batch_delete_resource_object, batch_download_resources,
+  batch_delete_resource_object,
+  batch_download_resources,
   build_resource_object_ref,
   delete_resource_object_api,
   move_resources
@@ -19,8 +20,8 @@ import {
   openContextMenu,
   openTableContextMenu,
   resource_list_context_menu_flag
-} from '@/components/resource/resource-list/resource_context_menu/context_menu';
-import { resource_head_height } from '@/components/resource/resource-list/resource_head/resource_head';
+} from '@/components/resource/resource-list/resource_context_menu/context-menu';
+import {resource_head_height} from '@/components/resource/resource-list/resource_head/resource_head';
 import ResourceHead from '@/components/resource/resource-list/resource_head/resource_head.vue';
 import {
   cancel_multiple_selection,
@@ -32,7 +33,6 @@ import {
   current_resource_list as currentResourceList,
   current_total,
   double_click_resource_card,
-  download_resource,
   get_current_resource_object,
   get_parent_resource_list,
   multiple_selection,
@@ -40,24 +40,26 @@ import {
   resource_list_buttons_Ref,
   resource_list_card_buttons_Ref,
   resource_list_Ref,
-  resource_list_scroll_Ref, resource_loading, resource_view_model,
+  resource_list_scroll_Ref,
+  resource_loading,
+  resource_view_model,
   resourceDetailRef,
   search_all_resource_object,
   search_all_resource_object_next,
   share_resource,
   show_resource_list,
-} from '@/components/resource/resource-list/resource_list';
-import { close_upload_manager as closeUploadManager } from '@/components/resource/resource-upload/resource-upload';
+} from '@/components/resource/resource-list/resource-list';
+import {close_upload_manager as closeUploadManager} from '@/components/resource/resource-upload/resource-upload';
 import ResourceMeta from '@/components/resource/resource_meta/resource_meta.vue';
 import ResourceShareSelector from '@/components/resource/resource-share-selector/resource_share_selector.vue';
-import ResourceViewTree from '@/components/resource/resource_tree/resource_view_tree.vue';
-import { formatResourceSize, getResourceIcon } from '@/components/resource/utils/common';
-import { useResourceListStore } from '@/stores/resourceListStore';
-import { IResourceItem, TResourceListStatus } from '@/types/resource-type';
+import ResourceViewTree from '@/components/resource/resource_tree/ResourceViewTree.vue';
+import {downloadResource, formatResourceSize, getResourceIcon} from '@/components/resource/utils/common';
+import {useResourceListStore} from '@/stores/resourceListStore';
+import {IResourceItem, TResourceListStatus} from '@/types/resource-type';
 import {push_to_clipboard} from "@/components/resource/resource_clipborad/resource_clipboard";
-import {init_my_resource_tree, refresh_panel_count} from "@/components/resource/resource-panel/panel";
-import {show_move_dialog_multiple} from "@/components/resource/resource_tree/resource_tree";
-import router from "@/router";
+import {init_my_resource_tree} from "@/components/resource/resource-panel/panel";
+import router from '@/router';
+
 const props = defineProps({
   resource_id: {
     type: String,
@@ -82,6 +84,7 @@ const showCardList = computed(() => {
   return resourceListStatus.value === 'card';
 });
 const showDeleteFlag = ref(false);
+const resourceViewTreeRef = ref();
 function clickResourceCard(item: IResourceItem, event: MouseEvent) {
   click_resource_card(item, event);
   nextTick(() => {
@@ -102,16 +105,16 @@ function loadMoreResource(e: Event) {
 }
 
 function getResourceRagStatus(resource) {
-  if (!resource.rag_status) {
+  if (!resource.ref_status) {
     return 'info';
   }
-  if (resource.rag_status === '成功') {
+  if (resource.ref_status === '成功') {
     return 'success';
   }
-  if (resource.rag_status === '失败') {
+  if (resource.ref_status === '失败') {
     return 'warning';
   }
-  if (resource.rag_status === '异常') {
+  if (resource.ref_status === '异常') {
     return 'danger';
   }
   return 'primary';
@@ -225,7 +228,6 @@ async function batchDeleteResource() {
     await init_my_resource_tree();
   }
   await search_all_resource_object();
-  refresh_panel_count();
 }
 
 async function deleteResource(resource: IResourceItem) {
@@ -257,7 +259,6 @@ async function deleteResource(resource: IResourceItem) {
   if (resource_list_buttons_Ref.value) {
     resource_list_buttons_Ref.value?.hide();
   }
-  refresh_panel_count();
 }
 
 async function moveResource(resource: IResourceItem) {
@@ -270,7 +271,7 @@ async function moveResource(resource: IResourceItem) {
     return;
   }
   // 移动资源
-  show_move_dialog_multiple([resource.id], search_all_resource_object);
+  resourceViewTreeRef.value?.showMoveDialogMultiple([resource.id], search_all_resource_object);
 }
 
 async function rebuildResource(resource: IResourceItem) {
@@ -389,7 +390,7 @@ function batchMoveSelectResources() {
     ElMessage.warning('请先选择要移动的资源!');
     return;
   }
-  show_move_dialog_multiple(selectedResources, search_all_resource_object);
+  resourceViewTreeRef.value?.showMoveDialogMultiple(selectedResources, search_all_resource_object);
 }
 
 async function batchDownloadSelectResource() {
@@ -494,7 +495,7 @@ onBeforeRouteLeave((to, from, next) => {
         @drop.prevent="handleDrop"
       >
         <el-scrollbar
-          v-if="currentResourceList.length"
+          v-if="currentResourceList?.length"
           ref="elScrollbarRef"
           style="width: 100%"
           @scroll="loadMoreResource"
@@ -560,8 +561,8 @@ onBeforeRouteLeave((to, from, next) => {
                   <template #default="scope">
                     <div class="std-box">
                       <el-tooltip content="索引状态" placement="top">
-                        <el-tag v-if="scope.row.rag_status" :type="getResourceRagStatus(scope.row)" round>
-                          {{ scope.row.rag_status }}
+                        <el-tag v-if="scope.row.ref_status" :type="getResourceRagStatus(scope.row)" round>
+                          {{ scope.row.ref_status }}
                         </el-tag>
                       </el-tooltip>
                     </div>
@@ -580,7 +581,7 @@ onBeforeRouteLeave((to, from, next) => {
                           </el-button>
                         </div>
                         <div class="resource-button">
-                          <el-button text class="resource-button" @click="download_resource(scope.row)">
+                          <el-button text class="resource-button" @click="downloadResource(scope.row)">
                             下载
                           </el-button>
                         </div>
@@ -655,7 +656,7 @@ onBeforeRouteLeave((to, from, next) => {
                         </div>
 
                         <div class="resource-button">
-                          <el-button text class="resource-button" @click="download_resource(item)"> 下载 </el-button>
+                          <el-button text class="resource-button" @click="downloadResource(item)"> 下载 </el-button>
                         </div>
                         <div class="resource-button">
                           <el-button text class="resource-button" @click="share_resource(item)"> 分享 </el-button>
@@ -742,8 +743,8 @@ onBeforeRouteLeave((to, from, next) => {
       </div>
     </el-dialog>
     <ResourceMeta />
-    <ResourceViewTree />
-    <ContextMenu />
+    <ResourceViewTree ref="resourceViewTreeRef" />
+    <ContextMenu @move-dialog-multiple="(a, b) => resourceViewTreeRef?.showMoveDialogMultiple(a, b)" />
     <ResourceShareSelector />
   </el-container>
 </template>

@@ -366,8 +366,8 @@ def rag_query_v3(params):
     if not ref_ids and not inner_config.get("search_engine_enhanced", False):
         return next_console_response(error_status=False, error_message="查询参考信息不能为空", result=result)
 
-    system_ai_config = SystemConfig.query.filter(
-        SystemConfig.config_key == "ai",
+    system_resources_config = SystemConfig.query.filter(
+        SystemConfig.config_key == "resources",
         SystemConfig.config_status == 1
     ).first()
     query_log = {
@@ -405,10 +405,10 @@ def rag_query_v3(params):
             "encoding_format": "float",
         }
     }
-    if system_ai_config.config_value.get("embedding", {}).get("llm_code"):
+    if system_resources_config.config_value.get("embedding", {}).get("llm_code"):
         from app.models.configure_center.llm_kernel import LLMInstance
         embedding_model = LLMInstance.query.filter(
-            LLMInstance.llm_code == system_ai_config.config_value.get("embedding", {}).get("llm_code", ""),
+            LLMInstance.llm_code == system_resources_config.config_value.get("embedding", {}).get("llm_code", ""),
             LLMInstance.llm_status == "正常"
         ).first()
         if embedding_model:
@@ -596,7 +596,7 @@ def rerank_ref_chunks(query, all_ref_chunks, inner_config, query_log):
     rerank_begin_time = time.time()
     from app.models.configure_center.system_config import SystemConfig
     system_config = SystemConfig.query.filter(
-        SystemConfig.config_key == "ai",
+        SystemConfig.config_key == "resources",
         SystemConfig.config_status == 1
     ).first()
     rerank_call_config = {
@@ -960,7 +960,7 @@ def update_parse_resource_chunks_service(params):
         from app.services.knowledge_center.file_chunk_embedding import embedding_call
         from app.models.configure_center.system_config import SystemConfig
         system_config = SystemConfig.query.filter(
-            SystemConfig.config_key == "ai",
+            SystemConfig.config_key == "resources",
             SystemConfig.config_status == 1
         ).first()
         embedding_call_config = {
@@ -1031,7 +1031,7 @@ def parse_resource_chunk_recall_service(params):
         return next_console_response(error_status=True, error_message="未找到对应的资源分块")
     from app.models.configure_center.system_config import SystemConfig
     system_config = SystemConfig.query.filter(
-        SystemConfig.config_key == "ai",
+        SystemConfig.config_key == "resources",
         SystemConfig.config_status == 1
     ).first()
     embedding_call_config = {

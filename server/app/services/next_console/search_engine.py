@@ -83,7 +83,6 @@ def next_search_add_message_v3(params):
             or current_session.session_local_resource_use_all
     ):
         rag_flag = True
-
     # workflow - 检索参考资料
     if rag_flag:
         # 新增问题理解

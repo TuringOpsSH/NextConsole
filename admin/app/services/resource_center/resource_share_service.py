@@ -926,7 +926,7 @@ def get_share_resource_meta(params):
         RagRefInfo.id.desc()
     ).first()
     if ref:
-        result["rag_status"] = ref.ref_status
+        result["ref_status"] = ref.ref_status
     t5 = time.time()
     # 新增Tag信息
     all_tags = ResourceTagRelation.query.filter(

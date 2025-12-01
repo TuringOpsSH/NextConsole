@@ -59,11 +59,25 @@ const props = defineProps({
       type: Number,
       default: 2
     }
+  },
+  autoAsk: {
+    type: Boolean,
+    default: false
+  },
+  asrAble: {
+    type: Boolean,
+    default: false
+  },
+  ragLock: {
+    type: Boolean,
+    default: false
   }
 });
 const isRecording = ref(false);
 const localShow = ref(true);
 const localDisable = ref(false);
+const autoAskQuery = ref(false);
+const loalAsrAble = ref(false);
 interface IResourceItem {
   id?: number;
   resource_parent_id?: number;
@@ -83,7 +97,7 @@ interface IResourceItem {
   resource_show_url?: string | null;
   resource_download_url?: string | null;
   resource_feature_code?: string | null;
-  rag_status?: string | null;
+  ref_status?: string | null;
   resource_language?: string | null;
   create_time?: string;
   update_time?: string;
@@ -117,7 +131,8 @@ const resourceSearchDialogShow = ref(false);
 const uploadFileList = ref<UploadUserFile[]>([]);
 const resourceUploadManagerRef = ref(null);
 const attachmentButtonRef = ref(null);
-function askQuestionPreCheck() {
+const localRagLock = ref(false);
+async function askQuestionPreCheck() {
   // 判断是否达到并发限制
   if (userBatchSize.value >= 1) {
     ElNotification.warning({
@@ -141,11 +156,19 @@ function askQuestionPreCheck() {
     ElMessage.info('会话状态异常，请刷新页面重试！');
     return false;
   }
+  if (localRagLock.value) {
+    const ragCheck = await preCheckAttachment();
+    if (!ragCheck) {
+      ElMessage.info('请等待上传文档解析完成（或者移除未解析完成的文档）');
+      return false;
+    }
+  }
   return true;
 }
 async function askQuestion() {
   // 判断是否达到并发限制
-  if (!askQuestionPreCheck()) {
+  const precheck = await askQuestionPreCheck();
+  if (!precheck) {
     return;
   }
   // 用户输入预处理：将换行符替换为两个换行符
@@ -520,8 +543,34 @@ async function initSessionAttachment() {
         item.resource_icon?.includes('/images/') || item.resource_icon?.includes('http')
           ? item.resource_icon
           : '/images/' + item.resource_icon,
-      resource_size: item.resource_size_in_MB
+      resource_size: item.resource_size_in_MB,
+      ref_status: item.ref_status
     }));
+  }
+}
+async function preCheckAttachment() {
+  await initSessionAttachment();
+  if (!currentMsgAttachment.value?.length) {
+    return true;
+  }
+  for (let attachment of currentMsgAttachment.value) {
+    if (attachment.ref_status && attachment.ref_status != '成功') {
+      return false;
+    }
+  }
+  return true;
+}
+function updateSessionAttachment(data) {
+  for (const resource of data) {
+    for (let attachment of currentMsgAttachment.value) {
+      if (attachment.resource_id == resource.id) {
+        if (attachment?.msg_time && attachment?.msg_time > resource?.msg_time) {
+          continue;
+        }
+        attachment.msg_time = resource.msg_time;
+        attachment.ref_status = resource.ref_status;
+      }
+    }
   }
 }
 onMounted(async () => {
@@ -536,6 +585,9 @@ watch(
       Object.assign(currentSession, newVal);
       await initSessionAttachment();
       skipUserQuestion.value = newVal?.session_task_params_schema?.skip_user_question;
+      if (currentSession.session_code && autoAskQuery.value) {
+        askQuestion();
+      }
     }
   },
   { immediate: true, deep: true }
@@ -554,14 +606,28 @@ watch(
   },
   { immediate: true }
 );
+watch(
+  () => props.autoAsk,
+  newVal => {
+    autoAskQuery.value = newVal;
+  },
+  { immediate: true }
+);
+watch(
+  () => props.ragLock,
+  newVal => {
+    localRagLock.value = newVal;
+  },
+  { immediate: true }
+);
 defineExpose({
   clickRecommendQuestion,
   askQuestion,
   updateQuestion,
-  stopQuestion
+  stopQuestion,
+  updateSessionAttachment
 });
 </script>
-
 <template>
   <div v-show="localShow" id="console-input">
     <div id="console-input-box" ref="consoleInputRef" :class="{ 'disabled-state': localDisable }">
@@ -633,7 +699,7 @@ defineExpose({
           <div class="std-middle-box">
             <div class="std-middle-box">
               <div
-                v-if="!localDisable"
+                v-if="!localDisable && loalAsrAble"
                 class="input-button"
                 @mousedown.prevent="startRecording"
                 @mouseup="stopRecording"
@@ -683,7 +749,7 @@ defineExpose({
                   </div>
                 </div>
               </el-popover>
-              <div v-show="!userBatchSize" class="input-button" @click="askQuestion()">
+              <div v-show="!userBatchSize" class="input-button" @click="askQuestion">
                 <el-image src="/images/send_blue.svg" class="input-icon" />
               </div>
             </div>

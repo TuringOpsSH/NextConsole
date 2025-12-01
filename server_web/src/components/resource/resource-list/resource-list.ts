@@ -1,0 +1,499 @@
+import {ElMessage} from 'element-plus';
+import {reactive, ref} from 'vue';
+import {
+    add_resource_object,
+    download_resource_object,
+    get_resource_object,
+    get_resource_object_path,
+    search_resource_object
+} from '@/api/resource-api';
+import {
+    add_dir_dialog_flag,
+    add_document_flag,
+    current_path_tree,
+    new_dir_form_Ref,
+    new_dir_form_valid
+} from '@/components/resource/resource-list/resource_head/resource_head';
+
+import {init_my_resource_tree} from '@/components/resource/resource-panel/panel';
+import {turn_on_share_selector} from '@/components/resource/resource-share-selector/resource_share_selector';
+import router from '@/router';
+import {useUserInfoStore} from '@/stores/user-info-store';
+import {IResourceItem} from '@/types/resource-type';
+import {sortResourceList} from '@/utils/common';
+
+export const resource_list_Ref = ref(null);
+export const resource_view_model = ref('list');
+export const current_resource = reactive<IResourceItem>({
+  sub_rag_file_cnt: 0,
+  id: null,
+  resource_parent_id: null,
+  user_id: null,
+  resource_name: null,
+  resource_type: null,
+  resource_desc: null,
+  resource_icon: null,
+  resource_format: null,
+  resource_path: null,
+  resource_size_in_MB: null,
+  resource_status: null,
+  ref_status: null,
+  create_time: null,
+  update_time: null,
+  delete_time: null,
+  show_buttons: null,
+  resource_parent_name: null,
+  resource_is_selected: null,
+  sub_resource_dir_cnt: null,
+  sub_resource_file_cnt: null,
+  resource_feature_code: '',
+  resource_is_supported: false,
+  resource_show_url: '',
+  resource_source_url: '',
+  resource_title: '',
+  resource_source: 'resource_center',
+  ref_text: null,
+  rerank_score: null
+});
+export const current_resource_list = ref<IResourceItem[]>([]);
+export const new_dir_resource_item = reactive<IResourceItem>(
+  // @ts-ignore
+  {
+    id: null,
+    resource_parent_id: null,
+    user_id: null,
+    resource_name: null,
+    resource_type: null,
+    resource_desc: null,
+    resource_icon: null,
+    resource_format: null,
+    resource_path: null,
+    resource_size_in_MB: null,
+    resource_status: null,
+    ref_status: null,
+    create_time: null,
+    update_time: null,
+    delete_time: null,
+    show_buttons: null,
+    resource_parent_name: null,
+    resource_is_selected: null,
+    sub_resource_dir_cnt: null,
+    sub_resource_file_cnt: null,
+    sub_rag_file_cnt: 0,
+    resource_feature_code: '',
+    resource_is_supported: false,
+    resource_show_url: '',
+    resource_source_url: '',
+    resource_title: '',
+    resource_source: 'resource_center',
+    ref_text: null,
+    rerank_score: null
+  }
+);
+
+export const resource_loading = ref(false);
+
+export const resource_list_buttons_Ref = ref();
+export const multiple_selection = ref<IResourceItem[]>([]);
+export const show_multiple_button = ref(false);
+export const show_delete_flag = ref(false);
+export const resource_list_card_buttons_Ref = ref();
+export const current_page_num = ref(1);
+export const current_page_size = ref(50);
+export const current_total = ref(0);
+export const el_scrollbar_Ref = ref(null);
+export const resource_list_scroll_Ref = ref(null);
+export const resource_card_scroll_Ref = ref(null);
+// 新建文档
+export const new_document_resource = reactive<IResourceItem>({
+  resource_format: 'docx'
+});
+export const new_document_form_Ref = ref(null);
+
+export const resourceDetailRef = ref(null);
+
+export async function show_resource_list(item: IResourceItem | null = null) {
+  // 面板跳转
+  // console.log('开始跳转', Date.now())
+  resource_loading.value = true;
+  current_resource.id = null;
+  multiple_selection.value = [];
+  current_page_num.value = 1;
+  current_page_size.value = 50;
+  current_total.value = 0;
+  const userInfoStore = useUserInfoStore();
+  if (item.user_id == userInfoStore.userInfo.user_id) {
+    if (item.resource_type == 'folder') {
+      router.push({
+        name: 'resource_list',
+        query: {
+          ...router.currentRoute.value.query
+        },
+        params: {
+          ...router.currentRoute.value.params,
+          resource_id: item?.id
+        }
+      });
+
+      await get_current_resource_object(item.id);
+      search_all_resource_object();
+      get_parent_resource_list();
+    } else {
+      await preview_resource(item);
+    }
+  } else {
+    await router.push({
+        name: 'share'
+    })
+  }
+  resource_loading.value = false;
+  // console.log('完成跳转', Date.now())
+}
+
+export async function get_current_resource_object(resource_id: string | number | null = null) {
+  const params = {
+    resource_id: resource_id
+  };
+  const res = await get_resource_object(params);
+  if (!res.error_status) {
+    Object.assign(current_resource, res.result);
+  }
+}
+
+export async function search_all_resource_object() {
+  // 搜索所有资源对象并展示（抬头搜索框，类型过滤按钮）
+  const search_params = {
+    resource_parent_id: current_resource.id
+  };
+  resource_loading.value = true;
+  const res = await search_resource_object(search_params);
+  if (!res.error_status) {
+    current_total.value = res.result.total;
+    // 排序
+    sortResourceList(res.result?.data);
+    current_resource_list.value = res.result?.data;
+    resource_list_Ref.value?.clearSelection();
+  }
+  resource_loading.value = false;
+}
+
+export async function search_all_resource_object_next(scroll_position: object) {
+  if (resource_loading.value) {
+    return;
+  }
+  if (current_total.value && current_total.value <= current_resource_list.value.length) {
+    return;
+  }
+  if (resource_view_model.value == 'card') {
+    // @ts-ignore
+    if (scroll_position.scrollTop + window.innerHeight - 120 > resource_card_scroll_Ref.value.clientHeight - 10) {
+      // 下一页
+      current_page_num.value += 1;
+      const search_params = {
+        resource_parent_id: current_resource.id,
+        page_num: current_page_num.value,
+        page_size: current_page_size.value
+      };
+      resource_loading.value = true;
+      const res = await search_resource_object(search_params);
+      if (!res.error_status) {
+        current_total.value = res.result.total;
+        for (const resource of res.result.data) {
+          // 去重添加
+          let find_flag = false;
+          for (const item of current_resource_list.value) {
+            if (item.id == resource.id) {
+              find_flag = true;
+              break;
+            }
+          }
+          if (!find_flag) {
+            current_resource_list.value.push(resource);
+          }
+        }
+      }
+      // 往上滚动防止连续加载
+      // @ts-ignore
+      el_scrollbar_Ref.value.setScrollTop(scroll_position.scrollTop - 20);
+      resource_loading.value = false;
+    }
+  } else if (resource_view_model.value == 'list') {
+    if (
+      // @ts-ignore
+      Math.floor(scroll_position.scrollTop + window.innerHeight - 128) >
+      resource_list_scroll_Ref.value.clientHeight - 10
+    ) {
+      // 下一页
+      current_page_num.value += 1;
+      const search_params = {
+        resource_parent_id: current_resource.id,
+        page_num: current_page_num.value,
+        page_size: current_page_size.value
+      };
+      resource_loading.value = true;
+      const res = await search_resource_object(search_params);
+      if (!res.error_status) {
+        current_total.value = res.result.total;
+        for (const resource of res.result.data) {
+          // 去重添加
+          let find_flag = false;
+          for (const item of current_resource_list.value) {
+            if (item.id == resource.id) {
+              find_flag = true;
+              break;
+            }
+          }
+          if (!find_flag) {
+            current_resource_list.value.push(resource);
+          }
+        }
+      }
+      // 往上滚动防止连续加载
+      // @ts-ignore
+      el_scrollbar_Ref.value.setScrollTop(scroll_position.scrollTop - 20);
+      resource_loading.value = false;
+    }
+  }
+}
+
+export async function add_dir_resource() {
+  // 在当前目录下添加一个新的目录
+  // 校验表单
+  if (!new_dir_form_Ref.value) {
+    return;
+  }
+  await new_dir_form_Ref.value.validate((valid: boolean) => {
+    if (valid) {
+      new_dir_form_valid.value = true;
+    } else {
+      return;
+    }
+  });
+  // 不得重名
+  for (const item of current_resource_list.value) {
+    if (item.resource_name === new_dir_resource_item.resource_name) {
+      ElMessage.warning('不得重名');
+      return;
+    }
+  }
+  if (!new_dir_form_valid.value) {
+    return;
+  }
+  const params = {
+    resource_name: new_dir_resource_item.resource_name,
+    resource_parent_id: current_resource.id,
+    resource_desc: new_dir_resource_item.resource_desc
+  };
+  const res = await add_resource_object(params);
+  if (!res.error_status) {
+    // 更新清单
+    search_all_resource_object();
+    init_my_resource_tree();
+    ElMessage.success('添加成功!');
+  }
+  // 关闭对话框
+  new_dir_form_valid.value = false;
+  add_dir_dialog_flag.value = false;
+}
+
+export async function get_parent_resource_list() {
+  if (!current_resource.id) {
+    current_path_tree.value = [];
+    return;
+  }
+  const params = {
+    resource_id: current_resource.id
+  };
+  const res = await get_resource_object_path(params);
+  if (!res.error_status) {
+    current_path_tree.value = res.result.data;
+  }
+}
+
+export async function double_click_resource_card(resource: IResourceItem) {
+  // 双击资源列表中的某一行触发
+  if (resource.resource_type === 'folder') {
+    show_resource_list(resource);
+  } else {
+    preview_resource(resource);
+  }
+}
+
+export function click_resource_card(resource: IResourceItem, event: MouseEvent) {
+  // 如果点击的是多选框，则不触发单击事件
+  if ((event.target as HTMLElement).closest('.resource-item-card-body-button')) {
+    return;
+  }
+
+  resource.resource_is_selected = !resource.resource_is_selected;
+  let selected_cnt = 0;
+  for (const item of current_resource_list.value) {
+    if (item.resource_is_selected) {
+      selected_cnt += 1;
+    }
+  }
+  if (selected_cnt > 0) {
+    show_multiple_button.value = true;
+  }
+  // 保证multiple_selection 的顺序来更新
+  if (resource.resource_is_selected) {
+    multiple_selection.value.push(resource);
+  } else {
+    const index = multiple_selection.value.findIndex(item => item.id == resource.id);
+    multiple_selection.value.splice(index, 1);
+  }
+  // 同步到列表视图
+  resource_list_Ref.value?.toggleRowSelection(resource);
+}
+
+export function format_resource_size(sizeNum: number | null) {
+  // 格式化文件大小,保留两位小数,输入为mb单位的数字
+  // // console.log(size_num)
+  if (sizeNum === null) {
+    return '';
+  }
+  let size = sizeNum;
+  let sizeStr = '';
+
+  // kb单位
+  if (size < 1) {
+    size = size * 1024;
+    sizeStr = size.toFixed(2) + 'KB';
+  } else if (size < 1024) {
+    sizeStr = size.toFixed(2) + 'MB';
+  } else if (size < 1024 * 1024) {
+    size = size / 1024;
+    sizeStr = size.toFixed(2) + 'GB';
+  } else if (size < 1024 * 1024 * 1024) {
+    size = size / 1024 / 1024;
+    sizeStr = size.toFixed(2) + 'TB';
+  } else if (size < 1024 * 1024 * 1024 * 1024) {
+    size = size / 1024 / 1024 / 1024;
+    sizeStr = size.toFixed(2) + 'PB';
+  } else {
+    size = size / 1024 / 1024 / 1024 / 1024;
+    sizeStr = size.toFixed(2) + 'EB';
+  }
+
+  return sizeStr;
+}
+
+export function sort_resource_size(a, b) {
+  // 按照文件大小排序
+  return a.resource_size_in_MB - b.resource_size_in_MB;
+}
+
+export function sort_resource_status(a, b) {
+  // 按照文件状态排序
+  if (a.ref_status) {
+    return 1;
+  } else {
+    return -1;
+  }
+}
+
+export function get_resource_icon(resource: IResourceItem) {
+  // 获取资源图标
+  if (resource.resource_icon) {
+    if (
+      resource.resource_icon.includes('http') ||
+      resource.resource_icon.includes('data:image') ||
+      resource.resource_icon.includes('/images/')
+    ) {
+      return resource.resource_icon;
+    }
+    return '/images/' + resource.resource_icon;
+  } else {
+    return '/images/' + 'html.svg';
+  }
+}
+
+export function cancel_multiple_selection() {
+  show_multiple_button.value = false;
+  for (const item of multiple_selection.value) {
+    item.resource_is_selected = false;
+  }
+  multiple_selection.value = [];
+  resource_list_Ref.value?.clearSelection();
+}
+
+export async function preview_resource(resource: IResourceItem) {
+  // 预览资源
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除，请恢复后查看!');
+    return;
+  }
+  if (!resource?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_type == 'folder') {
+    await show_resource_list(resource);
+    return;
+  }
+
+  await router.push({
+    name: 'resource_viewer',
+    params: {
+      resource_id: resource.id
+    }
+  });
+}
+
+export async function share_resource(resource: IResourceItem) {
+  // 分享资源
+  if (!resource?.id) {
+    ElMessage.warning('资源不存在!');
+    return;
+  }
+  if (resource.resource_status == '删除') {
+    ElMessage.warning('资源已删除，请先恢复后再操作!');
+    return;
+  }
+  // 分享资源
+  await turn_on_share_selector(resource);
+}
+export async function create_new_document() {
+  console.log('创建新文档');
+  // 检验文档信息
+  if (!new_document_form_Ref.value) {
+    return;
+  }
+  const valid_res = await new_document_form_Ref.value.validate();
+  if (!valid_res) {
+    return;
+  }
+
+  // 创建新文档
+  const params = {
+    resource_parent_id: current_resource.id,
+    resource_name: new_document_resource.resource_name,
+    resource_desc: new_document_resource.resource_desc,
+    resource_format: new_document_resource.resource_format,
+    resource_type: 'document'
+  };
+  const res = await add_resource_object(params);
+  if (!res.error_status) {
+    ElMessage.success('创建成功!');
+    // 刷新文档树
+    await init_my_resource_tree();
+    add_document_flag.value = false;
+    new_document_resource.resource_name = '';
+    new_document_resource.resource_desc = '';
+    new_document_resource.resource_format = 'docx';
+    // 直接打开文档
+    await preview_resource(res.result);
+  }
+}
+
+export function setResourceList(list: IResourceItem[]) {
+  current_resource_list.value = list;
+}
+
+export function setResourceTotal(total: number) {
+  current_total.value = total;
+}
+
+export function setResourceLoading(status: boolean) {
+  resource_loading.value = status;
+}

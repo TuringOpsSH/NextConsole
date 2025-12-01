@@ -9,11 +9,21 @@ const props = defineProps({
     required: false
   }
 });
-export interface IAttachmentDetail {
+interface IAttachmentDetail {
   resource_id: number;
   resource_name: string;
   resource_icon: string;
   resource_size: number;
+  ref_status: string;
+}
+function getRefStatusType(refStatus: string) {
+  if (refStatus === '成功') {
+    return 'success';
+  } else if (refStatus?.includes('失败')) {
+    return 'warning';
+  } else {
+    return 'primary';
+  }
 }
 function reformatFileSize(bytes: number) {
   if (!bytes) {
@@ -33,11 +43,11 @@ function reformatFileSize(bytes: number) {
   return `${newBytes.toFixed(2)} ${units[unitIndex]}`;
 }
 watch(
-    () => props.attachmentList,
-    async newVal => {
-      localAttachmentList.value = newVal;
-    },
-    { immediate: true }
+  () => props.attachmentList,
+  async newVal => {
+    localAttachmentList.value = newVal;
+  },
+  { immediate: true }
 );
 const emits = defineEmits(['remove-attachment']);
 </script>
@@ -45,25 +55,39 @@ const emits = defineEmits(['remove-attachment']);
 <template>
   <el-scrollbar>
     <div class="attachment-list">
-      <div v-for="item in attachmentList" :key="item.id" class="attachment-item">
-        <div>
-          <el-image :src="item.resource_icon" class="attachment-item-img" />
-        </div>
-        <div class="attachment-item-right">
-          <el-tooltip :content="item.resource_name" placement="top">
-            <el-text truncated style="width: 120px"> {{ item.resource_name }}</el-text>
-          </el-tooltip>
-          <div>
-            <el-text> {{ reformatFileSize(item.resource_size) }}</el-text>
+      <div v-for="item in attachmentList" :key="item.resource_id">
+        <el-badge
+          :value="item?.ref_status"
+          :offset="[-182, 10]"
+          :type="getRefStatusType(item?.ref_status)"
+          :hidden="!item?.ref_status"
+        >
+          <div class="attachment-item">
+            <div>
+              <el-image :src="item.resource_icon" class="attachment-item-img" />
+            </div>
+            <div class="attachment-item-right">
+              <el-tooltip :content="item.resource_name" placement="top">
+                <el-text truncated style="width: 120px"> {{ item.resource_name }}</el-text>
+              </el-tooltip>
+              <div v-show="item?.resource_icon != '/images/folder.svg'">
+                <el-text> {{ reformatFileSize(item.resource_size) }}</el-text>
+              </div>
+            </div>
+            <div class="close-icon">
+              <el-popconfirm title="确认移除?" @confirm="emits('remove-attachment', item)">
+                <template #reference>
+                  <Close class="close-icon-icon" />
+                </template>
+              </el-popconfirm>
+            </div>
           </div>
-        </div>
-        <div class="close-icon">
-          <el-popconfirm title="确认移除?" @confirm="emits('remove-attachment', item)">
-            <template #reference>
-              <Close class="close-icon-icon" />
-            </template>
-          </el-popconfirm>
-        </div>
+          <template #content="{ value }">
+            <div class="custom-content">
+              <span>{{ value }}</span>
+            </div>
+          </template>
+        </el-badge>
       </div>
     </div>
   </el-scrollbar>
@@ -78,7 +102,7 @@ const emits = defineEmits(['remove-attachment']);
   gap: 8px 9px;
   max-height: 100px;
   overflow-y: auto;
-
+  margin-top: 2px;
   &::-webkit-scrollbar {
     width: 8px; /* 垂直滚动条宽度 */
     height: 8px; /* 水平滚动条高度 */
