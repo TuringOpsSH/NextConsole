@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   redis:
-    image: nextconsole/redis:latest
+    image: redis:latest
     ports:
       - "6379:6379"
     command: redis-server --requirepass ncRedisPassword
@@ -12,7 +12,7 @@ services:
       - app_network
 
   db:
-    image: nextconsole/pgvector:pg17
+    image: pgvector/pgvector:pg17
     environment:
       POSTGRES_USER: next_console
       POSTGRES_PASSWORD: ncDBPassword
